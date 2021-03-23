@@ -19,21 +19,12 @@
 		<relativePath />
 	</parent>
 	
-	<groupId>io.sapl</groupId>
 	<artifactId>sapl-pip-http</artifactId>
 	<version>2.0.0-SNAPSHOT</version>
 
 	<packaging>jar</packaging>
 
 	<name>SAPL HTTP PIP</name>
-
-	<properties>
-		<java.version>11</java.version>
-		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-	</properties>
 
 	<dependencyManagement>
 		<dependencies>
