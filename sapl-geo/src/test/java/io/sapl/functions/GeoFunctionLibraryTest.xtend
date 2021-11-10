@@ -29,7 +29,7 @@ import io.sapl.interpreter.pip.AttributeContext
 import io.sapl.interpreter.pip.GeoPolicyInformationPoint
 import java.util.HashMap
 import java.util.Map
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
 import static org.hamcrest.MatcherAssert.assertThat
@@ -47,8 +47,8 @@ class GeoFunctionLibraryTest {
 	static JsonNode subject;
 	static JsonNode resource;
 
-	@BeforeEach
-	def void setUp() {
+	@BeforeAll
+	def static void beforeAll() {
 		ATTRIBUTE_CTX.loadPolicyInformationPoint(new GeoPolicyInformationPoint());
 		FUNCTION_CTX.loadLibrary(new GeoFunctionLibrary());
 		subject = MAPPER.readValue('''

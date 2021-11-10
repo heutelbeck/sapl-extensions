@@ -86,7 +86,7 @@ public class HttpPolicyInformationPointTest {
 		var attributeCtx = new AnnotationAttributeContext();
 		attributeCtx.loadPolicyInformationPoint(pip);
 		var evaluationCtx = new EvaluationContext(attributeCtx, new AnnotationFunctionContext(), new HashMap<>());
-		var returnedAttribute = attributeCtx.evaluate("http.post", actualRequestSpec, evaluationCtx, null).blockFirst();
+		var returnedAttribute = attributeCtx.evaluateAttribute("http.post", actualRequestSpec, evaluationCtx, null).blockFirst();
 		assertEquals(Val.of(result), returnedAttribute);
 		verify(requestExecutor).executeReactiveRequest(eq(expectedRequestSpec), eq(POST));
 	}
