@@ -23,9 +23,7 @@ import io.sapl.api.pdp.Decision
 import io.sapl.interpreter.DefaultSAPLInterpreter
 import io.sapl.interpreter.EvaluationContext
 import io.sapl.interpreter.functions.AnnotationFunctionContext
-import io.sapl.interpreter.functions.FunctionContext
 import io.sapl.interpreter.pip.AnnotationAttributeContext
-import io.sapl.interpreter.pip.AttributeContext
 import io.sapl.interpreter.pip.GeoPolicyInformationPoint
 import java.util.HashMap
 import java.util.Map
@@ -39,8 +37,8 @@ class GeoFunctionLibraryTest {
 
 	static final ObjectMapper MAPPER = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 	static final DefaultSAPLInterpreter INTERPRETER = new DefaultSAPLInterpreter();
-	static final AttributeContext ATTRIBUTE_CTX = new AnnotationAttributeContext();
-	static final FunctionContext FUNCTION_CTX = new AnnotationFunctionContext();
+	static final AnnotationAttributeContext ATTRIBUTE_CTX = new AnnotationAttributeContext();
+	static final AnnotationFunctionContext FUNCTION_CTX = new AnnotationFunctionContext();
 	static Map<String, JsonNode> variables = new HashMap<String, JsonNode>();
 	static final EvaluationContext PDP_EVALUATION_CONTEXT = new EvaluationContext(ATTRIBUTE_CTX, FUNCTION_CTX,
 		variables);
