@@ -11,7 +11,7 @@ To use the Ethereum Policy Information Point, you have to include the dependency
 <dependency>
     <groupId>io.sapl</groupId>
     <artifactId>sapl-ethereum</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 Furthermore you will have to use a PDP to work with. In case you want to use an Embedded PDP you can include the following dependency:
@@ -20,7 +20,7 @@ Furthermore you will have to use a PDP to work with. In case you want to use an 
 <dependency>
     <groupId>io.sapl</groupId>
     <artifactId>sapl-pdp-embedded</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -52,17 +52,17 @@ You can autoconfigure the use of your Policy Decision Point and your Ethereum PI
 <dependency>
 	<groupId>io.sapl</groupId>
 	<artifactId>sapl-spring-security</artifactId>
-   <version>2.0.0-SNAPSHOT</version>
+   <version>2.0.0</version>
 </dependency>
 <dependency>
 	<groupId>io.sapl</groupId>
 	artifactId>sapl-spring-pdp-embedded</artifactId>
-	<version>2.0.0-SNAPSHOT</version>
+	<version>2.0.0</version>
 </dependency>
 <dependency>
       <groupId>io.sapl</groupId>
       <artifactId>sapl-ethereum</artifactId>
-      <version>2.0.0-SNAPSHOT</version>
+      <version>2.0.0</version>
 </dependency>
 ```
 

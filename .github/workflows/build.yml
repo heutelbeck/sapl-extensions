@@ -53,7 +53,7 @@ jobs:
     - name: Build with Maven (JUnit, JaCoCo, Sonar) 
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: mvn -B org.jacoco:jacoco-maven-plugin:prepare-agent install org.jacoco:jacoco-maven-plugin:report sonar:sonar -Dsonar.host.url=https://sonar.ftk.de -Dsonar.login=${SONAR_TOKEN} 
+      run: mvn -B org.jacoco:jacoco-maven-plugin:prepare-agent install org.jacoco:jacoco-maven-plugin:report org.sonarsource.scanner.maven:sonar-maven-plugin:RELEASE:sonar -Dsonar.host.url=https://sonar.ftk.de -Dsonar.login=${SONAR_TOKEN} 
 
     - name: Install GPG Code Signing Key
       run: |
@@ -61,7 +61,7 @@ jobs:
         gpg --list-secret-keys --keyid-format LONG
 
     - name: Deploy Maven artefacts
-      run: mvn -B --no-transfer-progress -Dgpg.passphrase=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }} -DskipTests -P publish clean deploy      
+      run: mvn -B --no-transfer-progress -Dgpg.passphrase=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }} -DskipTests -Ppublish clean deploy      
       
     - name: Clean up local repository before caching
       run: rm -rf /.m2/repository/io/sapl
