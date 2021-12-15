@@ -121,7 +121,7 @@
 			<plugin>
 				<groupId>org.web3j</groupId>
 				<artifactId>web3j-maven-plugin</artifactId>
-				<version>4.8.2</version>
+				<version>4.8.7</version>
 				<configuration>
 					<packageName>io.sapl.interpreter.pip.contracts</packageName>
 					<sourceDestination>${project.basedir}/target/generated-test-sources/contracts</sourceDestination>
