@@ -23,6 +23,10 @@
 
 	<name>SAPL Ethereum</name>
 
+	<properties>
+		<solidity.version>0.7.4</solidity.version>
+	</properties>
+	
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
