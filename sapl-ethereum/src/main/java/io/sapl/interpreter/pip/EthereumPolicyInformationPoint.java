@@ -472,8 +472,6 @@ public class EthereumPolicyInformationPoint {
 	 *                   "earliest", or "pending".
 	 * @param variables
 	 * @return Flux of JsonNodes holding the balance in wei as BigInteger.
-	 * @see io.sapl.interpreter.pip.EthereumPipFunctions#getDefaultBlockParameter(JsonNode)
-	 *      getDefaultBlockParameter
 	 *
 	 */
 	@Attribute(name = "balance", docs = "Returns the balance of the account of given address.")
@@ -506,8 +504,6 @@ public class EthereumPolicyInformationPoint {
 	 *                   blockchain should be polled in milliseconds
 	 * @return A Flux of Json Nodes that contain the stored value at the denoted
 	 *         position.
-	 * @see io.sapl.interpreter.pip.EthereumPipFunctions#getDefaultBlockParameter(JsonNode)
-	 *      getDefaultBlockParameter
 	 */
 	@Attribute(name = "storage", docs = "Returns the value from a storage position at a given address.")
 	public Flux<Val> ethGetStorageAt(Val saplObject, Map<String, JsonNode> variables) {
@@ -537,8 +533,6 @@ public class EthereumPolicyInformationPoint {
 	 *                   blockchain should be polled in milliseconds
 	 * @return A Flux of JsonNodes that contain the transaction count as a
 	 *         BigInteger value.
-	 * @see io.sapl.interpreter.pip.EthereumPipFunctions#getDefaultBlockParameter(JsonNode)
-	 *      getDefaultBlockParameter
 	 */
 	@Attribute(name = "transactionCount", docs = "Returns the number of transactions sent from an address.")
 	public Flux<Val> ethGetTransactionCount(Val saplObject, Map<String, JsonNode> variables) {
@@ -588,8 +582,6 @@ public class EthereumPolicyInformationPoint {
 	 *                   blockchain should be polled in milliseconds
 	 * @return A Flux of JsonNodes holding the transaction count of the block as
 	 *         BigInteger value.
-	 * @see io.sapl.interpreter.pip.EthereumPipFunctions#getDefaultBlockParameter(JsonNode)
-	 *      getDefaultBlockParameter
 	 */
 	@Attribute(name = "blockTransactionCountByNumber", docs = "Returns the number of transactions in a block matching the given block number.")
 	public Flux<Val> ethGetBlockTransactionCountByNumber(Val saplObject, Map<String, JsonNode> variables) {
@@ -634,8 +626,6 @@ public class EthereumPolicyInformationPoint {
 	 *                   blockchain should be polled in milliseconds
 	 * @return A Flux of JsonNodes holding the uncle count of the block as
 	 *         BigInteger value.
-	 * @see io.sapl.interpreter.pip.EthereumPipFunctions#getDefaultBlockParameter(JsonNode)
-	 *      getDefaultBlockParameter
 	 */
 	@Attribute(name = "uncleCountByBlockNumber", docs = "Returns the number of uncles in a block from a block matching the given block number.")
 	public Flux<Val> ethGetUncleCountByBlockNumber(Val saplObject, Map<String, JsonNode> variables) {
@@ -660,8 +650,6 @@ public class EthereumPolicyInformationPoint {
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
 	 * @return A Flux of JsonNodes containing the code at the address as String.
-	 * @see io.sapl.interpreter.pip.EthereumPipFunctions#getDefaultBlockParameter(JsonNode)
-	 *      getDefaultBlockParameter
 	 */
 	@Attribute(name = "code", docs = "Returns code at a given address.")
 	public Flux<Val> ethGetCode(Val saplObject, Map<String, JsonNode> variables) {
@@ -715,8 +703,6 @@ public class EthereumPolicyInformationPoint {
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
 	 * @return A Flux of JsonNodes with the result of the call in form of a String.
-	 * @see io.sapl.interpreter.pip.EthereumPipFunctions#getDefaultBlockParameter(JsonNode)
-	 *      getDefaultBlockParameter
 	 */
 	@Attribute(name = "call", docs = "Executes a new message call immediately without creating a transaction on the block chain.")
 	public Flux<Val> ethCall(Val saplObject, Map<String, JsonNode> variables) {
@@ -795,8 +781,6 @@ public class EthereumPolicyInformationPoint {
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
 	 * @return A Flux of Json nodes containing the returned block mapped to Json.
-	 * @see io.sapl.interpreter.pip.EthereumPipFunctions#getDefaultBlockParameter(JsonNode)
-	 *      getDefaultBlockParameter
 	 */
 	@Attribute(name = "blockByNumber", docs = "Returns information about a block by block number.")
 	public Flux<Val> ethGetBlockByNumber(Val saplObject, Map<String, JsonNode> variables) {
