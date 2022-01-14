@@ -39,9 +39,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.net.HttpHeaders;
 
 import io.sapl.api.interpreter.Val;
-import io.sapl.interpreter.EvaluationContext;
 import io.sapl.interpreter.InitializationException;
-import io.sapl.interpreter.functions.AnnotationFunctionContext;
 import io.sapl.interpreter.pip.AnnotationAttributeContext;
 import reactor.core.publisher.Flux;
 
@@ -65,7 +63,7 @@ public class HttpPolicyInformationPointTest {
 				+ "\" : \"" + StandardCharsets.UTF_8 + "\" " + "}, " + "\"rawBody\" : \"hello world\" " + "}";
 
 		actualRequestSpec = Val.ofJson(request);
-		result = JSON.textNode("result");
+		result            = JSON.textNode("result");
 		final Map<String, String> headerProperties = new HashMap<>();
 		headerProperties.put(HttpHeaders.ACCEPT, "application/stream+json");
 		headerProperties.put(HttpHeaders.ACCEPT_CHARSET, StandardCharsets.UTF_8.toString());
@@ -82,11 +80,11 @@ public class HttpPolicyInformationPointTest {
 
 	@Test
 	public void postRequest() throws IOException, InitializationException {
-		var pip = new HttpPolicyInformationPoint(requestExecutor);
+		var pip          = new HttpPolicyInformationPoint(requestExecutor);
 		var attributeCtx = new AnnotationAttributeContext();
 		attributeCtx.loadPolicyInformationPoint(pip);
-		var evaluationCtx = new EvaluationContext(attributeCtx, new AnnotationFunctionContext(), new HashMap<>());
-		var returnedAttribute = attributeCtx.evaluateAttribute("http.post", actualRequestSpec, evaluationCtx, null).blockFirst();
+		var returnedAttribute = attributeCtx.evaluateAttribute("http.post", actualRequestSpec, null, new HashMap<>())
+				.blockFirst();
 		assertEquals(Val.of(result), returnedAttribute);
 		verify(requestExecutor).executeReactiveRequest(eq(expectedRequestSpec), eq(POST));
 	}
