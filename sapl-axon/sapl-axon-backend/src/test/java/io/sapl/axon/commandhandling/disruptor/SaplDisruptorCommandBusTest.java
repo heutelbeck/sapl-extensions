@@ -490,7 +490,7 @@ public class SaplDisruptorCommandBusTest {
 
 	@Test
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	void when_MessageMonitoring_then_succuessfully() {
+	void when_MessageMonitoring_then_succuessfully() throws Exception {
 		eventStore.storedEvents.clear();
 		final AtomicLong successCounter = new AtomicLong();
 		final AtomicLong failureCounter = new AtomicLong();
@@ -508,15 +508,11 @@ public class SaplDisruptorCommandBusTest {
 										}
 									};
 
-		try {
 			when(pep.preEnforceCommandDisruptor(any(), any())).thenAnswer(invocation -> {
 				var msg           = (CommandMessage) invocation.getArgument(0);
 				var handleCommand = (CheckedFunction<CommandMessage<?>, Object>) invocation.getArgument(1);
 				return handleCommand.apply(msg);
 			});
-		} catch (Exception e) {
-			fail("Did not expect exception: " + e.getMessage());
-		}
 
 		testSubject = SaplDisruptorCommandBus.builderSapl()
 				.policyEnforcementPoint(pep)
@@ -538,7 +534,7 @@ public class SaplDisruptorCommandBusTest {
 						ignoredCounter.incrementAndGet();
 					}
 				})
-				.coolingDownPeriod(1)
+				.coolingDownPeriod(500)
 				.build();
 
 		stubHandler.handlers              = createHandlers(StubCommand.class, CreateCommand.class, ErrorCommand.class);
