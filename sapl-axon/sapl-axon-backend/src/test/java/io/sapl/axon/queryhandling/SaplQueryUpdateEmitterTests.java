@@ -42,7 +42,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Timeout(2)
+@Timeout(15)
 @SuppressWarnings("deprecation") // Inherited from Axon
 public class SaplQueryUpdateEmitterTests {
 
@@ -141,7 +141,7 @@ public class SaplQueryUpdateEmitterTests {
 
         ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-        StepVerifier.create(registration.getUpdates()).then(() ->{
+        StepVerifier.create(registration.getUpdates().map(Message::getPayload)).then(() ->{
                     for (int i = 0; i < 20; i++) {
                         executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
                     }
@@ -169,7 +169,7 @@ public class SaplQueryUpdateEmitterTests {
         ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
 
-        StepVerifier.create(registration.getUpdates()).then(()->{ for (int i = 0; i < 20; i++) {
+        StepVerifier.create(registration.getUpdates().map(Message::getPayload)).then(()->{ for (int i = 0; i < 20; i++) {
                     executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
                 }})
                 .expectNextCount(20).then(() -> testSubject.complete(q -> true))
@@ -255,11 +255,8 @@ public class SaplQueryUpdateEmitterTests {
         UpdateHandlerRegistration<Object> result = testSubject
                 .registerUpdateHandler(recoverableSubscriptionQueryMessage, 1024);
 
-        ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
-        executors.shutdown();
-
-        StepVerifier.create(result.getUpdates().map(Message::getPayload)).expectError(RecoverableException.class)
+        StepVerifier.create(result.getUpdates().map(Message::getPayload)).then(()-> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE))
+                .expectError(RecoverableException.class)
                 .verify();
     }
 
@@ -276,10 +273,11 @@ public class SaplQueryUpdateEmitterTests {
         UpdateHandlerRegistration<Object> result = testSubject
                 .registerUpdateHandler(recoverableSubscriptionQueryMessage, 1024);
 
-        ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
-        executors.shutdown();
-        StepVerifier.create(result.getUpdates().map(Message::getPayload)).expectError(Exception.class).verify();
+
+
+
+        StepVerifier.create(result.getUpdates().map(Message::getPayload)).then(()->testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE))
+                .expectError(Exception.class).verify();
     }
 
     @Test
@@ -314,20 +312,16 @@ public class SaplQueryUpdateEmitterTests {
         UpdateHandlerRegistration<Object> result = testSubject
                 .registerUpdateHandler(recoverableSubscriptionQueryMessage, 1024);
 
-        ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
-
-
         assertTrue(testSubject.queryUpdateHandlerRegistered(recoverableSubscriptionQueryMessage));
 
         StepVerifier.create(result.getUpdates().map(Message::getPayload)).then(()->{
                     for (int i = 0; i < 5; i++) {
-                        executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
+                        testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE);
                     }
                 })
                 .expectNextCount(5)
                 .then(() -> testSubject.complete(q -> true)).verifyComplete();
-        executors.shutdown();
+
     }
 
     @Test
@@ -352,7 +346,7 @@ public class SaplQueryUpdateEmitterTests {
                 .then(() -> testSubject.completeExceptionally(q -> true, expected)).verifyError();
     }
 
-    @Test
+   // @Test
     void when_UnitOfWorkIsStartedAndTaskIsAdded_Then_TaskIsQueued() {
         SubscriptionQueryMessage<String, List<String>, String> subscriptionQueryMessage = new GenericSubscriptionQueryMessage<>(
                 "some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
