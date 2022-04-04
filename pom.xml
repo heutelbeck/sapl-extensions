@@ -71,6 +71,9 @@
 		<module>sapl-pip-http</module>
 		<module>sapl-geo</module>
 		<module>sapl-ethereum</module>
+		<module>sapl-axon/sapl-axon-client</module>
+		<module>sapl-axon/sapl-axon-backend</module>
+		<module>sapl-vaadin</module>		
 	</modules>
 
 	<distributionManagement>
