@@ -814,14 +814,14 @@ public class SaplDisruptorCommandBus extends DisruptorCommandBus {
             this.type = type;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
+        @SuppressWarnings("unchecked")
         public Aggregate<T> load(String aggregateIdentifier, Long expectedVersion) {
             return (Aggregate<T>) SaplCommandHandlerInvoker.getRepository(type).load(aggregateIdentifier, expectedVersion);
         }
 
-        @SuppressWarnings("unchecked")
         @Override
+        @SuppressWarnings("unchecked")
         public Aggregate<T> load(String aggregateIdentifier) {
             return (Aggregate<T>) SaplCommandHandlerInvoker.getRepository(type).load(aggregateIdentifier);
         }
