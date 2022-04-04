@@ -81,10 +81,8 @@ public class SaplQueryUpdateEmitterTests {
 
         UpdateHandlerRegistration<Object> result = testSubject.registerUpdateHandler(queryMessage, 1024);
 
-        testSubject.emit(any -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE);
-
-
-        StepVerifier.create(result.getUpdates().map(Message::getPayload)).expectNext(TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE)
+        StepVerifier.create(result.getUpdates().map(Message::getPayload)).then(()-> testSubject.emit(any -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE))
+                .expectNext(TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE)
                 .then(result::complete).verifyComplete();
     }
 
@@ -104,9 +102,8 @@ public class SaplQueryUpdateEmitterTests {
 
         UpdateHandlerRegistration<Object> result = testSubject.registerUpdateHandler(queryMessage, 1024);
 
-        testSubject.emit(any -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE);
-
-        StepVerifier.create(result.getUpdates().map(Message::getPayload)).expectNext("intercepted").then(result::complete).verifyComplete();
+        StepVerifier.create(result.getUpdates().map(Message::getPayload)).then( ()->testSubject.emit(any -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE))
+                .expectNext("intercepted").then(result::complete).verifyComplete();
     }
 
     @Test
@@ -123,10 +120,7 @@ public class SaplQueryUpdateEmitterTests {
         UpdateHandlerRegistration<Object> result = testSubject.registerUpdateHandler(queryMessage,
                 SubscriptionQueryBackpressure.defaultBackpressure(), 1024);
 
-
-        testSubject.emit(any -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE);
-
-        StepVerifier.create(result.getUpdates().map(Message::getPayload))
+        StepVerifier.create(result.getUpdates().map(Message::getPayload)).then(()->testSubject.emit(any -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE))
                 .expectNext(TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE).then(result::complete).verifyComplete();
 
 
@@ -146,11 +140,14 @@ public class SaplQueryUpdateEmitterTests {
         UpdateHandlerRegistration<Object> registration = testSubject.registerUpdateHandler(queryMessage, 128);
 
         ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        for (int i = 0; i < 20; i++) {
-            executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
-        }
 
-        StepVerifier.create(registration.getUpdates()).expectNextCount(20).then(() -> testSubject.complete(q -> true))
+        StepVerifier.create(registration.getUpdates()).then(() ->{
+                    for (int i = 0; i < 20; i++) {
+                        executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
+                    }
+                })
+                .expectNextCount(20)
+                .then(() -> testSubject.complete(q -> true))
                 .verifyComplete();
         executors.shutdown();
     }
@@ -170,11 +167,12 @@ public class SaplQueryUpdateEmitterTests {
                 SubscriptionQueryBackpressure.defaultBackpressure(), 128);
 
         ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        for (int i = 0; i < 20; i++) {
-            executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
-        }
 
-        StepVerifier.create(registration.getUpdates()).expectNextCount(20).then(() -> testSubject.complete(q -> true))
+
+        StepVerifier.create(registration.getUpdates()).then(()->{ for (int i = 0; i < 20; i++) {
+                    executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
+                }})
+                .expectNextCount(20).then(() -> testSubject.complete(q -> true))
                 .verifyComplete();
         executors.shutdown();
     }
@@ -193,9 +191,8 @@ public class SaplQueryUpdateEmitterTests {
         UpdateHandlerRegistration<Object> result = testSubject.registerUpdateHandler(queryMessage, 1024);
 
 
-        testSubject.emit(any -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE);
-
-        StepVerifier.create(result.getUpdates().map(Message::getPayload)).expectNext(TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE)
+        StepVerifier.create(result.getUpdates().map(Message::getPayload)).then(() ->testSubject.emit(any -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE))
+                .expectNext(TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE)
                 .then(() -> result.getRegistration().cancel()).verifyTimeout(Duration.ofMillis(500));
     }
 
@@ -213,9 +210,8 @@ public class SaplQueryUpdateEmitterTests {
         UpdateHandlerRegistration<Object> result = testSubject.registerUpdateHandler(queryMessage,
                 SubscriptionQueryBackpressure.defaultBackpressure(), 1024);
 
-        testSubject.emit(any -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE);
-
-        StepVerifier.create(result.getUpdates().map(Message::getPayload)).expectNext(TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE)
+        StepVerifier.create(result.getUpdates().map(Message::getPayload)).then(() ->testSubject.emit(any -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE))
+                .expectNext(TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE)
                 .then(() -> result.getRegistration().cancel()).verifyTimeout(Duration.ofMillis(500));
     }
 
@@ -236,12 +232,11 @@ public class SaplQueryUpdateEmitterTests {
                 .registerUpdateHandler(recoverableSubscriptionQueryMessage, 1024);
 
         ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        for (int i = 0; i < 5; i++) {
-            executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
-        }
 
-
-        StepVerifier.create(result.getUpdates().map(Message::getPayload)).expectNextCount(5)
+        StepVerifier.create(result.getUpdates().map(Message::getPayload)).then(()->{ for (int i = 0; i < 5; i++) {
+                    executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
+                }})
+                .expectNextCount(5)
                 .then(() -> testSubject.complete(q -> true)).verifyComplete();
         executors.shutdown();
     }
@@ -320,14 +315,17 @@ public class SaplQueryUpdateEmitterTests {
                 .registerUpdateHandler(recoverableSubscriptionQueryMessage, 1024);
 
         ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        for (int i = 0; i < 5; i++) {
-            executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
-        }
+
 
 
         assertTrue(testSubject.queryUpdateHandlerRegistered(recoverableSubscriptionQueryMessage));
 
-        StepVerifier.create(result.getUpdates().map(Message::getPayload)).expectNextCount(5)
+        StepVerifier.create(result.getUpdates().map(Message::getPayload)).then(()->{
+                    for (int i = 0; i < 5; i++) {
+                        executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
+                    }
+                })
+                .expectNextCount(5)
                 .then(() -> testSubject.complete(q -> true)).verifyComplete();
         executors.shutdown();
     }
@@ -349,11 +347,8 @@ public class SaplQueryUpdateEmitterTests {
         UpdateHandlerRegistration<Object> result = testSubject
                 .registerUpdateHandler(recoverableSubscriptionQueryMessage, 1024);
 
-
-        testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE);
-
-
-        StepVerifier.create(result.getUpdates()).expectNextCount(1)
+        StepVerifier.create(result.getUpdates()).then(()->  testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE))
+                .expectNextCount(1)
                 .then(() -> testSubject.completeExceptionally(q -> true, expected)).verifyError();
     }
 
