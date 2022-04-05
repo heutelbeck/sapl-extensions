@@ -42,7 +42,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Timeout(15)
+@Timeout(5)
 @SuppressWarnings("deprecation") // Inherited from Axon
 public class SaplQueryUpdateEmitterTests {
 
@@ -139,17 +139,17 @@ public class SaplQueryUpdateEmitterTests {
 
         UpdateHandlerRegistration<Object> registration = testSubject.registerUpdateHandler(queryMessage, 128);
 
-        ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+       /*ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());*/
 
         StepVerifier.create(registration.getUpdates().map(Message::getPayload)).then(() ->{
                     for (int i = 0; i < 20; i++) {
-                        executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
+                        /*executors.submit(() ->*/ testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE);
                     }
                 })
                 .expectNextCount(20)
                 .then(() -> testSubject.complete(q -> true))
                 .verifyComplete();
-        executors.shutdown();
+       /* executors.shutdown();*/
     }
 
     @Test
@@ -167,7 +167,6 @@ public class SaplQueryUpdateEmitterTests {
                 SubscriptionQueryBackpressure.defaultBackpressure(), 128);
 
         ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
 
         StepVerifier.create(registration.getUpdates().map(Message::getPayload)).then(()->{ for (int i = 0; i < 20; i++) {
                     executors.submit(() -> testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
@@ -219,12 +218,8 @@ public class SaplQueryUpdateEmitterTests {
     @SuppressWarnings("unchecked")
     void when_RecoverableSubscriptionThrowsRecoverableExceptionWithMetaData_Then_RecoverableExceptionInEmittedResult()
             throws Exception {
-        SubscriptionQueryMessage<String, List<String>, String> subscriptionQueryMessage = new GenericSubscriptionQueryMessage<>(
-                "some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
-                ResponseTypes.instanceOf(String.class));
-        SubscriptionQueryMessage<String, List<String>, String> recoverableSubscriptionQueryMessage = subscriptionQueryMessage
-                .withMetaData(Map.of(RecoverableResponse.RECOVERABLE_UPDATE_TYPE_KEY,
-                        ResponseTypes.instanceOf(String.class)));
+
+        var recoverableSubscriptionQueryMessage = getRecoverableSubscriptionQueryMessage();
         when(pep.handleSubscriptionQueryUpdateMessage(any(SubscriptionQueryMessage.class),
                 any(SubscriptionQueryUpdateMessage.class))).thenThrow(new RecoverableException());
 
@@ -244,11 +239,7 @@ public class SaplQueryUpdateEmitterTests {
     @Test
     @SuppressWarnings("unchecked")
     void when_RecoverableSubscriptionWithoutMetaData_Then_RecoverableException() throws Exception {
-        SubscriptionQueryMessage<String, List<String>, String> subscriptionQueryMessage = new GenericSubscriptionQueryMessage<>(
-                "some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
-                ResponseTypes.instanceOf(String.class));
-        SubscriptionQueryMessage<String, List<String>, String> recoverableSubscriptionQueryMessage = subscriptionQueryMessage
-                .withMetaData(Map.of("test", ResponseTypes.instanceOf(String.class)));
+        var recoverableSubscriptionQueryMessage = getRecoverableSubscriptionQueryMessage();
         when(pep.handleSubscriptionQueryUpdateMessage(any(SubscriptionQueryMessage.class),
                 any(SubscriptionQueryUpdateMessage.class))).thenThrow(new RecoverableException());
 
@@ -263,18 +254,14 @@ public class SaplQueryUpdateEmitterTests {
     @Test
     @SuppressWarnings("unchecked")
     void when_RecoverableSubscriptionThrowsException_Then_EmitException() throws Exception {
-        SubscriptionQueryMessage<String, List<String>, String> subscriptionQueryMessage = new GenericSubscriptionQueryMessage<>(
-                "some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
-                ResponseTypes.instanceOf(String.class));
-        SubscriptionQueryMessage<String, List<String>, String> recoverableSubscriptionQueryMessage = subscriptionQueryMessage;
+
+        var recoverableSubscriptionQueryMessage = getRecoverableSubscriptionQueryMessage();
+
         when(pep.handleSubscriptionQueryUpdateMessage(any(SubscriptionQueryMessage.class),
                 any(SubscriptionQueryUpdateMessage.class))).thenThrow(new Exception());
 
         UpdateHandlerRegistration<Object> result = testSubject
                 .registerUpdateHandler(recoverableSubscriptionQueryMessage, 1024);
-
-
-
 
         StepVerifier.create(result.getUpdates().map(Message::getPayload)).then(()->testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE))
                 .expectError(Exception.class).verify();
@@ -283,28 +270,19 @@ public class SaplQueryUpdateEmitterTests {
     @Test
     @SuppressWarnings("unchecked")
     void when_ErrorEmitOnCompletedUpdateFlux_Then_NoErrorEmitted() throws Exception {
-        SubscriptionQueryMessage<String, List<String>, String> subscriptionQueryMessage = new GenericSubscriptionQueryMessage<>(
-                "some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
-                ResponseTypes.instanceOf(String.class));
-        SubscriptionQueryMessage<String, List<String>, String> recoverableSubscriptionQueryMessage = subscriptionQueryMessage;
+        var recoverableSubscriptionQueryMessage = getRecoverableSubscriptionQueryMessage();
         when(pep.handleSubscriptionQueryUpdateMessage(any(SubscriptionQueryMessage.class),
                 any(SubscriptionQueryUpdateMessage.class))).thenThrow(new Exception());
         UpdateHandlerRegistration<Object> result = testSubject
                 .registerUpdateHandler(recoverableSubscriptionQueryMessage, 1024);
-        result.complete();
-        testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE);
-        StepVerifier.create(result.getUpdates().map(Message::getPayload)).expectComplete().verify();
+        StepVerifier.create(result.getUpdates().map(Message::getPayload)).then(result::complete)
+                .then(()->testSubject.emit(q -> true, TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE)).expectComplete().verify();
     }
 
     @Test
     @SuppressWarnings("unchecked")
     void when_RecoverableSubscription_Then_ReturnRecoverableSubscription() throws Exception {
-        SubscriptionQueryMessage<String, List<String>, String> subscriptionQueryMessage = new GenericSubscriptionQueryMessage<>(
-                "some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
-                ResponseTypes.instanceOf(String.class));
-        SubscriptionQueryMessage<String, List<String>, String> recoverableSubscriptionQueryMessage = subscriptionQueryMessage
-                .withMetaData(Map.of(RecoverableResponse.RECOVERABLE_UPDATE_TYPE_KEY,
-                        ResponseTypes.instanceOf(String.class)));
+        var recoverableSubscriptionQueryMessage = getRecoverableSubscriptionQueryMessage();
         when(pep.handleSubscriptionQueryUpdateMessage(any(SubscriptionQueryMessage.class),
                 any(SubscriptionQueryUpdateMessage.class))).thenReturn(
                 new GenericSubscriptionQueryUpdateMessage<>(TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
@@ -328,12 +306,8 @@ public class SaplQueryUpdateEmitterTests {
     @SuppressWarnings("unchecked")
     void when_RecoverableSubscriptionCompleteExceptionally_Then_ReturnError() throws Exception {
         Throwable expected = new Throwable("oops");
-        SubscriptionQueryMessage<String, List<String>, String> subscriptionQueryMessage = new GenericSubscriptionQueryMessage<>(
-                "some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
-                ResponseTypes.instanceOf(String.class));
-        SubscriptionQueryMessage<String, List<String>, String> recoverableSubscriptionQueryMessage = subscriptionQueryMessage
-                .withMetaData(Map.of(RecoverableResponse.RECOVERABLE_UPDATE_TYPE_KEY,
-                        ResponseTypes.instanceOf(String.class)));
+        var recoverableSubscriptionQueryMessage = getRecoverableSubscriptionQueryMessage();
+
         when(pep.handleSubscriptionQueryUpdateMessage(any(SubscriptionQueryMessage.class),
                 any(SubscriptionQueryUpdateMessage.class))).thenReturn(
                 new GenericSubscriptionQueryUpdateMessage<>(TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE));
@@ -369,5 +343,12 @@ public class SaplQueryUpdateEmitterTests {
         testSubject.registerUpdateHandler(subscriptionQueryMessage, 1024);
 
         assertTrue(testSubject.activeSubscriptions().contains(subscriptionQueryMessage));
+    }
+
+    private SubscriptionQueryMessage<String,List<String>,RecoverableResponse> getRecoverableSubscriptionQueryMessage(){
+        SubscriptionQueryMessage<String, List<String>, RecoverableResponse> subscriptionQueryMessage = new GenericSubscriptionQueryMessage<>(
+                "some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
+                ResponseTypes.instanceOf(RecoverableResponse.class));
+        return subscriptionQueryMessage.withMetaData(Map.of(RecoverableResponse.RECOVERABLE_UPDATE_TYPE_KEY,ResponseTypes.instanceOf(String.class)));
     }
 }
