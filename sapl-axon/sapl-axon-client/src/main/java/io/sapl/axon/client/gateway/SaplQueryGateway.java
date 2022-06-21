@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import io.sapl.axon.client.metadata.AbstractSaplQueryInterceptor;
 import org.axonframework.common.AxonConfigurationException;
 import org.axonframework.common.BuilderUtils;
 import org.axonframework.common.Registration;
@@ -72,11 +73,13 @@ import reactor.util.concurrent.Queues;
 public class SaplQueryGateway implements QueryGateway {
 	private final QueryBus                                                     queryBus;
 	private final List<MessageDispatchInterceptor<? super QueryMessage<?, ?>>> dispatchInterceptors;
+	private final AbstractSaplQueryInterceptor saplQueryInterceptor;
 
 	protected SaplQueryGateway(QueryBus queryBus,
-			List<MessageDispatchInterceptor<? super QueryMessage<?, ?>>> dispatchInterceptors) {
+			List<MessageDispatchInterceptor<? super QueryMessage<?, ?>>> dispatchInterceptors, AbstractSaplQueryInterceptor saplQueryInterceptor) {
 		this.queryBus             = queryBus;
 		this.dispatchInterceptors = dispatchInterceptors;
+		this.saplQueryInterceptor = saplQueryInterceptor;
 	}
 
 	/**
@@ -386,7 +389,7 @@ public class SaplQueryGateway implements QueryGateway {
 		for (MessageDispatchInterceptor<? super QueryMessage<?, ?>> interceptor : dispatchInterceptors) {
 			query = (T) interceptor.handle(query);
 		}
-		return query;
+		return (T)saplQueryInterceptor.handle(query);
 	}
 
 	/**
@@ -398,7 +401,7 @@ public class SaplQueryGateway implements QueryGateway {
 	public static class Builder {
 		private QueryBus                                                     queryBus;
 		private List<MessageDispatchInterceptor<? super QueryMessage<?, ?>>> dispatchInterceptors = new CopyOnWriteArrayList<>();
-
+		private AbstractSaplQueryInterceptor saplQueryInterceptor;
 		public Builder() {
 		}
 
@@ -418,6 +421,12 @@ public class SaplQueryGateway implements QueryGateway {
 			return this;
 		}
 
+		public SaplQueryGateway.Builder abstractSaplQueryInterceptor(AbstractSaplQueryInterceptor saplQueryInterceptor) {
+			BuilderUtils.assertNonNull(saplQueryInterceptor, "AbstractSaplQueryInterceptor may not be null");
+			this.saplQueryInterceptor = saplQueryInterceptor;
+			return this;
+		}
+
 		/**
 		 * Sets the {@link List} of {@link MessageDispatchInterceptor}s for
 		 * {@link QueryMessage}s. Are invoked when a query is being dispatched.
@@ -431,6 +440,8 @@ public class SaplQueryGateway implements QueryGateway {
 				MessageDispatchInterceptor<? super QueryMessage<?, ?>>... dispatchInterceptors) {
 			return this.dispatchInterceptors(Arrays.asList(dispatchInterceptors));
 		}
+
+
 
 		/**
 		 * Sets the {@link List} of {@link MessageDispatchInterceptor}s for
@@ -454,7 +465,7 @@ public class SaplQueryGateway implements QueryGateway {
 		 */
 		public SaplQueryGateway build() {
 			validate();
-			return new SaplQueryGateway(queryBus, dispatchInterceptors);
+			return new SaplQueryGateway(queryBus, dispatchInterceptors, saplQueryInterceptor);
 		}
 
 		/**
@@ -465,6 +476,7 @@ public class SaplQueryGateway implements QueryGateway {
 		 */
 		protected void validate() throws AxonConfigurationException {
 			assertNonNull(queryBus, "The QueryBus is a hard requirement and should be provided");
+			assertNonNull(saplQueryInterceptor, "The AbstractSaplQueryInterceptor is a hard requirement and should be provided");
 		}
 	}
 }
