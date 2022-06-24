@@ -16,12 +16,13 @@
 
 package io.sapl.axon.client.metadata;
 
+import org.axonframework.messaging.MessageDispatchInterceptor;
+import org.axonframework.queryhandling.QueryMessage;
+import org.axonframework.queryhandling.SubscriptionQueryMessage;
+
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
-
-import org.axonframework.messaging.MessageDispatchInterceptor;
-import org.axonframework.queryhandling.QueryMessage;
 
 /**
  * Abstract implementation of a {@link MessageDispatchInterceptor} that
@@ -30,23 +31,29 @@ import org.axonframework.queryhandling.QueryMessage;
  * Message, before the Query is dispatched.
  */
 
-public abstract class AbstractSaplQueryInterceptor implements MessageDispatchInterceptor<QueryMessage<?, ?>> {
+public abstract class AbstractSaplQueryInterceptor extends AbstractSaplMessageInterceptor<QueryMessage<?, ?>> {
 
-	protected abstract Map<String, Object> getSubjectMetadata();
+    @Override
+    public QueryMessage<?, ?> handle(QueryMessage<?, ?> message) {
+        var metadata = getSubjectMetadata();
+        if (metadata != null && !metadata.isEmpty())
+            message = message.andMetaData(metadata);
+        message = addUpdateResponseType(message);
 
-	@Override
-	public QueryMessage<?, ?> handle(QueryMessage<?, ?> message) {
-		var metadata = getSubjectMetadata();
-		if(metadata != null)
-			if (!metadata.isEmpty())
-				message = message.andMetaData(metadata);
-		
-		return MessageDispatchInterceptor.super.handle(message);
-	}
+        return super.handle(message);
+    }
 
-	@Override
-	public BiFunction<Integer, QueryMessage<?, ?>, QueryMessage<?, ?>> handle(
-			List<? extends QueryMessage<?, ?>> messages) {
-		return (i, m) -> m;
-	}
+    protected QueryMessage<?, ?> addUpdateResponseType(QueryMessage<?, ?> message) {
+        if (message instanceof SubscriptionQueryMessage<?, ?, ?>) {
+            var updateResponseType = ((SubscriptionQueryMessage<?, ?, ?>) message).getUpdateResponseType();
+            message = message.andMetaData(Map.of("updateResponseType", updateResponseType));
+        }
+        return message;
+    }
+
+    @Override
+    public BiFunction<Integer, QueryMessage<?, ?>, QueryMessage<?, ?>> handle(
+            List<? extends QueryMessage<?, ?>> messages) {
+        return (i, m) -> m;
+    }
 }

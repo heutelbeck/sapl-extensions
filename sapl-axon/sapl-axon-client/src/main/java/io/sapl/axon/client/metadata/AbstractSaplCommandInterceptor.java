@@ -16,12 +16,11 @@
 
 package io.sapl.axon.client.metadata;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
-
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
+
+import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * Abstract implementation of a {@link MessageDispatchInterceptor} that
@@ -30,23 +29,21 @@ import org.axonframework.messaging.MessageDispatchInterceptor;
  * Message, before the Command is dispatched.
  */
 
-public abstract class AbstractSaplCommandInterceptor implements MessageDispatchInterceptor<CommandMessage<?>> {
+public abstract class AbstractSaplCommandInterceptor extends AbstractSaplMessageInterceptor<CommandMessage<?>> {
 
-	protected abstract Map<String, Object> getSubjectMetadata();
 
-	@Override
-	public CommandMessage<?> handle(CommandMessage<?> message) {
-		var metadata = getSubjectMetadata();
-		if(metadata != null)
-			if (!metadata.isEmpty())
-				message = message.andMetaData(metadata);
+    @Override
+    public CommandMessage<?> handle(CommandMessage<?> message) {
+        var metadata = getSubjectMetadata();
+        if (metadata != null && !metadata.isEmpty())
+            message = message.andMetaData(metadata);
 
-		return MessageDispatchInterceptor.super.handle(message);
-	}
+        return super.handle(message);
+    }
 
-	@Override
-	public BiFunction<Integer, CommandMessage<?>, CommandMessage<?>> handle(
-			List<? extends CommandMessage<?>> messages) {
-		return (i, m) -> m;
-	}
+    @Override
+    public BiFunction<Integer, CommandMessage<?>, CommandMessage<?>> handle(
+            List<? extends CommandMessage<?>> messages) {
+        return (i, m) -> m;
+    }
 }

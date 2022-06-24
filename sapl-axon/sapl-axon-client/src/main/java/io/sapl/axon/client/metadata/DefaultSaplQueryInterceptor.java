@@ -16,14 +16,9 @@
 
 package io.sapl.axon.client.metadata;
 
-import java.util.Map;
-
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Default Implementation of {@link AbstractSaplQueryInterceptor}. It gets the
@@ -34,21 +29,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DefaultSaplQueryInterceptor extends AbstractSaplQueryInterceptor {
 
-	private final ObjectMapper mapper;
+    private final ObjectMapper mapper;
 
-	@Override
-	protected Map<String, Object> getSubjectMetadata() {
-		var authentication = SecurityContextHolder.getContext().getAuthentication();
-		Map<String,Object> metadata = Map.of();
-		if (authentication != null) {
-			ObjectNode subject = mapper.valueToTree(authentication);
-			subject.remove("credentials");
-			var principal = subject.get("principal");
-			if (principal instanceof ObjectNode)
-				((ObjectNode) principal).remove("password");
+    @Override
+    protected ObjectMapper getMapper() {
+        return mapper;
+    }
 
-			metadata = Map.of("subject", subject);
-		}
-		return metadata;
-	}
 }
