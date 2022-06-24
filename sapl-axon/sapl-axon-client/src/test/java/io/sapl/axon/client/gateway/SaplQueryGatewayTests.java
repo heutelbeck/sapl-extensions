@@ -16,8 +16,8 @@
 
 package io.sapl.axon.client.gateway;
 
-import io.sapl.axon.client.exception.OriginalUpdateTypeRemoved;
-import io.sapl.axon.client.exception.RecoverableException;
+import io.sapl.axon.client.exceptions.OriginalUpdateTypeRemoved;
+import io.sapl.axon.client.exceptions.RecoverableException;
 import io.sapl.axon.client.metadata.AbstractSaplQueryInterceptor;
 import io.sapl.axon.client.recoverable.RecoverableResponse;
 import org.axonframework.messaging.GenericMessage;

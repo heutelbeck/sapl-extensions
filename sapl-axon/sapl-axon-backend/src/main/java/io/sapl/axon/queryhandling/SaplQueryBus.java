@@ -75,7 +75,7 @@ import org.axonframework.queryhandling.UpdateHandlerRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.sapl.axon.client.exception.OriginalUpdateTypeRemoved;
+import io.sapl.axon.client.exceptions.OriginalUpdateTypeRemoved;
 import io.sapl.axon.client.recoverable.RecoverableResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

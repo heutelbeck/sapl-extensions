@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package io.sapl.axon.client.exception;
+package io.sapl.axon.client.exceptions;
 
 import lombok.experimental.StandardException;
 
 @StandardException
-public class RecoverableException extends RuntimeException {
+public class UpdateResponseTypeRemoved extends RuntimeException {
 
 }

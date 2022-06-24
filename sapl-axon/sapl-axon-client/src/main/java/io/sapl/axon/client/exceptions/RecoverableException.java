@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package io.sapl.axon.client.recoverable;
+package io.sapl.axon.client.exceptions;
 
-import io.sapl.axon.client.exceptions.RecoverableException;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import lombok.experimental.StandardException;
 
-@RequiredArgsConstructor
-@Value
-public class RecoverableResponse {
+@StandardException
+public class RecoverableException extends RuntimeException {
 
-    public static final String RECOVERABLE_UPDATE_TYPE_KEY = "recoverableUpdateType";
-
-    Object originalUpdateResponseTypePayload;
-    RecoverableException recoverableException;
 }

@@ -16,7 +16,7 @@
 
 package io.sapl.axon.queryhandling;
 
-import io.sapl.axon.client.exception.RecoverableException;
+import io.sapl.axon.client.exceptions.RecoverableException;
 import io.sapl.axon.client.recoverable.RecoverableResponse;
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.MessageDispatchInterceptor;
