@@ -50,7 +50,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
-import io.sapl.axon.client.exception.RecoverableException;
+import io.sapl.axon.client.exceptions.RecoverableException;
 import io.sapl.axon.constraints.AxonConstraintHandlerBundle;
 import io.sapl.axon.constraints.ConstraintHandlerService;
 import io.sapl.axon.utilities.AuthorizationSubscriptionBuilderService;

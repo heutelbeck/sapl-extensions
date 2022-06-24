@@ -207,7 +207,6 @@ public class DefaultSAPLQueryHandlingMemberTests {
 
 	@Test
 	void when_SubscriptionQueryDeny_then_AccessDenied() throws Exception {
-
 		var executable = QueryProjection.class.getDeclaredMethod("handle");
 		var delegate = new AnnotatedMessageHandlingMember<QueryProjection>(executable, null, null, null);
 		when(pep.enforceSubscriptionQuery(any(SubscriptionQueryMessage.class), any(Annotation.class),any()))
@@ -215,11 +214,10 @@ public class DefaultSAPLQueryHandlingMemberTests {
 		DefaultSAPLQueryHandlingMember<QueryProjection> member = new DefaultSAPLQueryHandlingMember<>(delegate, pep);
 		SubscriptionQueryMessage<TestQuery, ?, ?> query = new GenericSubscriptionQueryMessage<>(payload,
 				ResponseTypes.instanceOf(QueryResponse.class), ResponseTypes.instanceOf(QueryResponse.class));
-		doReturn(query).when(pep).getCurrentSubscriptionQueryMessage(anyString());
+		doReturn(true).when(pep).containsSubscriptionQueryMessageIdentifier(anyString());
 		Exception exception = assertThrows(Exception.class,
 				() -> ((CompletableFuture<?>) member.handle(query, new QueryProjection())).get());
 		assertEquals(PDP_DENY, exception.getCause().getMessage());
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -228,7 +226,7 @@ public class DefaultSAPLQueryHandlingMemberTests {
 		var executable = QueryProjection.class.getDeclaredMethod("handle");
 		SubscriptionQueryMessage<TestQuery, QueryResponse, QueryResponse> query = new GenericSubscriptionQueryMessage<>(payload,
 				ResponseTypes.instanceOf(QueryResponse.class), ResponseTypes.instanceOf(QueryResponse.class));
-		doReturn(query).when(pep).getCurrentSubscriptionQueryMessage(anyString());
+		doReturn(true).when(pep).containsSubscriptionQueryMessageIdentifier(anyString());
 		var bundle = new AxonConstraintHandlerBundle<TestQuery,QueryResponse,SubscriptionQueryMessage<TestQuery,QueryResponse,QueryResponse>>();
 
 		var delegate = new AnnotatedMessageHandlingMember<QueryProjection>(executable, null, null, null);
@@ -259,7 +257,7 @@ public class DefaultSAPLQueryHandlingMemberTests {
 		var member = new DefaultSAPLQueryHandlingMember<>(delegate, pep);
 		SubscriptionQueryMessage<TestQuery, ?, ?> query = new GenericSubscriptionQueryMessage<>(payload,
 				ResponseTypes.instanceOf(QueryResponse.class), ResponseTypes.instanceOf(QueryResponse.class));
-		doReturn(query).when(pep).getCurrentSubscriptionQueryMessage(anyString());
+		doReturn(true).when(pep).containsSubscriptionQueryMessageIdentifier(anyString());
 		Object comp = member.handle(query,
 				new QueryProjectionMissingAnnotation());
 		assertEquals("QueryResponse", comp.getClass().getSimpleName());
@@ -273,7 +271,7 @@ public class DefaultSAPLQueryHandlingMemberTests {
 		var member = new DefaultSAPLQueryHandlingMember<>(delegate, pep);
 		SubscriptionQueryMessage<TestQuery, ?, ?> query = new GenericSubscriptionQueryMessage<>(payload,
 				ResponseTypes.instanceOf(QueryResponse.class), ResponseTypes.instanceOf(QueryResponse.class));
-		doReturn(query).when(pep).getCurrentSubscriptionQueryMessage(anyString());
+		doReturn(true).when(pep).containsSubscriptionQueryMessageIdentifier(anyString());
 		Exception e = assertThrows(Exception.class, () -> member.handle(query, new QuerySubscriptionProjection()));
 		assertEquals("Multiple Subscription Annotations are not allowed", e.getMessage());
 	}

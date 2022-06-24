@@ -210,12 +210,12 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
             removeHandler = createRemoveHandler(originalSubscriptionQuery);
             updateHandlers.put(originalSubscriptionQuery, sinksManyWrapper);
 
-            policyEnforcementPoint.addSubscriptionQueryMessage(originalSubscriptionQuery);
+            policyEnforcementPoint.addSubscriptionQueryMessageIdentifier(originalSubscriptionQuery);
         } else {
             removeHandler = createRemoveHandler(query);
             updateHandlers.put(query, sinksManyWrapper);
 
-            policyEnforcementPoint.addSubscriptionQueryMessage(query);
+            policyEnforcementPoint.addSubscriptionQueryMessageIdentifier(query);
         }
 
         Registration registration = () -> {

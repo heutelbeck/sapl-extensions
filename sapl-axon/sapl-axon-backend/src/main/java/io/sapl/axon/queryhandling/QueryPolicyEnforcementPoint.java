@@ -40,7 +40,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
-import io.sapl.axon.client.exception.RecoverableException;
+import io.sapl.axon.client.exceptions.RecoverableException;
 import io.sapl.axon.constraints.AxonConstraintHandlerBundle;
 import io.sapl.axon.constraints.ConstraintHandlerService;
 import io.sapl.axon.utilities.AuthorizationSubscriptionBuilderService;
@@ -80,7 +80,7 @@ public class QueryPolicyEnforcementPoint {
 	private final Set<String>                                      unenforcedMessages = ConcurrentHashMap.newKeySet();
 	private static final String                                    DENY               = "Denied by PDP";
 	// important for Axon-Server usage
-	private final ConcurrentHashMap<String, SubscriptionQueryMessage<?, ?, ?>> currentSubscriptionQueryMessages = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, Void> currentSubscriptionQueryMessageIdentifiers = new ConcurrentHashMap<>();
 
 	/**
 	 * Executes the Method getAuthorizationDecisionFuture to get the Authorization
@@ -166,7 +166,7 @@ public class QueryPolicyEnforcementPoint {
 	 * @return completableFuture, containing the ConstraintHandlerBundle and the
 	 *         Message with executed ConstraintHandler for the message
 	 */
-	public <Q, R, U extends SubscriptionQueryMessage<Q, R, ?>>
+	public <Q, R, U extends QueryMessage<Q, R>>
 			CompletableFuture<Tuple3<AxonConstraintHandlerBundle<Q, R, U>, U, Optional<JsonNode>>>
 			enforceSubscriptionQuery(
 					U queryMessage,
@@ -318,7 +318,7 @@ public class QueryPolicyEnforcementPoint {
 		currentAnnotations.remove(messageIdentifier);
 		currentDecisions.remove(messageIdentifier);
 		unenforcedMessages.remove(messageIdentifier);
-		currentSubscriptionQueryMessages.remove(messageIdentifier);
+		currentSubscriptionQueryMessageIdentifiers.remove(messageIdentifier);
 		disposeDecision(messageIdentifier);
 	}
 
@@ -419,9 +419,9 @@ public class QueryPolicyEnforcementPoint {
 	 * 
 	 * @param subscriptionQueryMessage Representation of a SubscriptionQueryMessage
 	 */
-	public void addSubscriptionQueryMessage(SubscriptionQueryMessage<?, ?, ?> subscriptionQueryMessage) {
-		currentSubscriptionQueryMessages.putIfAbsent(subscriptionQueryMessage.getIdentifier(),
-				subscriptionQueryMessage);
+	public void addSubscriptionQueryMessageIdentifier(SubscriptionQueryMessage<?, ?, ?> subscriptionQueryMessage) {
+		currentSubscriptionQueryMessageIdentifiers.putIfAbsent(subscriptionQueryMessage.getIdentifier(),
+				null);
 	}
 
 	/**
@@ -430,8 +430,8 @@ public class QueryPolicyEnforcementPoint {
 	 * @param messageIdentifier Unique Identifier of the SubscriptionQueryMessage
 	 * @return the SubscriptionQueryMessage which is looking for
 	 */
-	public SubscriptionQueryMessage<?, ?, ?> getCurrentSubscriptionQueryMessage(String messageIdentifier) {
-		return currentSubscriptionQueryMessages.get(messageIdentifier);
+	public boolean containsSubscriptionQueryMessageIdentifier(String messageIdentifier) {
+		return currentSubscriptionQueryMessageIdentifiers.containsKey(messageIdentifier);
 	}
 
 }

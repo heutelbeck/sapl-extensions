@@ -20,7 +20,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Executable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import org.axonframework.messaging.Message;
@@ -52,132 +51,146 @@ import reactor.util.function.Tuples;
  * {@link EnforceRecoverableIfDenied} annotations for SubscriptionQueries
  * will be enforced and the Constraints will be handled for the initial query.
  * Extend this class to provide additional functionality to the delegate member.
- *
  */
 
 abstract public class AbstractSAPLQueryHandlingMember<T> extends WrappedMessageHandlingMember<T> {
 
-	private final MessageHandlingMember<T> delegate;
-	private final QueryPolicyEnforcementPoint pep;
+    private final MessageHandlingMember<T> delegate;
+    private final QueryPolicyEnforcementPoint pep;
 
-	protected AbstractSAPLQueryHandlingMember(MessageHandlingMember<T> delegate, QueryPolicyEnforcementPoint pep) {
-		super(delegate);
-		this.delegate = delegate;
-		this.pep = pep;
-	}
+    protected AbstractSAPLQueryHandlingMember(MessageHandlingMember<T> delegate, QueryPolicyEnforcementPoint pep) {
+        super(delegate);
+        this.delegate = delegate;
+        this.pep = pep;
+    }
 
-	/**
-	 * Distinguishes between SingleQueryMessage and SubscriptionQueryMessage and
-	 * returns the appropriate function to handle the Query. Throws Exception in case
-	 * of no QueryMessage.
-	 */
-	@Override
-	public Object handle(Message<?> message, T source) throws Exception {
-		// Check if the Message is a QueryMessage
-		if (!(message instanceof QueryMessage<?, ?>))
-			throw new Exception("Message must be a QueryMessage");
-		var executable = delegate.unwrap(Executable.class).orElseThrow();
+    /**
+     * Distinguishes between SingleQueryMessage and SubscriptionQueryMessage and
+     * returns the appropriate function to handle the Query. Throws Exception in case
+     * of no QueryMessage.
+     */
+    @Override
+    public Object handle(Message<?> message, T source) throws Exception {
+        // Check if the Message is a QueryMessage
+        if (!(message instanceof QueryMessage<?, ?>))
+            throw new Exception("Message must be a QueryMessage");
+        var executable = delegate.unwrap(Executable.class).orElseThrow();
 
-		var existingSubscriptionQueryMessage = pep.getCurrentSubscriptionQueryMessage(message.getIdentifier());
-		if (Objects.nonNull(existingSubscriptionQueryMessage))
-			return handleSubscriptionQuery(existingSubscriptionQueryMessage, source, executable);
-		return handleQuery((QueryMessage<?, ?>) message, source, executable);
-	}
+    if(pep.containsSubscriptionQueryMessageIdentifier(message.getIdentifier())){
+        return handleSubscriptionQuery((QueryMessage<?, ?>)message, source, executable);
+    }
 
-	@SuppressWarnings("unchecked")
-	//Cast to R, because R is the ReturnType of a QueryMessage and super.handle executes the Query and returns the result
-	private <R> R handleQueryStage(QueryMessage<?, R> message, T source) {
-		try {
-			return (R) super.handle(message, source);
-		} catch (Exception e) {
-			throw new QueryExecutionException("Failure handling Query.", e);
-		}
-	}
+      /*  var existingSubscriptionQueryMessage = pep.getCurrentSubscriptionQueryMessage(message.getIdentifier());
+        if (Objects.nonNull(existingSubscriptionQueryMessage)) {
+            if (message instanceof SubscriptionQueryMessage<?, ?, ?>) {
+                return handleSubscriptionQuery((SubscriptionQueryMessage<?, ?, ?>) message, source, executable);
+            } else {
+                // for AxonServer usage:
+                // SubscriptionQueryMessage never walks through the WrappedMessageHandlingMember.
+                // AxonServer only uses QueryMessage (not an SubscriptionQueryMessage) when
+                // calling the query method in AxonServerQueryBus (via LocalSegmentAdapter).
+                // The inner class LocalSegmentAdapter (implements QueryHandler) of
+                // AxonServerQueryBus calls the UpdateEmitter in the registerSubscriptionQuery method.
+                return handleSubscriptionQuery(message, source, executable);
+            }
+        }*/
+        return handleQuery((QueryMessage<?, ?>) message, source, executable);
+    }
 
-	private <Q, R, U extends SubscriptionQueryMessage<Q, R, ?>> Object handleSubscriptionQuery(U message, T source,
-			Executable executable) throws Exception {
-		var annotation = getSubscriptionQueryAnnotations(executable.getDeclaredAnnotations());
-		if (annotation == null) {
-			pep.addUnenforcedMessage(message.getIdentifier());
-			return handleQueryStage(message, source);
-		}
+    @SuppressWarnings("unchecked")
+    //Cast to R, because R is the ReturnType of a QueryMessage and super.handle executes the Query and returns the result
+    private <R> R handleQueryStage(QueryMessage<?, R> message, T source) {
+        try {
+            return (R) super.handle(message, source);
+        } catch (Exception e) {
+            throw new QueryExecutionException("Failure handling Query.", e);
+        }
+    }
 
-		// enforceSubscriptionQuery handles Enforce and 1st ConstraintHandlingPhase,
-		// returns Tuple
-		// Handle Query, returns Future Object
-		// Enforce Constraints on Result, returns Future Object
+    private <Q, R, U extends QueryMessage<Q, R>> Object handleSubscriptionQuery(U message, T source,
+                                                                                               Executable executable) throws Exception {
+        var annotation = getSubscriptionQueryAnnotations(executable.getDeclaredAnnotations());
+        if (annotation == null) {
+            pep.addUnenforcedMessage(message.getIdentifier());
+            return handleQueryStage(message, source);
+        }
 
-		var preHandleStage = pep.enforceSubscriptionQuery(message, annotation, executable);
+        // enforceSubscriptionQuery handles Enforce and 1st ConstraintHandlingPhase,
+        // returns Tuple
+        // Handle Query, returns Future Object
+        // Enforce Constraints on Result, returns Future Object
 
-		CompletableFuture<R> handleStage = preHandleStage.thenApply(tuple -> handleQueryStage(tuple.getT2(), source));
+        var preHandleStage = pep.enforceSubscriptionQuery(message, annotation, executable);
 
-		return handleStage.thenCombine(preHandleStage, (object, tuple) -> pep.executeResultHandling(object,
-				tuple.getT1(), tuple.getT3(), message.getResponseType().responseMessagePayloadType()));
+        CompletableFuture<R> handleStage = preHandleStage.thenApply(tuple -> handleQueryStage(tuple.getT2(), source));
 
-	}
+        return handleStage.thenCombine(preHandleStage, (object, tuple) -> pep.executeResultHandling(object,
+                tuple.getT1(), tuple.getT3(), message.getResponseType().responseMessagePayloadType()));
 
-	private <Q, R, U extends QueryMessage<Q, R>> Object handleQuery(U message, T source, Executable executable) {
+    }
 
-		var annotations = getSingleQueryAnnotations(executable.getDeclaredAnnotations());
-		if (annotations.isEmpty())
-			return handleQueryStage(message, source);
+    private <Q, R, U extends QueryMessage<Q, R>> Object handleQuery(U message, T source, Executable executable) {
 
-		// PreEnforceQuery handles Enforce and 1st ConstraintHandlingPhase, returns
-		// Tuple
-		// Handle Query, returns Future Object
-		// Enforce Constraints on Result, returns Future Object
-		// Handle PostEnforce and enforce Constraints returns Future Object
-		CompletableFuture<R> handleObjFuture;
+        var annotations = getSingleQueryAnnotations(executable.getDeclaredAnnotations());
+        if (annotations.isEmpty())
+            return handleQueryStage(message, source);
 
-		var preEnforceAnnotation = annotations.stream()
-				.filter(annotation -> annotation.annotationType().isAssignableFrom(PreEnforce.class)).findFirst();
-		var postEnforcedAnnotation = annotations.stream()
-				.filter(annotation -> annotation.annotationType().isAssignableFrom(PostEnforce.class)).findFirst();
+        // PreEnforceQuery handles Enforce and 1st ConstraintHandlingPhase, returns
+        // Tuple
+        // Handle Query, returns Future Object
+        // Enforce Constraints on Result, returns Future Object
+        // Handle PostEnforce and enforce Constraints returns Future Object
+        CompletableFuture<R> handleObjFuture;
 
-		if (preEnforceAnnotation.isEmpty()) {
-			handleObjFuture = CompletableFuture.supplyAsync(() -> handleQueryStage(message, source));
-		} else {
-			var preEnforceStage = pep.preEnforceSingleQuery(message, preEnforceAnnotation.get(), executable);
+        var preEnforceAnnotation = annotations.stream()
+                .filter(annotation -> annotation.annotationType().isAssignableFrom(PreEnforce.class)).findFirst();
+        var postEnforcedAnnotation = annotations.stream()
+                .filter(annotation -> annotation.annotationType().isAssignableFrom(PostEnforce.class)).findFirst();
 
-			CompletableFuture<R> handleStage = preEnforceStage
-					.thenApply(tuple -> handleQueryStage(tuple.getT2(), source));
+        if (preEnforceAnnotation.isEmpty()) {
+            handleObjFuture = CompletableFuture.supplyAsync(() -> handleQueryStage(message, source));
+        } else {
+            var preEnforceStage = pep.preEnforceSingleQuery(message, preEnforceAnnotation.get(), executable);
 
-			handleObjFuture = handleStage.thenCombine(preEnforceStage,
-					(object, tuple2) -> pep.executeResultHandling(object, tuple2.getT1(), tuple2.getT3(),
-							message.getResponseType().responseMessagePayloadType()));
+            CompletableFuture<R> handleStage = preEnforceStage
+                    .thenApply(tuple -> handleQueryStage(tuple.getT2(), source));
 
-			if (postEnforcedAnnotation.isEmpty())
-				return handleObjFuture;
-			CompletableFuture<Tuple2<U, R>> combineFuturesForCompose = handleObjFuture.thenCombine(preEnforceStage,
-					(handleObj, tuple) -> Tuples.of(tuple.getT2(), handleObj));
-			return combineFuturesForCompose.thenCompose(tuple2 -> pep.postEnforceSingleQuery(tuple2.getT1(),
-					tuple2.getT2(), postEnforcedAnnotation.get(), executable));
-		}
+            handleObjFuture = handleStage.thenCombine(preEnforceStage,
+                    (object, tuple2) -> pep.executeResultHandling(object, tuple2.getT1(), tuple2.getT3(),
+                            message.getResponseType().responseMessagePayloadType()));
 
-		return handleObjFuture.thenCompose(handleObj -> pep.postEnforceSingleQuery(message, handleObj,
-				postEnforcedAnnotation.orElseThrow(), executable));
-	}
+            if (postEnforcedAnnotation.isEmpty())
+                return handleObjFuture;
+            CompletableFuture<Tuple2<U, R>> combineFuturesForCompose = handleObjFuture.thenCombine(preEnforceStage,
+                    (handleObj, tuple) -> Tuples.of(tuple.getT2(), handleObj));
+            return combineFuturesForCompose.thenCompose(tuple2 -> pep.postEnforceSingleQuery(tuple2.getT1(),
+                    tuple2.getT2(), postEnforcedAnnotation.get(), executable));
+        }
 
-	private Annotation getSubscriptionQueryAnnotations(Annotation[] annotations) throws Exception {
+        return handleObjFuture.thenCompose(handleObj -> pep.postEnforceSingleQuery(message, handleObj,
+                postEnforcedAnnotation.orElseThrow(), executable));
+    }
 
-		Annotation annotation = null;
-		for (var currentAnnotation : annotations)
-			for (var clazz : Annotations.SUBSCRIPTION_ANNOTATIONS)
-				if (clazz.isAssignableFrom(currentAnnotation.getClass())) {
-					if (annotation != null)
-						throw new Exception("Multiple Subscription Annotations are not allowed");
-					annotation = currentAnnotation;
-				}
-		return annotation;
-	}
+    private Annotation getSubscriptionQueryAnnotations(Annotation[] annotations) throws Exception {
 
-	private List<Annotation> getSingleQueryAnnotations(Annotation[] annotations) {
-		List<Annotation> annotationList = new LinkedList<>();
-		for (var currentAnnotation : annotations)
-			for (var clazz : Annotations.SINGLE_ANNOTATIONS)
-				if (clazz.isAssignableFrom(currentAnnotation.getClass()))
-					annotationList.add(currentAnnotation);
-		return annotationList;
-	}
+        Annotation annotation = null;
+        for (var currentAnnotation : annotations)
+            for (var clazz : Annotations.SUBSCRIPTION_ANNOTATIONS)
+                if (clazz.isAssignableFrom(currentAnnotation.getClass())) {
+                    if (annotation != null)
+                        throw new Exception("Multiple Subscription Annotations are not allowed");
+                    annotation = currentAnnotation;
+                }
+        return annotation;
+    }
+
+    private List<Annotation> getSingleQueryAnnotations(Annotation[] annotations) {
+        List<Annotation> annotationList = new LinkedList<>();
+        for (var currentAnnotation : annotations)
+            for (var clazz : Annotations.SINGLE_ANNOTATIONS)
+                if (clazz.isAssignableFrom(currentAnnotation.getClass()))
+                    annotationList.add(currentAnnotation);
+        return annotationList;
+    }
 
 }

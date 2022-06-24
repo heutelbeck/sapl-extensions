@@ -16,6 +16,7 @@
 
 package io.sapl.axon.utilities;
 
+import static io.sapl.axon.utilities.SAPLPolicyKeys.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -80,8 +81,8 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 				() -> assertFalse(subscription.getAction().has("object")),
 				() -> assertEquals("TopLevelTestQuery", subscription.getResource().findValue("projectionClass").asText()),
 				() -> assertEquals("method", subscription.getResource().findValue("methodName").asText()),
-				() -> assertEquals("TestAggregate", subscription.getResource().findValue("responsetype").asText()),
-				() -> assertEquals("TopLevelTestQuery", subscription.getResource().findValue("queryname").asText()),
+				() -> assertEquals("TestAggregate", subscription.getResource().findValue("responseType").asText()),
+				() -> assertEquals("TopLevelTestQuery", subscription.getResource().findValue("queryName").asText()),
 				() -> assertEquals("Environment", subscription.getEnvironment().asText())
 				);
 	}
@@ -102,11 +103,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 				() -> assertEquals("TestQueryWithSpELAnnotation", subscription.getAction().findValue("name").asText()),
 				() -> assertTrue(subscription.getAction().has("metadata")),
 				() -> assertFalse(subscription.getAction().has("object")),
-				() -> assertEquals("TestQueryWithSpELAnnotation", subscription.getResource().findValue("projectionClass").asText()),
-				() -> assertEquals("AuthorizationSubscriptionBuilderServiceTests", subscription.getResource().findValue("classname").asText()),
-				() -> assertEquals("method", subscription.getResource().findValue("methodName").asText()),
-				() -> assertEquals("TestAggregate", subscription.getResource().findValue("responsetype").asText()),
-				() -> assertEquals("TestQueryWithSpELAnnotation", subscription.getResource().findValue("queryname").asText()),
+				() -> assertEquals("TestQueryWithSpELAnnotation", subscription.getResource().findValue(PROJECTION_CLASS).asText()),
+				() -> assertEquals("AuthorizationSubscriptionBuilderServiceTests", subscription.getResource().findValue(CLASS_NAME).asText()),
+				() -> assertEquals("method", subscription.getResource().findValue(METHOD_NAME).asText()),
+				() -> assertEquals("TestAggregate", subscription.getResource().findValue(RESPONSE_TYPE).asText()),
+				() -> assertEquals("TestQueryWithSpELAnnotation", subscription.getResource().findValue(QUERY_NAME).asText()),
 				() -> assertTrue(subscription.getSubject().isEmpty())
 				);
 	}
@@ -124,9 +125,9 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 				() -> assertNotNull(subscription),
 				() -> assertTrue(subscription.getSubject().isNull()),
 				() -> assertEquals("TestQueryWithoutAnnotation", subscription.getAction().findValue("name").asText()),
-				() -> assertEquals("TestAggregate", subscription.getResource().findValue("responsetype").asText()),
-				() -> assertEquals("TestQueryWithoutAnnotation", subscription.getResource().findValue("queryname").asText()),
-				() -> assertEquals("AuthorizationSubscriptionBuilderServiceTests", subscription.getResource().findValue("classname").asText()),
+				() -> assertEquals("TestAggregate", subscription.getResource().findValue(RESPONSE_TYPE).asText()),
+				() -> assertEquals("TestQueryWithoutAnnotation", subscription.getResource().findValue(QUERY_NAME).asText()),
+				() -> assertEquals("AuthorizationSubscriptionBuilderServiceTests", subscription.getResource().findValue(CLASS_NAME).asText()),
 				() -> assertNull(subscription.getEnvironment()),
 				() -> assertEquals(mapper.valueToTree(payload), subscription.getResource().findValue("queryResult"))
 		);

@@ -42,6 +42,8 @@ import java.lang.reflect.Executable;
 import java.util.Map;
 import java.util.Optional;
 
+import static io.sapl.axon.utilities.SAPLPolicyKeys.*;
+
 /**
  * The AuthorizationSubscriptionBuilderService Object offers methods to get the
  * AuthorizationSubscription for Query Messages and for Command Messages.
@@ -51,10 +53,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthorizationSubscriptionBuilderService {
 
-    private static final String ENVIRONMENT = "environment";
-    private static final String RESOURCE = "resource";
-    private static final String ACTION = "action";
-    private static final String SUBJECT = "subject";
+
+
     private final ObjectMapper mapper;
 
     /**
@@ -121,7 +121,6 @@ public class AuthorizationSubscriptionBuilderService {
     private JsonNode retrieveSubject(Message<?> message, Map<String, Object> values) {
         var subjectNode = mapper.createObjectNode();
         var subject = values.get(SUBJECT).toString();
-
         if (!subject.isBlank()) {
             var expr = setUpExpression(subject).getValue();
             if (expr != null)
@@ -165,27 +164,26 @@ public class AuthorizationSubscriptionBuilderService {
                 resourceNode.put(RESOURCE, expr.toString());
         }
 
-        queryResult.ifPresent(result -> resourceNode.set("queryResult", mapper.valueToTree(result)));
+        queryResult.ifPresent(result -> resourceNode.set(QUERY_RESULT, mapper.valueToTree(result)));
 
         var responseType = message.getResponseType().getExpectedResponseType().getSimpleName();
 
-        resourceNode.put("projectionClass", executable.getDeclaringClass().getSimpleName());
-        resourceNode.put("methodName", executable.getName());
-        resourceNode.put("responseType", responseType);
-        resourceNode.put("queryName", message.getPayloadType().getSimpleName());
+        resourceNode.put(PROJECTION_CLASS, executable.getDeclaringClass().getSimpleName());
+        resourceNode.put(METHOD_NAME, executable.getName());
+        resourceNode.put(RESPONSE_TYPE, responseType);
+        resourceNode.put(QUERY_NAME, message.getPayloadType().getSimpleName());
 
-        var isSubscriptionQuery = message.getMetaData().containsKey("updateResponseType");
+        var isSubscriptionQuery = message.getMetaData().containsKey(UPDATE_RESPONSE_TYPE);
 
         if (isSubscriptionQuery){
-            var updateResponseType = ((ResponseType<?>) message.getMetaData().get("updateResponseType")).getExpectedResponseType().getSimpleName();
-            resourceNode.put("updateResponseType", updateResponseType);
-            resourceNode.put("sameResponseTypes", responseType.equals(updateResponseType));
+            var updateResponseType = ((ResponseType<?>) message.getMetaData().get(UPDATE_RESPONSE_TYPE)).getExpectedResponseType().getSimpleName();
+            resourceNode.put(UPDATE_RESPONSE_TYPE, updateResponseType);
+            resourceNode.put(SAME_RESPONSE_TYPE, responseType.equals(updateResponseType));
         }
-        resourceNode.put("isSubscriptionQuery",isSubscriptionQuery);
+        resourceNode.put(IS_SUBSCRIPTION_QUERY,isSubscriptionQuery);
 
         if (message.getPayloadType().getEnclosingClass() != null)
-            resourceNode.put("classname", message.getPayloadType().getEnclosingClass().getSimpleName());
-
+            resourceNode.put(CLASS_NAME, message.getPayloadType().getEnclosingClass().getSimpleName());
         return resourceNode;
     }
 

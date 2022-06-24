@@ -357,7 +357,7 @@ class ConstraintHandlerServiceTests {
         var highPriorityProvider = spy(new AxonRunnableConstraintHandlerProvider() {
             @Override
             public int getPriority() {
-                return 100;
+                return 1;
             }
 
             @Override
@@ -383,7 +383,7 @@ class ConstraintHandlerServiceTests {
         var lowPriorityProvider = spy(new AxonRunnableConstraintHandlerProvider() {
             @Override
             public int getPriority() {
-                return 1;
+                return 100;
             }
 
             @Override
