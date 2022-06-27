@@ -123,6 +123,9 @@ public class SaplQueryGateway implements QueryGateway {
 
         GenericQueryMessage<?, R> queryMessage = new GenericQueryMessage<>(GenericMessage.asMessage(query), queryName,
                 responseType);
+
+        registerBusDispatchInterceptor();
+
         return this.queryBus.scatterGather(this.processInterceptors(queryMessage), timeout, timeUnit)
                 .map(Message::getPayload);
     }
@@ -141,6 +144,9 @@ public class SaplQueryGateway implements QueryGateway {
         SubscriptionQueryMessage<?, I, U> interceptedQuery = this
                 .getSubscriptionQueryMessage(queryName, query,
                         initialResponseType, updateResponseType);
+
+        registerBusDispatchInterceptor();
+
         SubscriptionQueryResult<QueryResponseMessage<I>, SubscriptionQueryUpdateMessage<U>> result = this.queryBus
                 .subscriptionQuery(interceptedQuery, backpressure, updateBufferSize);
         return this.getSubscriptionQueryResult(result);
