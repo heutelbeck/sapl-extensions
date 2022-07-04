@@ -51,9 +51,5 @@ public abstract class AbstractSaplQueryInterceptor extends AbstractSaplMessageIn
         return message;
     }
 
-    @Override
-    public BiFunction<Integer, QueryMessage<?, ?>, QueryMessage<?, ?>> handle(
-            List<? extends QueryMessage<?, ?>> messages) {
-        return (i, m) -> m;
-    }
+
 }

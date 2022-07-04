@@ -17,6 +17,7 @@
 package io.sapl.axon.queryhandling;
 
 import io.sapl.axon.client.exceptions.RecoverableException;
+import io.sapl.axon.client.exceptions.UpdateResponseTypeRemoved;
 import io.sapl.axon.client.recoverable.RecoverableResponse;
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.MessageDispatchInterceptor;
@@ -263,6 +264,14 @@ public class SaplQueryUpdateEmitterTests {
                 .expectNextCount(5)
                 .then(() -> testSubject.complete(q -> true)).verifyComplete();
 
+    }
+
+    @Test
+    void when_updateResponseTypeMissing_then_returnErrorFlux() {
+        SubscriptionQueryMessage<String, List<String>, String> subQueryMessage = subscriptionQueryMessage.withMetaData(Map.of());
+        UpdateHandlerRegistration<Object> result = testSubject
+                .registerUpdateHandler(subQueryMessage, 1024);
+        StepVerifier.create(result.getUpdates()).expectError(UpdateResponseTypeRemoved.class).verify();
     }
 
     @Test

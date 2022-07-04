@@ -36,6 +36,7 @@ import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 import org.axonframework.queryhandling.GenericQueryMessage;
+import org.axonframework.queryhandling.GenericSubscriptionQueryMessage;
 import org.axonframework.queryhandling.QueryHandler;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 
 	private static final String AGGREGATE_TYPE = Constants.aggregateType.name();
 	private static final String AGGREGATE_IDENTIFIER = Constants.aggregateIdentifier.name();
-	
+
 	private final ObjectMapper mapper = new ObjectMapper();
 	private final AuthorizationSubscriptionBuilderService service = new AuthorizationSubscriptionBuilderService(mapper);
 
@@ -73,7 +74,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var annotation = method.getAnnotation(PreEnforce.class);
 		var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation,method, Optional.empty());
 		assertAll(
-				() -> assertNotNull(subscription), 
+				() -> assertNotNull(subscription),
 				() -> assertEquals("Subject", subscription.getSubject().findValue("name").asText()),
 				() -> assertEquals("Action", subscription.getAction().findValue("'Action'").asText()),
 				() -> assertEquals("TopLevelTestQuery", subscription.getAction().findValue("name").asText()),
@@ -86,7 +87,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 				() -> assertEquals("Environment", subscription.getEnvironment().asText())
 				);
 	}
-	
+
 	@Test
 	public void when_PreEnforceAnnotatedQueryWithSpELNull_then_constructAuthorizationSubscriptionForQuery()
 			throws NoSuchMethodException, SecurityException {
@@ -97,7 +98,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 
 		var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation,method, Optional.of(payload));
 		assertAll(
-				() -> assertNotNull(subscription), 
+				() -> assertNotNull(subscription),
 				() -> assertTrue(subscription.getSubject().isEmpty()),
 				() -> assertTrue(subscription.getAction().findValue("null").isEmpty()),
 				() -> assertEquals("TestQueryWithSpELAnnotation", subscription.getAction().findValue("name").asText()),
@@ -133,6 +134,52 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		);
 	}
 
+	@Test
+	public void when_SubscriptionQuery_Then_Resource_Contains_UpdateResponseType() throws NoSuchMethodException {
+		var payload = new TestQueryWithoutAnnotation("testString", 42);
+		var query = new GenericSubscriptionQueryMessage<>(payload, ResponseTypes.instanceOf(TestAggregate.class),ResponseTypes.instanceOf(String.class));
+		query = query.andMetaData(Map.of(UPDATE_RESPONSE_TYPE,query.getUpdateResponseType()));
+
+		var method = TestQueryWithoutAnnotation.class.getDeclaredMethod("method");
+		var annotation = method.getAnnotation(PostEnforce.class);
+		var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation,method, Optional.of(payload));
+		assertAll(
+				() -> assertNotNull(subscription),
+				() -> assertTrue(subscription.getSubject().isNull()),
+				() -> assertEquals("TestQueryWithoutAnnotation", subscription.getAction().findValue("name").asText()),
+				() -> assertEquals("TestAggregate", subscription.getResource().findValue(RESPONSE_TYPE).asText()),
+				() -> assertEquals("String", subscription.getResource().findValue(UPDATE_RESPONSE_TYPE).asText()),
+                () -> assertEquals("false", subscription.getResource().findValue(SAME_RESPONSE_TYPE).asText()),
+				() -> assertEquals("TestQueryWithoutAnnotation", subscription.getResource().findValue(QUERY_NAME).asText()),
+				() -> assertEquals("AuthorizationSubscriptionBuilderServiceTests", subscription.getResource().findValue(CLASS_NAME).asText()),
+				() -> assertNull(subscription.getEnvironment()),
+				() -> assertEquals(mapper.valueToTree(payload), subscription.getResource().findValue("queryResult"))
+		);
+	}
+
+	@Test
+	public void when_SubscriptionQueryWithSameResponseAndUpdateResponseType_Then_Resource_Contains_SameResponseTypeNode() throws NoSuchMethodException {
+        var payload = new TestQueryWithoutAnnotation("testString", 42);
+        var query = new GenericSubscriptionQueryMessage<>(payload, ResponseTypes.instanceOf(String.class),ResponseTypes.instanceOf(String.class));
+        query = query.andMetaData(Map.of(UPDATE_RESPONSE_TYPE,query.getUpdateResponseType()));
+
+        var method = TestQueryWithoutAnnotation.class.getDeclaredMethod("method");
+        var annotation = method.getAnnotation(PostEnforce.class);
+        var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation,method, Optional.of(payload));
+        assertAll(
+                () -> assertNotNull(subscription),
+                () -> assertTrue(subscription.getSubject().isNull()),
+                () -> assertEquals("TestQueryWithoutAnnotation", subscription.getAction().findValue("name").asText()),
+                () -> assertEquals("String", subscription.getResource().findValue(RESPONSE_TYPE).asText()),
+                () -> assertEquals("String", subscription.getResource().findValue(UPDATE_RESPONSE_TYPE).asText()),
+                () -> assertEquals("true", subscription.getResource().findValue(SAME_RESPONSE_TYPE).asText()),
+                () -> assertEquals("TestQueryWithoutAnnotation", subscription.getResource().findValue(QUERY_NAME).asText()),
+                () -> assertEquals("AuthorizationSubscriptionBuilderServiceTests", subscription.getResource().findValue(CLASS_NAME).asText()),
+                () -> assertNull(subscription.getEnvironment()),
+                () -> assertEquals(mapper.valueToTree(payload), subscription.getResource().findValue("queryResult"))
+        );
+	}
+
 	/**
 	 * Test of Method "constructAuthorizationSubscriptionForCommand"
 	 * with @PreEnforce Annotation Attributes without Action and Resource
@@ -156,7 +203,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 				() -> assertEquals("Environment", subscription.getEnvironment().asText())
 		);
 	}
-	
+
 	/**
 	 * Test of Method "constructAuthorizationSubscriptionForCommand"
 	 * with @PreEnforce Annotation Attributes with SpEL Action and Resource
@@ -208,7 +255,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 				() -> assertEquals("TestCommand", subscription.getAction().findValue("name").asText()),
 				() -> assertEquals("TestAggregateWithoutAnnotation",subscription.getResource().findValue(AGGREGATE_TYPE).asText()),
 				() -> assertEquals("test",subscription.getResource().findValue(AGGREGATE_IDENTIFIER).asText())
-				
+
 		);
 	}
 
@@ -222,7 +269,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var subscription = service.constructAuthorizationSubscriptionForCommand(message, target, delegate);
 		assertNull(subscription.getResource().findValue(AGGREGATE_TYPE));
 		}
-	
+
 	@Test
 	public void when_NoFields_and_constructAuthorizationSubscriptionForCommand_then_AggregateIdentifierNotAvailable()
 			throws NoSuchMethodException {
@@ -233,7 +280,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var subscription = service.constructAuthorizationSubscriptionForCommand(message, target, delegate);
 		assertNull(subscription.getResource().findValue(AGGREGATE_IDENTIFIER));
 		}
-	
+
 	@Test
 	public void when_NoTargetIdentifier_and_constructAuthorizationSubscriptionForCommand_then_AggregateIdentifierNotAvailable()
 			throws NoSuchMethodException {
@@ -244,7 +291,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var subscription = service.constructAuthorizationSubscriptionForCommand(message, target, delegate);
 		assertNull(subscription.getResource().findValue(AGGREGATE_IDENTIFIER));
 		}
-	
+
 
 	@Test
 	public void when_targetNull_then_constructAuthorizationSubscriptionForCommand()
@@ -256,7 +303,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var subscription = service.constructAuthorizationSubscriptionForCommand(message, target, delegate);
 		assertTrue(subscription.getResource().findValue(AGGREGATE_IDENTIFIER).isNull());
 	}
-	
+
 	@Test
 	public void when_PreEnforceAnnotatedCommandHandlerWithError_then_throwException()
 			throws NoSuchMethodException, SecurityException {
@@ -268,7 +315,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		Exception e = assertThrows(IllegalArgumentException.class, () -> service.constructAuthorizationSubscriptionForCommand(message, target, delegate));
 		assertTrue(e.getMessage().contains("Failed to evaluate expression"));
 	}
-	
+
 	@Test
 	public void when_PreEnforceAnnotatedWithSpELNull() throws NoSuchMethodException, SecurityException {
 		var message = new GenericCommandMessage<>(new TestCommand("test"));
@@ -285,7 +332,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 				() -> assertEquals("TestCommand", subscription.getAction().findValue("name").asText()),
 				() -> assertEquals("TestAggregateWithNull",subscription.getResource().findValue(AGGREGATE_TYPE).asText()),
 				() -> assertEquals("test",subscription.getResource().findValue(AGGREGATE_IDENTIFIER).asText())
-				
+
 		);
 	}
 
@@ -303,7 +350,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		public void method() {
 		}
 	}
-	
+
 	@Value
 	private static class TestQueryWithSpELAnnotation {
 
@@ -319,47 +366,47 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	@Aggregate
 	@NoArgsConstructor
 	private static class TestAggregate {
-		
+
 		@AggregateIdentifier
 		String testId;
-		
+
 		@Getter
 		@Setter
 		String testValue;
-		
+
 		@PreEnforce(action = "testId", resource = "testValue")
 		@CommandHandler
 		public void method() {
 		}
-		
+
 		@PreEnforce(action = "error")
 		@CommandHandler
 		public void method2() {
 		}
-		
+
 	}
-	
+
 	private static class NoAggregate {
 		@PreEnforce
 		@CommandHandler
 		public void method() {
 		}
 	}
-	
-	
-	
+
+
+
 	@Aggregate
 	@NoArgsConstructor
 	private static class TestAggregateWithoutAnnotation {
-		
+
 		@AggregateIdentifier
 		String testId;
-		
+
 		@PreEnforce
 		@CommandHandler
 		public void method() {
 		}
-		
+
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
@@ -373,16 +420,16 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		@TargetAggregateIdentifier
 		String testId;
 	}
-	
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	private static class TestCommandWithoutFields {
 	}
-	
+
 	@Value
 	private static class TestCommandWithoutIdentifier {
 		String testId;
 	}
-	
+
 	@Value
 	private static class TestCommand2 {
 		@TargetAggregateIdentifier
@@ -393,23 +440,23 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	@Aggregate
 	@NoArgsConstructor
 	private static class TestAggregateWithoutAction {
-		
+
 		@AggregateIdentifier
 		String testId;
-		
+
 		@CommandHandler
 		@PreEnforce(subject = "'Subject'", environment = "'Environment'")
 		public void method() {
 		}
 	}
-	
+
 	@Aggregate
 	@NoArgsConstructor
 	private static class TestAggregateWithNull {
-		
+
 		@AggregateIdentifier
 		String testId;
-		
+
 		@CommandHandler
 		@PreEnforce(subject = "null", environment = "null")
 		public void method() {

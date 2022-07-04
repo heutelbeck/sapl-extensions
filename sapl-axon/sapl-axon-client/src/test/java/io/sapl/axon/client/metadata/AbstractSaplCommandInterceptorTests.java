@@ -24,7 +24,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.axonframework.commandhandling.CommandMessage;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -33,12 +36,19 @@ import org.mockito.Mockito;
 
 
 public class AbstractSaplCommandInterceptorTests {
-	
+
+	static ObjectMapper objectMapper = new ObjectMapper();
+
 	@InjectMocks
-	AbstractSaplCommandInterceptor ab = mock(AbstractSaplCommandInterceptor.class, Mockito.CALLS_REAL_METHODS);
+	static AbstractSaplCommandInterceptor ab = mock(AbstractSaplCommandInterceptor.class, Mockito.CALLS_REAL_METHODS);
 	
 	@Mock
 	CommandMessage<?> CommandMessage = mock(CommandMessage.class);
+
+	@BeforeAll
+	static void setup_AbstractCommandInterceptor(){
+		when(ab.getMapper()).thenReturn(objectMapper);
+	}
 
 	@SuppressWarnings("unchecked")
 	@Test

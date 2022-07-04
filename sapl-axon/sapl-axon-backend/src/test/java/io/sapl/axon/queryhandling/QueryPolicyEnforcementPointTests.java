@@ -483,6 +483,7 @@ public class QueryPolicyEnforcementPointTests {
                 new AxonConstraintHandlerBundle<>(), Optional.empty(), null));
 	}
 
+
 	@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 	private static class TestPreQuery {
 		@EnforceTillDenied(subject = "'Subject'", action = "'Action'", resource = "'Resource'", environment = "'Environment'")

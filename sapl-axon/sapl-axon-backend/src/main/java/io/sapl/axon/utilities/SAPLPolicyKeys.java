@@ -1,7 +1,9 @@
 package io.sapl.axon.utilities;
 
+import lombok.Generated;
 import lombok.experimental.UtilityClass;
 
+@Generated
 @UtilityClass
 public class SAPLPolicyKeys {
     public static final String QUERY_RESULT = "queryResult";
