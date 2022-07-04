@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright Â© 2017-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package io.sapl.axon.client.metadata;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -24,48 +25,67 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
+import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.queryhandling.GenericSubscriptionQueryMessage;
 import org.axonframework.queryhandling.QueryMessage;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class AbstractSaplQueryInterceptorTests {
 
+    static ObjectMapper objectMapper = new ObjectMapper();
+
+    @InjectMocks
+    static AbstractSaplQueryInterceptor ab = mock(AbstractSaplQueryInterceptor.class, Mockito.CALLS_REAL_METHODS);
+
+    @Mock
+    QueryMessage<?, ?> QueryMessage = mock(QueryMessage.class);
+
+    @BeforeAll
+    static void setup_AbstractCommandInterceptor(){
+        when(ab.getMapper()).thenReturn(objectMapper);
+    }
 
 
-	@InjectMocks
-	AbstractSaplQueryInterceptor ab = mock(AbstractSaplQueryInterceptor.class, Mockito.CALLS_REAL_METHODS);
-	
-	@Mock
-	QueryMessage<?, ?> QueryMessage = mock(QueryMessage.class);
-	
-	
-	@SuppressWarnings("unchecked")
-	@Test
-	void when_HandleInvoked_Then_MetadataIsAdded() {
-		
-		Map<String, Object> subject = mock(Map.class);
-		when(ab.getSubjectMetadata()).thenReturn(subject);
-		
-		ab.handle(QueryMessage);
-		verify(QueryMessage).andMetaData(subject);
-	}
-	
-	@Test
-	void when_HandleInvokedReturnNull_Then_MetadataIsNotAdded() {
-		when(ab.getSubjectMetadata()).thenReturn(null);
-		
-		ab.handle(QueryMessage);
-		verify(QueryMessage,times(0)).andMetaData(any());
-	}
-	
-	@Test
-	void when_HandleInvokedReturnEmptyMap_Then_MetadataIsNotAdded() {
-		Map<String,Object> emptyMap = Map.of();
-		when(ab.getSubjectMetadata()).thenReturn(emptyMap);
-		
-		ab.handle(QueryMessage);
-		verify(QueryMessage,times(0)).andMetaData(any());
-	}
+    @SuppressWarnings("unchecked")
+    @Test
+    void when_HandleInvoked_Then_MetadataIsAdded() {
+
+        Map<String, Object> subject = mock(Map.class);
+        when(ab.getSubjectMetadata()).thenReturn(subject);
+
+        ab.handle(QueryMessage);
+        verify(QueryMessage).andMetaData(subject);
+    }
+
+    @Test
+    void when_HandleInvokedReturnNull_Then_MetadataIsNotAdded() {
+        when(ab.getSubjectMetadata()).thenReturn(null);
+
+        ab.handle(QueryMessage);
+        verify(QueryMessage,times(0)).andMetaData(any());
+    }
+
+    @Test
+    void when_HandleInvokedReturnEmptyMap_Then_MetadataIsNotAdded() {
+        Map<String,Object> emptyMap = Map.of();
+        when(ab.getSubjectMetadata()).thenReturn(emptyMap);
+
+        ab.handle(QueryMessage);
+        verify(QueryMessage,times(0)).andMetaData(any());
+    }
+
+    @Test
+    void when_addUpdateResponseType_Then_UpdateResponseTypeInMetadata() {
+        var updateRespnseType = ResponseTypes.instanceOf(String.class);
+        var subscriptionMessage = new GenericSubscriptionQueryMessage<>("payload", ResponseTypes.instanceOf(String.class),  updateRespnseType);
+        var message = ab.addUpdateResponseType(subscriptionMessage);
+        assertEquals(updateRespnseType, message.getMetaData().get("updateResponseType"));
+
+    }
 }
