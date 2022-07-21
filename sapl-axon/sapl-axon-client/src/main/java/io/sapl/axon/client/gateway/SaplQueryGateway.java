@@ -70,8 +70,10 @@ public class SaplQueryGateway implements QueryGateway {
 
 
     private void registerBusDispatchInterceptor() {
-        if (interceptorRegistered == null)
+        if (interceptorRegistered == null) {
+        	this.dispatchInterceptors.add(saplQueryInterceptor);
             interceptorRegistered = this.queryBus.registerDispatchInterceptor(saplQueryInterceptor);
+        }
     }
 
     /**
@@ -120,11 +122,10 @@ public class SaplQueryGateway implements QueryGateway {
             ResponseType<R> responseType,
             long timeout,
             TimeUnit timeUnit) {
+    	registerBusDispatchInterceptor();
 
         GenericQueryMessage<?, R> queryMessage = new GenericQueryMessage<>(GenericMessage.asMessage(query), queryName,
                 responseType);
-
-        registerBusDispatchInterceptor();
 
         return this.queryBus.scatterGather(this.processInterceptors(queryMessage), timeout, timeUnit)
                 .map(Message::getPayload);
@@ -141,11 +142,11 @@ public class SaplQueryGateway implements QueryGateway {
             ResponseType<U> updateResponseType,
             SubscriptionQueryBackpressure backpressure,
             int updateBufferSize) {
+    	registerBusDispatchInterceptor();
+    	
         SubscriptionQueryMessage<?, I, U> interceptedQuery = this
                 .getSubscriptionQueryMessage(queryName, query,
                         initialResponseType, updateResponseType);
-
-        registerBusDispatchInterceptor();
 
         SubscriptionQueryResult<QueryResponseMessage<I>, SubscriptionQueryUpdateMessage<U>> result = this.queryBus
                 .subscriptionQuery(interceptedQuery, backpressure, updateBufferSize);
@@ -158,11 +159,10 @@ public class SaplQueryGateway implements QueryGateway {
             ResponseType<I> initialResponseType,
             ResponseType<U> updateResponseType,
             int updateBufferSize) {
-        SubscriptionQueryMessage<?, I, U> interceptedQuery = this
-                .getSubscriptionQueryMessage(queryName, query,
+    	registerBusDispatchInterceptor();
+    	
+        SubscriptionQueryMessage<?, I, U> interceptedQuery = getSubscriptionQueryMessage(queryName, query,
                         initialResponseType, updateResponseType);
-
-        registerBusDispatchInterceptor();
 
         SubscriptionQueryResult<QueryResponseMessage<I>, SubscriptionQueryUpdateMessage<U>> result = this.queryBus
                 .subscriptionQuery(interceptedQuery, updateBufferSize);

@@ -190,8 +190,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
         if (!query.getMetaData().containsKey("updateResponseType")) {
             Flux<SubscriptionQueryUpdateMessage<U>> errorFlux = Flux.error(new UpdateResponseTypeRemoved("Metadata do not contain the necessary UpdateResponseType entry"));
-            return new UpdateHandlerRegistration<>(() -> true, errorFlux, () -> {
-            });
+            return new UpdateHandlerRegistration<>(() -> true, errorFlux, () -> { });
         }
 
         Sinks.Many<SubscriptionQueryUpdateMessage<U>> sink = Sinks.many().replay()

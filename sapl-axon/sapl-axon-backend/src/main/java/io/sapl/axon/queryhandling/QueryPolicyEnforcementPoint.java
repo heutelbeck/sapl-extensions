@@ -65,6 +65,8 @@ import reactor.util.function.Tuples;
 @Service
 @RequiredArgsConstructor
 public class QueryPolicyEnforcementPoint {
+	
+	private static final Object OBJECT = new Object();
 
 	private final PolicyDecisionPoint                     pdp;
 	private final AuthorizationSubscriptionBuilderService authorizationSubscriptionBuilderService;
@@ -80,7 +82,7 @@ public class QueryPolicyEnforcementPoint {
 	private final Set<String>                                      unenforcedMessages = ConcurrentHashMap.newKeySet();
 	private static final String                                    DENY               = "Denied by PDP";
 	// important for Axon-Server usage
-	private final ConcurrentHashMap<String, Void> currentSubscriptionQueryMessageIdentifiers = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, Object> currentSubscriptionQueryMessageIdentifiers = new ConcurrentHashMap<>();
 
 	/**
 	 * Executes the Method getAuthorizationDecisionFuture to get the Authorization
@@ -420,8 +422,7 @@ public class QueryPolicyEnforcementPoint {
 	 * @param subscriptionQueryMessage Representation of a SubscriptionQueryMessage
 	 */
 	public void addSubscriptionQueryMessageIdentifier(SubscriptionQueryMessage<?, ?, ?> subscriptionQueryMessage) {
-		currentSubscriptionQueryMessageIdentifiers.putIfAbsent(subscriptionQueryMessage.getIdentifier(),
-				null);
+		currentSubscriptionQueryMessageIdentifiers.putIfAbsent(subscriptionQueryMessage.getIdentifier(), OBJECT);
 	}
 
 	/**
