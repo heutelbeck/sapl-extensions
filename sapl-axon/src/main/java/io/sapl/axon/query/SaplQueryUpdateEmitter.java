@@ -42,6 +42,8 @@ import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.UpdateHandlerRegistration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.axon.annotations.EnforceDropUpdatesWhileDenied;
 import io.sapl.axon.annotations.EnforceRecoverableUpdatesIfDenied;
@@ -50,7 +52,6 @@ import io.sapl.axon.constraints.AxonConstraintHandlerService;
 import io.sapl.axon.query.updates.EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint;
 import io.sapl.axon.query.updates.EnforceRecoverableIfDeniedPolicyEnforcementPoint;
 import io.sapl.axon.query.updates.EnforceUpdatesTillDeniedPolicyEnforcementPoint;
-import io.sapl.spring.constraints.ConstraintEnforcementService;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
@@ -76,7 +77,6 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
 	private final MessageMonitor<? super SubscriptionQueryUpdateMessage<?>>                   updateMessageMonitor;
 	private final AxonConstraintHandlerService                                                constraintHandlerService;
-	private final ConstraintEnforcementService                                                constraintEnforcementService;
 	private final ConcurrentMap<SubscriptionQueryMessage<?, ?, ?>, QueryData<?>>              activeQueries        = new ConcurrentHashMap<>();
 	private final List<MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>>> dispatchInterceptors = new CopyOnWriteArrayList<>();
 
@@ -89,11 +89,9 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	 */
 	public SaplQueryUpdateEmitter(
 			Optional<MessageMonitor<? super SubscriptionQueryUpdateMessage<?>>> updateMessageMonitor,
-			AxonConstraintHandlerService constraintHandlerService,
-			ConstraintEnforcementService constraintEnforcementService) {
-		this.updateMessageMonitor         = updateMessageMonitor.orElseGet(() -> NoOpMessageMonitor.INSTANCE);
-		this.constraintHandlerService     = constraintHandlerService;
-		this.constraintEnforcementService = constraintEnforcementService;
+			AxonConstraintHandlerService constraintHandlerService) {
+		this.updateMessageMonitor     = updateMessageMonitor.orElseGet(() -> NoOpMessageMonitor.INSTANCE);
+		this.constraintHandlerService = constraintHandlerService;
 	}
 
 	/**
@@ -192,11 +190,11 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
 			if (authzConfig.getMode() == QueryAuthorizationMode.TILL_DENIED) {
 				return EnforceUpdatesTillDeniedPolicyEnforcementPoint.of(authzConfig.getDecisions(), updateMessageFlux,
-						constraintEnforcementService, query.getUpdateResponseType());
+						constraintHandlerService, query.getUpdateResponseType());
 			}
 			if (authzConfig.getMode() == QueryAuthorizationMode.DROP_WHILE_DENIED) {
 				return EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint.of(authzConfig.getDecisions(),
-						updateMessageFlux, constraintEnforcementService, query.getUpdateResponseType());
+						updateMessageFlux, constraintHandlerService, query.getUpdateResponseType());
 			}
 			if (authzConfig.getMode() == QueryAuthorizationMode.RECOVERABLE_IF_DENIED) {
 				var originalUpdateResponseType = (ResponseType<U>) query.getMetaData()
@@ -205,14 +203,14 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 					log.debug("Client requested access denied recoverability.");
 
 					return EnforceRecoverableIfDeniedPolicyEnforcementPoint.of(authzConfig.getDecisions(),
-							updateMessageFlux, constraintEnforcementService, originalUpdateResponseType);
+							updateMessageFlux, constraintHandlerService, originalUpdateResponseType);
 				}
 				log.debug(
 						"While handler supports recoverability, client did not request it. Fall back to TILL_DENIED enforcement. Requested: {}",
 						query.getUpdateResponseType().getExpectedResponseType().getSimpleName());
 
 				return EnforceUpdatesTillDeniedPolicyEnforcementPoint.of(authzConfig.getDecisions(), updateMessageFlux,
-						constraintEnforcementService, query.getUpdateResponseType());
+						constraintHandlerService, query.getUpdateResponseType());
 			}
 			return updateMessageFlux;
 		});

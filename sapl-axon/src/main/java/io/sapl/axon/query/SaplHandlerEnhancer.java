@@ -22,13 +22,10 @@ import org.axonframework.messaging.annotation.HandlerEnhancerDefinition;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
 import org.axonframework.queryhandling.annotation.QueryHandlingMember;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.axon.command.CommandPolicyEnforcementPoint;
 import io.sapl.axon.constraints.AxonConstraintHandlerService;
 import io.sapl.axon.subscriptions.AxonAuthorizationSubscriptionBuilderService;
-import io.sapl.spring.constraints.ConstraintEnforcementService;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -40,11 +37,9 @@ import lombok.RequiredArgsConstructor;
 public class SaplHandlerEnhancer implements HandlerEnhancerDefinition {
 
 	private final PolicyDecisionPoint                         pdp;
-	private final ConstraintEnforcementService                constraintEnforcementService;
 	private final AxonConstraintHandlerService                axonConstraintEnforcementService;
 	private final SaplQueryUpdateEmitter                      emitter;
 	private final AxonAuthorizationSubscriptionBuilderService subscriptionBuilder;
-	private final ObjectMapper                                mapper;
 
 	@Override
 	public <T> MessageHandlingMember<T> wrapHandler(MessageHandlingMember<T> original) {
@@ -56,8 +51,8 @@ public class SaplHandlerEnhancer implements HandlerEnhancerDefinition {
 		}
 
 		if (interfaces.contains(QueryHandlingMember.class)) {
-			return new QueryPolicyEnforcementPoint<>(original, pdp, constraintEnforcementService,
-					axonConstraintEnforcementService, emitter, subscriptionBuilder, mapper);
+			return new QueryPolicyEnforcementPoint<>(original, pdp, axonConstraintEnforcementService, emitter,
+					subscriptionBuilder);
 		}
 
 		return original;

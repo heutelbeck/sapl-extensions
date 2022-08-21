@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.sapl.axon.constraints;
+package io.sapl.axon.constraints.legacy.api;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -42,9 +42,8 @@ import org.springframework.security.access.AccessDeniedException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import io.sapl.axon.constraints.AxonConstraintHandlerService;
 import io.sapl.axon.constraints.api.AxonRunnableConstraintHandlerProvider;
-import io.sapl.axon.constraints.api.MessageConsumerConstraintHandlerProvider;
-import io.sapl.axon.constraints.api.MetaDataSupplierConstraintHandlerProvider;
 
 /**
  * The AxonConstraintHandlerBundle is used by the
@@ -61,8 +60,7 @@ import io.sapl.axon.constraints.api.MetaDataSupplierConstraintHandlerProvider;
 
 public class AxonConstraintHandlerBundle<T, R, U extends Message<T>> {
 
-	final List<Runnable> simpleRunnableHandlers = new LinkedList<>();
-
+	final List<Runnable>                 simpleRunnableHandlers        = new LinkedList<>();
 	final List<Supplier<Map<String, ?>>> addMetaDataHandlers           = new LinkedList<>();
 	final List<Consumer<U>>              messageConsumerHandlers       = new LinkedList<>();
 	final List<Function<T, T>>           messagePayloadMappingHandlers = new LinkedList<>();

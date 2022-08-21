@@ -19,8 +19,11 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
+import org.axonframework.messaging.Message;
+import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.axonframework.queryhandling.QueryBus;
 import org.axonframework.queryhandling.QueryHandler;
+import org.axonframework.queryhandling.QueryMessage;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
@@ -46,11 +49,17 @@ import io.sapl.axon.annotations.EnforceDropUpdatesWhileDenied;
 import io.sapl.axon.annotations.EnforceRecoverableUpdatesIfDenied;
 import io.sapl.axon.annotations.PostHandleEnforce;
 import io.sapl.axon.annotations.PreHandleEnforce;
-import io.sapl.axon.configuration.CommandAndQueryAuthenticationConfiguration;
+import io.sapl.axon.configuration.SaplAutoConfiguration;
 import io.sapl.axon.constraints.AxonConstraintHandlerService;
+import io.sapl.axon.constraints.api.AxonRunnableConstraintHandlerProvider;
+import io.sapl.axon.constraints.legacy.api.MessageConsumerConstraintHandlerProvider;
+import io.sapl.axon.constraints.legacy.api.MessagePayloadMappingConstraintHandlerProvider;
+import io.sapl.axon.constraints.legacy.api.MetaDataSupplierConstraintHandlerProvider;
 import io.sapl.axon.query.QuerySideTestsuite.TestScenarioConfiguration;
 import io.sapl.axon.subscriptions.AxonAuthorizationSubscriptionBuilderService;
 import io.sapl.spring.constraints.ConstraintEnforcementService;
+import io.sapl.spring.constraints.api.ConsumerConstraintHandlerProvider;
+import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
@@ -437,7 +446,6 @@ public abstract class QuerySideTestsuite {
 	}
 
 	// @formatter:off
-	@RequiredArgsConstructor
 	static class Projection {
 		
 		@QueryHandler(queryName = UNSECURED_QUERY)
@@ -518,7 +526,7 @@ public abstract class QuerySideTestsuite {
 	}
 
 	@Configuration
-	@Import({ CommandAndQueryAuthenticationConfiguration.class, AxonConstraintHandlerService.class })
+	@Import({ SaplAutoConfiguration.class })
 	static class TestScenarioConfiguration {
 
 		@Bean
@@ -526,37 +534,6 @@ public abstract class QuerySideTestsuite {
 			return new Projection();
 		}
 
-		@Bean
-		public SaplQueryGateway registerQueryGateway(QueryBus queryBus) {
-			return new SaplQueryGateway(queryBus, List.of());
-		}
-
-		@Bean
-		SaplQueryUpdateEmitter updateEmitter() {
-			return new SaplQueryUpdateEmitter(Optional.empty(), null, null);
-		}
-
-		@Bean
-		SaplHandlerEnhancer saplEnhancer(PolicyDecisionPoint pdp,
-				ConstraintEnforcementService constraintEnforcementService,
-				AxonConstraintHandlerService axonConstraintEnforcementService, SaplQueryUpdateEmitter emitter,
-				AxonAuthorizationSubscriptionBuilderService subscriptionBuilder, ObjectMapper mapper) {
-			return new SaplHandlerEnhancer(pdp, constraintEnforcementService, axonConstraintEnforcementService, emitter,
-					subscriptionBuilder, mapper);
-		}
-
-		@Bean
-		AxonAuthorizationSubscriptionBuilderService subscriptionBuilder() {
-			return new AxonAuthorizationSubscriptionBuilderService(new ObjectMapper());
-		}
-
-		@Bean
-		public XStream xStream() {
-			XStream xStream = new XStream();
-
-			xStream.allowTypesByWildcard(new String[] { "io.sapl.**" });
-			return xStream;
-		}
 	}
 
 }

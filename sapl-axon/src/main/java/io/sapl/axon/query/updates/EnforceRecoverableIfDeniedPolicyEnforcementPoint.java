@@ -31,6 +31,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
+import io.sapl.axon.constraints.AxonConstraintHandlerService;
+import io.sapl.axon.constraints.legacy.api.AxonConstraintHandlerBundle;
 import io.sapl.axon.query.RecoverableResponse;
 import io.sapl.spring.constraints.ConstraintEnforcementService;
 import io.sapl.spring.constraints.ReactiveTypeConstraintHandlerBundle;
@@ -55,41 +57,32 @@ import reactor.core.publisher.Flux;
  */
 public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 		extends Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<T>>> {
-
-	private final Flux<AuthorizationDecision> decisions;
-
-	private Flux<SubscriptionQueryUpdateMessage<T>> resourceAccessPoint;
-
-	private final ConstraintEnforcementService constraintsService;
-
+	private final Flux<AuthorizationDecision>                                       decisions;
+	private Flux<SubscriptionQueryUpdateMessage<T>>                                 resourceAccessPoint;
+	private final AxonConstraintHandlerService                                      constraintHandlerService;
 	private EnforcementSink<SubscriptionQueryUpdateMessage<RecoverableResponse<T>>> sink;
+	private final ResponseType<T>                                                   responseType;
 
-	private final ResponseType<T> responseType;
-
-	final AtomicReference<Disposable> decisionsSubscription = new AtomicReference<>();
-
-	final AtomicReference<Disposable> dataSubscription = new AtomicReference<>();
-
-	final AtomicReference<AuthorizationDecision> latestDecision = new AtomicReference<>();
-
-	final AtomicReference<ReactiveTypeConstraintHandlerBundle<T>> constraintHandler = new AtomicReference<>();
-
-	final AtomicBoolean stopped = new AtomicBoolean(false);
+	final AtomicReference<Disposable>                             decisionsSubscription = new AtomicReference<>();
+	final AtomicReference<Disposable>                             dataSubscription      = new AtomicReference<>();
+	final AtomicReference<AuthorizationDecision>                  latestDecision        = new AtomicReference<>();
+	final AtomicReference<ReactiveTypeConstraintHandlerBundle<T>> constraintHandler     = new AtomicReference<>();
+	final AtomicBoolean                                           stopped               = new AtomicBoolean(false);
 
 	private EnforceRecoverableIfDeniedPolicyEnforcementPoint(Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<T>> resourceAccessPoint,
-			ConstraintEnforcementService constraintsService, ResponseType<T> responseType) {
-		this.decisions           = decisions;
-		this.resourceAccessPoint = resourceAccessPoint;
-		this.constraintsService  = constraintsService;
-		this.responseType        = responseType;
+			AxonConstraintHandlerService constraintHandlerService, ResponseType<T> responseType) {
+		this.decisions                = decisions;
+		this.resourceAccessPoint      = resourceAccessPoint;
+		this.constraintHandlerService = constraintHandlerService;
+		this.responseType             = responseType;
 	}
 
 	public static <V> Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<V>>> of(
 			Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<V>> resourceAccessPoint,
-			ConstraintEnforcementService constraintEnforcementService, ResponseType<V> originalUpdateResponseType) {
+			AxonConstraintHandlerService constraintHandlerService, ResponseType<V> originalUpdateResponseType) {
 		var pep = new EnforceRecoverableIfDeniedPolicyEnforcementPoint<V>(decisions, resourceAccessPoint,
-				constraintEnforcementService, originalUpdateResponseType);
+				constraintHandlerService, originalUpdateResponseType);
 		return pep.doOnTerminate(pep::handleOnTerminateConstraints)
 				.doAfterTerminate(pep::handleAfterTerminateConstraints).doOnCancel(pep::handleCancel).onErrorStop();
 	}
@@ -117,7 +110,8 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 
 		var implicitDecision = decision;
 
-		ReactiveTypeConstraintHandlerBundle<T> newBundle;
+		AxonConstraintHandlerBundle<?,?,?> newBundle = null;// TODO constraintHandlerService.createQueryBundle(decision, null, null);
+
 		try {
 			// TODO newBundle = constraintsService.reactiveTypeBundleFor(implicitDecision,
 			// (Class<T>) responseType.getExpectedResponseType());
@@ -144,11 +138,11 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 
 		if (implicitDecision.getResource().isPresent()) {
 			try {
-				var newResponse = constraintsService.unmarshallResource(implicitDecision.getResource().get(),
+				var newResponse = constraintHandlerService.deserializeResource(implicitDecision.getResource().get(),
 						(Class<T>) responseType.getExpectedResponseType());
 				sink.next(newPaylopadUpdate(newResponse));
 				disposeDecisionsAndResourceAccessPoint();
-			} catch (JsonProcessingException | IllegalArgumentException e) {
+			} catch (AccessDeniedException e) {
 				sink.next(newAccessDeniedUpdate());
 				implicitDecision = AuthorizationDecision.INDETERMINATE;
 			}

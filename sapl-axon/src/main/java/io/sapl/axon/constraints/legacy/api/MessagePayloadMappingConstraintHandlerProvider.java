@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package io.sapl.axon.constraints.api;
+package io.sapl.axon.constraints.legacy.api;
 
-import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -25,16 +24,16 @@ import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
 
 /**
- * HandlerProvider returns a handler (Supplier) for a generic Message type
- * (CommandMessage or QueryMessage) that is used to append MetaData (Map) to a
- * Message. Provider supports a specific MessagePayloadType.
+ * HandlerProvider returns a handler (Function) for a generic Message type
+ * (CommandMessage or QueryMessage) to enable the mapping of a message payload.
+ * Provider supports a specific MessagePayloadType.
  *
  * @param <T> MessagePayloadType that is supported by implementing
  *            HandlerProvider
  */
-public interface MetaDataSupplierConstraintHandlerProvider<T>
-		extends Responsible, HasPriority, MessagePayloadTypeSupport<T> {
 
-	Supplier<Map<String, ?>> getMetaDataSupplier(JsonNode constraint);
+public interface MessagePayloadMappingConstraintHandlerProvider<T>
+		extends HasPriority, MessagePayloadTypeSupport<T>, Responsible {
 
+	Function<T, T> getHandler(JsonNode constraint);
 }

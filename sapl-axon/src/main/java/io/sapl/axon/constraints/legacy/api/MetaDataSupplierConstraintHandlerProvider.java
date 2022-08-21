@@ -14,28 +14,27 @@
  * limitations under the License.
  */
 
-package io.sapl.axon.constraints.api;
+package io.sapl.axon.constraints.legacy.api;
 
-import org.axonframework.messaging.Message;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
+import io.sapl.spring.constraints.api.HasPriority;
+import io.sapl.spring.constraints.api.Responsible;
 
 /**
- * Interface is used to scope ConstraintHandlerProviders to a specific
- * MessagePayloadType.
- * 
+ * HandlerProvider returns a handler (Supplier) for a generic Message type
+ * (CommandMessage or QueryMessage) that is used to append MetaData (Map) to a
+ * Message. Provider supports a specific MessagePayloadType.
+ *
  * @param <T> MessagePayloadType that is supported by implementing
  *            HandlerProvider
  */
-public interface MessagePayloadTypeSupport<T> {
-	Class<T> getSupportedMessagePayloadType();
+public interface MetaDataSupplierConstraintHandlerProvider<T>
+		extends Responsible, HasPriority, MessagePayloadTypeSupport<T> {
 
-	@SuppressWarnings("rawtypes")
-	// RawTypes are necessary to be able to return only the class of a Message
-	Class<? extends Message> getSupportedMessageType();
+	Supplier<Map<String, ?>> getMetaDataSupplier(JsonNode constraint);
 
-	default boolean supports(Message<?> message) {
-
-		if (!getSupportedMessagePayloadType().isAssignableFrom(message.getPayloadType()))
-			return false;
-		return getSupportedMessageType().isAssignableFrom(message.getClass());
-	}
 }

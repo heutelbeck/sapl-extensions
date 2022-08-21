@@ -1,389 +1,361 @@
-/*
- * Copyright © 2017-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package io.sapl.axon.constraints;
 
-import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
-import org.axonframework.messaging.Message;
 import org.axonframework.messaging.responsetypes.ResponseType;
-import org.springframework.expression.spel.SpelEvaluationException;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.axonframework.queryhandling.QueryMessage;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.base.Functions;
 
 import io.sapl.api.pdp.AuthorizationDecision;
-import io.sapl.axon.annotations.ConstraintHandler;
+import io.sapl.axon.constraints.api.AxonQueryMessageMappingConstraintHandlerProvider;
 import io.sapl.axon.constraints.api.AxonRunnableConstraintHandlerProvider;
-import io.sapl.axon.constraints.api.MessageConsumerConstraintHandlerProvider;
-import io.sapl.axon.constraints.api.MessagePayloadMappingConstraintHandlerProvider;
-import io.sapl.axon.constraints.api.MetaDataSupplierConstraintHandlerProvider;
+import io.sapl.axon.constraints.api.AxonRunnableConstraintHandlerProvider.Signal;
 import io.sapl.spring.constraints.api.ConsumerConstraintHandlerProvider;
+import io.sapl.spring.constraints.api.ErrorHandlerProvider;
+import io.sapl.spring.constraints.api.ErrorMappingConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
+import lombok.extern.slf4j.Slf4j;
 
-/**
- * This class provides methods for handling constraints of a
- * {@link AuthorizationDecision}. Constraints are handled by constraint
- * handlers. These constraint handlers are either delivered autowired constraint
- * handler providers or methods in aggregate root or aggregate member objects
- * that are annotated with a {@link ConstraintHandler} annotation. Handlers are
- * filter according the stage of handling (pre- or post-message handling),
- * responsibility and support given the provided constraints. Handlers are then
- * added to an instance of the {@link AxonConstraintHandlerBundle} class for
- * later execution. In case of obligations an {@link AccessDeniedException} is
- * thrown if they cannot be handled successfully.
- */
-@Service
+@Slf4j
 public class AxonConstraintHandlerService {
-	private final List<AxonRunnableConstraintHandlerProvider> globalSimpleRunnableProviders;
-	private final List<MappingConstraintHandlerProvider<?>>   globalMappingProviders;
-	private final List<ConsumerConstraintHandlerProvider<?>>  globalConsumerProviders;
 
-	private final List<MetaDataSupplierConstraintHandlerProvider<?>>                      globalAddMetaDataProviders;
-	private final List<MessagePayloadMappingConstraintHandlerProvider<?>>                 globalMessageMappingProviders;
-	private final List<MessageConsumerConstraintHandlerProvider<?, ? extends Message<?>>> globalMessageConsumerProviders;
+	private final ObjectMapper                                           mapper;
+	private final List<AxonRunnableConstraintHandlerProvider>            globalRunnableProviders;
+	private final List<AxonQueryMessageMappingConstraintHandlerProvider> globalQueryMessageMappingProviders;
+	private final List<ConsumerConstraintHandlerProvider<?>>             globalConsumerProviders;
+	private final List<ErrorMappingConstraintHandlerProvider>            globalErrorMappingHandlerProviders;
+	private final List<ErrorHandlerProvider>                             globalErrorHandlerProviders;
+	private final List<MappingConstraintHandlerProvider<?>>              globalMappingProviders;
 
-	public AxonConstraintHandlerService(List<AxonRunnableConstraintHandlerProvider> globalSimpleRunnableProviders,
-			List<MappingConstraintHandlerProvider<?>> globalMappingProviders,
+	public AxonConstraintHandlerService(ObjectMapper mapper,
+			List<AxonRunnableConstraintHandlerProvider> globalRunnableProviders,
+			List<AxonQueryMessageMappingConstraintHandlerProvider> globalQueryMessageMappingProviders,
 			List<ConsumerConstraintHandlerProvider<?>> globalConsumerProviders,
-			List<MetaDataSupplierConstraintHandlerProvider<?>> globalAddMetaDataProvider,
-			List<MessagePayloadMappingConstraintHandlerProvider<?>> globalMessageMappingProviders,
-			List<MessageConsumerConstraintHandlerProvider<?, ? extends Message<?>>> globalMessageConsumerProviders) {
+			List<ErrorMappingConstraintHandlerProvider> globalErrorMappingHandlerProviders,
+			List<ErrorHandlerProvider> globalErrorHandlerProviders,
+			List<MappingConstraintHandlerProvider<?>> globalMappingProviders) {
 
+		this.mapper = mapper;
 		// sort according to priority
-
-		this.globalSimpleRunnableProviders = globalSimpleRunnableProviders;
-		Collections.sort(this.globalSimpleRunnableProviders);
-		this.globalMessageConsumerProviders = globalMessageConsumerProviders;
-		Collections.sort(this.globalMessageConsumerProviders);
+		this.globalRunnableProviders = globalRunnableProviders;
+		Collections.sort(this.globalRunnableProviders);
+		this.globalQueryMessageMappingProviders = globalQueryMessageMappingProviders;
+		Collections.sort(this.globalQueryMessageMappingProviders);
 		this.globalConsumerProviders = globalConsumerProviders;
 		Collections.sort(this.globalConsumerProviders);
-		this.globalAddMetaDataProviders = globalAddMetaDataProvider;
-		Collections.sort(this.globalAddMetaDataProviders);
-		this.globalMessageMappingProviders = globalMessageMappingProviders;
-		Collections.sort(this.globalMessageMappingProviders);
+		this.globalErrorMappingHandlerProviders = globalErrorMappingHandlerProviders;
+		Collections.sort(this.globalErrorMappingHandlerProviders);
+		this.globalErrorHandlerProviders = globalErrorHandlerProviders;
+		Collections.sort(this.globalErrorHandlerProviders);
 		this.globalMappingProviders = globalMappingProviders;
 		Collections.sort(this.globalMappingProviders);
 	}
 
-	/**
-	 * Creates an AxonConstraintHandlerBundle and adds all responsible and
-	 * supporting constraint handlers for constraints in the given
-	 * AuthorizationDecision.
-	 *
-	 * @param <C>                        PayloadType of the message
-	 * @param <R>                        Expected ResultType of the handled command
-	 * @param <U>                        MessageType
-	 * @param decision                   AuthorizationDecision from the PDP
-	 * @param message                    Handled command message
-	 * @param responseType               ResponseType for the handled command
-	 *                                   message
-	 * @param aggregateConstraintMethods methods in aggregate root annotated with
-	 *                                   ConstraintHandler annotation
-	 * @param entity                     Aggregate Member, provided only if command
-	 *                                   is handled by aggregate member
-	 * @param entityConstraintMethods    methods in aggregate member annotated with
-	 *                                   ConstraintHandler annotation, provided only
-	 *                                   if command is handled by aggregate member
-	 *
-	 * @return AxonConstraintHandlerBundle containing all ConstraintHandlers
-	 *         responsible for and supporting Obligations and Advices of the given
-	 *         decision
-	 */
-
-	public <C, R, U extends Message<C>> AxonConstraintHandlerBundle<C, R, U> createCommandBundle(
-			AuthorizationDecision decision, U message, Class<R> responseType,
-			Optional<List<Method>> aggregateConstraintMethods, Optional<Object> entity,
-			Optional<List<Method>> entityConstraintMethods) {
-		var bundle = new AxonConstraintHandlerBundle<C, R, U>();
-		failIfResourcePresent(decision);
-		decision.getObligations().ifPresent(obligations -> obligations.forEach(obligation -> {
-			var numberOfHandlers = addPreHandleConstraintHandler(bundle, obligation, true, message);
-			numberOfHandlers += addPostHandleConstraintHandler(bundle, obligation, true, responseType);
-			numberOfHandlers += addAggregateConstraintHandlers(bundle, obligation, true, message,
-					aggregateConstraintMethods, entity, entityConstraintMethods);
-
-			if (numberOfHandlers == 0)
-				throw new AccessDeniedException(
-						String.format("No handler found for obligation: %s", obligation.asText()));
-		}));
-
-		decision.getAdvice().ifPresent(advices -> advices.forEach(advice -> {
-			addPreHandleConstraintHandler(bundle, advice, false, message);
-			addPostHandleConstraintHandler(bundle, advice, false, responseType);
-			addAggregateConstraintHandlers(bundle, advice, false, message, aggregateConstraintMethods, entity,
-					entityConstraintMethods);
-		}));
-
-		return bundle;
-	}
-
-	/**
-	 * Creates an AxonConstraintHandlerBundle and adds all responsible and
-	 * supporting constraint handlers for constraints in the given
-	 * AuthorizationDecision.
-	 *
-	 * @param <Q>          PayloadType of the query
-	 * @param <R>          Expected ResultType of the handled query
-	 * @param <U>          MessageType
-	 * @param decision     AuthorizationDecision from the PDP
-	 * @param query        Handled query message
-	 * @param responseType ResponseType for the handled query message
-	 *
-	 * @return AxonConstraintHandlerBundle containing all ConstraintHandlers
-	 *         responsible and supporting the Obligations and Advices of the given
-	 *         decision
-	 */
-	public <Q, R, U extends Message<Q>> AxonConstraintHandlerBundle<Q, R, U> createQueryBundle(
-			AuthorizationDecision decision, U query, ResponseType<R> responseType) {
-		var bundle = new AxonConstraintHandlerBundle<Q, R, U>();
-		decision.getObligations().ifPresent(obligations -> obligations.forEach(obligation -> {
-			var numberOfHandlers = addPreHandleConstraintHandler(bundle, obligation, true, query);
-			numberOfHandlers += addPostHandleConstraintHandler(bundle, obligation, true,
-					responseType.responseMessagePayloadType());
-			if (numberOfHandlers == 0)
-				throw new AccessDeniedException(
-						String.format("No handler found for obligation: %s", obligation.asText()));
-		}));
-
-		decision.getAdvice().ifPresent(advices -> advices.forEach(advice -> {
-			addPreHandleConstraintHandler(bundle, advice, false, query);
-			addPostHandleConstraintHandler(bundle, advice, false, responseType.responseMessagePayloadType());
-		}));
-
-		return bundle;
-
-	}
-
-	private <Q, R, U extends Message<Q>> int addAggregateConstraintHandlers(AxonConstraintHandlerBundle<Q, R, U> bundle,
-			JsonNode constraint, boolean isObligation, U message, Optional<List<Method>> aggregateConstraintMethods,
-			Optional<Object> entity, Optional<List<Method>> entityConstraintMethods) {
-		int numberOfHandlers      = 0;
-		var aggregateRootHandlers = collectAggregateConstraintHandlerMethods(aggregateConstraintMethods, constraint,
-				message);
-		bundle.aggregateRootHandlers.put(constraint, aggregateRootHandlers);
-
-		numberOfHandlers += aggregateRootHandlers.size();
-
-		if (entity.isPresent()) {
-			var aggregateEntityHandlers = collectAggregateConstraintHandlerMethods(entityConstraintMethods, constraint,
-					message);
-			bundle.aggregateMemberHandlers.put(constraint, aggregateEntityHandlers);
-			numberOfHandlers += aggregateEntityHandlers.size();
-		}
-
-		if (numberOfHandlers > 0) {
-			bundle.isObligationPerConstraint.put(constraint, isObligation);
-		}
-
-		return numberOfHandlers;
-	}
-
-	private <U extends Message<?>> boolean isMethodResponsibleForConstraintHandling(JsonNode constraint, U message,
-			Method commandHandlingMethod) {
-		ConstraintHandler annotation      = commandHandlingMethod.getAnnotation(ConstraintHandler.class);
-		var               annotationValue = annotation.value();
-
-		if (annotationValue.isBlank()) {
-			return true;
-		}
-
-		var context = new StandardEvaluationContext();
-		context.setVariable("constraint", constraint);
-		context.setVariable("commandMessage", message);
-		var expressionParser = new SpelExpressionParser();
-		var expression       = expressionParser.parseExpression(annotationValue);
-
+	public <T> T deserializeResource(JsonNode resource, Class<T> clazz) {
 		try {
-			var value = expression.getValue(context);
-			if (value == null) {
-				return false;
-			}
-			return (Boolean) value;
-		} catch (SpelEvaluationException | NullPointerException e) {
-			return false;
+			return mapper.treeToValue(resource, clazz);
+		} catch (JsonProcessingException | IllegalArgumentException e) {
+			log.error("Failed to deserialize resource object from decision", e);
+			throw new AccessDeniedException("Access Denied");
 		}
 	}
 
-	private <Q, R, U extends Message<Q>> int addPreHandleConstraintHandler(AxonConstraintHandlerBundle<Q, R, U> bundle,
-			JsonNode constraint, boolean isObligation, U message) {
-		int numberOfHandlers = 0;
+	public <T> AxonQueryConstraintHandlerBundle<T> buildQueryPreHandlerBundle(AuthorizationDecision decision,
+			ResponseType<T> responseType) {
 
-		var simpleRunnableHandlers = constructSimpleRunnableHandlersForConstraint(constraint, isObligation,
-				AxonRunnableConstraintHandlerProvider.Signal.PRE_HANDLE);
-		bundle.simpleRunnableHandlers.addAll(simpleRunnableHandlers);
-		numberOfHandlers += simpleRunnableHandlers.size();
+		var obligationsWithoutHandler = new HashSet<JsonNode>();
+		decision.getObligations()
+				.ifPresent(obligations -> obligations.forEach(obligation -> obligationsWithoutHandler.add(obligation)));
 
-		var addMetaDataHandlers = constructAddMetaDataHandlersForConstraint(constraint, isObligation, message);
-		bundle.addMetaDataHandlers.addAll(addMetaDataHandlers);
-		numberOfHandlers += addMetaDataHandlers.size();
+		var onDecisionHandlers     = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
+		var queryMappingHandlers   = constructQueryMessageMappingHandlers(decision, obligationsWithoutHandler);
+		var queryConsumerHandlers  = constructQueryConsumerHandlers(decision, obligationsWithoutHandler);
+		var errorMappingHandlers   = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
+		var errorConsumerHandlers  = constructErrorConsumerHandlers(decision, obligationsWithoutHandler);
+		var resultMappingHandlers  = constructResultMappingHandlers(decision, obligationsWithoutHandler, responseType);
+		var resultConsumerHandlers = constructResultConsumerHandlers(decision, obligationsWithoutHandler, responseType);
 
-		var messageConsumerHandlers = constructMessageConsumerHandlersForConstraint(constraint, isObligation, message);
-		bundle.messageConsumerHandlers.addAll(messageConsumerHandlers);
-		numberOfHandlers += messageConsumerHandlers.size();
+		if (!obligationsWithoutHandler.isEmpty()) {
+			log.error("Could not find handlers for all obligations. Missing handlers for: {}",
+					obligationsWithoutHandler);
+			throw new AccessDeniedException("Access Denied");
+		}
 
-		var messageMappingHandlers = constructMessageMappingHandlersForConstraint(constraint, isObligation, message);
-		bundle.messagePayloadMappingHandlers.addAll(messageMappingHandlers);
-		numberOfHandlers += messageMappingHandlers.size();
-
-		return numberOfHandlers;
+		return new AxonQueryConstraintHandlerBundle<>(onDecisionHandlers, queryMappingHandlers, queryConsumerHandlers,
+				errorMappingHandlers, errorConsumerHandlers, resultMappingHandlers, resultConsumerHandlers);
 	}
 
-	private <Q, R> int addPostHandleConstraintHandler(AxonConstraintHandlerBundle<Q, R, ?> bundle, JsonNode constraint,
-			boolean isObligation, Class<R> responseType) {
-		int numberOfHandlers = 0;
+	public <T> AxonQueryConstraintHandlerBundle<T> buildQueryPostHandlerBundle(AuthorizationDecision decision,
+			ResponseType<T> responseType) {
 
-		var simpleRunnableHandlers = constructSimpleRunnableHandlersForConstraint(constraint, isObligation,
-				AxonRunnableConstraintHandlerProvider.Signal.POST_HANDLE);
-		bundle.simpleRunnableHandlers.addAll(simpleRunnableHandlers);
-		numberOfHandlers += simpleRunnableHandlers.size();
+		var obligationsWithoutHandler = new HashSet<JsonNode>();
+		decision.getObligations()
+				.ifPresent(obligations -> obligations.forEach(obligation -> obligationsWithoutHandler.add(obligation)));
 
-		var consumerHandlers = constructResultConsumerHandlersForConstraint(constraint, isObligation, responseType);
-		bundle.resultConsumerHandlers.addAll(consumerHandlers);
-		numberOfHandlers += consumerHandlers.size();
+		var onDecisionHandlers     = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
+		var errorMappingHandlers   = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
+		var errorConsumerHandlers  = constructErrorConsumerHandlers(decision, obligationsWithoutHandler);
+		var resultMappingHandlers  = constructResultMappingHandlers(decision, obligationsWithoutHandler, responseType);
+		var resultConsumerHandlers = constructResultConsumerHandlers(decision, obligationsWithoutHandler, responseType);
 
-		var mappingHandlers = constructResultMappingHandlersForConstraint(constraint, isObligation, responseType);
-		bundle.resultMappingHandlers.addAll(mappingHandlers);
-		numberOfHandlers += mappingHandlers.size();
+		if (!obligationsWithoutHandler.isEmpty()) {
+			log.error("Could not find handlers for all obligations. Missing handlers for: {}",
+					obligationsWithoutHandler);
+			throw new AccessDeniedException("Access Denied");
+		}
 
-		return numberOfHandlers;
+		return new AxonQueryConstraintHandlerBundle<>(onDecisionHandlers, Functions.identity(), __ -> {},
+				errorMappingHandlers, errorConsumerHandlers, resultMappingHandlers, resultConsumerHandlers);
 	}
 
-	@SuppressWarnings("unchecked")
-	private <U extends Message<?>> List<Consumer<U>> constructMessageConsumerHandlersForConstraint(JsonNode constraint,
-			boolean isObligation, U message) {
-
-		return globalMessageConsumerProviders.stream().filter(provider -> provider.isResponsible(constraint))
-				.filter(provider -> provider.supports(message))
-				.map(provider -> ((MessageConsumerConstraintHandlerProvider<?, U>) provider).getHandler(constraint))
-				.map(failConsumerOnlyIfObligation(isObligation)).collect(Collectors.toList());
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T, U extends Message<T>> List<Function<T, T>> constructMessageMappingHandlersForConstraint(
-			JsonNode constraint, boolean isObligation, U message) {
-		return globalMessageMappingProviders.stream().filter(provider -> provider.isResponsible(constraint))
-				.filter(provider -> provider.supports(message))
-				.map(provider -> ((MessagePayloadMappingConstraintHandlerProvider<T>) provider).getHandler(constraint))
-				.map(failFunctionOnlyIfObligationElseFallBackToIdentity(isObligation)).collect(Collectors.toList());
-	}
-
-	private <U extends Message<?>> List<Supplier<Map<String, ?>>> constructAddMetaDataHandlersForConstraint(
-			JsonNode constraint, boolean isObligation, U message) {
-		return globalAddMetaDataProviders.stream().filter(provider -> provider.isResponsible(constraint))
-				.filter(provider -> provider.supports(message))
-				.map(provider -> provider.getMetaDataSupplier(constraint))
-				.map(failSupplierOnlyIfObligation(isObligation)).collect(Collectors.toList());
-	}
-
-	@SuppressWarnings("unchecked")
-	private <R> List<Consumer<R>> constructResultConsumerHandlersForConstraint(JsonNode constraint,
-			boolean isObligation, Class<R> handlerResult) {
-		return globalConsumerProviders.stream().filter(provider -> provider.supports(handlerResult))
-				.filter(provider -> provider.isResponsible(constraint))
-				.map(provider -> ((ConsumerConstraintHandlerProvider<R>) provider).getHandler(constraint))
-				.map(failConsumerOnlyIfObligation(isObligation)).collect(Collectors.toList());
-	}
-
-	@SuppressWarnings("unchecked")
-	private <R> List<Function<R, R>> constructResultMappingHandlersForConstraint(JsonNode constraint,
-			boolean isObligation, Class<R> result) {
-		return globalMappingProviders.stream().filter(provider -> provider.isResponsible(constraint))
-				.filter(provider -> provider.supports(result))
-				.map(provider -> ((MappingConstraintHandlerProvider<R>) provider).getHandler(constraint))
-				.map(failFunctionOnlyIfObligationElseFallBackToIdentity(isObligation)).collect(Collectors.toList());
-	}
-
-	private List<Runnable> constructSimpleRunnableHandlersForConstraint(JsonNode constraint, boolean isObligation,
-			AxonRunnableConstraintHandlerProvider.Signal signal) {
-		return globalSimpleRunnableProviders.stream().filter(provider -> provider.isResponsible(constraint))
-				.filter(provider -> provider.getSignal() == signal).map(provider -> provider.getHandler(constraint))
-				.map(failRunnableOnlyIfObligation(isObligation)).collect(Collectors.toList());
-	}
-
-	private <U extends Message<?>> List<Method> collectAggregateConstraintHandlerMethods(
-			Optional<List<Method>> constraintHandlerMethods, JsonNode constraint, U message) {
-
-		return constraintHandlerMethods.map(methods -> methods.stream()
-				.filter((method) -> isMethodResponsibleForConstraintHandling(constraint, message, method))
-				.collect(Collectors.toList())).orElse(Collections.emptyList());
-	}
-
-	private Function<Runnable, Runnable> failRunnableOnlyIfObligation(boolean isObligation) {
-		return runnable -> () -> {
-			try {
-				runnable.run();
-			} catch (Throwable t) {
-				if (isObligation)
-					throw new AccessDeniedException("Failed to execute runnable constraint handler", t);
-			}
+	private Consumer<QueryMessage<?, ?>> constructQueryConsumerHandlers(AuthorizationDecision decision,
+			HashSet<JsonNode> obligationsWithoutHandler) {
+		var obligationConsumers = constructQueryConsumerHandlers(decision.getObligations(),
+				obligationsWithoutHandler::remove);
+		var adviceConsumers     = constructQueryConsumerHandlers(decision.getAdvice(), __ -> {
+								});
+		return query -> {
+			obligationConsumers.ifPresent(handler -> BundleUtil.obligation(handler).accept(query));
+			adviceConsumers.ifPresent(handler -> BundleUtil.advice(handler).accept(query));
 		};
 	}
 
-	private <T> Function<Supplier<T>, Supplier<T>> failSupplierOnlyIfObligation(boolean isObligation) {
-		return supplier -> () -> {
-			try {
-				return supplier.get();
-			} catch (Throwable t) {
-				if (isObligation)
-					throw new AccessDeniedException("Failed to execute supplier constraint handler", t);
-				return null;
+	@SuppressWarnings("unchecked")
+	private Optional<Consumer<QueryMessage<?, ?>>> constructQueryConsumerHandlers(Optional<ArrayNode> constraints,
+			Consumer<JsonNode> onHandlerFound) {
+		return constraints.map(constraintsArray -> {
+			var handlers = new ArrayList<Consumer<QueryMessage<?, ?>>>(constraintsArray.size());
+			for (var constraint : constraintsArray) {
+				for (var provider : globalConsumerProviders) {
+					if (QueryMessage.class.isAssignableFrom(provider.getSupportedType()) && provider.isResponsible(constraint)) {
+						onHandlerFound.accept(constraint);
+						handlers.add((Consumer<QueryMessage<?, ?>>) provider.getHandler(constraint));
+					}
+				}
 			}
+			return BundleUtil.consumeAll(handlers);
+		});
+	}
+
+	private <T> Consumer<T> constructResultConsumerHandlers(AuthorizationDecision decision,
+			HashSet<JsonNode> obligationsWithoutHandler, ResponseType<T> responseType) {
+		var obligationConsumers = constructResultConsumerHandlers(decision.getObligations(),
+				obligationsWithoutHandler::remove, responseType);
+		var adviceConsumers     = constructResultConsumerHandlers(decision.getAdvice(), __ -> {
+								}, responseType);
+		return result -> {
+			obligationConsumers.ifPresent(handler -> BundleUtil.obligation(handler).accept(result));
+			adviceConsumers.ifPresent(handler -> BundleUtil.advice(handler).accept(result));
 		};
 	}
 
-	private <T> Function<Consumer<T>, Consumer<T>> failConsumerOnlyIfObligation(boolean isObligation) {
-		return consumer -> value -> {
-			try {
-				consumer.accept(value);
-			} catch (Throwable t) {
-				if (isObligation)
-					throw new AccessDeniedException("Failed to execute consumer constraint handler", t);
+	@SuppressWarnings("unchecked")
+	private <T> Optional<Consumer<T>> constructResultConsumerHandlers(Optional<ArrayNode> constraints,
+			Consumer<JsonNode> onHandlerFound, ResponseType<T> responseType) {
+		return constraints.map(constraintsArray -> {
+			var handlers = new ArrayList<Consumer<T>>(constraintsArray.size());
+			for (var constraint : constraintsArray) {
+				for (var provider : globalConsumerProviders) {
+					if (responseType.getExpectedResponseType().isAssignableFrom(provider.getSupportedType())
+							&& provider.isResponsible(constraint)) {
+						onHandlerFound.accept(constraint);
+						handlers.add((Consumer<T>) provider.getHandler(constraint));
+					}
+				}
 			}
+			return BundleUtil.consumeAll(handlers);
+		});
+	}
+
+	private Function<Throwable, Throwable> constructErrorMappingHandlers(AuthorizationDecision decision,
+			HashSet<JsonNode> obligationsWithoutHandler) {
+		var obligationFun = constructErrorMappingHandlers(decision.getObligations(), obligationsWithoutHandler::remove);
+		var adviceFun     = constructErrorMappingHandlers(decision.getAdvice(), __ -> {
+							});
+
+		return error -> {
+			var newError = error;
+			try {
+				newError = obligationFun.orElse(Functions.identity()).apply(newError);
+			} catch (Throwable t) {
+				log.error("Failed to execute obligation handlers.", t);
+				throw new AccessDeniedException("Access Denied");
+			}
+			try {
+				newError = adviceFun.orElse(Functions.identity()).apply(newError);
+			} catch (Throwable t) {
+				log.error("Failed to execute advice handlers.", t);
+			}
+			return newError;
 		};
 	}
 
-	private <T> Function<Function<T, T>, Function<T, T>> failFunctionOnlyIfObligationElseFallBackToIdentity(
-			boolean isObligation) {
-		return function -> value -> {
-			try {
-				return function.apply(value);
-			} catch (Throwable t) {
-				if (isObligation)
-					throw new AccessDeniedException("Failed to execute mapping constraint handler", t);
-				return value;
+	private Optional<Function<Throwable, Throwable>> constructErrorMappingHandlers(Optional<ArrayNode> constraints,
+			Consumer<JsonNode> onHandlerFound) {
+		return constraints.map(constraintsArray -> {
+			var handlers = new ArrayList<Function<Throwable, Throwable>>(constraintsArray.size());
+			for (var constraint : constraintsArray) {
+				for (var provider : globalErrorMappingHandlerProviders) {
+					if (provider.isResponsible(constraint)) {
+						onHandlerFound.accept(constraint);
+						handlers.add(provider.getHandler(constraint));
+					}
+				}
 			}
+			return BundleUtil.mapAll(handlers);
+		});
+	}
+
+	private Consumer<Throwable> constructErrorConsumerHandlers(AuthorizationDecision decision,
+			HashSet<JsonNode> obligationsWithoutHandler) {
+		var obligationConsumers = constructErrorConsumerHandlers(decision.getObligations(),
+				obligationsWithoutHandler::remove);
+		var adviceConsumers     = constructErrorConsumerHandlers(decision.getAdvice(), __ -> {
+								});
+		return error -> {
+			obligationConsumers.ifPresent(handler -> BundleUtil.obligation(handler).accept(error));
+			adviceConsumers.ifPresent(handler -> BundleUtil.advice(handler).accept(error));
 		};
 	}
 
-	private void failIfResourcePresent(AuthorizationDecision decision) {
-		if (decision.getResource().isPresent())
-			throw new AccessDeniedException(
-					"Decision attempted to modify " + "resource, which is not supported by this implementation.");
+	private Optional<Consumer<Throwable>> constructErrorConsumerHandlers(Optional<ArrayNode> constraints,
+			Consumer<JsonNode> onHandlerFound) {
+		return constraints.map(constraintsArray -> {
+			var handlers = new ArrayList<Consumer<Throwable>>(constraintsArray.size());
+			for (var constraint : constraintsArray) {
+				for (var provider : globalErrorHandlerProviders) {
+					if (provider.isResponsible(constraint)) {
+						onHandlerFound.accept(constraint);
+						handlers.add(provider.getHandler(constraint));
+					}
+				}
+			}
+			return BundleUtil.consumeAll(handlers);
+		});
+	}
+
+	private Function<QueryMessage<?, ?>, QueryMessage<?, ?>> constructQueryMessageMappingHandlers(
+			AuthorizationDecision decision, HashSet<JsonNode> obligationsWithoutHandler) {
+		var obligationFun = constructQueryMessageMappingHandlers(decision.getObligations(),
+				obligationsWithoutHandler::remove);
+		var adviceFun     = constructQueryMessageMappingHandlers(decision.getAdvice(), __ -> {
+							});
+
+		return query -> {
+			var newQuery = query;
+			try {
+				newQuery = obligationFun.orElse(Functions.identity()).apply(newQuery);
+			} catch (Throwable t) {
+				log.error("Failed to execute obligation handlers.", t);
+				throw new AccessDeniedException("Access Denied");
+			}
+			try {
+				newQuery = adviceFun.orElse(Functions.identity()).apply(newQuery);
+			} catch (Throwable t) {
+				log.error("Failed to execute advice handlers.", t);
+			}
+			return newQuery;
+		};
+	}
+
+	private Optional<Function<QueryMessage<?, ?>, QueryMessage<?, ?>>> constructQueryMessageMappingHandlers(
+			Optional<ArrayNode> constraints, Consumer<JsonNode> onHandlerFound) {
+		return constraints.map(constraintsArray -> {
+			var handlers = new ArrayList<Function<QueryMessage<?, ?>, QueryMessage<?, ?>>>(constraintsArray.size());
+			for (var constraint : constraintsArray) {
+				for (var provider : globalQueryMessageMappingProviders) {
+					if (provider.isResponsible(constraint)) {
+						onHandlerFound.accept(constraint);
+						handlers.add(provider.getHandler(constraint));
+					}
+				}
+			}
+			return BundleUtil.mapAll(handlers);
+		});
+	}
+
+	private <T> Function<T, T> constructResultMappingHandlers(AuthorizationDecision decision,
+			HashSet<JsonNode> obligationsWithoutHandler, ResponseType<T> responseType) {
+		var obligationFun = constructResultMappingHandlers(decision.getObligations(), obligationsWithoutHandler::remove,
+				responseType);
+		var adviceFun     = constructResultMappingHandlers(decision.getAdvice(), __ -> {
+							}, responseType);
+
+		return result -> {
+			var newResult = result;
+			try {
+				newResult = obligationFun.orElse(Functions.identity()).apply(result);
+			} catch (Throwable t) {
+				log.error("Failed to execute obligation handlers.", t);
+				throw new AccessDeniedException("Access Denied");
+			}
+			try {
+				newResult = adviceFun.orElse(Functions.identity()).apply(newResult);
+			} catch (Throwable t) {
+				log.error("Failed to execute advice handlers.", t);
+			}
+			return newResult;
+		};
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> Optional<Function<T, T>> constructResultMappingHandlers(Optional<ArrayNode> constraints,
+			Consumer<JsonNode> onHandlerFound, ResponseType<T> responseType) {
+		return constraints.map(constraintsArray -> {
+			var handlers = new ArrayList<Function<T, T>>(constraintsArray.size());
+			for (var constraint : constraintsArray) {
+				for (var provider : globalMappingProviders) {
+					if (responseType.getExpectedResponseType().isAssignableFrom(provider.getSupportedType())
+							&& provider.isResponsible(constraint)) {
+						onHandlerFound.accept(constraint);
+						handlers.add((Function<T, T>) provider.getHandler(constraint));
+					}
+				}
+			}
+			return BundleUtil.mapAll(handlers);
+		});
+	}
+
+	private Runnable constructOnDecisionHandlers(AuthorizationDecision decision,
+			Set<JsonNode> obligationsWithoutHandler) {
+		var onDecisionObligationHandlers = runnableHandlersForSignal(Signal.ON_DECISION, decision.getObligations(),
+				obligationsWithoutHandler::remove);
+		var onDecisionAdviceHandlers     = runnableHandlersForSignal(Signal.ON_DECISION, decision.getAdvice(), __ -> {
+											});
+
+		return () -> {
+			onDecisionObligationHandlers.map(BundleUtil::obligation).ifPresent(Runnable::run);
+			onDecisionAdviceHandlers.map(BundleUtil::advice).ifPresent(Runnable::run);
+		};
+	}
+
+	private Optional<Runnable> runnableHandlersForSignal(Signal signal, Optional<ArrayNode> constraints,
+			Consumer<JsonNode> onHandlerFound) {
+		return constraints.map(obligations -> {
+			var handlers = new ArrayList<Runnable>(obligations.size());
+			for (var constraint : obligations) {
+				for (var provider : globalRunnableProviders) {
+					if (provider.getSignals().contains(signal) && provider.isResponsible(constraint)) {
+						onHandlerFound.accept(constraint);
+						handlers.add(provider.getHandler(constraint));
+					}
+				}
+			}
+			return BundleUtil.runAll(handlers);
+		});
 	}
 
 }

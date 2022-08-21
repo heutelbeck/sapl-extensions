@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.axonframework.messaging.Message;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
@@ -31,6 +32,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
+import io.sapl.axon.constraints.AxonConstraintHandlerService;
+import io.sapl.axon.constraints.legacy.api.AxonConstraintHandlerBundle;
 import io.sapl.spring.constraints.ConstraintEnforcementService;
 import io.sapl.spring.constraints.ReactiveTypeConstraintHandlerBundle;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +65,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<T> extends Flux<Subs
 
 	private final Flux<AuthorizationDecision>                  decisions;
 	private Flux<SubscriptionQueryUpdateMessage<T>>            resourceAccessPoint;
-	private final ConstraintEnforcementService                 constraintsService;
+	private final AxonConstraintHandlerService                 constraintHandlerService;
 	private EnforcementSink<SubscriptionQueryUpdateMessage<T>> sink;
 	private final ResponseType<?>                              updateResponseType;
 
@@ -74,18 +77,18 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<T> extends Flux<Subs
 
 	private EnforceUpdatesTillDeniedPolicyEnforcementPoint(Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<T>> updateMessageFlux,
-			ConstraintEnforcementService constraintHandlerService, ResponseType<?> updateResponseType) {
+			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> updateResponseType) {
 		this.decisions           = decisions;
 		this.resourceAccessPoint = updateMessageFlux;
-		this.constraintsService  = constraintHandlerService;
+		this.constraintHandlerService  = constraintHandlerService;
 		this.updateResponseType  = updateResponseType;
 	}
 
 	public static <U> Flux<SubscriptionQueryUpdateMessage<U>> of(Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
-			ConstraintEnforcementService constraintEnforcementService, ResponseType<?> updateResponseType) {
+			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> updateResponseType) {
 		EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> pep = new EnforceUpdatesTillDeniedPolicyEnforcementPoint<U>(
-				decisions, updateMessageFlux, constraintEnforcementService, updateResponseType);
+				decisions, updateMessageFlux, constraintHandlerService, updateResponseType);
 		return (Flux<SubscriptionQueryUpdateMessage<U>>) pep.doOnTerminate(pep::handleOnTerminateConstraints)
 				.doAfterTerminate(pep::handleAfterTerminateConstraints)
 				.onErrorMap(AccessDeniedException.class, pep::handleAccessDenied).doOnCancel(pep::handleCancel)
@@ -105,9 +108,11 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<T> extends Flux<Subs
 
 	private void handleNextDecision(AuthorizationDecision decision) {
 		var                                    previousDecision = latestDecision.getAndSet(decision);
-		ReactiveTypeConstraintHandlerBundle<T> newBundle;
+		AxonConstraintHandlerBundle<Object, Object, ?> newBundle;
 		try {
-		//	newBundle = constraintsService.reactiveTypeBundleFor(decision, updateResponseType.responseMessagePayloadType()t);
+// TODO			newBundle = constraintHandlerService.createQueryBundle(decision, null, null);
+					
+//					.reactiveTypeBundleFor(decision, updateResponseType.responseMessagePayloadType()t);
 			//constraintHandler.set(newBundle);
 		} catch (AccessDeniedException e) {
 			constraintHandler.set(new ReactiveTypeConstraintHandlerBundle<>());
@@ -126,10 +131,10 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<T> extends Flux<Subs
 
 		if (decision.getResource().isPresent()) {
 			try {
-				sink.next(new GenericSubscriptionQueryUpdateMessage<T>((T) constraintsService.unmarshallResource(decision.getResource().get(), updateResponseType.getExpectedResponseType())));
-				
-			} catch (JsonProcessingException | IllegalArgumentException e) {
-				sink.error(new AccessDeniedException("Error replacing stream with resource. Ending Stream.", e));
+				sink.next(new GenericSubscriptionQueryUpdateMessage<T>((T) constraintHandlerService.deserializeResource(decision.getResource().get(), updateResponseType.getExpectedResponseType())));				
+			} catch (AccessDeniedException e) {
+				log.error("Error replacing stream with resource. Ending Stream.", e);
+				sink.error(e);
 			}
 			sink.complete();
 			disposeDecisionsAndResourceAccessPoint();

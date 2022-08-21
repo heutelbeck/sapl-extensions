@@ -14,47 +14,40 @@ import org.axonframework.queryhandling.QueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.springframework.security.access.AccessDeniedException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.axon.annotations.Annotations;
 import io.sapl.axon.annotations.PostHandleEnforce;
 import io.sapl.axon.constraints.AxonConstraintHandlerService;
+import io.sapl.axon.constraints.AxonQueryConstraintHandlerBundle;
 import io.sapl.axon.subscriptions.AxonAuthorizationSubscriptionBuilderService;
-import io.sapl.spring.constraints.ConstraintEnforcementService;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Slf4j
 public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcementPoint<T> {
 
-	private final SaplQueryUpdateEmitter       emitter;
-	private final ObjectMapper                 mapper;
+	private final SaplQueryUpdateEmitter emitter;
 
 	public QueryPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
-			ConstraintEnforcementService constraintEnforcementService,
 			AxonConstraintHandlerService axonConstraintEnforcementService, SaplQueryUpdateEmitter emitter,
-			AxonAuthorizationSubscriptionBuilderService subscriptionBuilder, ObjectMapper mapper) {
-		super(delegate, pdp, constraintEnforcementService, axonConstraintEnforcementService, subscriptionBuilder);
+			AxonAuthorizationSubscriptionBuilderService subscriptionBuilder) {
+		super(delegate, pdp, axonConstraintEnforcementService, subscriptionBuilder);
 		this.emitter = emitter;
-		this.mapper  = mapper;
 	}
 
 	@Override
 	public Object handle(Message<?> message, T source) throws Exception {
 
 		if (isSubscriptionQuery(message)) {
-			return handleSubscriptionQuery(message, source);
+			return handleSubscriptionQuery((QueryMessage<?, ?>) message, source);
 		}
 
-		return handleSimpleQuery(message, source);
+		return handleSimpleQuery((QueryMessage<?, ?>) message, source);
 	}
 
-	private Object handleSimpleQuery(Message<?> message, T source) throws Exception {
+	private Object handleSimpleQuery(QueryMessage<?, ?> message, T source) throws Exception {
 		log.debug("Handling simple query: {}", message.getPayload());
 
 		if (saplAnnotations.isEmpty()) {
@@ -96,8 +89,13 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		if (postEnforceAnnotation.isEmpty()) {
 			return queryResult.toFuture();
 		}
+		return queryResult.onErrorResume(enforcePostEnforceOnErrorResult(message, source, postEnforceAnnotation))
+				.flatMap(enforcePostEnforceOnSuccessfulQueryResult(message, source, postEnforceAnnotation)).toFuture();
+	}
 
-		return queryResult.flatMap(actualQueryResultValue -> {
+	private Function<? super Object, ? extends Mono<? extends Object>> enforcePostEnforceOnSuccessfulQueryResult(
+			QueryMessage<?, ?> message, T source, Optional<Annotation> postEnforceAnnotation) {
+		return actualQueryResultValue -> {
 			var postEnforcementAnnotation = (PostHandleEnforce) postEnforceAnnotation.get();
 			log.debug("Building a @PostHandlerEnforce PEP for the query handler of {}. ",
 					message.getPayloadType().getSimpleName());
@@ -105,42 +103,130 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 					(QueryMessage<?, ?>) message, postEnforcementAnnotation, handlerExecutable,
 					Optional.of(actualQueryResultValue));
 			return pdp.decide(postEnforceAuthzSubscription).defaultIfEmpty(AuthorizationDecision.DENY).next()
-					.flatMap(enforcePostEnforceDecision(message, source, actualQueryResultValue,
-							postEnforcementAnnotation.genericsType()));
-		}).toFuture();
+					.flatMap(enforcePostEnforceDecision(message, source, actualQueryResultValue));
+		};
 	}
 
-	private Function<AuthorizationDecision, Mono<Object>> enforcePreEnforceDecision(Message<?> message, T source) {
+	private Function<? super Throwable, ? extends Mono<? extends Object>> enforcePostEnforceOnErrorResult(
+			QueryMessage<?, ?> message, T source, Optional<Annotation> postEnforceAnnotation) {
+		return error -> {
+			var postEnforcementAnnotation = (PostHandleEnforce) postEnforceAnnotation.get();
+			log.debug("Building a @PostHandlerEnforce PEP (error value) for the query handler of {}. ",
+					message.getPayloadType().getSimpleName());
+			var postEnforceAuthzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(
+					(QueryMessage<?, ?>) message, postEnforcementAnnotation, handlerExecutable, Optional.of(error));
+			return pdp.decide(postEnforceAuthzSubscription).defaultIfEmpty(AuthorizationDecision.DENY).next()
+					.flatMap(enforcePostEnforceDecisionOnErrorResult(message, error));
+		};
+	}
+
+	private Function<AuthorizationDecision, Mono<Object>> enforcePreEnforceDecision(QueryMessage<?, ?> message,
+			T source) {
 		return decision -> {
 			log.debug("PreHandlerEnforce {} for {}", decision, message.getPayloadType());
-			if (decision.getDecision() != Decision.PERMIT) {
-				return Mono.error(new AccessDeniedException("Access Denied by PDP"));
+			AxonQueryConstraintHandlerBundle<?> constraintHandler = null;
+			try {
+				constraintHandler = axonConstraintEnforcementService.buildQueryPreHandlerBundle(decision,
+						message.getResponseType());
+			} catch (AccessDeniedException e) {
+				return Mono.error(e);
 			}
-			return callDelegate(message, source);
+
+			try {
+				constraintHandler.executeOnDecisionHandlers();
+			} catch (AccessDeniedException error) {
+				return Mono.error(constraintHandler.executeOnErrorHandlers(error));
+			}
+			if (decision.getDecision() != Decision.PERMIT) {
+				var error = new AccessDeniedException("Access Denied");
+				return Mono.error(constraintHandler.executeOnErrorHandlers(error));
+			}
+			try {
+				QueryMessage<?, ?> updatedQuery = constraintHandler.executePreHandlingHandlers(message);
+				return callDelegate(updatedQuery, source).map(constraintHandler::executePostHandlingHandlers)
+						.onErrorMap(constraintHandler::executeOnErrorHandlers);
+			} catch (AccessDeniedException error) {
+				return Mono.error(constraintHandler.executeOnErrorHandlers(error));
+			}
 		};
 	}
 
-	private Function<AuthorizationDecision, Mono<Object>> enforcePostEnforceDecision(Message<?> message, T source,
-			Object returnObject, Class<?> clazz) {
+	private Function<AuthorizationDecision, Mono<Object>> enforcePostEnforceDecisionOnErrorResult(
+			QueryMessage<?, ?> message, Throwable error) {
+		return decision -> {
+			log.debug("PostHandlerEnforce {} for error {}", decision, error.getMessage());
+			AxonQueryConstraintHandlerBundle<?> constraintHandler = null;
+			try {
+				constraintHandler = axonConstraintEnforcementService.buildQueryPostHandlerBundle(decision,
+						message.getResponseType());
+			} catch (AccessDeniedException e) {
+				return Mono.error(e);
+			}
+
+			try {
+				constraintHandler.executeOnDecisionHandlers();
+			} catch (AccessDeniedException e) {
+				return Mono.error(constraintHandler.executeOnErrorHandlers(e));
+			}
+
+			if (decision.getDecision() != Decision.PERMIT) {
+				var e = new AccessDeniedException("Access Denied");
+				return Mono.error(constraintHandler.executeOnErrorHandlers(e));
+			}
+
+			return Mono.error(constraintHandler.executeOnErrorHandlers(error));
+		};
+	}
+
+	private Function<AuthorizationDecision, Mono<Object>> enforcePostEnforceDecision(QueryMessage<?, ?> message,
+			T source, Object returnObject) {
 		return decision -> {
 			log.debug("PostHandlerEnforce {} for {} [{}]", decision, message.getPayloadType(), returnObject);
-			if (decision.getDecision() != Decision.PERMIT) {
-				return Mono.error(new AccessDeniedException("Access Denied by PDP"));
+			AxonQueryConstraintHandlerBundle<?> constraintHandler = null;
+			try {
+				constraintHandler = axonConstraintEnforcementService.buildQueryPostHandlerBundle(decision,
+						message.getResponseType());
+			} catch (AccessDeniedException e) {
+				return Mono.error(e);
 			}
+
+			try {
+				constraintHandler.executeOnDecisionHandlers();
+			} catch (AccessDeniedException error) {
+				return Mono.error(constraintHandler.executeOnErrorHandlers(error));
+			}
+
+			if (decision.getDecision() != Decision.PERMIT) {
+				var error = new AccessDeniedException("Access Denied");
+				return Mono.error(constraintHandler.executeOnErrorHandlers(error));
+			}
+
+			var resultObject = returnObject;
 			if (decision.getResource().isPresent()) {
 				try {
-					return Mono.just(mapper.treeToValue(decision.getResource().get(), clazz));
-				} catch (JsonProcessingException | IllegalArgumentException e) {
-					return Mono.error(new AccessDeniedException("Access Denied by PEP."));
+					resultObject = axonConstraintEnforcementService.deserializeResource(decision.getResource().get(),
+							message.getResponseType().getExpectedResponseType());
+				} catch (AccessDeniedException e) {
+					return Mono.error(constraintHandler.executeOnErrorHandlers(e));
 				}
 			}
-			return Mono.just(returnObject);
+			try {
+				resultObject = constraintHandler.executePostHandlingHandlers(resultObject);
+			} catch (AccessDeniedException error) {
+				return Mono.error(constraintHandler.executeOnErrorHandlers(error));
+			}
+			return Mono.just(resultObject);
 		};
 	}
 
-	@SneakyThrows
 	private Mono<Object> callDelegate(Message<?> message, T source) {
-		var result = delegate.handle(message, source);
+		Object result = null;
+		try {
+			result = delegate.handle(message, source);
+		} catch (Exception e) {
+			return Mono.error(e);
+		}
+
 		if (result instanceof CompletableFuture) {
 			return Mono.fromFuture(((CompletableFuture<?>) result));
 		}
@@ -148,7 +234,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		return Mono.just(result);
 	}
 
-	private Object handleSubscriptionQuery(Message<?> message, T source) throws Exception {
+	private Object handleSubscriptionQuery(QueryMessage<?, ?> message, T source) throws Exception {
 		log.debug("Handling subscription query: {}", message.getPayload());
 
 		if (saplAnnotations.isEmpty()) {
@@ -166,8 +252,8 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 			return handleSimpleQuery(message, source);
 		}
 
-		var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(
-				(QueryMessage<?, ?>) message, streamingAnnotation.get(), handlerExecutable, Optional.empty());
+		var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(message,
+				streamingAnnotation.get(), handlerExecutable, Optional.empty());
 		var decisions         = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY).share()
 				.cache(1);
 		log.debug("Set authorization mode of emitter {}", streamingAnnotation.get().annotationType().getSimpleName());

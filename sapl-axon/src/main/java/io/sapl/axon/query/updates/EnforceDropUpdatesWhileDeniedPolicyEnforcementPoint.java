@@ -28,10 +28,11 @@ import org.reactivestreams.Subscription;
 import org.springframework.security.access.AccessDeniedException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
-import io.sapl.spring.constraints.ConstraintEnforcementService;
+import io.sapl.axon.constraints.AxonConstraintHandlerService;
 import io.sapl.spring.constraints.ReactiveTypeConstraintHandlerBundle;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.CoreSubscriber;
@@ -60,11 +61,12 @@ import reactor.core.publisher.Flux;
 @Slf4j
 public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<T> extends Flux<SubscriptionQueryUpdateMessage<T>> {
 
-	private final Flux<AuthorizationDecision>                  decisions;
+	private final Flux<AuthorizationDecision>  decisions;
+	private final AxonConstraintHandlerService constraintHandlerService;
+	private final ResponseType<?>              updateResponseType;
+
 	private Flux<SubscriptionQueryUpdateMessage<T>>            resourceAccessPoint;
-	private final ConstraintEnforcementService                 constraintsService;
 	private EnforcementSink<SubscriptionQueryUpdateMessage<T>> sink;
-	private final ResponseType<?>                              updateResponseType;
 
 	final AtomicReference<Disposable>                                                             decisionsSubscription = new AtomicReference<>();
 	final AtomicReference<Disposable>                                                             dataSubscription      = new AtomicReference<>();
@@ -75,18 +77,18 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<T> extends Flux
 
 	private EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint(Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<T>> updateMessageFlux,
-			ConstraintEnforcementService constraintHandlerService, ResponseType<?> updateResponseType) {
-		this.decisions           = decisions;
-		this.resourceAccessPoint = updateMessageFlux;
-		this.constraintsService  = constraintHandlerService;
-		this.updateResponseType  = updateResponseType;
+			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> updateResponseType) {
+		this.decisions                = decisions;
+		this.resourceAccessPoint      = updateMessageFlux;
+		this.constraintHandlerService = constraintHandlerService;
+		this.updateResponseType       = updateResponseType;
 	}
 
 	public static <U> Flux<SubscriptionQueryUpdateMessage<U>> of(Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
-			ConstraintEnforcementService constraintEnforcementService, ResponseType<?> updateResponseType) {
+			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> updateResponseType) {
 		EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> pep = new EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U>(
-				decisions, updateMessageFlux, constraintEnforcementService, updateResponseType);
+				decisions, updateMessageFlux, constraintHandlerService, updateResponseType);
 		return (Flux<SubscriptionQueryUpdateMessage<U>>) pep.doOnTerminate(pep::handleOnTerminateConstraints)
 				.doAfterTerminate(pep::handleAfterTerminateConstraints)
 				.onErrorMap(AccessDeniedException.class, pep::handleAccessDenied).doOnCancel(pep::handleCancel)
@@ -126,11 +128,12 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<T> extends Flux
 
 		if (decision.getResource().isPresent()) {
 			try {
-				sink.next(new GenericSubscriptionQueryUpdateMessage<T>((T) constraintsService.unmarshallResource(
-						decision.getResource().get(), updateResponseType.getExpectedResponseType())));
+				var newResponse = constraintHandlerService.deserializeResource(decision.getResource().get(),
+						(Class<T>) updateResponseType.getExpectedResponseType());
+				sink.next(new GenericSubscriptionQueryUpdateMessage<T>(newResponse));
 
-			} catch (JsonProcessingException | IllegalArgumentException e) {
-				sink.error(new AccessDeniedException("Error replacing stream with resource. Ending Stream.", e));
+			} catch (AccessDeniedException e) {
+				sink.error(e);
 			}
 			sink.complete();
 			disposeDecisionsAndResourceAccessPoint();

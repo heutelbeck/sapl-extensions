@@ -14,26 +14,28 @@
  * limitations under the License.
  */
 
-package io.sapl.axon.constraints.api;
+package io.sapl.axon.constraints.legacy.api;
 
-import java.util.function.Function;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
-import io.sapl.spring.constraints.api.HasPriority;
-import io.sapl.spring.constraints.api.Responsible;
+import org.axonframework.messaging.Message;
 
 /**
- * HandlerProvider returns a handler (Function) for a generic Message type
- * (CommandMessage or QueryMessage) to enable the mapping of a message payload.
- * Provider supports a specific MessagePayloadType.
- *
+ * Interface is used to scope ConstraintHandlerProviders to a specific
+ * MessagePayloadType.
+ * 
  * @param <T> MessagePayloadType that is supported by implementing
  *            HandlerProvider
  */
+public interface MessagePayloadTypeSupport<T> {
+	Class<T> getSupportedMessagePayloadType();
 
-public interface MessagePayloadMappingConstraintHandlerProvider<T>
-		extends HasPriority, MessagePayloadTypeSupport<T>, Responsible {
+	@SuppressWarnings("rawtypes")
+	// RawTypes are necessary to be able to return only the class of a Message
+	Class<? extends Message> getSupportedMessageType();
 
-	Function<T, T> getHandler(JsonNode constraint);
+	default boolean supports(Message<?> message) {
+
+		if (!getSupportedMessagePayloadType().isAssignableFrom(message.getPayloadType()))
+			return false;
+		return getSupportedMessageType().isAssignableFrom(message.getClass());
+	}
 }

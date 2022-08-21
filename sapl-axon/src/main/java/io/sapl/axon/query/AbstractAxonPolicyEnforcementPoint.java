@@ -14,12 +14,10 @@ import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.axon.annotations.Annotations;
 import io.sapl.axon.constraints.AxonConstraintHandlerService;
 import io.sapl.axon.subscriptions.AxonAuthorizationSubscriptionBuilderService;
-import io.sapl.spring.constraints.ConstraintEnforcementService;
 
 public abstract class AbstractAxonPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember<T> {
 
 	protected final PolicyDecisionPoint                         pdp;
-	protected final ConstraintEnforcementService                constraintEnforcementService;
 	protected final Set<Annotation>                             saplAnnotations;
 	protected final MessageHandlingMember<T>                    delegate;
 	protected final AxonAuthorizationSubscriptionBuilderService subscriptionBuilder;
@@ -27,13 +25,11 @@ public abstract class AbstractAxonPolicyEnforcementPoint<T> extends WrappedMessa
 	protected final AxonConstraintHandlerService                axonConstraintEnforcementService;
 
 	protected AbstractAxonPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
-			ConstraintEnforcementService constraintEnforcementService,
 			AxonConstraintHandlerService axonConstraintEnforcementService,
 			AxonAuthorizationSubscriptionBuilderService subscriptionBuilder) {
 		super(delegate);
 		this.delegate                         = delegate;
 		this.pdp                              = pdp;
-		this.constraintEnforcementService     = constraintEnforcementService;
 		this.axonConstraintEnforcementService = axonConstraintEnforcementService;
 		this.subscriptionBuilder              = subscriptionBuilder;
 		this.handlerExecutable                = delegate.unwrap(Executable.class)

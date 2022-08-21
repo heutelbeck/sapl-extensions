@@ -14,19 +14,30 @@
  * limitations under the License.
  */
 
-package io.sapl.axon.constraints.api;
+package io.sapl.axon.constraints.legacy.api;
 
-import java.util.Collection;
+import java.util.function.Consumer;
+
+import org.axonframework.messaging.Message;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
 
-public interface AxonRunnableConstraintHandlerProvider extends Responsible, HasPriority {
-	Collection<Signal> getSignals();
+/**
+ * HandlerProvider returns a handler (Consumer) for a generic Message type
+ * (CommandMessage or QueryMessage) to enable the consumption of the message.
+ * Provider supports a specific MessagePayloadType.
+ *
+ * @param <T> MessagePayloadType that is supported by implementing
+ *            HandlerProvider
+ * @param <U> Generic Message type. Support both Command- and QueryMessages
+ */
 
-	Runnable getHandler(JsonNode constraint);
+public interface MessageConsumerConstraintHandlerProvider<T, U extends Message<T>>
+		extends HasPriority, MessagePayloadTypeSupport<T>, Responsible {
 
-	enum Signal { ON_DECISION, ON_UPDATE }
+	Consumer<U> getHandler(JsonNode constraint);
+
 }
