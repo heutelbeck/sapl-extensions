@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.axon.constraints.api;
 
-import java.util.function.Function;
+import java.util.function.Predicate;
 
-import org.axonframework.queryhandling.QueryMessage;
+import org.axonframework.messaging.ResultMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
+import io.sapl.spring.constraints.api.TypeSupport;
 
-public interface AxonQueryMessageMappingConstraintHandlerProvider extends Responsible, HasPriority {
+public interface ResultMessageFilterPredicateConstraintHandlerProvider<T>
+		extends Responsible, TypeSupport<T> {
 
-	public Function<QueryMessage<?, ?>, QueryMessage<?, ?>> getHandler(JsonNode constraint);
+	Predicate<ResultMessage<T>> getHandler(JsonNode constraint);
 
 }

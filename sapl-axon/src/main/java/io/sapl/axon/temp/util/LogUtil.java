@@ -12,6 +12,7 @@ public class LogUtil {
 
 	public static void dumpSubscriptionMessage(String intro, SubscriptionQueryMessage<?,?,?> query) {
 		log.info(intro+":");
+		log.info("id          : {}", query.getIdentifier());		
 		log.info("toString    : {}", query);
 		log.info("class       : {}", query.getClass().getSimpleName());
 		log.info("name        : {}", query.getQueryName());
@@ -25,6 +26,7 @@ public class LogUtil {
 
 	public static void dumpQueryMessage(String intro, QueryMessage<?,?> query) {
 		log.info(intro+":");
+		log.info("id          : {}", query.getIdentifier());		
 		log.info("toString    : {}", query);
 		log.info("class       : {}", query.getClass().getSimpleName());
 		log.info("name        : {}", query.getQueryName());

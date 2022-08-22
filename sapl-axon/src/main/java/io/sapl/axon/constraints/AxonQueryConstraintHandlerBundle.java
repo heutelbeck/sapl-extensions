@@ -1,43 +1,77 @@
 package io.sapl.axon.constraints;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
+import org.axonframework.messaging.ResultMessage;
 import org.axonframework.queryhandling.QueryMessage;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class AxonQueryConstraintHandlerBundle<T> {
-	protected final Runnable                                         onDecisionHandlers;
-	protected final Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappingHandlers;
-	protected final Consumer<QueryMessage<?, ?>>                     messageConsumerHandlers;
-	protected final Function<Throwable, Throwable>                   errorMappingHandlers;
-	protected final Consumer<Throwable>                              errorConsumerHandlers;
-	protected final Function<T, T>                                   resultMappingHandlers;
-	protected final Consumer<T>                                      resultConsumerHandlers;
+public class AxonQueryConstraintHandlerBundle<I, U> {
+	public static final AxonQueryConstraintHandlerBundle<?, ?> NOOP_BUNDLE = new AxonQueryConstraintHandlerBundle<>();
+
+	protected final Runnable                                         onDecision;
+	protected final Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMapper;
+	protected final Consumer<QueryMessage<?, ?>>                     queryConsumer;
+	protected final Function<Throwable, Throwable>                   errorMapper;
+	protected final Consumer<Throwable>                              errorConsumer;
+	protected final Function<I, I>                                   resultMapper;
+	protected final Consumer<I>                                      resultConsumer;
+	protected final Function<ResultMessage<?>, ResultMessage<?>>     updateMapper;
+	protected final Consumer<ResultMessage<?>>                       updateConsumer;
+	protected final Predicate<ResultMessage<?>>                      filterPredicate;
+
+	// @formatter:off
+	private AxonQueryConstraintHandlerBundle() {
+		this.onDecision = ()->{};
+		this.queryMapper = Function.identity();
+		this.queryConsumer = __ -> {};
+		this.errorMapper = Function.identity();
+		this.errorConsumer = __ -> {};
+		this.resultMapper = Function.identity();
+		this.resultConsumer = __ -> {};
+		this.updateMapper = Function.identity();
+		this.updateConsumer = __ -> {};
+		this.filterPredicate = __ -> true;
+	}
+	// @formatter:on
 
 	public void executeOnDecisionHandlers() {
-		onDecisionHandlers.run();
+		onDecision.run();
 	}
 
 	public Throwable executeOnErrorHandlers(Throwable t) {
-		errorConsumerHandlers.accept(t);
-		return errorMappingHandlers.apply(t);
+		errorConsumer.accept(t);
+		return errorMapper.apply(t);
 	}
 
 	public QueryMessage<?, ?> executePreHandlingHandlers(QueryMessage<?, ?> message) {
-		messageConsumerHandlers.accept(message);
-		return queryMappingHandlers.apply(message);
+		queryConsumer.accept(message);
+		return queryMapper.apply(message);
 	}
 
 	@SuppressWarnings("unchecked") // The handlers have been validated to support the returnType
 	public Object executePostHandlingHandlers(Object o) {
 		if (o instanceof CompletableFuture) {
-			return ((CompletableFuture<T>) o).thenApply(this::executePostHandlingHandlers);
+			return ((CompletableFuture<?>) o).thenApply(this::executePostHandlingHandlers);
 		}
-		resultConsumerHandlers.accept((T) o);
-		return resultMappingHandlers.apply((T) o);
+
+		resultConsumer.accept((I) o);
+		return resultMapper.apply((I) o);
+	}
+
+	public Optional<ResultMessage<?>> executeOnNextHandlers(ResultMessage<?> message) {
+		var updated = updateMapper.apply(message);
+
+		if (!filterPredicate.test(message))
+			return Optional.empty();
+
+		updateConsumer.accept(updated);
+		return Optional.of(updated);
 	}
 }

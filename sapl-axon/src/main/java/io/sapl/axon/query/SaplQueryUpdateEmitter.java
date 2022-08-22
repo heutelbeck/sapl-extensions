@@ -42,8 +42,6 @@ import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.UpdateHandlerRegistration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.axon.annotations.EnforceDropUpdatesWhileDenied;
 import io.sapl.axon.annotations.EnforceRecoverableUpdatesIfDenied;
@@ -190,11 +188,12 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
 			if (authzConfig.getMode() == QueryAuthorizationMode.TILL_DENIED) {
 				return EnforceUpdatesTillDeniedPolicyEnforcementPoint.of(authzConfig.getDecisions(), updateMessageFlux,
-						constraintHandlerService, query.getUpdateResponseType());
+						constraintHandlerService, query.getResponseType(), query.getUpdateResponseType());
 			}
 			if (authzConfig.getMode() == QueryAuthorizationMode.DROP_WHILE_DENIED) {
 				return EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint.of(authzConfig.getDecisions(),
-						updateMessageFlux, constraintHandlerService, query.getUpdateResponseType());
+						updateMessageFlux, constraintHandlerService, query.getResponseType(),
+						query.getUpdateResponseType());
 			}
 			if (authzConfig.getMode() == QueryAuthorizationMode.RECOVERABLE_IF_DENIED) {
 				var originalUpdateResponseType = (ResponseType<U>) query.getMetaData()
@@ -210,7 +209,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 						query.getUpdateResponseType().getExpectedResponseType().getSimpleName());
 
 				return EnforceUpdatesTillDeniedPolicyEnforcementPoint.of(authzConfig.getDecisions(), updateMessageFlux,
-						constraintHandlerService, query.getUpdateResponseType());
+						constraintHandlerService, query.getResponseType(), query.getUpdateResponseType());
 			}
 			return updateMessageFlux;
 		});

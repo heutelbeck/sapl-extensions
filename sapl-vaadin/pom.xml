@@ -156,11 +156,7 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.sapl</groupId>
-			<artifactId>sapl-pep-api</artifactId>
-		</dependency>
+		</dependency>		
 
 	</dependencies>
 

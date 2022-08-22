@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
+import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.queryhandling.QueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.springframework.security.access.AccessDeniedException;
@@ -40,8 +41,9 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 	@Override
 	public Object handle(Message<?> message, T source) throws Exception {
 
-		if (isSubscriptionQuery(message)) {
-			return handleSubscriptionQuery((QueryMessage<?, ?>) message, source);
+		var updateType = updateTypeIfSubscriptionQuery(message);
+		if (updateType.isPresent()) {
+			return handleSubscriptionQuery((QueryMessage<?, ?>) message, source, updateType);
 		}
 
 		return handleSimpleQuery((QueryMessage<?, ?>) message, source);
@@ -78,7 +80,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 					(QueryMessage<?, ?>) message, preEnforcementAnnotation, handlerExecutable, Optional.empty());
 			preEnforcedQueryResult = Optional
 					.of(pdp.decide(preEnforceAuthzSubscription).defaultIfEmpty(AuthorizationDecision.DENY).next()
-							.flatMap(enforcePreEnforceDecision(message, source)));
+							.flatMap(enforcePreEnforceDecision(message, source, Optional.empty())));
 		}
 
 		var queryResult           = preEnforcedQueryResult.orElseGet(() -> callDelegate(message, source));
@@ -121,13 +123,14 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 	}
 
 	private Function<AuthorizationDecision, Mono<Object>> enforcePreEnforceDecision(QueryMessage<?, ?> message,
-			T source) {
+			T source, Optional<ResponseType<?>> updateType) {
 		return decision -> {
 			log.debug("PreHandlerEnforce {} for {}", decision, message.getPayloadType());
-			AxonQueryConstraintHandlerBundle<?> constraintHandler = null;
+			@SuppressWarnings("rawtypes")
+			AxonQueryConstraintHandlerBundle constraintHandler = null;
 			try {
 				constraintHandler = axonConstraintEnforcementService.buildQueryPreHandlerBundle(decision,
-						message.getResponseType());
+						message.getResponseType(), updateType);
 			} catch (AccessDeniedException e) {
 				return Mono.error(e);
 			}
@@ -142,6 +145,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 				return Mono.error(constraintHandler.executeOnErrorHandlers(error));
 			}
 			try {
+				@SuppressWarnings("unchecked")
 				QueryMessage<?, ?> updatedQuery = constraintHandler.executePreHandlingHandlers(message);
 				return callDelegate(updatedQuery, source).map(constraintHandler::executePostHandlingHandlers)
 						.onErrorMap(constraintHandler::executeOnErrorHandlers);
@@ -155,7 +159,8 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 			QueryMessage<?, ?> message, Throwable error) {
 		return decision -> {
 			log.debug("PostHandlerEnforce {} for error {}", decision, error.getMessage());
-			AxonQueryConstraintHandlerBundle<?> constraintHandler = null;
+			@SuppressWarnings("rawtypes")
+			AxonQueryConstraintHandlerBundle constraintHandler = null;
 			try {
 				constraintHandler = axonConstraintEnforcementService.buildQueryPostHandlerBundle(decision,
 						message.getResponseType());
@@ -182,7 +187,8 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 			T source, Object returnObject) {
 		return decision -> {
 			log.debug("PostHandlerEnforce {} for {} [{}]", decision, message.getPayloadType(), returnObject);
-			AxonQueryConstraintHandlerBundle<?> constraintHandler = null;
+			@SuppressWarnings("rawtypes")
+			AxonQueryConstraintHandlerBundle constraintHandler = null;
 			try {
 				constraintHandler = axonConstraintEnforcementService.buildQueryPostHandlerBundle(decision,
 						message.getResponseType());
@@ -205,7 +211,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 			if (decision.getResource().isPresent()) {
 				try {
 					resultObject = axonConstraintEnforcementService.deserializeResource(decision.getResource().get(),
-							message.getResponseType().getExpectedResponseType());
+							message.getResponseType());
 				} catch (AccessDeniedException e) {
 					return Mono.error(constraintHandler.executeOnErrorHandlers(e));
 				}
@@ -234,7 +240,8 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		return Mono.just(result);
 	}
 
-	private Object handleSubscriptionQuery(QueryMessage<?, ?> message, T source) throws Exception {
+	private Object handleSubscriptionQuery(QueryMessage<?, ?> message, T source, Optional<ResponseType<?>> updateType)
+			throws Exception {
 		log.debug("Handling subscription query: {}", message.getPayload());
 
 		if (saplAnnotations.isEmpty()) {
@@ -260,7 +267,8 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		emitter.authozrizeUpdatesForSubscriptionQueryWithId(message.getIdentifier(), decisions,
 				streamingAnnotation.get().annotationType());
 		log.debug("Build pre-authorization-handler PDP for initial result of subscription query");
-		return decisions.next().flatMap(enforcePreEnforceDecision(message, source)).toFuture();
+
+		return decisions.next().flatMap(enforcePreEnforceDecision(message, source, updateType)).toFuture();
 	}
 
 	private Optional<Annotation> uniqueStreamingEnforcementAnnotation() {
@@ -273,8 +281,9 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		return saplAnnotations.stream().findFirst();
 	}
 
-	private boolean isSubscriptionQuery(Message<?> message) {
-		return emitter.activeSubscriptions().stream().filter(sameAsHandlededMessage(message)).findFirst().isPresent();
+	private Optional<ResponseType<?>> updateTypeIfSubscriptionQuery(Message<?> message) {
+		return emitter.activeSubscriptions().stream().filter(sameAsHandlededMessage(message)).findFirst()
+				.map(SubscriptionQueryMessage::getUpdateResponseType);
 	}
 
 	private Predicate<? super SubscriptionQueryMessage<?, ?, ?>> sameAsHandlededMessage(Message<?> message) {

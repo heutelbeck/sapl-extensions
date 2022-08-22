@@ -1,4 +1,4 @@
-package io.sapl.axon.query.it;
+package io.sapl.axon.query;
 
 import java.time.Duration;
 
@@ -12,10 +12,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import io.sapl.axon.query.QuerySideTestsuite;
-
 @Testcontainers
-public class MonolithWithAxonServerIT extends QuerySideTestsuite {
+public class QueryIT extends QueryTestsuite {
 	private static final int AXON_SERVER_GRPC_PORT = 8124;
 
 	private static final long TIMEOUT_FOR_AXON_SERVER_SPINUP = 20L;

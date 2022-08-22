@@ -25,4 +25,19 @@ public class TestUtilities {
 			return isAccessDenied().test(t.getCause());
 		};
 	}
+	
+	public static Predicate<Throwable> isCausedBy(Class<? extends Throwable> cause) {
+		return t -> {
+			if (cause.isAssignableFrom(t.getClass()))
+				return true;
+
+			if (t.getMessage().contains(cause.getSimpleName()))
+				return true;
+
+			if (t.getCause() == null)
+				return false;
+
+			return isCausedBy(cause).test(t.getCause());
+		};
+	}
 }

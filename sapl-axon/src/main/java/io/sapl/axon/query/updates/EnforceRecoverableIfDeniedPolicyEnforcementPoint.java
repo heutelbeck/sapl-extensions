@@ -27,14 +27,11 @@ import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.reactivestreams.Subscription;
 import org.springframework.security.access.AccessDeniedException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.axon.constraints.AxonConstraintHandlerService;
 import io.sapl.axon.constraints.legacy.api.AxonConstraintHandlerBundle;
 import io.sapl.axon.query.RecoverableResponse;
-import io.sapl.spring.constraints.ConstraintEnforcementService;
 import io.sapl.spring.constraints.ReactiveTypeConstraintHandlerBundle;
 import reactor.core.CoreSubscriber;
 import reactor.core.Disposable;
@@ -110,7 +107,9 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 
 		var implicitDecision = decision;
 
-		AxonConstraintHandlerBundle<?,?,?> newBundle = null;// TODO constraintHandlerService.createQueryBundle(decision, null, null);
+		AxonConstraintHandlerBundle<?, ?, ?> newBundle = null;// TODO
+																// constraintHandlerService.createQueryBundle(decision,
+																// null, null);
 
 		try {
 			// TODO newBundle = constraintsService.reactiveTypeBundleFor(implicitDecision,
@@ -139,7 +138,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 		if (implicitDecision.getResource().isPresent()) {
 			try {
 				var newResponse = constraintHandlerService.deserializeResource(implicitDecision.getResource().get(),
-						(Class<T>) responseType.getExpectedResponseType());
+						responseType);
 				sink.next(newPaylopadUpdate(newResponse));
 				disposeDecisionsAndResourceAccessPoint();
 			} catch (AccessDeniedException e) {

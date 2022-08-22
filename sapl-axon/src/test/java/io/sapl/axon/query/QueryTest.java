@@ -13,7 +13,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 
-public class MonolithWithInMenoryEventstoreTest extends QuerySideTestsuite {
+public class QueryTest extends QueryTestsuite {
 	@DynamicPropertySource
 	static void registerAxonProperties(DynamicPropertyRegistry registry) {
 		registry.add("axon.axonserver.enabled", () -> "false");

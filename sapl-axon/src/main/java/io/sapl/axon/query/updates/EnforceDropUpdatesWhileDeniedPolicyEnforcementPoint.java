@@ -24,17 +24,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
-import org.reactivestreams.Subscription;
 import org.springframework.security.access.AccessDeniedException;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.axon.constraints.AxonConstraintHandlerService;
-import io.sapl.spring.constraints.ReactiveTypeConstraintHandlerBundle;
-import lombok.extern.slf4j.Slf4j;
+import io.sapl.axon.constraints.AxonQueryConstraintHandlerBundle;
 import reactor.core.CoreSubscriber;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
@@ -56,47 +51,48 @@ import reactor.core.publisher.Flux;
  *
  * The PEP does not permit onErrorContinue() downstream.
  *
- * @param <T> type of the FLux contents
+ * @param <U> type of the Flux contents
  */
-@Slf4j
-public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<T> extends Flux<SubscriptionQueryUpdateMessage<T>> {
+public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux<SubscriptionQueryUpdateMessage<U>> {
 
 	private final Flux<AuthorizationDecision>  decisions;
 	private final AxonConstraintHandlerService constraintHandlerService;
+	private final ResponseType<?>              resultResponseType;
 	private final ResponseType<?>              updateResponseType;
 
-	private Flux<SubscriptionQueryUpdateMessage<T>>            resourceAccessPoint;
-	private EnforcementSink<SubscriptionQueryUpdateMessage<T>> sink;
+	private Flux<SubscriptionQueryUpdateMessage<U>>            resourceAccessPoint;
+	private EnforcementSink<SubscriptionQueryUpdateMessage<U>> sink;
 
-	final AtomicReference<Disposable>                                                             decisionsSubscription = new AtomicReference<>();
-	final AtomicReference<Disposable>                                                             dataSubscription      = new AtomicReference<>();
-	final AtomicReference<AuthorizationDecision>                                                  latestDecision        = new AtomicReference<>();
-	final AtomicReference<ReactiveTypeConstraintHandlerBundle<SubscriptionQueryUpdateMessage<T>>> constraintHandler     = new AtomicReference<>();
-	final AtomicBoolean                                                                           stopped               = new AtomicBoolean(
-			false);
+	final AtomicReference<Disposable>                             decisionsSubscription = new AtomicReference<>();
+	final AtomicReference<Disposable>                             dataSubscription      = new AtomicReference<>();
+	final AtomicReference<AuthorizationDecision>                  latestDecision        = new AtomicReference<>();
+	final AtomicReference<AxonQueryConstraintHandlerBundle<?, ?>> constraintHandler     = new AtomicReference<>();
+	final AtomicBoolean                                           stopped               = new AtomicBoolean(false);
 
 	private EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint(Flux<AuthorizationDecision> decisions,
-			Flux<SubscriptionQueryUpdateMessage<T>> updateMessageFlux,
-			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> updateResponseType) {
+			Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
+			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
+			ResponseType<?> updateResponseType) {
 		this.decisions                = decisions;
 		this.resourceAccessPoint      = updateMessageFlux;
 		this.constraintHandlerService = constraintHandlerService;
 		this.updateResponseType       = updateResponseType;
+		this.resultResponseType       = resultResponseType;
 	}
 
 	public static <U> Flux<SubscriptionQueryUpdateMessage<U>> of(Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
-			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> updateResponseType) {
+			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
+			ResponseType<?> updateResponseType) {
 		EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> pep = new EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U>(
-				decisions, updateMessageFlux, constraintHandlerService, updateResponseType);
-		return (Flux<SubscriptionQueryUpdateMessage<U>>) pep.doOnTerminate(pep::handleOnTerminateConstraints)
-				.doAfterTerminate(pep::handleAfterTerminateConstraints)
+				decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
+		return (Flux<SubscriptionQueryUpdateMessage<U>>) pep
 				.onErrorMap(AccessDeniedException.class, pep::handleAccessDenied).doOnCancel(pep::handleCancel)
 				.onErrorStop();
 	}
 
 	@Override
-	public void subscribe(CoreSubscriber<? super SubscriptionQueryUpdateMessage<T>> subscriber) {
+	public void subscribe(CoreSubscriber<? super SubscriptionQueryUpdateMessage<U>> subscriber) {
 		if (sink != null)
 			throw new IllegalStateException("Operator may only be subscribed once.");
 		var context = subscriber.currentContext();
@@ -106,20 +102,20 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<T> extends Flux
 		decisionsSubscription.set(decisions.doOnNext(this::handleNextDecision).contextWrite(context).subscribe());
 	}
 
+	@SuppressWarnings("unchecked")
 	private void handleNextDecision(AuthorizationDecision decision) {
 		var                                    previousDecision = latestDecision.getAndSet(decision);
-		ReactiveTypeConstraintHandlerBundle<T> newBundle;
+		AxonQueryConstraintHandlerBundle<?, ?> newBundle;
 		try {
-			// newBundle = constraintsService.reactiveTypeBundleFor(decision,
-			// updateResponseType.responseMessagePayloadType()t);
-			// constraintHandler.set(newBundle);
+			newBundle = constraintHandlerService.buildQueryPreHandlerBundle(decision, resultResponseType,
+					Optional.of(updateResponseType));
+			constraintHandler.set(newBundle);
 		} catch (AccessDeniedException e) {
-			constraintHandler.set(new ReactiveTypeConstraintHandlerBundle<>());
 			sink.error(e);
 			disposeDecisionsAndResourceAccessPoint();
 			return;
 		}
-		// constraintHandler.get().handleOnDecisionConstraints();
+		constraintHandler.get().executeOnDecisionHandlers();
 
 		if (decision.getDecision() != Decision.PERMIT) {
 			// NOP
@@ -129,9 +125,8 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<T> extends Flux
 		if (decision.getResource().isPresent()) {
 			try {
 				var newResponse = constraintHandlerService.deserializeResource(decision.getResource().get(),
-						(Class<T>) updateResponseType.getExpectedResponseType());
-				sink.next(new GenericSubscriptionQueryUpdateMessage<T>(newResponse));
-
+						updateResponseType);
+				sink.next(new GenericSubscriptionQueryUpdateMessage<>((U) newResponse));
 			} catch (AccessDeniedException e) {
 				sink.error(e);
 			}
@@ -144,29 +139,12 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<T> extends Flux
 	}
 
 	private Disposable wrapResourceAccessPointAndSubscribe() {
-		return resourceAccessPoint.doOnError(this::handleError).doOnRequest(this::handleRequest)
-				.doOnSubscribe(this::handleSubscribe).doOnNext(this::handleNext).doOnComplete(this::handleComplete)
-				.subscribe();
+		return resourceAccessPoint.doOnError(this::handleError).doOnNext(this::handleNext)
+				.doOnComplete(this::handleComplete).subscribe();
 	}
 
-	private void handleSubscribe(Subscription s) {
-		try {
-			// constraintHandler.get().handleOnSubscribeConstraints(s);
-		} catch (Throwable t) {
-			sink.error(t);
-			disposeDecisionsAndResourceAccessPoint();
-		}
-	}
-
-	private void handleOnTerminateConstraints() {
-		// constraintHandler.get().handleOnTerminateConstraints();
-	}
-
-	private void handleAfterTerminateConstraints() {
-		// constraintHandler.get().handleAfterTerminateConstraints();
-	}
-
-	private void handleNext(SubscriptionQueryUpdateMessage<T> value) {
+	@SuppressWarnings("unchecked")
+	private void handleNext(SubscriptionQueryUpdateMessage<U> value) {
 		// the following guard clause makes sure that the constraint handlers do not get
 		// called after downstream consumers cancelled. If the RAP is not consisting of
 		// delayed elements, but something like Flux.just(1,2,3) the handler would be
@@ -179,51 +157,30 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<T> extends Flux
 			return;
 		}
 		try {
-			var transformedValue = value; // constraintHandler.get().handleAllOnNextConstraints(value);
-			if (transformedValue != null)
-				sink.next(transformedValue);
+			var bundle = constraintHandler.get();
+			bundle.executeOnNextHandlers(value).ifPresent(val -> sink.next((SubscriptionQueryUpdateMessage<U>) val));
 		} catch (Throwable t) {
-			sink.error(t);
-			disposeDecisionsAndResourceAccessPoint();
-		}
-	}
-
-	private void handleRequest(Long value) {
-		try {
-//			constraintHandler.get().handleOnRequestConstraints(value);
-		} catch (Throwable t) {
-			sink.error(t);
-			disposeDecisionsAndResourceAccessPoint();
+			handleNextDecision(AuthorizationDecision.DENY);
+			// Alternative: terminate
+			// sink.error(t);
+			// disposeDecisionsAndResourceAccessPoint();
 		}
 	}
 
 	private void handleComplete() {
 		if (stopped.get())
 			return;
-		try {
-			// constraintHandler.get().handleOnCompleteConstraints();
-			sink.complete();
-		} catch (Throwable t) {
-			sink.error(t);
-			sink.complete();
-		}
+		sink.complete();
 		disposeDecisionsAndResourceAccessPoint();
 	}
 
 	private void handleCancel() {
-		try {
-//			constraintHandler.get().handleOnCancelConstraints();
-		} catch (Throwable t) {
-			log.warn("Failed to handle obligation during onCancel. Error is dropped and Flux is canceled. "
-					+ "No information is leaked, however take actions to mitigate error.", t);
-		}
 		disposeDecisionsAndResourceAccessPoint();
 	}
 
 	private void handleError(Throwable error) {
 		try {
-			// sink.error(constraintHandler.get().handleAllOnErrorConstraints(error));
-			sink.error(error);
+			sink.error(constraintHandler.get().executeOnErrorHandlers(error));
 		} catch (Throwable t) {
 			sink.error(t);
 			disposeDecisionsAndResourceAccessPoint();
@@ -232,8 +189,7 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<T> extends Flux
 
 	private Throwable handleAccessDenied(Throwable error) {
 		try {
-			return error;
-//			return constraintHandler.get().handleAllOnErrorConstraints(error);
+			return constraintHandler.get().executeOnErrorHandlers(error);
 		} catch (Throwable t) {
 			disposeDecisionsAndResourceAccessPoint();
 			return t;
