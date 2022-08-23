@@ -21,7 +21,7 @@ import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.axon.annotations.Annotations;
 import io.sapl.axon.annotations.PostHandleEnforce;
 import io.sapl.axon.constraints.AxonConstraintHandlerService;
-import io.sapl.axon.constraints.AxonQueryConstraintHandlerBundle;
+import io.sapl.axon.constraints.QueryConstraintHandlerBundle;
 import io.sapl.axon.subscriptions.AxonAuthorizationSubscriptionBuilderService;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -125,9 +125,11 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 	private Function<AuthorizationDecision, Mono<Object>> enforcePreEnforceDecision(QueryMessage<?, ?> message,
 			T source, Optional<ResponseType<?>> updateType) {
 		return decision -> {
-			log.debug("PreHandlerEnforce {} for {}", decision, message.getPayloadType());
+			log.debug("PreHandlerEnforce Decision : {}", decision);
+			log.debug("               Result Type : {}", message.getPayloadType());
+			log.debug("               Update type : {}", updateType);
 			@SuppressWarnings("rawtypes")
-			AxonQueryConstraintHandlerBundle constraintHandler = null;
+			QueryConstraintHandlerBundle constraintHandler = null;
 			try {
 				constraintHandler = axonConstraintEnforcementService.buildQueryPreHandlerBundle(decision,
 						message.getResponseType(), updateType);
@@ -160,7 +162,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		return decision -> {
 			log.debug("PostHandlerEnforce {} for error {}", decision, error.getMessage());
 			@SuppressWarnings("rawtypes")
-			AxonQueryConstraintHandlerBundle constraintHandler = null;
+			QueryConstraintHandlerBundle constraintHandler = null;
 			try {
 				constraintHandler = axonConstraintEnforcementService.buildQueryPostHandlerBundle(decision,
 						message.getResponseType());
@@ -188,7 +190,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		return decision -> {
 			log.debug("PostHandlerEnforce {} for {} [{}]", decision, message.getPayloadType(), returnObject);
 			@SuppressWarnings("rawtypes")
-			AxonQueryConstraintHandlerBundle constraintHandler = null;
+			QueryConstraintHandlerBundle constraintHandler = null;
 			try {
 				constraintHandler = axonConstraintEnforcementService.buildQueryPostHandlerBundle(decision,
 						message.getResponseType());

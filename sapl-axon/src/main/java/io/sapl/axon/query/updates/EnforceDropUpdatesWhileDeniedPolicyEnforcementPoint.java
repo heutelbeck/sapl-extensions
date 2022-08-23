@@ -29,7 +29,7 @@ import org.springframework.security.access.AccessDeniedException;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.axon.constraints.AxonConstraintHandlerService;
-import io.sapl.axon.constraints.AxonQueryConstraintHandlerBundle;
+import io.sapl.axon.constraints.QueryConstraintHandlerBundle;
 import reactor.core.CoreSubscriber;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
@@ -63,11 +63,11 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
 	private Flux<SubscriptionQueryUpdateMessage<U>>            resourceAccessPoint;
 	private EnforcementSink<SubscriptionQueryUpdateMessage<U>> sink;
 
-	final AtomicReference<Disposable>                             decisionsSubscription = new AtomicReference<>();
-	final AtomicReference<Disposable>                             dataSubscription      = new AtomicReference<>();
-	final AtomicReference<AuthorizationDecision>                  latestDecision        = new AtomicReference<>();
-	final AtomicReference<AxonQueryConstraintHandlerBundle<?, ?>> constraintHandler     = new AtomicReference<>();
-	final AtomicBoolean                                           stopped               = new AtomicBoolean(false);
+	final AtomicReference<Disposable>                         decisionsSubscription = new AtomicReference<>();
+	final AtomicReference<Disposable>                         dataSubscription      = new AtomicReference<>();
+	final AtomicReference<AuthorizationDecision>              latestDecision        = new AtomicReference<>();
+	final AtomicReference<QueryConstraintHandlerBundle<?, ?>> constraintHandler     = new AtomicReference<>();
+	final AtomicBoolean                                       stopped               = new AtomicBoolean(false);
 
 	private EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint(Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
@@ -104,8 +104,8 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
 
 	@SuppressWarnings("unchecked")
 	private void handleNextDecision(AuthorizationDecision decision) {
-		var                                    previousDecision = latestDecision.getAndSet(decision);
-		AxonQueryConstraintHandlerBundle<?, ?> newBundle;
+		var                                previousDecision = latestDecision.getAndSet(decision);
+		QueryConstraintHandlerBundle<?, ?> newBundle;
 		try {
 			newBundle = constraintHandlerService.buildQueryPreHandlerBundle(decision, resultResponseType,
 					Optional.of(updateResponseType));
@@ -115,8 +115,12 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
 			disposeDecisionsAndResourceAccessPoint();
 			return;
 		}
-		constraintHandler.get().executeOnDecisionHandlers();
-
+		try {
+			constraintHandler.get().executeOnDecisionHandlers();
+		} catch (AccessDeniedException e) {
+			// NOP
+			return;
+		}
 		if (decision.getDecision() != Decision.PERMIT) {
 			// NOP
 			return;

@@ -28,13 +28,16 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
 
+import org.axonframework.axonserver.connector.query.subscription.GrpcBackedSubscriptionQueryMessage;
 import org.axonframework.common.Registration;
+import org.axonframework.messaging.GenericMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.unitofwork.CurrentUnitOfWork;
 import org.axonframework.messaging.unitofwork.UnitOfWork;
 import org.axonframework.monitoring.MessageMonitor;
 import org.axonframework.monitoring.NoOpMessageMonitor;
+import org.axonframework.queryhandling.GenericSubscriptionQueryMessage;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.axonframework.queryhandling.SimpleQueryUpdateEmitter;
 import org.axonframework.queryhandling.SubscriptionQueryBackpressure;
@@ -162,8 +165,10 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public <U> UpdateHandlerRegistration<U> registerUpdateHandler(SubscriptionQueryMessage<?, ?, ?> query,
+	public <U> UpdateHandlerRegistration<U> registerUpdateHandler(SubscriptionQueryMessage<?, ?, ?> registeredQuery,
 			int updateBufferSize) {
+
+		var query = reconstructOriginalQuery(registeredQuery);
 
 		Sinks.One<QueryEnforcementConfiguration> enforcementConfigurationSink = Sinks.one();
 
@@ -202,7 +207,8 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 					log.debug("Client requested access denied recoverability.");
 
 					return EnforceRecoverableIfDeniedPolicyEnforcementPoint.of(authzConfig.getDecisions(),
-							updateMessageFlux, constraintHandlerService, originalUpdateResponseType);
+							updateMessageFlux, constraintHandlerService, query.getResponseType(),
+							originalUpdateResponseType);
 				}
 				log.debug(
 						"While handler supports recoverability, client did not request it. Fall back to TILL_DENIED enforcement. Requested: {}",
@@ -216,6 +222,24 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
 		return (UpdateHandlerRegistration<U>) new UpdateHandlerRegistration(registration, securedUpdates,
 				() -> updateSink.emitComplete(EmitFailureHandler.FAIL_FAST));
+	}
+
+	private SubscriptionQueryMessage<?, ?, ?> reconstructOriginalQuery(SubscriptionQueryMessage<?, ?, ?> query) {
+		var originalUpdateResponseType = (ResponseType<?>) query.getMetaData()
+				.get(RecoverableResponse.RECOVERABLE_UPDATE_TYPE_KEY);
+
+		if (originalUpdateResponseType != null)
+			return new GenericSubscriptionQueryMessage<>(
+					new GenericMessage<>(query.getIdentifier(), query.getPayload(), query.getMetaData()),
+					query.getQueryName(), query.getResponseType(), originalUpdateResponseType);
+
+		if (query instanceof GrpcBackedSubscriptionQueryMessage) {
+			log.error(
+					"ATTENTION: Due to a bug in Axon Framework, the update response type of the query was overwritten");
+			log.error("           with the initial response type. If these types were different, queries may break.");
+		}
+
+		return query;
 	}
 
 	@Override

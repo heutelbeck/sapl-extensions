@@ -23,7 +23,6 @@ import com.google.common.base.Functions;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.axon.constraints.api.AxonRunnableConstraintHandlerProvider;
-import io.sapl.axon.constraints.api.AxonRunnableConstraintHandlerProvider.Signal;
 import io.sapl.axon.constraints.api.QueryMessageMappingConstraintHandlerProvider;
 import io.sapl.axon.constraints.api.ResultMessageConsumerConstraintHandlerProvider;
 import io.sapl.axon.constraints.api.ResultMessageFilterPredicateConstraintHandlerProvider;
@@ -90,7 +89,7 @@ public class AxonConstraintHandlerService {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public AxonQueryConstraintHandlerBundle<?, ?> buildQueryPreHandlerBundle(AuthorizationDecision decision,
+	public QueryConstraintHandlerBundle<?, ?> buildQueryPreHandlerBundle(AuthorizationDecision decision,
 			ResponseType<?> responseType, Optional<ResponseType<?>> updateType) {
 
 		var obligationsWithoutHandler = new HashSet<JsonNode>();
@@ -125,7 +124,7 @@ public class AxonConstraintHandlerService {
 			throw new AccessDeniedException("Access Denied");
 		}
 
-		return new AxonQueryConstraintHandlerBundle(onDecisionHandlers, queryMappingHandlers, queryConsumerHandlers,
+		return new QueryConstraintHandlerBundle(onDecisionHandlers, queryMappingHandlers, queryConsumerHandlers,
 				errorMappingHandlers, errorConsumerHandlers, resultMappingHandlers, resultConsumerHandlers,
 				updateMappingHandlers, updateConsumerHandlers, updateFilterPredicate);
 	}
@@ -249,7 +248,7 @@ public class AxonConstraintHandlerService {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public AxonQueryConstraintHandlerBundle<?, ?> buildQueryPostHandlerBundle(AuthorizationDecision decision,
+	public QueryConstraintHandlerBundle<?, ?> buildQueryPostHandlerBundle(AuthorizationDecision decision,
 			ResponseType<?> responseType) {
 
 		var obligationsWithoutHandler = new HashSet<JsonNode>();
@@ -268,7 +267,7 @@ public class AxonConstraintHandlerService {
 			throw new AccessDeniedException("Access Denied");
 		}
 
-		return new AxonQueryConstraintHandlerBundle(onDecisionHandlers, Functions.identity(), __ -> {
+		return new QueryConstraintHandlerBundle(onDecisionHandlers, Functions.identity(), __ -> {
 		}, errorMappingHandlers, errorConsumerHandlers, resultMappingHandlers, resultConsumerHandlers,
 				Functions.identity(), __ -> {
 				}, __ -> true);
@@ -485,9 +484,9 @@ public class AxonConstraintHandlerService {
 
 	private Runnable constructOnDecisionHandlers(AuthorizationDecision decision,
 			Set<JsonNode> obligationsWithoutHandler) {
-		var onDecisionObligationHandlers = runnableHandlersForSignal(Signal.ON_DECISION, decision.getObligations(),
+		var onDecisionObligationHandlers = runnableHandlersForSignal(decision.getObligations(),
 				obligationsWithoutHandler::remove);
-		var onDecisionAdviceHandlers     = runnableHandlersForSignal(Signal.ON_DECISION, decision.getAdvice(), __ -> {
+		var onDecisionAdviceHandlers     = runnableHandlersForSignal(decision.getAdvice(), __ -> {
 											});
 
 		return () -> {
@@ -496,13 +495,13 @@ public class AxonConstraintHandlerService {
 		};
 	}
 
-	private Optional<Runnable> runnableHandlersForSignal(Signal signal, Optional<ArrayNode> constraints,
+	private Optional<Runnable> runnableHandlersForSignal(Optional<ArrayNode> constraints,
 			Consumer<JsonNode> onHandlerFound) {
 		return constraints.map(obligations -> {
 			var handlers = new ArrayList<Runnable>(obligations.size());
 			for (var constraint : obligations) {
 				for (var provider : globalRunnableProviders) {
-					if (provider.getSignals().contains(signal) && provider.isResponsible(constraint)) {
+					if (provider.isResponsible(constraint)) {
 						onHandlerFound.accept(constraint);
 						handlers.add(provider.getHandler(constraint));
 					}

@@ -12,8 +12,8 @@ import org.axonframework.queryhandling.QueryMessage;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class AxonQueryConstraintHandlerBundle<I, U> {
-	public static final AxonQueryConstraintHandlerBundle<?, ?> NOOP_BUNDLE = new AxonQueryConstraintHandlerBundle<>();
+public class QueryConstraintHandlerBundle<I, U> {
+	public static final QueryConstraintHandlerBundle<?, ?> NOOP_BUNDLE = new QueryConstraintHandlerBundle<>();
 
 	protected final Runnable                                         onDecision;
 	protected final Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMapper;
@@ -27,7 +27,7 @@ public class AxonQueryConstraintHandlerBundle<I, U> {
 	protected final Predicate<ResultMessage<?>>                      filterPredicate;
 
 	// @formatter:off
-	private AxonQueryConstraintHandlerBundle() {
+	private QueryConstraintHandlerBundle() {
 		this.onDecision = ()->{};
 		this.queryMapper = Function.identity();
 		this.queryConsumer = __ -> {};

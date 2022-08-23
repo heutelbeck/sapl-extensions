@@ -16,17 +16,11 @@
 
 package io.sapl.axon.constraints.api;
 
-import java.util.Collection;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
 
 public interface AxonRunnableConstraintHandlerProvider extends Responsible, HasPriority {
-	Collection<Signal> getSignals();
-
 	Runnable getHandler(JsonNode constraint);
-
-	enum Signal { ON_DECISION, ON_UPDATE }
 }

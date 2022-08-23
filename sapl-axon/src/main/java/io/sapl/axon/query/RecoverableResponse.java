@@ -42,4 +42,7 @@ public class RecoverableResponse<U> {
 		return payload == null;
 	}
 
+	public static <T> RecoverableResponse<T> accessDenied(ResponseType<T> reponseType) {
+		return new RecoverableResponse<>(reponseType,null);
+	}
 }

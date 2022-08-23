@@ -10,17 +10,16 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
 import static reactor.test.StepVerifier.create;
 
 import java.time.Duration;
-import java.util.Collection;
-import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -63,11 +62,9 @@ import io.sapl.spring.constraints.api.ConsumerConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.ErrorHandlerProvider;
 import io.sapl.spring.constraints.api.ErrorMappingConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@Slf4j
 @SpringBootTest
 @Import(TestScenarioConfiguration.class)
 public abstract class QueryTestsuite {
@@ -750,13 +747,12 @@ public abstract class QueryTestsuite {
 		constraints2.add(JSON.textNode(CONSUME_ERROR));
 		constraints2.add(JSON.textNode(MODIFY_ERROR));
 
-		Flux<AuthorizationDecision> decisions = Flux
-				.concat(Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints)),
-						Flux.just(AuthorizationDecision.DENY)
-								.delayElements(Duration.ofMillis(5 * emitIntervallMs + emitIntervallMs / 2)),
-						Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints2))
-								.delayElements(Duration.ofMillis(3 * emitIntervallMs)))
-				.log();
+		Flux<AuthorizationDecision> decisions = Flux.concat(
+				Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints)),
+				Flux.just(AuthorizationDecision.DENY)
+						.delayElements(Duration.ofMillis(5 * emitIntervallMs + emitIntervallMs / 2)),
+				Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints2))
+						.delayElements(Duration.ofMillis(3 * emitIntervallMs)));
 
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
 
@@ -795,25 +791,74 @@ public abstract class QueryTestsuite {
 
 		Flux<AuthorizationDecision> decisions = Flux.concat(
 				Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints)),
+				Flux.just(AuthorizationDecision.DENY)
+						.delayElements(Duration.ofMillis(5 * emitIntervallMs + emitIntervallMs / 2)),
 				Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints2))
-						.delayElements(Duration.ofMillis(10 * emitIntervallMs + emitIntervallMs / 2)));
+						.delayElements(Duration.ofMillis(3 * emitIntervallMs)));
 
+		var accessDeniedHandler = mock(Runnable.class);
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
 
 		var result = queryGateway.recoverableSubscriptionQuery(RECOVERABLE_QUERY, queryPayload,
-				instanceOf(String.class), instanceOf(String.class), () -> {
-				});
+				instanceOf(String.class), instanceOf(String.class), accessDeniedHandler);
 
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
 		create(result.initialResult().timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 10L))))
 				.expectNext(queryPayload).verifyComplete();
-		create(result.updates().timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 10L))).take(15))
-				.expectNext("CASEC3-0", "CASEC3-2", "CASEC3-4", "CASEC3-6", "CASEC3-8", "CASEC3-10", "CASEC3-11",
-						"CASEC3-12", "CASEC3-13", "CASEC3-14", "CASEC3-15", "CASEC3-16", "CASEC3-17", "CASEC3-18",
-						"CASEC3-19")
-				.verifyComplete();
+		create(result.updates().timeout(Duration.ofMillis(emitIntervallMs * 2 * numberOfUpdates)).take(7))
+				.expectNext("CASEC3-0", "CASEC3-2", "CASEC3-4").expectErrorMatches(isAccessDenied()).verify();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(resultMessageConsumerProvider, times(15)).accept(any());
+		verify(accessDeniedHandler, times(1)).run();
+		verify(resultMessageConsumerProvider, times(3)).accept(any());
+		result.close();
+	}
+
+	@Test
+	void when_recoverableHandlerSubscriptionQueryAndPermitWithConstraintsWithRecovery_then_initialReturnAndUpdatesAreEmitted() {
+		var emitIntervallMs = 200L;
+		var queryPayload    = "caseC4";
+		var numberOfUpdates = 20L;
+
+		var constraints = JSON.arrayNode();
+		constraints.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
+		constraints.add(JSON.textNode(CONSUME_UPDATE));
+		constraints.add(JSON.textNode(ONLY_EVEN_NUMBERS));
+		constraints.add(JSON.textNode(CONSUME_ERROR));
+		constraints.add(JSON.textNode(MODIFY_ERROR));
+
+		var constraints2 = JSON.arrayNode();
+		constraints2.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
+		constraints2.add(JSON.textNode(CONSUME_UPDATE));
+		constraints2.add(JSON.textNode(CONSUME_ERROR));
+		constraints2.add(JSON.textNode(MODIFY_ERROR));
+
+		Flux<AuthorizationDecision> decisions                  = Flux.concat(
+				Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints)),
+				Flux.just(AuthorizationDecision.DENY)
+						.delayElements(Duration.ofMillis(5 * emitIntervallMs + emitIntervallMs / 2)),
+				Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints2))
+						.delayElements(Duration.ofMillis(3 * emitIntervallMs - emitIntervallMs / 4)));
+		var                         accessDeniedHandler        = mock(Runnable.class);
+		@SuppressWarnings("unchecked")
+		var                         accessDeniedHandlerOnError = (BiConsumer<Throwable, Object>) mock(BiConsumer.class);
+
+		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
+
+		var result = queryGateway.recoverableSubscriptionQuery(RECOVERABLE_QUERY, queryPayload,
+				instanceOf(String.class), instanceOf(String.class), accessDeniedHandler);
+
+		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
+		create(result.initialResult().timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 10L))))
+				.expectNext(queryPayload).verifyComplete();
+
+		create(result.updates().onErrorContinue(accessDeniedHandlerOnError)
+				.timeout(Duration.ofMillis(emitIntervallMs * 2 * numberOfUpdates)).take(7))
+				.expectNext("CASEC4-0", "CASEC4-2", "CASEC4-4", "CASEC4-8", "CASEC4-9", "CASEC4-10", "CASEC4-11")
+				.verifyComplete();
+		verify(accessDeniedHandler, times(0)).run();
+		verify(accessDeniedHandlerOnError, times(1)).accept(any(), any());
+		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
+		verify(resultMessageConsumerProvider, times(7)).accept(any());
 		result.close();
 	}
 
@@ -943,11 +988,6 @@ public abstract class QueryTestsuite {
 		@Override
 		public boolean isResponsible(JsonNode constraint) {
 			return constraint.isTextual() && ON_DECISION_DO.equals(constraint.textValue());
-		}
-
-		@Override
-		public Collection<Signal> getSignals() {
-			return Set.of(Signal.ON_DECISION);
 		}
 
 		@Override

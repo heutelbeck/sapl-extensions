@@ -318,10 +318,9 @@ public class AxonConstraintHandlerServiceOLD {
 				.map(failFunctionOnlyIfObligationElseFallBackToIdentity(isObligation)).collect(Collectors.toList());
 	}
 
-	private List<Runnable> constructSimpleRunnableHandlersForConstraint(JsonNode constraint, boolean isObligation,
-			AxonRunnableConstraintHandlerProvider.Signal signal) {
+	private List<Runnable> constructSimpleRunnableHandlersForConstraint(JsonNode constraint, boolean isObligation) {
 		return globalSimpleRunnableProviders.stream().filter(provider -> provider.isResponsible(constraint))
-				.filter(provider -> provider.getSignals().contains(signal)).map(provider -> provider.getHandler(constraint))
+				.map(provider -> provider.getHandler(constraint))
 				.map(failRunnableOnlyIfObligation(isObligation)).collect(Collectors.toList());
 	}
 
