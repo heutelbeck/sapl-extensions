@@ -51,9 +51,9 @@ import io.sapl.axon.annotation.PostHandleEnforce;
 import io.sapl.axon.annotation.PreHandleEnforce;
 import io.sapl.axon.configuration.SaplAutoConfiguration;
 import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
-import io.sapl.axon.constrainthandling.api.QueryMessageMappingConstraintHandlerProvider;
-import io.sapl.axon.constrainthandling.api.ResultMessageFilterPredicateConstraintHandlerProvider;
-import io.sapl.axon.constrainthandling.api.ResultMessageMappingConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.QueryConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.UpdateFilterConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
 import io.sapl.axon.queryhandling.QueryTestsuite.TestScenarioConfiguration;
 import io.sapl.spring.constraints.api.ErrorMappingConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
@@ -873,7 +873,7 @@ public abstract class QueryTestsuite {
 	}
 	// @formatter:on
 
-	static class ResultFilterProvider implements ResultMessageFilterPredicateConstraintHandlerProvider<String> {
+	static class ResultFilterProvider implements UpdateFilterConstraintHandlerProvider<String> {
 
 		@Override
 		public boolean isResponsible(JsonNode constraint) {
@@ -894,7 +894,7 @@ public abstract class QueryTestsuite {
 		}
 	}
 
-	static class ResultMessageMappingProvider implements ResultMessageMappingConstraintHandlerProvider<String> {
+	static class ResultMessageMappingProvider implements ResultConstraintHandlerProvider<String> {
 
 		@Override
 		public boolean isResponsible(JsonNode constraint) {
@@ -930,7 +930,7 @@ public abstract class QueryTestsuite {
 
 	}
 
-	static class QueryMappingProvider implements QueryMessageMappingConstraintHandlerProvider {
+	static class QueryMappingProvider implements QueryConstraintHandlerProvider {
 
 		@Override
 		public boolean isResponsible(JsonNode constraint) {

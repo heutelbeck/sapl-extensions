@@ -26,11 +26,11 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.base.Functions;
 
 import io.sapl.api.pdp.AuthorizationDecision;
-import io.sapl.axon.constrainthandling.api.CommandMessageMappingConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.CommandConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
-import io.sapl.axon.constrainthandling.api.QueryMessageMappingConstraintHandlerProvider;
-import io.sapl.axon.constrainthandling.api.ResultMessageFilterPredicateConstraintHandlerProvider;
-import io.sapl.axon.constrainthandling.api.ResultMessageMappingConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.QueryConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.UpdateFilterConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.ErrorMappingConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
 import lombok.extern.slf4j.Slf4j;
@@ -40,21 +40,21 @@ public class AxonConstraintHandlerService {
 
 	private final ObjectMapper                                                   mapper;
 	private final List<OnDecisionConstraintHandlerProvider>                      globalRunnableProviders;
-	private final List<CommandMessageMappingConstraintHandlerProvider>           globalCommandMessageMappingProviders;
-	private final List<QueryMessageMappingConstraintHandlerProvider>             globalQueryMessageMappingProviders;
+	private final List<CommandConstraintHandlerProvider>           globalCommandMessageMappingProviders;
+	private final List<QueryConstraintHandlerProvider>             globalQueryMessageMappingProviders;
 	private final List<ErrorMappingConstraintHandlerProvider>                    globalErrorMappingHandlerProviders;
 	private final List<MappingConstraintHandlerProvider<?>>                      globalMappingProviders;
-	private final List<ResultMessageFilterPredicateConstraintHandlerProvider<?>> updatePredicateProviders;
-	private final List<ResultMessageMappingConstraintHandlerProvider<?>>         updateMappingProviders;
+	private final List<UpdateFilterConstraintHandlerProvider<?>> updatePredicateProviders;
+	private final List<ResultConstraintHandlerProvider<?>>         updateMappingProviders;
 
 	public AxonConstraintHandlerService(ObjectMapper mapper,
 			List<OnDecisionConstraintHandlerProvider> globalRunnableProviders,
-			List<CommandMessageMappingConstraintHandlerProvider> globalCommandMessageMappingProviders,
-			List<QueryMessageMappingConstraintHandlerProvider> globalQueryMessageMappingProviders,
+			List<CommandConstraintHandlerProvider> globalCommandMessageMappingProviders,
+			List<QueryConstraintHandlerProvider> globalQueryMessageMappingProviders,
 			List<ErrorMappingConstraintHandlerProvider> globalErrorMappingHandlerProviders,
 			List<MappingConstraintHandlerProvider<?>> globalMappingProviders,
-			List<ResultMessageFilterPredicateConstraintHandlerProvider<?>> updatePredicateProviders,
-			List<ResultMessageMappingConstraintHandlerProvider<?>> updateMappingProviders) {
+			List<UpdateFilterConstraintHandlerProvider<?>> updatePredicateProviders,
+			List<ResultConstraintHandlerProvider<?>> updateMappingProviders) {
 
 		this.mapper = mapper;
 		// sort according to priority

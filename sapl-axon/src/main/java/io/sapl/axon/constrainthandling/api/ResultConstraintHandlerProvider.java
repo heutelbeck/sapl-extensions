@@ -34,7 +34,7 @@ import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
 import io.sapl.spring.constraints.api.TypeSupport;
 
-public interface ResultMessageMappingConstraintHandlerProvider<T> extends Responsible, HasPriority, TypeSupport<T> {
+public interface ResultConstraintHandlerProvider<T> extends Responsible, HasPriority, TypeSupport<T> {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	default Function<ResultMessage<?>, ResultMessage<?>> getHandler(JsonNode constraint) {

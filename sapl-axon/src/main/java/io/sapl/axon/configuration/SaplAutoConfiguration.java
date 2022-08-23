@@ -22,11 +22,11 @@ import io.sapl.axon.authentication.AuthenticationMetadataProvider;
 import io.sapl.axon.authentication.AuthenticationQueryDispatchInterceptor;
 import io.sapl.axon.authentication.SpringSecurityAuthenticationMetadataProvider;
 import io.sapl.axon.constrainthandling.AxonConstraintHandlerService;
-import io.sapl.axon.constrainthandling.api.CommandMessageMappingConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.CommandConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
-import io.sapl.axon.constrainthandling.api.QueryMessageMappingConstraintHandlerProvider;
-import io.sapl.axon.constrainthandling.api.ResultMessageFilterPredicateConstraintHandlerProvider;
-import io.sapl.axon.constrainthandling.api.ResultMessageMappingConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.QueryConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.UpdateFilterConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
 import io.sapl.axon.queryhandling.SaplQueryGateway;
 import io.sapl.axon.queryhandling.SaplQueryUpdateEmitter;
 import io.sapl.axon.subscriptions.AxonAuthorizationSubscriptionBuilderService;
@@ -68,12 +68,12 @@ public class SaplAutoConfiguration {
 	@Bean
 	public AxonConstraintHandlerService axonConstraintHandlerService(ObjectMapper mapper,
 			List<OnDecisionConstraintHandlerProvider> globalRunnableProviders,
-			List<CommandMessageMappingConstraintHandlerProvider> globalCommandMessageMappingProviders,
-			List<QueryMessageMappingConstraintHandlerProvider> globalQueryMappingProviders,
+			List<CommandConstraintHandlerProvider> globalCommandMessageMappingProviders,
+			List<QueryConstraintHandlerProvider> globalQueryMappingProviders,
 			List<ErrorMappingConstraintHandlerProvider> globalErrorMappingHandlerProviders,
 			List<MappingConstraintHandlerProvider<?>> globalMappingProviders,
-			List<ResultMessageFilterPredicateConstraintHandlerProvider<?>> filterPredicateProviders,
-			List<ResultMessageMappingConstraintHandlerProvider<?>> resulteMappingProviders) {
+			List<UpdateFilterConstraintHandlerProvider<?>> filterPredicateProviders,
+			List<ResultConstraintHandlerProvider<?>> resulteMappingProviders) {
 		return new AxonConstraintHandlerService(mapper, globalRunnableProviders, globalCommandMessageMappingProviders,
 				globalQueryMappingProviders, globalErrorMappingHandlerProviders, globalMappingProviders,
 				filterPredicateProviders, resulteMappingProviders);

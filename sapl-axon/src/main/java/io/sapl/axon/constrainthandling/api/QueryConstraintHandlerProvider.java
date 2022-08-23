@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
 
-public interface QueryMessageMappingConstraintHandlerProvider extends Responsible, HasPriority {
+public interface QueryConstraintHandlerProvider extends Responsible, HasPriority {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	default Function<QueryMessage<?, ?>, QueryMessage<?, ?>> getHandler(JsonNode constraint) {
