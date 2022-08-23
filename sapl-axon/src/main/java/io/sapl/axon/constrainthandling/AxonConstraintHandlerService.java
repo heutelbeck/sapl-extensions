@@ -38,14 +38,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AxonConstraintHandlerService {
 
-	private final ObjectMapper                                                   mapper;
-	private final List<OnDecisionConstraintHandlerProvider>                      globalRunnableProviders;
-	private final List<CommandConstraintHandlerProvider>           globalCommandMessageMappingProviders;
-	private final List<QueryConstraintHandlerProvider>             globalQueryMessageMappingProviders;
-	private final List<ErrorMappingConstraintHandlerProvider>                    globalErrorMappingHandlerProviders;
-	private final List<MappingConstraintHandlerProvider<?>>                      globalMappingProviders;
+	private final ObjectMapper                                   mapper;
+	private final List<OnDecisionConstraintHandlerProvider>      globalRunnableProviders;
+	private final List<CommandConstraintHandlerProvider>         globalCommandMessageMappingProviders;
+	private final List<QueryConstraintHandlerProvider>           globalQueryMessageMappingProviders;
+	private final List<ErrorMappingConstraintHandlerProvider>    globalErrorMappingHandlerProviders;
+	private final List<MappingConstraintHandlerProvider<?>>      globalMappingProviders;
 	private final List<UpdateFilterConstraintHandlerProvider<?>> updatePredicateProviders;
-	private final List<ResultConstraintHandlerProvider<?>>         updateMappingProviders;
+	private final List<ResultConstraintHandlerProvider<?>>       updateMappingProviders;
 
 	public AxonConstraintHandlerService(ObjectMapper mapper,
 			List<OnDecisionConstraintHandlerProvider> globalRunnableProviders,
@@ -87,6 +87,11 @@ public class AxonConstraintHandlerService {
 	public <T> CommandConstraintHandlerBundle<?, ?> buildPreEnforceCommandConstraintHandlerBundle(
 			AuthorizationDecision decision, T aggregate, Optional<Executable> executable) {
 
+		if (decision.getResource().isPresent()) {
+			log.warn("PDP decision contained resource object for command handler. Access Denied. {}", decision);
+			throw new AccessDeniedException("Access Denied");
+		}
+
 		var obligationsWithoutHandler = new HashSet<JsonNode>();
 		decision.getObligations()
 				.ifPresent(obligations -> obligations.forEach(obligation -> obligationsWithoutHandler.add(obligation)));
@@ -100,14 +105,15 @@ public class AxonConstraintHandlerService {
 		var commandMappingHandlers = constructCommandMessageMappingHandlers(decision, obligationsWithoutHandler);
 		var errorMappingHandlers   = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
 		var resultMappingHandlers  = constructResultMappingHandlers(decision, obligationsWithoutHandler, type);
-
+		var handlersOnObject       = (Runnable) () -> {
+									};
 		if (!obligationsWithoutHandler.isEmpty()) {
 			log.error("Could not find handlers for all obligations. Missing handlers for: {}",
 					obligationsWithoutHandler);
 			throw new AccessDeniedException("Access Denied");
 		}
 		return new CommandConstraintHandlerBundle<>(onDecisionHandlers, errorMappingHandlers, commandMappingHandlers,
-				resultMappingHandlers);
+				resultMappingHandlers, handlersOnObject);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

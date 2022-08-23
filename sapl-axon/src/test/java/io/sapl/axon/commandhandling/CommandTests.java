@@ -41,6 +41,7 @@ import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.axon.annotation.PreHandleEnforce;
 import io.sapl.axon.commandhandling.model.TestAggregateAPI.CreateAggregate;
+import io.sapl.axon.commandhandling.model.TestAggregateAPI.ModifyAggregate;
 import io.sapl.axon.configuration.SaplAutoConfiguration;
 import io.sapl.axon.constrainthandling.api.CommandConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
@@ -135,6 +136,15 @@ public class CommandTests {
 	void when_securedAggregateCreationCommand_and_Permit_then_accessGranted() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 		assertThat(commandGateway.sendAndWait(new CreateAggregate("id1")), is("id1"));
+	}
+	
+	@Test
+	void when_securedAggregateCreationAndFollowUpCommand_and_Permit_then_accessGranted() {
+		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+		commandGateway.sendAndWait(new CreateAggregate("id2"));
+		commandGateway.sendAndWait(new ModifyAggregate("id2"));
+//		assertThat(commandGateway.sendAndWait(new CreateAggregate("id1")), is("id1"));
+//		assertThat(commandGateway.sendAndWait(new ModifyAggregate("id1")), is("id1"));
 	}
 
 	@Test

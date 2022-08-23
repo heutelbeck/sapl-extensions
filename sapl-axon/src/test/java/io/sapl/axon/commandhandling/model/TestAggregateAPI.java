@@ -17,4 +17,14 @@ public class TestAggregateAPI {
 		final String id;
 	}
 
+	@Value
+	public static class ModifyAggregate {
+		@TargetAggregateIdentifier
+		final String id;
+	}
+
+	@Value
+	public static class AggregateModified {
+		final String id;
+	}
 }

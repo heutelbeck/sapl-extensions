@@ -5,9 +5,7 @@ import java.util.function.Function;
 import org.axonframework.commandhandling.CommandMessage;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @RequiredArgsConstructor
 public class CommandConstraintHandlerBundle<R, T> {
 	public static final CommandConstraintHandlerBundle<?, ?> NOOP_BUNDLE = new CommandConstraintHandlerBundle<>();
@@ -16,6 +14,7 @@ public class CommandConstraintHandlerBundle<R, T> {
 	protected final Function<Throwable, Throwable>                 errorMapper;
 	protected final Function<CommandMessage<?>, CommandMessage<?>> commandMapper;
 	protected final Function<R, R>                                 resultMapper;
+	protected final Runnable                                       handlersOnObject;
 
 	// @formatter:off
 	private CommandConstraintHandlerBundle() {
@@ -23,6 +22,7 @@ public class CommandConstraintHandlerBundle<R, T> {
 		this.commandMapper = Function.identity();
 		this.errorMapper = Function.identity();
 		this.resultMapper = Function.identity();
+		this.handlersOnObject = ()->{}; 
 	}
 	// @formatter:on
 
@@ -31,16 +31,14 @@ public class CommandConstraintHandlerBundle<R, T> {
 	}
 
 	public Exception executeOnErrorHandlers(Exception t) {
-		log.debug("original error: {}", t.getClass().getSimpleName());
 		var mapped = errorMapper.apply(t);
-		log.debug("mapped   error: {}", mapped.getMessage());
 		if (mapped instanceof Exception)
 			return (Exception) mapped;
 		return new RuntimeException("Error: " + t.getMessage(), t);
 	}
 
 	public void executeAggregateConstraintHandlerMethods() {
-		log.warn("UNIMPLEMENTED AGGREGATE HANDLERS");
+		handlersOnObject.run();
 	}
 
 	public CommandMessage<?> executeCommandMappingHandlers(CommandMessage<?> message) {
