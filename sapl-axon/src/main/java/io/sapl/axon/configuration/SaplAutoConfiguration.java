@@ -17,22 +17,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.xstream.XStream;
 
 import io.sapl.api.pdp.PolicyDecisionPoint;
-import io.sapl.axon.constraints.AxonConstraintHandlerService;
-import io.sapl.axon.constraints.api.AxonRunnableConstraintHandlerProvider;
-import io.sapl.axon.constraints.api.QueryMessageMappingConstraintHandlerProvider;
-import io.sapl.axon.constraints.api.ResultMessageConsumerConstraintHandlerProvider;
-import io.sapl.axon.constraints.api.ResultMessageFilterPredicateConstraintHandlerProvider;
-import io.sapl.axon.constraints.api.ResultMessageMappingConstraintHandlerProvider;
-import io.sapl.axon.interceptor.AuthenticationCommandDispatchInterceptor;
-import io.sapl.axon.interceptor.AuthenticationMetadataProvider;
-import io.sapl.axon.interceptor.AuthenticationQueryDispatchInterceptor;
-import io.sapl.axon.interceptor.SpringSecurityAuthenticationMetadataProvider;
-import io.sapl.axon.query.SaplHandlerEnhancer;
-import io.sapl.axon.query.SaplQueryGateway;
-import io.sapl.axon.query.SaplQueryUpdateEmitter;
+import io.sapl.axon.authentication.AuthenticationCommandDispatchInterceptor;
+import io.sapl.axon.authentication.AuthenticationMetadataProvider;
+import io.sapl.axon.authentication.AuthenticationQueryDispatchInterceptor;
+import io.sapl.axon.authentication.SpringSecurityAuthenticationMetadataProvider;
+import io.sapl.axon.constrainthandling.AxonConstraintHandlerService;
+import io.sapl.axon.constrainthandling.api.CommandMessageMappingConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.QueryMessageMappingConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.ResultMessageFilterPredicateConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.ResultMessageMappingConstraintHandlerProvider;
+import io.sapl.axon.queryhandling.SaplQueryGateway;
+import io.sapl.axon.queryhandling.SaplQueryUpdateEmitter;
 import io.sapl.axon.subscriptions.AxonAuthorizationSubscriptionBuilderService;
-import io.sapl.spring.constraints.api.ConsumerConstraintHandlerProvider;
-import io.sapl.spring.constraints.api.ErrorHandlerProvider;
 import io.sapl.spring.constraints.api.ErrorMappingConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
 
@@ -70,18 +67,16 @@ public class SaplAutoConfiguration {
 
 	@Bean
 	public AxonConstraintHandlerService axonConstraintHandlerService(ObjectMapper mapper,
-			List<AxonRunnableConstraintHandlerProvider> globalRunnableProviders,
+			List<OnDecisionConstraintHandlerProvider> globalRunnableProviders,
+			List<CommandMessageMappingConstraintHandlerProvider> globalCommandMessageMappingProviders,
 			List<QueryMessageMappingConstraintHandlerProvider> globalQueryMappingProviders,
-			List<ConsumerConstraintHandlerProvider<?>> globalConsumerProviders,
 			List<ErrorMappingConstraintHandlerProvider> globalErrorMappingHandlerProviders,
-			List<ErrorHandlerProvider> globalErrorHandlerProviders,
 			List<MappingConstraintHandlerProvider<?>> globalMappingProviders,
 			List<ResultMessageFilterPredicateConstraintHandlerProvider<?>> filterPredicateProviders,
-			List<ResultMessageMappingConstraintHandlerProvider<?>> resulteMappingProviders,
-			List<ResultMessageConsumerConstraintHandlerProvider<?>> resultConsumerProviders) {
-		return new AxonConstraintHandlerService(mapper, globalRunnableProviders, globalQueryMappingProviders,
-				globalConsumerProviders, globalErrorMappingHandlerProviders, globalErrorHandlerProviders,
-				globalMappingProviders, filterPredicateProviders, resulteMappingProviders, resultConsumerProviders);
+			List<ResultMessageMappingConstraintHandlerProvider<?>> resulteMappingProviders) {
+		return new AxonConstraintHandlerService(mapper, globalRunnableProviders, globalCommandMessageMappingProviders,
+				globalQueryMappingProviders, globalErrorMappingHandlerProviders, globalMappingProviders,
+				filterPredicateProviders, resulteMappingProviders);
 	}
 
 	@Bean

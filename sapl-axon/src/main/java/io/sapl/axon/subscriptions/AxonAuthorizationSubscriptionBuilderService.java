@@ -41,14 +41,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 import io.sapl.api.pdp.AuthorizationSubscription;
+import io.sapl.axon.annotation.PreHandleEnforce;
 import io.sapl.spring.method.metadata.PreEnforce;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The AuthorizationSubscriptionBuilderService Object offers methods to get the
  * AuthorizationSubscription for Query Messages and for Command Messages.
  */
+@Slf4j
 @RequiredArgsConstructor
 public class AxonAuthorizationSubscriptionBuilderService {
 	protected static final String ACTION               = "action";
@@ -93,9 +96,8 @@ public class AxonAuthorizationSubscriptionBuilderService {
 	 * @return the AuthorizationSubscription for the Command
 	 */
 	public AuthorizationSubscription constructAuthorizationSubscriptionForCommand(CommandMessage<?> message,
-			Object aggregate, MessageHandlingMember<?> delegate) {
+			Object aggregate, PreHandleEnforce methodAnnotation) {
 
-		var methodAnnotation          = retrievePreEnforceAnnotation(delegate);
 		var annotationAttributeValues = AnnotationUtils.getAnnotationAttributes(methodAnnotation);
 
 		var subject     = retrieveSubject(message, annotationAttributeValues);
@@ -165,20 +167,25 @@ public class AxonAuthorizationSubscriptionBuilderService {
 			if (aggregate.getClass().isAnnotationPresent(Aggregate.class))
 				json.put(AGGREGATE_TYPE, aggregate.getClass().getSimpleName());
 		}
+
+		aggregateIdFromMessage(message).ifPresent(id -> json.set(AGGREGATE_IDENTIFIER, mapper.valueToTree(id)));
+
+		return json;
+	}
+
+	protected Optional<Object> aggregateIdFromMessage(Message<?> message) {
 		var fields = message.getPayloadType().getDeclaredFields();
 		for (var field : fields) {
 			if (field.isAnnotationPresent(TargetAggregateIdentifier.class)) {
 				try {
-					json.set(AGGREGATE_IDENTIFIER,
-							mapper.valueToTree(PropertyUtils.getProperty(aggregate, field.getName())));
-				} catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException
-						| NoSuchMethodException e) {
-					throw new IllegalStateException("Could not get aggregate ID from aggregate object", e);
+					return Optional.ofNullable(PropertyUtils.getProperty(message.getPayload(), field.getName()));
+				} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+					log.error("Could not get TargetAggregateIdentifier from message", e);
+					return Optional.empty();
 				}
-				break;
 			}
 		}
-		return json;
+		return Optional.empty();
 	}
 
 	protected JsonNode messageToJson(Message<?> message) {
