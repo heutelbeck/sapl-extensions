@@ -124,10 +124,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 
 	private Function<AuthorizationDecision, Mono<Object>> enforcePreEnforceDecision(QueryMessage<?, ?> message,
 			T source, Optional<ResponseType<?>> updateType) {
-		return decision -> {
-			log.debug("PreHandlerEnforce Decision : {}", decision);
-			log.debug("               Result Type : {}", message.getPayloadType());
-			log.debug("               Update type : {}", updateType);
+		return decision -> {	
 			@SuppressWarnings("rawtypes")
 			QueryConstraintHandlerBundle constraintHandler = null;
 			try {

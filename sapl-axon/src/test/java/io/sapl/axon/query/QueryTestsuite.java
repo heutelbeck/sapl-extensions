@@ -889,7 +889,7 @@ public abstract class QueryTestsuite {
 		public String handlePostEnforceNoResource(String query) { return query; }
 
 		@QueryHandler(queryName = BAD_RESOURCE_SERIALIZATION_QUERY)
-		@PostHandleEnforce(action="'"+BAD_RESOURCE_SERIALIZATION_QUERY+"'", resource=RESOURCE_EXPR, genericsType=Integer.class)
+		@PostHandleEnforce(action="'"+BAD_RESOURCE_SERIALIZATION_QUERY+"'", resource=RESOURCE_EXPR)
 		public Integer handlePostEnforceFailing(String query) { return 0; }
 
 		@PreHandleEnforce
