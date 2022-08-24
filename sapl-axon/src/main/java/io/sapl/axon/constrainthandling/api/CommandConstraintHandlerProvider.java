@@ -42,6 +42,10 @@ public interface CommandConstraintHandlerProvider extends Responsible, HasPriori
 		};
 	};
 
+	default void accept(CommandMessage<?> message) {
+		// NOOP
+	}
+	
 	default Class<?> mapPayloadType(Class<?> payloadType) {
 		return payloadType;
 	}
