@@ -11,21 +11,21 @@ import org.axonframework.messaging.annotation.MessageHandlingMember;
 import org.axonframework.messaging.annotation.WrappedMessageHandlingMember;
 
 import io.sapl.api.pdp.PolicyDecisionPoint;
-import io.sapl.axon.constrainthandling.AxonConstraintHandlerService;
-import io.sapl.axon.subscriptions.AxonAuthorizationSubscriptionBuilderService;
+import io.sapl.axon.constrainthandling.ConstraintHandlerService;
+import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
 
 public abstract class AbstractAxonPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember<T> {
 
-	protected final PolicyDecisionPoint                         pdp;
-	protected final Set<Annotation>                             saplAnnotations;
-	protected final MessageHandlingMember<T>                    delegate;
-	protected final AxonAuthorizationSubscriptionBuilderService subscriptionBuilder;
-	protected final Executable                                  handlerExecutable;
-	protected final AxonConstraintHandlerService                axonConstraintEnforcementService;
+	protected final PolicyDecisionPoint                     pdp;
+	protected final Set<Annotation>                         saplAnnotations;
+	protected final MessageHandlingMember<T>                delegate;
+	protected final AuthorizationSubscriptionBuilderService subscriptionBuilder;
+	protected final Executable                              handlerExecutable;
+	protected final ConstraintHandlerService                axonConstraintEnforcementService;
 
 	protected AbstractAxonPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
-			AxonConstraintHandlerService axonConstraintEnforcementService,
-			AxonAuthorizationSubscriptionBuilderService subscriptionBuilder) {
+			ConstraintHandlerService axonConstraintEnforcementService,
+			AuthorizationSubscriptionBuilderService subscriptionBuilder) {
 		super(delegate);
 		this.delegate                         = delegate;
 		this.pdp                              = pdp;

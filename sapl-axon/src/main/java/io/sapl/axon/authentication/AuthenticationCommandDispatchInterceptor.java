@@ -9,11 +9,10 @@ import org.axonframework.messaging.MessageDispatchInterceptor;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class AuthenticationCommandDispatchInterceptor
-		implements MessageDispatchInterceptor<CommandMessage<?>> {
+public class AuthenticationCommandDispatchInterceptor implements MessageDispatchInterceptor<CommandMessage<?>> {
 
 	private final AuthenticationMetadataProvider authnProvider;
-	
+
 	@Override
 	public BiFunction<Integer, CommandMessage<?>, CommandMessage<?>> handle(
 			List<? extends CommandMessage<?>> messages) {

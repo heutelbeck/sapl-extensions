@@ -24,8 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.sapl.spring.constraints.api.Responsible;
 import io.sapl.spring.constraints.api.TypeSupport;
 
-public interface UpdateFilterConstraintHandlerProvider<T>
-		extends Responsible, TypeSupport<T> {
+public interface UpdateFilterConstraintHandlerProvider<T> extends Responsible, TypeSupport<T> {
 
 	Predicate<ResultMessage<T>> getHandler(JsonNode constraint);
 

@@ -13,7 +13,7 @@ import lombok.SneakyThrows;
 @RequiredArgsConstructor
 public class SpringSecurityAuthenticationMetadataProvider implements AuthenticationMetadataProvider {
 	private final ObjectMapper mapper;
-	
+
 	@Override
 	@SneakyThrows
 	public Map<String, Object> getSubjectMetadata() {
@@ -27,6 +27,6 @@ public class SpringSecurityAuthenticationMetadataProvider implements Authenticat
 		var principal = subject.get("principal");
 		if (principal instanceof ObjectNode)
 			((ObjectNode) principal).remove("password");
-		return Map.of("subject",mapper.writeValueAsString(subject));
+		return Map.of("subject", mapper.writeValueAsString(subject));
 	}
 }

@@ -45,7 +45,7 @@ public interface ResultConstraintHandlerProvider<T> extends Responsible, HasPrio
 				var newThrowable = mapThrowable(result.exceptionResult());
 				var baseMessage  = new GenericMessage(result.getIdentifier(), result.getPayloadType(),
 						result.getPayload(), newMetaData);
-				
+
 				resultMessage = new GenericResultMessage(baseMessage, newThrowable);
 			} else {
 				var newPayload     = mapPayload(result.getPayload(), result.getPayloadType());

@@ -1,5 +1,6 @@
 package io.sapl.axon.commandhandling.model;
 
+import org.axonframework.commandhandling.RoutingKey;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
 import lombok.Value;
@@ -21,6 +22,14 @@ public class TestAggregateAPI {
 	public static class ModifyAggregate {
 		@TargetAggregateIdentifier
 		final String id;
+	}
+
+	@Value
+	public static class UpdateMember {
+		@TargetAggregateIdentifier
+		final String id;
+		@RoutingKey
+		final String memberId;
 	}
 
 	@Value

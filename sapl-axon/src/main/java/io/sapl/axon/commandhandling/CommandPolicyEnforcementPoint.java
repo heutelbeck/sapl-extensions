@@ -11,17 +11,17 @@ import org.springframework.security.access.AccessDeniedException;
 import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.axon.annotation.PreHandleEnforce;
-import io.sapl.axon.constrainthandling.AxonConstraintHandlerService;
+import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.queryhandling.AbstractAxonPolicyEnforcementPoint;
-import io.sapl.axon.subscriptions.AxonAuthorizationSubscriptionBuilderService;
+import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CommandPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcementPoint<T> {
 
 	public CommandPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
-			AxonConstraintHandlerService axonConstraintEnforcementService,
-			AxonAuthorizationSubscriptionBuilderService subscriptionBuilder) {
+			ConstraintHandlerService axonConstraintEnforcementService,
+			AuthorizationSubscriptionBuilderService subscriptionBuilder) {
 		super(delegate, pdp, axonConstraintEnforcementService, subscriptionBuilder);
 	}
 
@@ -54,10 +54,9 @@ public class CommandPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcem
 		var decision = pdp.decide(authzSubscription).blockFirst();
 		log.debug("PreHandleEnforce Decision {}", decision);
 
-		Optional<Executable> executable = delegate.unwrap(Executable.class);
-		var bundle = axonConstraintEnforcementService.buildPreEnforceCommandConstraintHandlerBundle(decision,
-				aggregate, executable);
-
+		var executable = delegate.unwrap(Executable.class);
+		var bundle     = axonConstraintEnforcementService.buildPreEnforceCommandConstraintHandlerBundle(decision,
+				aggregate, executable, command);
 		try {
 			bundle.executeOnDecisionHandlers();
 		} catch (Exception t) {

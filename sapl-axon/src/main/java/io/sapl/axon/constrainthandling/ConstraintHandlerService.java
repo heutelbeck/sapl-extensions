@@ -2,7 +2,11 @@ package io.sapl.axon.constrainthandling;
 
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Executable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -11,11 +15,17 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.axonframework.commandhandling.CommandMessage;
+import org.axonframework.messaging.Message;
 import org.axonframework.messaging.ResultMessage;
+import org.axonframework.messaging.annotation.ParameterResolverFactory;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.queryhandling.QueryMessage;
+import org.springframework.expression.spel.SpelEvaluationException;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.security.access.AccessDeniedException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,19 +36,23 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.base.Functions;
 
 import io.sapl.api.pdp.AuthorizationDecision;
+import io.sapl.axon.annotation.ConstraintHandler;
 import io.sapl.axon.constrainthandling.api.CommandConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.QueryConstraintHandlerProvider;
-import io.sapl.axon.constrainthandling.api.UpdateFilterConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.UpdateFilterConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.ErrorMappingConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class AxonConstraintHandlerService {
+public class ConstraintHandlerService {
+	private final static SpelExpressionParser PARSER = new SpelExpressionParser();
 
 	private final ObjectMapper                                   mapper;
+	private final ParameterResolverFactory                       parameterResolverFactory;
 	private final List<OnDecisionConstraintHandlerProvider>      globalRunnableProviders;
 	private final List<CommandConstraintHandlerProvider>         globalCommandMessageMappingProviders;
 	private final List<QueryConstraintHandlerProvider>           globalQueryMessageMappingProviders;
@@ -47,7 +61,7 @@ public class AxonConstraintHandlerService {
 	private final List<UpdateFilterConstraintHandlerProvider<?>> updatePredicateProviders;
 	private final List<ResultConstraintHandlerProvider<?>>       updateMappingProviders;
 
-	public AxonConstraintHandlerService(ObjectMapper mapper,
+	public ConstraintHandlerService(ObjectMapper mapper, ParameterResolverFactory parameterResolverFactory,
 			List<OnDecisionConstraintHandlerProvider> globalRunnableProviders,
 			List<CommandConstraintHandlerProvider> globalCommandMessageMappingProviders,
 			List<QueryConstraintHandlerProvider> globalQueryMessageMappingProviders,
@@ -56,11 +70,11 @@ public class AxonConstraintHandlerService {
 			List<UpdateFilterConstraintHandlerProvider<?>> updatePredicateProviders,
 			List<ResultConstraintHandlerProvider<?>> updateMappingProviders) {
 
-		this.mapper = mapper;
-		// sort according to priority
-		this.globalRunnableProviders  = globalRunnableProviders;
+		this.mapper                   = mapper;
+		this.parameterResolverFactory = parameterResolverFactory;
 		this.updatePredicateProviders = updatePredicateProviders;
-
+		// sort according to priority
+		this.globalRunnableProviders = globalRunnableProviders;
 		Collections.sort(this.globalRunnableProviders);
 		this.globalQueryMessageMappingProviders = globalQueryMessageMappingProviders;
 		Collections.sort(this.globalQueryMessageMappingProviders);
@@ -85,7 +99,7 @@ public class AxonConstraintHandlerService {
 	}
 
 	public <T> CommandConstraintHandlerBundle<?, ?> buildPreEnforceCommandConstraintHandlerBundle(
-			AuthorizationDecision decision, T aggregate, Optional<Executable> executable) {
+			AuthorizationDecision decision, T aggregate, Optional<Executable> executable, CommandMessage<?> command) {
 
 		if (decision.getResource().isPresent()) {
 			log.warn("PDP decision contained resource object for command handler. Access Denied. {}", decision);
@@ -105,8 +119,8 @@ public class AxonConstraintHandlerService {
 		var commandMappingHandlers = constructCommandMessageMappingHandlers(decision, obligationsWithoutHandler);
 		var errorMappingHandlers   = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
 		var resultMappingHandlers  = constructResultMappingHandlers(decision, obligationsWithoutHandler, type);
-		var handlersOnObject       = (Runnable) () -> {
-									};
+		var handlersOnObject       = constructObjectConstraintHandlers(aggregate, command, decision,
+				obligationsWithoutHandler);
 		if (!obligationsWithoutHandler.isEmpty()) {
 			log.error("Could not find handlers for all obligations. Missing handlers for: {}",
 					obligationsWithoutHandler);
@@ -114,6 +128,12 @@ public class AxonConstraintHandlerService {
 		}
 		return new CommandConstraintHandlerBundle<>(onDecisionHandlers, errorMappingHandlers, commandMappingHandlers,
 				resultMappingHandlers, handlersOnObject);
+	}
+
+	public <T> Runnable constructHandlersOnObject(AuthorizationDecision decision, T aggregate,
+			Optional<Executable> executable) {
+		return () -> {
+		};
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -186,7 +206,7 @@ public class AxonConstraintHandlerService {
 					}
 				}
 			}
-			return BundleUtil.mapAll(handlers);
+			return mapAll(handlers);
 		});
 	}
 
@@ -216,26 +236,6 @@ public class AxonConstraintHandlerService {
 			}
 			return andAll(handlers);
 		}).orElse(__ -> true);
-	}
-
-	private <T> Predicate<T> andAll(List<Predicate<T>> predicates) {
-		return t -> {
-			for (var p : predicates)
-				if (!p.test(t))
-					return false;
-			return true;
-		};
-	}
-
-	private <T> Predicate<T> onErrorFallbackTo(Predicate<T> p, boolean fallback) {
-		return t -> {
-			try {
-				return p.test(t);
-			} catch (Throwable e) {
-				log.error("Failed to evaluate predicate.", e);
-				return fallback;
-			}
-		};
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -298,7 +298,7 @@ public class AxonConstraintHandlerService {
 					}
 				}
 			}
-			return BundleUtil.mapAll(handlers);
+			return mapAll(handlers);
 		});
 	}
 
@@ -338,7 +338,7 @@ public class AxonConstraintHandlerService {
 					}
 				}
 			}
-			return BundleUtil.mapAll(handlers);
+			return mapAll(handlers);
 		});
 	}
 
@@ -378,7 +378,7 @@ public class AxonConstraintHandlerService {
 					}
 				}
 			}
-			return BundleUtil.mapAll(handlers);
+			return mapAll(handlers);
 		});
 	}
 
@@ -428,7 +428,7 @@ public class AxonConstraintHandlerService {
 					}
 				}
 			}
-			return BundleUtil.mapAll(handlers);
+			return mapAll(handlers);
 		});
 	}
 
@@ -440,8 +440,8 @@ public class AxonConstraintHandlerService {
 											});
 
 		return () -> {
-			onDecisionObligationHandlers.map(BundleUtil::obligation).ifPresent(Runnable::run);
-			onDecisionAdviceHandlers.map(BundleUtil::advice).ifPresent(Runnable::run);
+			onDecisionObligationHandlers.map(this::obligation).ifPresent(Runnable::run);
+			onDecisionAdviceHandlers.map(this::advice).ifPresent(Runnable::run);
 		};
 	}
 
@@ -457,8 +457,193 @@ public class AxonConstraintHandlerService {
 					}
 				}
 			}
-			return BundleUtil.runAll(handlers);
+			return runAll(handlers);
 		});
 	}
 
+	private <T> Runnable constructObjectConstraintHandlers(T aggregate, CommandMessage<?> command,
+			AuthorizationDecision decision, Set<JsonNode> obligationsWithoutHandler) {
+		var obligationHandlers = collectConstraintHandlerMethods(decision.getObligations(), aggregate, command,
+				decision, obligationsWithoutHandler::remove);
+		var adviceHandlers     = collectConstraintHandlerMethods(decision.getAdvice(), aggregate, command, decision,
+				__ -> {
+										});
+
+		return () -> {
+			obligationHandlers.map(this::obligation).ifPresent(Runnable::run);
+			adviceHandlers.map(this::advice).ifPresent(Runnable::run);
+		};
+	}
+
+	private Optional<Runnable> collectConstraintHandlerMethods(Optional<ArrayNode> constraints, Object handlerObject,
+			CommandMessage<?> command, AuthorizationDecision decision, Consumer<JsonNode> onHandlerFound) {
+		if (constraints.isEmpty())
+			return Optional.empty();
+
+		var handlers = new ArrayList<Runnable>();
+		for (var constraint : constraints.get()) {
+			var methods = responsibleConstraintHandlerMethods(handlerObject, command, constraint);
+
+			if (methods.isEmpty())
+				break;
+
+			onHandlerFound.accept(constraint);
+
+			for (var method : methods) {
+				var task = runMethod(method, handlerObject, command, decision, constraint);
+				handlers.add(task);
+			}
+		}
+		return Optional.of(runAll(handlers));
+	}
+
+	public static List<Method> responsibleConstraintHandlerMethods(Object handlerObject, CommandMessage<?> command,
+			JsonNode constraint) {
+		log.debug("Examining object for constraint handlers: {}", handlerObject);
+		if (handlerObject == null) // constructor command
+			return List.of();
+
+		return Arrays.stream(handlerObject.getClass().getMethods())
+				.filter(method -> isMethodResponsible(method, constraint, command, handlerObject))
+				.collect(Collectors.toList());
+	}
+
+	private static <U extends CommandMessage<?>, T> boolean isMethodResponsible(Method method, JsonNode constraint,
+			U command, T handlerObject) {
+		var annotation = (ConstraintHandler) method.getAnnotation(ConstraintHandler.class);
+
+		if (annotation == null)
+			return false;
+
+		var annotationValue = annotation.value();
+		if (annotationValue.isBlank()) {
+			return true;
+		}
+
+		var context = new StandardEvaluationContext(handlerObject);
+		context.setVariable("constraint", constraint);
+		context.setVariable("command", command);
+		var expression = PARSER.parseExpression(annotationValue);
+
+		Object value = null;
+		try {
+			value = expression.getValue(context);
+			log.debug("Expression evaluated to: {}", value);
+		} catch (SpelEvaluationException | NullPointerException e) {
+			log.warn("Failed to evaluate \"{}\" on Class {} Method {} Error {}", annotationValue,
+					handlerObject.getClass().getName(), method.getName(), e.getMessage());
+			return false;
+		}
+
+		if (value != null && value instanceof Boolean)
+			return (Boolean) value;
+
+		log.warn("Expression returned non Boolean ({}). Expression \"{}\" on Class {} Method {}", value,
+				annotationValue, handlerObject.getClass().getName(), method.getName());
+		return false;
+	}
+
+	public Runnable runMethod(Method method, Object contextObject, Message<?> message, AuthorizationDecision decision,
+			JsonNode constraint) {
+		return () -> invokeMethod(method, contextObject, message, decision, constraint);
+	}
+
+	@SneakyThrows
+	private void invokeMethod(Method method, Object contextObject, Message<?> message, AuthorizationDecision decision,
+			JsonNode constraint) {
+		var arguments = resolveArgumentsForMethodParameters(method, message, decision, constraint);
+		method.invoke(contextObject, arguments);
+	}
+
+	private Object[] resolveArgumentsForMethodParameters(Method method, Message<?> message,
+			AuthorizationDecision decision, JsonNode constraint) {
+		var parameters     = method.getParameters();
+		var arguments      = new Object[parameters.length];
+		var parameterIndex = 0;
+		for (var parameter : parameters) {
+			if (message.getPayloadType().isAssignableFrom(parameter.getType())) {
+				arguments[parameterIndex++] = message.getPayload();
+			} else if (JsonNode.class.isAssignableFrom(parameter.getType())) {
+				arguments[parameterIndex++] = constraint;
+			} else if (AuthorizationDecision.class.isAssignableFrom(parameter.getType())) {
+				arguments[parameterIndex++] = decision;
+			} else {
+				arguments[parameterIndex] = revolveAxonAndSpringParameters(method, message, parameters, parameterIndex,
+						parameter);
+				parameterIndex++;
+			}
+		}
+		return arguments;
+	}
+
+	private Object revolveAxonAndSpringParameters(Method method, Message<?> message, Parameter[] parameters,
+			int parameterIndex, Parameter parameter) {
+
+		var factory = parameterResolverFactory.createInstance(method, parameters, parameterIndex);
+
+		if (factory == null)
+			throw new IllegalStateException(String.format(
+					"Could not resolve parameter of @ConstraintHandler. method='%s' parameterName='%s'. No matching parameter resolver found.",
+					method, parameter.getName()));
+
+		@SuppressWarnings("unchecked")
+		Object argument = factory.resolveParameterValue(message);
+
+		if (argument == null)
+			throw new IllegalStateException(
+					String.format("Could not resolve parameter of @ConstraintHandler {} {}. No value found.", method,
+							parameter.getName()));
+		return argument;
+	}
+
+	private static Runnable runAll(List<Runnable> handlers) {
+		return () -> handlers.forEach(Runnable::run);
+
+	}
+
+	private Runnable obligation(Runnable handler) {
+		return () -> {
+			try {
+				handler.run();
+			} catch (Throwable t) {
+				log.error("Failed to execute obligation handlers.", t);
+				throw new AccessDeniedException("Access Denied");
+			}
+		};
+	}
+
+	private Runnable advice(Runnable handler) {
+		return () -> {
+			try {
+				handler.run();
+			} catch (Throwable t) {
+				log.error("Failed to execute adivce handlers.", t);
+			}
+		};
+	}
+
+	private static <V> Function<V, V> mapAll(Collection<Function<V, V>> handlers) {
+		return handlers.stream().reduce(Function.identity(),
+				(merged, newFunction) -> x -> newFunction.apply(merged.apply(x)));
+	}
+
+	private <T> Predicate<T> andAll(List<Predicate<T>> predicates) {
+		return t -> {
+			for (var p : predicates)
+				if (!p.test(t))
+					return false;
+			return true;
+		};
+	}
+
+	private <T> Predicate<T> onErrorFallbackTo(Predicate<T> p, boolean fallback) {
+		return t -> {
+			try {
+				return p.test(t);
+			} catch (Throwable e) {
+				log.error("Failed to evaluate predicate.", e);
+				return fallback;
+			}
+		};
+	}
 }

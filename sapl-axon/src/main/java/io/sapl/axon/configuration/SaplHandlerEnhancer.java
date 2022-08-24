@@ -24,10 +24,10 @@ import org.axonframework.queryhandling.annotation.QueryHandlingMember;
 
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.axon.commandhandling.CommandPolicyEnforcementPoint;
-import io.sapl.axon.constrainthandling.AxonConstraintHandlerService;
+import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.queryhandling.QueryPolicyEnforcementPoint;
 import io.sapl.axon.queryhandling.SaplQueryUpdateEmitter;
-import io.sapl.axon.subscriptions.AxonAuthorizationSubscriptionBuilderService;
+import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -38,10 +38,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SaplHandlerEnhancer implements HandlerEnhancerDefinition {
 
-	private final PolicyDecisionPoint                         pdp;
-	private final AxonConstraintHandlerService                axonConstraintEnforcementService;
-	private final SaplQueryUpdateEmitter                      emitter;
-	private final AxonAuthorizationSubscriptionBuilderService subscriptionBuilder;
+	private final PolicyDecisionPoint                     pdp;
+	private final ConstraintHandlerService                axonConstraintEnforcementService;
+	private final SaplQueryUpdateEmitter                  emitter;
+	private final AuthorizationSubscriptionBuilderService subscriptionBuilder;
 
 	@Override
 	public <T> MessageHandlingMember<T> wrapHandler(MessageHandlingMember<T> original) {

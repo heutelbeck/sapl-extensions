@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.messaging.MessageDispatchInterceptor;
+import org.axonframework.messaging.annotation.ParameterResolverFactory;
 import org.axonframework.queryhandling.QueryBus;
 import org.axonframework.queryhandling.QueryMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,15 +22,15 @@ import io.sapl.axon.authentication.AuthenticationCommandDispatchInterceptor;
 import io.sapl.axon.authentication.AuthenticationMetadataProvider;
 import io.sapl.axon.authentication.AuthenticationQueryDispatchInterceptor;
 import io.sapl.axon.authentication.SpringSecurityAuthenticationMetadataProvider;
-import io.sapl.axon.constrainthandling.AxonConstraintHandlerService;
+import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.api.CommandConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.QueryConstraintHandlerProvider;
-import io.sapl.axon.constrainthandling.api.UpdateFilterConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.api.UpdateFilterConstraintHandlerProvider;
 import io.sapl.axon.queryhandling.SaplQueryGateway;
 import io.sapl.axon.queryhandling.SaplQueryUpdateEmitter;
-import io.sapl.axon.subscriptions.AxonAuthorizationSubscriptionBuilderService;
+import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
 import io.sapl.spring.constraints.api.ErrorMappingConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
 
@@ -39,6 +40,10 @@ public class SaplAutoConfiguration {
 	@Autowired
 	Optional<XStream> xStream;
 
+	/**
+	 * In case Axon is set up to use XStream for serialization, the
+	 * RecoverableResponse class must be whitelisted.
+	 */
 	@PostConstruct
 	void whitelistSaplObjectsInXStream() {
 		xStream.ifPresent(xStream -> xStream.allowTypesByWildcard(new String[] { "io.sapl.**" }));
@@ -66,7 +71,8 @@ public class SaplAutoConfiguration {
 	}
 
 	@Bean
-	public AxonConstraintHandlerService axonConstraintHandlerService(ObjectMapper mapper,
+	public ConstraintHandlerService axonConstraintHandlerService(ObjectMapper mapper,
+			ParameterResolverFactory parameterResolver,
 			List<OnDecisionConstraintHandlerProvider> globalRunnableProviders,
 			List<CommandConstraintHandlerProvider> globalCommandMessageMappingProviders,
 			List<QueryConstraintHandlerProvider> globalQueryMappingProviders,
@@ -74,9 +80,9 @@ public class SaplAutoConfiguration {
 			List<MappingConstraintHandlerProvider<?>> globalMappingProviders,
 			List<UpdateFilterConstraintHandlerProvider<?>> filterPredicateProviders,
 			List<ResultConstraintHandlerProvider<?>> resulteMappingProviders) {
-		return new AxonConstraintHandlerService(mapper, globalRunnableProviders, globalCommandMessageMappingProviders,
-				globalQueryMappingProviders, globalErrorMappingHandlerProviders, globalMappingProviders,
-				filterPredicateProviders, resulteMappingProviders);
+		return new ConstraintHandlerService(mapper, parameterResolver, globalRunnableProviders,
+				globalCommandMessageMappingProviders, globalQueryMappingProviders, globalErrorMappingHandlerProviders,
+				globalMappingProviders, filterPredicateProviders, resulteMappingProviders);
 	}
 
 	@Bean
@@ -86,20 +92,20 @@ public class SaplAutoConfiguration {
 	}
 
 	@Bean
-	SaplQueryUpdateEmitter updateEmitter(AxonConstraintHandlerService axonConstraintEnforcementService) {
+	SaplQueryUpdateEmitter updateEmitter(ConstraintHandlerService axonConstraintEnforcementService) {
 		return new SaplQueryUpdateEmitter(Optional.empty(), axonConstraintEnforcementService);
 	}
 
 	@Bean
-	SaplHandlerEnhancer saplEnhancer(PolicyDecisionPoint pdp,
-			AxonConstraintHandlerService axonConstraintEnforcementService, SaplQueryUpdateEmitter emitter,
-			AxonAuthorizationSubscriptionBuilderService subscriptionBuilder, ObjectMapper mapper) {
+	SaplHandlerEnhancer saplEnhancer(PolicyDecisionPoint pdp, ConstraintHandlerService axonConstraintEnforcementService,
+			SaplQueryUpdateEmitter emitter, AuthorizationSubscriptionBuilderService subscriptionBuilder,
+			ObjectMapper mapper) {
 		return new SaplHandlerEnhancer(pdp, axonConstraintEnforcementService, emitter, subscriptionBuilder);
 	}
 
 	@Bean
-	AxonAuthorizationSubscriptionBuilderService subscriptionBuilder() {
-		return new AxonAuthorizationSubscriptionBuilderService(new ObjectMapper());
+	AuthorizationSubscriptionBuilderService subscriptionBuilder() {
+		return new AuthorizationSubscriptionBuilderService(new ObjectMapper());
 	}
 
 }

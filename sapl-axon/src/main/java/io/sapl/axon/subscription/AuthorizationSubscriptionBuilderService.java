@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.sapl.axon.subscriptions;
+package io.sapl.axon.subscription;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Executable;
@@ -53,7 +53,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class AxonAuthorizationSubscriptionBuilderService {
+public class AuthorizationSubscriptionBuilderService {
 	protected static final String ACTION               = "action";
 	protected static final String ACTION_TYPE          = "actionType";
 	protected static final String AGGREGATE            = "aggregate";

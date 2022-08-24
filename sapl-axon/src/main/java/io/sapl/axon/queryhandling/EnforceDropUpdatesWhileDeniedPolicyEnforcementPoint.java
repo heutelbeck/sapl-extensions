@@ -28,7 +28,7 @@ import org.springframework.security.access.AccessDeniedException;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
-import io.sapl.axon.constrainthandling.AxonConstraintHandlerService;
+import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
 import reactor.core.CoreSubscriber;
 import reactor.core.Disposable;
@@ -55,10 +55,10 @@ import reactor.core.publisher.Flux;
  */
 public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux<SubscriptionQueryUpdateMessage<U>> {
 
-	private final Flux<AuthorizationDecision>  decisions;
-	private final AxonConstraintHandlerService constraintHandlerService;
-	private final ResponseType<?>              resultResponseType;
-	private final ResponseType<?>              updateResponseType;
+	private final Flux<AuthorizationDecision> decisions;
+	private final ConstraintHandlerService    constraintHandlerService;
+	private final ResponseType<?>             resultResponseType;
+	private final ResponseType<?>             updateResponseType;
 
 	private Flux<SubscriptionQueryUpdateMessage<U>>            resourceAccessPoint;
 	private EnforcementSink<SubscriptionQueryUpdateMessage<U>> sink;
@@ -71,7 +71,7 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
 
 	private EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint(Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
-			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
+			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<?> updateResponseType) {
 		this.decisions                = decisions;
 		this.resourceAccessPoint      = updateMessageFlux;
@@ -82,7 +82,7 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
 
 	public static <U> Flux<SubscriptionQueryUpdateMessage<U>> of(Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
-			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
+			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<?> updateResponseType) {
 		EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> pep = new EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U>(
 				decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);

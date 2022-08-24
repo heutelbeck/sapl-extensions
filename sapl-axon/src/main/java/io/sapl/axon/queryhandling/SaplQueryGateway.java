@@ -184,8 +184,8 @@ public class SaplQueryGateway extends DefaultQueryGateway {
 	@SuppressWarnings("rawtypes")
 	private <I, U> SubscriptionQueryResult<I, U> unwrap(SubscriptionQueryResult<I, RecoverableResponse> wrappedResult,
 			ResponseType<U> updateResponseType, Runnable accessDeniedHandler) {
-		return new DefaultSubscriptionQueryResult<>(wrappedResult.initialResult(),
-				wrappedResult.updates().map(RecoverableResponse::unwrap)
+		return new DefaultSubscriptionQueryResult<>(
+				wrappedResult.initialResult(), wrappedResult.updates().map(RecoverableResponse::unwrap)
 						.doOnError(__ -> accessDeniedHandler.run()).map(val -> updateResponseType.convert(val)),
 				wrappedResult);
 	}

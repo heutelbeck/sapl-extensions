@@ -19,9 +19,9 @@ import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.axon.annotation.PostHandleEnforce;
-import io.sapl.axon.constrainthandling.AxonConstraintHandlerService;
+import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
-import io.sapl.axon.subscriptions.AxonAuthorizationSubscriptionBuilderService;
+import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
@@ -31,8 +31,8 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 	private final SaplQueryUpdateEmitter emitter;
 
 	public QueryPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
-			AxonConstraintHandlerService axonConstraintEnforcementService, SaplQueryUpdateEmitter emitter,
-			AxonAuthorizationSubscriptionBuilderService subscriptionBuilder) {
+			ConstraintHandlerService axonConstraintEnforcementService, SaplQueryUpdateEmitter emitter,
+			AuthorizationSubscriptionBuilderService subscriptionBuilder) {
 		super(delegate, pdp, axonConstraintEnforcementService, subscriptionBuilder);
 		this.emitter = emitter;
 	}
@@ -123,7 +123,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 
 	private Function<AuthorizationDecision, Mono<Object>> enforcePreEnforceDecision(QueryMessage<?, ?> message,
 			T source, Optional<ResponseType<?>> updateType) {
-		return decision -> {	
+		return decision -> {
 			@SuppressWarnings("rawtypes")
 			QueryConstraintHandlerBundle constraintHandler = null;
 			try {

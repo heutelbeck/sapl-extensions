@@ -1,8 +1,10 @@
 package io.sapl.axon.commandhandling;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -13,25 +15,16 @@ import java.util.function.Function;
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.gateway.CommandGateway;
-import org.axonframework.eventsourcing.eventstore.EmbeddedEventStore;
-import org.axonframework.eventsourcing.eventstore.EventStorageEngine;
-import org.axonframework.eventsourcing.eventstore.EventStore;
-import org.axonframework.eventsourcing.eventstore.inmemory.InMemoryEventStorageEngine;
-import org.axonframework.spring.config.AxonConfiguration;
+import org.axonframework.messaging.MetaData;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -39,19 +32,25 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
+import io.sapl.axon.annotation.ConstraintHandler;
 import io.sapl.axon.annotation.PreHandleEnforce;
+import io.sapl.axon.commandhandling.CommandTestsuite.ScenarioConfiguration;
 import io.sapl.axon.commandhandling.model.TestAggregateAPI.CreateAggregate;
 import io.sapl.axon.commandhandling.model.TestAggregateAPI.ModifyAggregate;
+import io.sapl.axon.commandhandling.model.TestAggregateAPI.UpdateMember;
 import io.sapl.axon.configuration.SaplAutoConfiguration;
 import io.sapl.axon.constrainthandling.api.CommandConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
+import io.sapl.axon.queryhandling.TestUtilities;
 import io.sapl.spring.constraints.api.ErrorMappingConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
 @SpringBootTest
-public class CommandTests {
+@Import(ScenarioConfiguration.class)
+public abstract class CommandTestsuite {
 
 	private static final String MODIFY_ERROR     = "modify error";
 	private static final String MODIFY_RESULT    = "modify result";
@@ -95,7 +94,8 @@ public class CommandTests {
 	@Test
 	void when_securedCommandHandler_and_Deny_then_accessDenied() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
-		assertThrows(AccessDeniedException.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
+		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
+		assertTrue(TestUtilities.isAccessDenied().test(thrown));
 	}
 
 	@Test
@@ -104,7 +104,8 @@ public class CommandTests {
 		obligations.add(JSON.textNode("unknown"));
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
-		assertThrows(AccessDeniedException.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
+		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
+		assertTrue(TestUtilities.isAccessDenied().test(thrown));
 	}
 
 	@Test
@@ -120,37 +121,82 @@ public class CommandTests {
 		verify(onDecisionProvider, times(1)).run();
 		verify(querMappingProvider, times(1)).mapPayload(any(), any());
 	}
-	
+
 	@Test
 	void when_securedCommandHandler_and_PermitWithErrorMapObligations_then_accessGrantedAndChangedError() {
 		var obligations = JSON.arrayNode();
 		obligations.add(JSON.textNode(MODIFY_ERROR));
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
-		
-		assertThrows(IllegalArgumentException.class, () -> commandGateway.sendAndWait(new CommandTwo("foo")));
-		verify(errorMappingProvider, times(1)).map(any());		
+
+		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandTwo("foo")));
+		assertTrue(TestUtilities.isCausedBy(IllegalArgumentException.class).test(thrown));
+		verify(errorMappingProvider, times(1)).map(any());
 	}
 
 	@Test
 	void when_securedAggregateCreationCommand_and_Permit_then_accessGranted() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		assertThat(commandGateway.sendAndWait(new CreateAggregate("id1")), is("id1"));
+		assertThat(commandGateway.sendAndWait(new CreateAggregate("id2")), is("id2"));
 	}
-	
+
 	@Test
 	void when_securedAggregateCreationAndFollowUpCommand_and_Permit_then_accessGranted() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		commandGateway.sendAndWait(new CreateAggregate("id2"));
-		commandGateway.sendAndWait(new ModifyAggregate("id2"));
-//		assertThat(commandGateway.sendAndWait(new CreateAggregate("id1")), is("id1"));
-//		assertThat(commandGateway.sendAndWait(new ModifyAggregate("id1")), is("id1"));
+		assertThat(commandGateway.sendAndWait(new CreateAggregate("id1")), is("id1"));
+		assertThat(commandGateway.sendAndWait(new ModifyAggregate("id1")), is(nullValue()));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	void when_securedAggregateCreationAndFollowUpCommand_and_PermitWithObligation_then_accessGranted() {
+		var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
+		var obligations        = JSON.arrayNode();
+		obligations.add(JSON.textNode("something"));
+		var decisionsForModify = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
+		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForModify);
+		assertThat(commandGateway.sendAndWait(new CreateAggregate("id4")), is("id4"));
+		assertThat(commandGateway.sendAndWait(new ModifyAggregate("id4")), is(nullValue()));
+	}
+
+	@Test
+	void when_securedCommandHandler_and_PermitWithObligation_then_accessGranted() {
+		var obligations = JSON.arrayNode();
+		obligations.add(JSON.textNode("serviceConstraint"));
+		var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
+		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
+		assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is("OK (foo)"));
+	}
+
+	@Test
+	void when_securedCommandHandler_and_PermitWithObligationFailing_then_accessDenied() {
+		var obligations = JSON.arrayNode();
+		obligations.add(JSON.textNode("failConstraint"));
+		var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
+		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
+		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
+		assertTrue(TestUtilities.isAccessDenied().test(thrown));
 	}
 
 	@Test
 	void when_securedAggregateCreationCommand_and_Deny_then_accessDenies() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
-		assertThrows(AccessDeniedException.class, () -> commandGateway.sendAndWait(new CreateAggregate("id1")));
+		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CreateAggregate("id3")));
+		assertTrue(TestUtilities.isAccessDenied().test(thrown));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	void when_securedAggregateCreationAndFollowUpCommandToEntity_and_Permit_then_accessGranted() {
+
+		var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
+		var obligations        = JSON.arrayNode();
+		obligations.add(JSON.textNode("somethingWithMember"));
+		var decisionsForMemberAccess = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
+		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForMemberAccess);
+		assertThat(commandGateway.sendAndWait(new CreateAggregate("id7")), is("id7"));
+		assertThat(commandGateway.sendAndWait(new UpdateMember("id7", "A")), is(nullValue()));
+		assertThat(commandGateway.sendAndWait(new UpdateMember("id7", "B")), is(nullValue()));
 	}
 
 	@Value
@@ -163,8 +209,11 @@ public class CommandTests {
 		final String value;
 	}
 
+	@Slf4j
 	@Service
 	public static class CommandHandlingService {
+
+		public String data = "service data";
 
 		@CommandHandler
 		@PreHandleEnforce
@@ -177,6 +226,23 @@ public class CommandTests {
 		public String handle(CommandTwo command) {
 			throw new RuntimeException("I was a RuntimeException and now should be an IllegalArgumentException");
 		}
+
+		@ConstraintHandler("#constraint.textValue() == 'serviceConstraint' && data == 'service data'")
+		public void handleConstraint(CommandOne command, JsonNode constraint, AuthorizationDecision decision,
+				CommandBus commandBus, MetaData metaData) {
+			log.trace("ConstraintHandler invoked");
+			log.trace("command: {}", command);
+			log.trace("constraint: {}", constraint);
+			log.trace("decision: {}", decision);
+			log.trace("commandBus: {}", commandBus);
+			log.trace("meta: {}", metaData);
+		}
+
+		@ConstraintHandler("#constraint.textValue() == 'failConstraint'")
+		public void handleConstraint() {
+			throw new IllegalStateException("ERROR");
+		}
+
 	}
 
 	static class OnDecisionProvider implements OnDecisionConstraintHandlerProvider {
@@ -281,34 +347,6 @@ public class CommandTests {
 		@Bean
 		ErrorMappingProvider errorMappingProvider() {
 			return new ErrorMappingProvider();
-		}
-
-	}
-
-	@SpringBootApplication(scanBasePackages = { "io.sapl.axon.commandhandling.*" })
-	public static class TestApplication {
-
-		public static void main(String[] args) {
-			SpringApplication.run(TestApplication.class, args);
-		}
-	}
-
-	@DynamicPropertySource
-	static void registerAxonProperties(DynamicPropertyRegistry registry) {
-		registry.add("axon.axonserver.enabled", () -> "false");
-	}
-
-	@Configuration
-	static class EmbeddedEventstoreConfiguration {
-		@Bean
-		public EmbeddedEventStore eventStore(EventStorageEngine storageEngine, AxonConfiguration configuration) {
-			return EmbeddedEventStore.builder().storageEngine(storageEngine)
-					.messageMonitor(configuration.messageMonitor(EventStore.class, "eventStore")).build();
-		}
-
-		@Bean
-		public EventStorageEngine storageEngine() {
-			return new InMemoryEventStorageEngine();
 		}
 
 	}

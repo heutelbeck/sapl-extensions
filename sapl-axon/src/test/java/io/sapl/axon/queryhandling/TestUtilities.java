@@ -25,7 +25,7 @@ public class TestUtilities {
 			return isAccessDenied().test(t.getCause());
 		};
 	}
-	
+
 	public static Predicate<Throwable> isCausedBy(Class<? extends Throwable> cause) {
 		return t -> {
 			if (cause.isAssignableFrom(t.getClass()))

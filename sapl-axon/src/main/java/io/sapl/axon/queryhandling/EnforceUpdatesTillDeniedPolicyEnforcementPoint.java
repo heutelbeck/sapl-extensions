@@ -28,7 +28,7 @@ import org.springframework.security.access.AccessDeniedException;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
-import io.sapl.axon.constrainthandling.AxonConstraintHandlerService;
+import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.CoreSubscriber;
@@ -59,7 +59,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
 
 	private final Flux<AuthorizationDecision>                  decisions;
 	private Flux<SubscriptionQueryUpdateMessage<U>>            resourceAccessPoint;
-	private final AxonConstraintHandlerService                 constraintHandlerService;
+	private final ConstraintHandlerService                     constraintHandlerService;
 	private EnforcementSink<SubscriptionQueryUpdateMessage<U>> sink;
 	private final ResponseType<?>                              resultResponseType;
 	private final ResponseType<?>                              updateResponseType;
@@ -72,7 +72,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
 
 	private EnforceUpdatesTillDeniedPolicyEnforcementPoint(Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
-			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
+			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<?> updateResponseType) {
 		this.decisions                = decisions;
 		this.resourceAccessPoint      = updateMessageFlux;
@@ -83,7 +83,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
 
 	public static <U> Flux<SubscriptionQueryUpdateMessage<U>> of(Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
-			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
+			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<?> updateResponseType) {
 		EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> pep = new EnforceUpdatesTillDeniedPolicyEnforcementPoint<U>(
 				decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);

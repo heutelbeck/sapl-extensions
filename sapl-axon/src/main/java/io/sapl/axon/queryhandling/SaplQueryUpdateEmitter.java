@@ -49,7 +49,7 @@ import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.axon.annotation.EnforceDropUpdatesWhileDenied;
 import io.sapl.axon.annotation.EnforceRecoverableUpdatesIfDenied;
 import io.sapl.axon.annotation.PreHandleEnforce;
-import io.sapl.axon.constrainthandling.AxonConstraintHandlerService;
+import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
@@ -74,7 +74,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	private static final String QUERY_UPDATE_TASKS_RESOURCE_KEY = "/update-tasks";
 
 	private final MessageMonitor<? super SubscriptionQueryUpdateMessage<?>>                   updateMessageMonitor;
-	private final AxonConstraintHandlerService                                                constraintHandlerService;
+	private final ConstraintHandlerService                                                    constraintHandlerService;
 	private final ConcurrentMap<SubscriptionQueryMessage<?, ?, ?>, QueryData<?>>              activeQueries        = new ConcurrentHashMap<>();
 	private final List<MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>>> dispatchInterceptors = new CopyOnWriteArrayList<>();
 
@@ -87,7 +87,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	 */
 	public SaplQueryUpdateEmitter(
 			Optional<MessageMonitor<? super SubscriptionQueryUpdateMessage<?>>> updateMessageMonitor,
-			AxonConstraintHandlerService constraintHandlerService) {
+			ConstraintHandlerService constraintHandlerService) {
 		this.updateMessageMonitor     = updateMessageMonitor.orElseGet(() -> NoOpMessageMonitor.INSTANCE);
 		this.constraintHandlerService = constraintHandlerService;
 	}

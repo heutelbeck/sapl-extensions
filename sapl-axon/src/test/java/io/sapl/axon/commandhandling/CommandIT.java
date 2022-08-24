@@ -1,4 +1,4 @@
-package io.sapl.axon.queryhandling;
+package io.sapl.axon.commandhandling;
 
 import java.time.Duration;
 
@@ -13,7 +13,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
-public class QueryIT extends QueryTestsuite {
+public class CommandIT extends CommandTestsuite {
 	private static final int AXON_SERVER_GRPC_PORT = 8124;
 
 	private static final long TIMEOUT_FOR_AXON_SERVER_SPINUP = 40L;
@@ -29,11 +29,12 @@ public class QueryIT extends QueryTestsuite {
 				() -> axonServer.getHost() + ":" + axonServer.getMappedPort(AXON_SERVER_GRPC_PORT));
 	}
 
-	@SpringBootApplication
-	static class TestApplication {
+	@SpringBootApplication(scanBasePackages = { "io.sapl.axon.commandhandling.*" })
+	public static class TestApplication {
 
 		public static void main(String[] args) {
 			SpringApplication.run(TestApplication.class, args);
 		}
 	}
+
 }

@@ -43,6 +43,6 @@ public class RecoverableResponse<U> {
 	}
 
 	public static <T> RecoverableResponse<T> accessDenied(ResponseType<T> reponseType) {
-		return new RecoverableResponse<>(reponseType,null);
+		return new RecoverableResponse<>(reponseType, null);
 	}
 }

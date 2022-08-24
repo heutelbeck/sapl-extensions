@@ -30,7 +30,7 @@ import org.springframework.security.access.AccessDeniedException;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
-import io.sapl.axon.constrainthandling.AxonConstraintHandlerService;
+import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
 import reactor.core.CoreSubscriber;
 import reactor.core.Disposable;
@@ -55,7 +55,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 		extends Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<T>>> {
 	private final Flux<AuthorizationDecision>       decisions;
 	private Flux<SubscriptionQueryUpdateMessage<T>> resourceAccessPoint;
-	private final AxonConstraintHandlerService      constraintHandlerService;
+	private final ConstraintHandlerService          constraintHandlerService;
 	private final ResponseType<?>                   resultResponseType;
 	private final ResponseType<T>                   updateResponseType;
 
@@ -69,7 +69,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 
 	private EnforceRecoverableIfDeniedPolicyEnforcementPoint(Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<T>> resourceAccessPoint,
-			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
+			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<T> updateResponseType) {
 		this.decisions                = decisions;
 		this.resourceAccessPoint      = resourceAccessPoint;
@@ -80,7 +80,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 
 	public static <V> Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<V>>> of(
 			Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<V>> resourceAccessPoint,
-			AxonConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
+			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<V> originalUpdateResponseType) {
 		var pep = new EnforceRecoverableIfDeniedPolicyEnforcementPoint<V>(decisions, resourceAccessPoint,
 				constraintHandlerService, resultResponseType, originalUpdateResponseType);
