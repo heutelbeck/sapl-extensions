@@ -18,6 +18,10 @@ public class TestUtilities {
 
 			if (t.getMessage().toUpperCase().contains("ACCESS DENIED"))
 				return true;
+			
+			// in case the remote service closed the stream before it could be subscribed to
+			if (t.getMessage().toUpperCase().contains("ALREADY BEEN COMPLETED"))
+				return true;
 
 			if (t.getCause() == null)
 				return false;
