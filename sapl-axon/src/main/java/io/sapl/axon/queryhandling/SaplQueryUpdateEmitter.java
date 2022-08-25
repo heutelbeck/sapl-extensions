@@ -80,12 +80,12 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	 * @deprecated in favour of using
 	 *             {{@link #registerUpdateHandler(SubscriptionQueryMessage, int)}}
 	 */
-	@Deprecated
 	@Override
+	@Deprecated
 	public <U> UpdateHandlerRegistration<U> registerUpdateHandler(SubscriptionQueryMessage<?, ?, ?> query,
 			SubscriptionQueryBackpressure backpressure, int updateBufferSize) {
-		throw new UnsupportedOperationException(
-				"This deprecated method is not supported by SAPL. Use #registerUpdateHandler(SubscriptionQueryMessage, int).");
+		log.trace("Deprecated subscription registration. Ignoring backpressure settings {}", backpressure);
+		return registerUpdateHandler(query, updateBufferSize);
 	}
 
 	@Value
