@@ -1,1 +1,2 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=io.sapl.axon.configuration.SaplAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+io.sapl.axon.configuration.SaplAutoConfiguration

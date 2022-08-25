@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -21,12 +22,15 @@ public class SpringSecurityAuthenticationMetadataProvider implements Authenticat
 		if (authentication == null)
 			return Map.of("subject", "\"anonymous\"");
 
-		ObjectNode subject = mapper.valueToTree(authentication.getPrincipal());
-		subject.remove("credentials");
-		subject.remove("password");
-		var principal = subject.get("principal");
-		if (principal instanceof ObjectNode)
-			((ObjectNode) principal).remove("password");
+		JsonNode subject = mapper.valueToTree(authentication.getPrincipal());
+		if (subject.isObject()) {
+			((ObjectNode) subject).remove("credentials");
+			((ObjectNode) subject).remove("password");
+			var principal = subject.get("principal");
+			if (principal !=null && principal.isObject())
+				((ObjectNode) principal).remove("password");
+		}
+	
 		return Map.of("subject", mapper.writeValueAsString(subject));
 	}
 }
