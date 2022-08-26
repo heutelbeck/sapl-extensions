@@ -108,9 +108,9 @@ public class SaplAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	AuthorizationSubscriptionBuilderService subscriptionBuilder() {
+	AuthorizationSubscriptionBuilderService subscriptionBuilder(ObjectMapper mapper) {
 		log.trace("Deploy AuthorizationSubscriptionBuilderService");
-		return new AuthorizationSubscriptionBuilderService(new ObjectMapper());
+		return new AuthorizationSubscriptionBuilderService(mapper);
 	}
 
 }
