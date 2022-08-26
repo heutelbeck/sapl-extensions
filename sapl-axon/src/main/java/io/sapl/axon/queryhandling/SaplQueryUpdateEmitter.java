@@ -171,13 +171,14 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 					(__, originalQueryData) -> originalQueryData.withMode(authzConfig.getMode()));
 
 			if (authzConfig.getMode() == QueryAuthorizationMode.TILL_DENIED) {
-				return EnforceUpdatesTillDeniedPolicyEnforcementPoint.of(authzConfig.getDecisions(), updateMessageFlux,
-						constraintHandlerService, query.getResponseType(), query.getUpdateResponseType());
-			}
-			if (authzConfig.getMode() == QueryAuthorizationMode.DROP_WHILE_DENIED) {
-				return EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint.of(authzConfig.getDecisions(),
+				return EnforceUpdatesTillDeniedPolicyEnforcementPoint.of(registeredQuery, authzConfig.getDecisions(),
 						updateMessageFlux, constraintHandlerService, query.getResponseType(),
 						query.getUpdateResponseType());
+			}
+			if (authzConfig.getMode() == QueryAuthorizationMode.DROP_WHILE_DENIED) {
+				return EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint.of(registeredQuery,
+						authzConfig.getDecisions(), updateMessageFlux, constraintHandlerService,
+						query.getResponseType(), query.getUpdateResponseType());
 			}
 			if (authzConfig.getMode() == QueryAuthorizationMode.RECOVERABLE_IF_DENIED) {
 				var originalUpdateResponseType = (ResponseType<U>) query.getMetaData()
@@ -185,16 +186,17 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 				if (originalUpdateResponseType != null) {
 					log.debug("Client requested access denied recoverability.");
 
-					return EnforceRecoverableIfDeniedPolicyEnforcementPoint.of(authzConfig.getDecisions(),
-							updateMessageFlux, constraintHandlerService, query.getResponseType(),
-							originalUpdateResponseType);
+					return EnforceRecoverableIfDeniedPolicyEnforcementPoint.of(registeredQuery,
+							authzConfig.getDecisions(), updateMessageFlux, constraintHandlerService,
+							query.getResponseType(), originalUpdateResponseType);
 				}
 				log.debug(
 						"While handler supports recoverability, client did not request it. Fall back to TILL_DENIED enforcement. Requested: {}",
 						query.getUpdateResponseType().getExpectedResponseType().getSimpleName());
 
-				return EnforceUpdatesTillDeniedPolicyEnforcementPoint.of(authzConfig.getDecisions(), updateMessageFlux,
-						constraintHandlerService, query.getResponseType(), query.getUpdateResponseType());
+				return EnforceUpdatesTillDeniedPolicyEnforcementPoint.of(registeredQuery, authzConfig.getDecisions(),
+						updateMessageFlux, constraintHandlerService, query.getResponseType(),
+						query.getUpdateResponseType());
 			}
 			return updateMessageFlux;
 		});

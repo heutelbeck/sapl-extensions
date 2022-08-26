@@ -10,11 +10,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.messaging.Message;
 import org.axonframework.messaging.MetaData;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,7 +120,7 @@ public abstract class CommandTestsuite {
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 		assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is(MODIFIED_RESULT));
 		verify(resultMappingProvider, times(1)).map(any());
-		verify(onDecisionProvider, times(1)).run();
+		verify(onDecisionProvider, times(1)).accept(any(), any());
 		verify(querMappingProvider, times(1)).mapPayload(any(), any());
 	}
 
@@ -253,11 +255,11 @@ public abstract class CommandTestsuite {
 		}
 
 		@Override
-		public Runnable getHandler(JsonNode constraint) {
-			return this::run;
+		public BiConsumer<AuthorizationDecision, Message<?>> getHandler(JsonNode constraint) {
+			return this::accept;
 		}
 
-		public void run() {
+		public void accept(AuthorizationDecision decision, Message<?> message) {
 			// NOOP
 		}
 

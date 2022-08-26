@@ -2,19 +2,22 @@ package io.sapl.axon.constrainthandling;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.axonframework.messaging.Message;
 import org.axonframework.messaging.ResultMessage;
 import org.axonframework.queryhandling.QueryMessage;
 
+import io.sapl.api.pdp.AuthorizationDecision;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class QueryConstraintHandlerBundle<I, U> {
 	public static final QueryConstraintHandlerBundle<?, ?> NOOP_BUNDLE = new QueryConstraintHandlerBundle<>();
 
-	protected final Runnable                                         onDecision;
+	protected final BiConsumer<AuthorizationDecision, Message<?>>    onDecision;
 	protected final Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMapper;
 	protected final Function<Throwable, Throwable>                   errorMapper;
 	protected final Function<I, I>                                   resultMapper;
@@ -23,7 +26,7 @@ public class QueryConstraintHandlerBundle<I, U> {
 
 	// @formatter:off
 	private QueryConstraintHandlerBundle() {
-		this.onDecision = ()->{};
+		this.onDecision = (__,___)->{};
 		this.queryMapper = Function.identity();
 		this.errorMapper = Function.identity();
 		this.resultMapper = Function.identity();
@@ -32,8 +35,8 @@ public class QueryConstraintHandlerBundle<I, U> {
 	}
 	// @formatter:on
 
-	public void executeOnDecisionHandlers() {
-		onDecision.run();
+	public void executeOnDecisionHandlers(AuthorizationDecision decision, Message<?> message) {
+		onDecision.accept(decision, message);
 	}
 
 	public Throwable executeOnErrorHandlers(Throwable t) {

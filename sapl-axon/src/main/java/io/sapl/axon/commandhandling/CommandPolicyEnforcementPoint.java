@@ -58,7 +58,7 @@ public class CommandPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcem
 		var bundle     = axonConstraintEnforcementService.buildPreEnforceCommandConstraintHandlerBundle(decision,
 				aggregate, executable, command);
 		try {
-			bundle.executeOnDecisionHandlers();
+			bundle.executeOnDecisionHandlers(decision, command);
 		} catch (Exception t) {
 			log.error("command on decision constraint handlers failed: {}", t.getMessage(), t);
 			throw bundle.executeOnErrorHandlers(new AccessDeniedException("Access Denied"));

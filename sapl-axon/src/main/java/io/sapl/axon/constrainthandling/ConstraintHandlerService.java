@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -432,23 +433,25 @@ public class ConstraintHandlerService {
 		});
 	}
 
-	private Runnable constructOnDecisionHandlers(AuthorizationDecision decision,
+	private BiConsumer<AuthorizationDecision, Message<?>> constructOnDecisionHandlers(AuthorizationDecision decision,
 			Set<JsonNode> obligationsWithoutHandler) {
-		var onDecisionObligationHandlers = ondecisionHandlersForSignal(decision.getObligations(),
+		var onDecisionObligationHandlers = ondecisionHandlers(decision.getObligations(),
 				obligationsWithoutHandler::remove);
-		var onDecisionAdviceHandlers     = ondecisionHandlersForSignal(decision.getAdvice(), __ -> {
+		var onDecisionAdviceHandlers     = ondecisionHandlers(decision.getAdvice(), __ -> {
 											});
 
-		return () -> {
-			onDecisionObligationHandlers.map(this::obligation).ifPresent(Runnable::run);
-			onDecisionAdviceHandlers.map(this::advice).ifPresent(Runnable::run);
+		return (auhtzDecision, message) -> {
+			onDecisionObligationHandlers.map(biConsumer -> (Runnable) (() -> biConsumer.accept(auhtzDecision, message)))
+					.map(this::obligation).ifPresent(Runnable::run);
+			onDecisionAdviceHandlers.map(biConsumer -> (Runnable) (() -> biConsumer.accept(auhtzDecision, message)))
+					.map(this::advice).ifPresent(Runnable::run);
 		};
 	}
 
-	private Optional<Runnable> ondecisionHandlersForSignal(Optional<ArrayNode> constraints,
+	private Optional<BiConsumer<AuthorizationDecision, Message<?>>> ondecisionHandlers(Optional<ArrayNode> constraints,
 			Consumer<JsonNode> onHandlerFound) {
 		return constraints.map(obligations -> {
-			var handlers = new ArrayList<Runnable>(obligations.size());
+			var handlers = new ArrayList<BiConsumer<AuthorizationDecision, Message<?>>>(obligations.size());
 			for (var constraint : obligations) {
 				for (var provider : globalRunnableProviders) {
 					if (provider.isResponsible(constraint)) {
@@ -457,7 +460,7 @@ public class ConstraintHandlerService {
 					}
 				}
 			}
-			return runAll(handlers);
+			return (decision, message) -> handlers.forEach(handler -> handler.accept(decision, message));
 		});
 	}
 

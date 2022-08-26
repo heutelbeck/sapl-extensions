@@ -16,11 +16,16 @@
 
 package io.sapl.axon.constrainthandling.api;
 
+import java.util.function.BiConsumer;
+
+import org.axonframework.messaging.Message;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
+import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
 
 public interface OnDecisionConstraintHandlerProvider extends Responsible, HasPriority {
-	Runnable getHandler(JsonNode constraint);
+	BiConsumer<AuthorizationDecision,Message<?>> getHandler(JsonNode constraint);
 }

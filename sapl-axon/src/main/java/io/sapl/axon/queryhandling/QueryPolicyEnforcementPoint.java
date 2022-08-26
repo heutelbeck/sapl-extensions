@@ -121,6 +121,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		};
 	}
 
+	@SuppressWarnings("unchecked")
 	private Function<AuthorizationDecision, Mono<Object>> enforcePreEnforceDecision(QueryMessage<?, ?> message,
 			T source, Optional<ResponseType<?>> updateType) {
 		return decision -> {
@@ -134,7 +135,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 			}
 
 			try {
-				constraintHandler.executeOnDecisionHandlers();
+				constraintHandler.executeOnDecisionHandlers(decision, message);
 			} catch (AccessDeniedException error) {
 				return Mono.error(constraintHandler.executeOnErrorHandlers(error));
 			}
@@ -143,7 +144,6 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 				return Mono.error(constraintHandler.executeOnErrorHandlers(error));
 			}
 			try {
-				@SuppressWarnings("unchecked")
 				QueryMessage<?, ?> updatedQuery = constraintHandler.executePreHandlingHandlers(message);
 				return callDelegate(updatedQuery, source).map(constraintHandler::executePostHandlingHandlers)
 						.onErrorMap(constraintHandler::executeOnErrorHandlers);
@@ -153,6 +153,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		};
 	}
 
+	@SuppressWarnings("unchecked")
 	private Function<AuthorizationDecision, Mono<Object>> enforcePostEnforceDecisionOnErrorResult(
 			QueryMessage<?, ?> message, Throwable error) {
 		return decision -> {
@@ -167,7 +168,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 			}
 
 			try {
-				constraintHandler.executeOnDecisionHandlers();
+				constraintHandler.executeOnDecisionHandlers(decision, message);
 			} catch (AccessDeniedException e) {
 				return Mono.error(constraintHandler.executeOnErrorHandlers(e));
 			}
@@ -181,6 +182,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		};
 	}
 
+	@SuppressWarnings("unchecked")
 	private Function<AuthorizationDecision, Mono<Object>> enforcePostEnforceDecision(QueryMessage<?, ?> message,
 			T source, Object returnObject) {
 		return decision -> {
@@ -195,7 +197,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 			}
 
 			try {
-				constraintHandler.executeOnDecisionHandlers();
+				constraintHandler.executeOnDecisionHandlers(decision, message);
 			} catch (AccessDeniedException error) {
 				return Mono.error(constraintHandler.executeOnErrorHandlers(error));
 			}

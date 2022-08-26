@@ -1,16 +1,19 @@
 package io.sapl.axon.constrainthandling;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.axonframework.commandhandling.CommandMessage;
+import org.axonframework.messaging.Message;
 
+import io.sapl.api.pdp.AuthorizationDecision;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class CommandConstraintHandlerBundle<R, T> {
 	public static final CommandConstraintHandlerBundle<?, ?> NOOP_BUNDLE = new CommandConstraintHandlerBundle<>();
 
-	protected final Runnable                                       onDecision;
+	protected final BiConsumer<AuthorizationDecision, Message<?>>  onDecision;
 	protected final Function<Throwable, Throwable>                 errorMapper;
 	protected final Function<CommandMessage<?>, CommandMessage<?>> commandMapper;
 	protected final Function<R, R>                                 resultMapper;
@@ -18,7 +21,7 @@ public class CommandConstraintHandlerBundle<R, T> {
 
 	// @formatter:off
 	private CommandConstraintHandlerBundle() {
-		this.onDecision = ()->{};
+		this.onDecision = (__,___)->{};
 		this.commandMapper = Function.identity();
 		this.errorMapper = Function.identity();
 		this.resultMapper = Function.identity();
@@ -26,8 +29,8 @@ public class CommandConstraintHandlerBundle<R, T> {
 	}
 	// @formatter:on
 
-	public void executeOnDecisionHandlers() {
-		onDecision.run();
+	public void executeOnDecisionHandlers(AuthorizationDecision decision, Message<?> message) {
+		onDecision.accept(decision, message);
 	}
 
 	public Exception executeOnErrorHandlers(Exception t) {

@@ -23,6 +23,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.axonframework.messaging.Message;
 import org.axonframework.messaging.ResultMessage;
 import org.axonframework.queryhandling.QueryHandler;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
@@ -503,7 +504,7 @@ public abstract class QueryTestsuite {
 		create(result).expectNext(QUERY).verifyComplete();
 
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(onDecisionProvider, times(1)).run();
+		verify(onDecisionProvider, times(1)).accept(any(),any());
 	}
 
 	@Test
@@ -593,7 +594,7 @@ public abstract class QueryTestsuite {
 		create(result).expectNext(QUERY).verifyComplete();
 
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(onDecisionProvider, times(1)).run();
+		verify(onDecisionProvider, times(1)).accept(any(),any());
 	}
 
 	@Test
@@ -920,11 +921,11 @@ public abstract class QueryTestsuite {
 		}
 
 		@Override
-		public Runnable getHandler(JsonNode constraint) {
-			return this::run;
+		public BiConsumer<AuthorizationDecision, Message<?>> getHandler(JsonNode constraint) {
+			return this::accept;
 		}
 
-		public void run() {
+		public void accept(AuthorizationDecision decision, Message<?> message) {
 			// NOOP
 		}
 

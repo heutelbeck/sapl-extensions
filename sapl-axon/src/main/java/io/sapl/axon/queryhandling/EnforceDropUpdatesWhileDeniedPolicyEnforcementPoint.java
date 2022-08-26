@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
+import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -55,10 +56,11 @@ import reactor.core.publisher.Flux;
  */
 public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux<SubscriptionQueryUpdateMessage<U>> {
 
-	private final Flux<AuthorizationDecision> decisions;
-	private final ConstraintHandlerService    constraintHandlerService;
-	private final ResponseType<?>             resultResponseType;
-	private final ResponseType<?>             updateResponseType;
+	private final SubscriptionQueryMessage<?, ?, ?> query;
+	private final Flux<AuthorizationDecision>       decisions;
+	private final ConstraintHandlerService          constraintHandlerService;
+	private final ResponseType<?>                   resultResponseType;
+	private final ResponseType<?>                   updateResponseType;
 
 	private Flux<SubscriptionQueryUpdateMessage<U>>            resourceAccessPoint;
 	private EnforcementSink<SubscriptionQueryUpdateMessage<U>> sink;
@@ -69,10 +71,11 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
 	final AtomicReference<QueryConstraintHandlerBundle<?, ?>> constraintHandler     = new AtomicReference<>();
 	final AtomicBoolean                                       stopped               = new AtomicBoolean(false);
 
-	private EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint(Flux<AuthorizationDecision> decisions,
-			Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
+	private EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint(SubscriptionQueryMessage<?, ?, ?> query,
+			Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
 			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<?> updateResponseType) {
+		this.query                    = query;
 		this.decisions                = decisions;
 		this.resourceAccessPoint      = updateMessageFlux;
 		this.constraintHandlerService = constraintHandlerService;
@@ -80,12 +83,12 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
 		this.resultResponseType       = resultResponseType;
 	}
 
-	public static <U> Flux<SubscriptionQueryUpdateMessage<U>> of(Flux<AuthorizationDecision> decisions,
-			Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
+	public static <U> Flux<SubscriptionQueryUpdateMessage<U>> of(SubscriptionQueryMessage<?, ?, ?> query,
+			Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
 			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<?> updateResponseType) {
 		EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> pep = new EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U>(
-				decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
+				query, decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
 		return (Flux<SubscriptionQueryUpdateMessage<U>>) pep
 				.onErrorMap(AccessDeniedException.class, pep::handleAccessDenied).doOnCancel(pep::handleCancel)
 				.onErrorStop();
@@ -116,7 +119,7 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
 			return;
 		}
 		try {
-			constraintHandler.get().executeOnDecisionHandlers();
+			constraintHandler.get().executeOnDecisionHandlers(decision, query);
 		} catch (AccessDeniedException e) {
 			// NOP
 			return;

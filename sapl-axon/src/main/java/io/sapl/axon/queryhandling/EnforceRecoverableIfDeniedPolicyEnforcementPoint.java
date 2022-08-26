@@ -25,6 +25,7 @@ import org.axonframework.messaging.GenericResultMessage;
 import org.axonframework.messaging.ResultMessage;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
+import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -53,6 +54,8 @@ import reactor.core.publisher.Flux;
  */
 public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 		extends Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<T>>> {
+	
+	private final SubscriptionQueryMessage<?, ?, ?> query;
 	private final Flux<AuthorizationDecision>       decisions;
 	private Flux<SubscriptionQueryUpdateMessage<T>> resourceAccessPoint;
 	private final ConstraintHandlerService          constraintHandlerService;
@@ -67,10 +70,11 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 	final AtomicReference<QueryConstraintHandlerBundle<?, ?>> constraintHandler     = new AtomicReference<>();
 	final AtomicBoolean                                       stopped               = new AtomicBoolean(false);
 
-	private EnforceRecoverableIfDeniedPolicyEnforcementPoint(Flux<AuthorizationDecision> decisions,
+	private EnforceRecoverableIfDeniedPolicyEnforcementPoint(SubscriptionQueryMessage<?, ?, ?> query,Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<T>> resourceAccessPoint,
 			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<T> updateResponseType) {
+		this.query                    = query;
 		this.decisions                = decisions;
 		this.resourceAccessPoint      = resourceAccessPoint;
 		this.constraintHandlerService = constraintHandlerService;
@@ -78,11 +82,11 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 		this.resultResponseType       = resultResponseType;
 	}
 
-	public static <V> Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<V>>> of(
+	public static <V> Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<V>>> of(SubscriptionQueryMessage<?, ?, ?> query,
 			Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<V>> resourceAccessPoint,
 			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<V> originalUpdateResponseType) {
-		var pep = new EnforceRecoverableIfDeniedPolicyEnforcementPoint<V>(decisions, resourceAccessPoint,
+		var pep = new EnforceRecoverableIfDeniedPolicyEnforcementPoint<V>(query,decisions, resourceAccessPoint,
 				constraintHandlerService, resultResponseType, originalUpdateResponseType);
 		return pep.doOnCancel(pep::handleCancel).onErrorStop();
 	}
@@ -129,7 +133,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 			sink.next(newAccessDeniedUpdate());
 
 		try {
-			newBundle.executeOnDecisionHandlers();
+			newBundle.executeOnDecisionHandlers(decision,query);
 		} catch (AccessDeniedException e) {
 			sink.next(newAccessDeniedUpdate());
 			implicitDecision = AuthorizationDecision.INDETERMINATE;
