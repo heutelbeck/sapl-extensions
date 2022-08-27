@@ -27,8 +27,9 @@ public class SpringSecurityAuthenticationMetadataProvider implements Authenticat
 			((ObjectNode) subject).remove("credentials");
 			((ObjectNode) subject).remove("password");
 			var principal = subject.get("principal");
-			if (principal !=null && principal.isObject())
-				((ObjectNode) principal).remove("password");
+			if (principal != null)
+				if (principal.isObject())
+					((ObjectNode) principal).remove("password");
 		}
 	
 		return Map.of("subject", mapper.writeValueAsString(subject));

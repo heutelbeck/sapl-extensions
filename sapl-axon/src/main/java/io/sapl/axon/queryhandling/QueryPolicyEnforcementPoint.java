@@ -246,7 +246,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 
 		if (saplAnnotations.isEmpty()) {
 			log.debug("No SAPL annotations on handler. Delegate without policy enforcement");
-			emitter.authozrizeUpdatesForSubscriptionQueryWithId(message.getIdentifier());
+			emitter.authorizeUpdatesForSubscriptionQueryWithId(message.getIdentifier());
 			return delegate.handle(message, source);
 		}
 
@@ -255,7 +255,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		if (streamingAnnotation.isEmpty()) {
 			log.debug(
 					"No SAPL annotation for streaming present. Authorize all updates and delegate to potential handling of @PostHandleEnforce.");
-			emitter.authozrizeUpdatesForSubscriptionQueryWithId(message.getIdentifier());
+			emitter.authorizeUpdatesForSubscriptionQueryWithId(message.getIdentifier());
 			return handleSimpleQuery(message, source);
 		}
 
@@ -264,7 +264,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		var decisions         = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY).share()
 				.cache(1);
 		log.debug("Set authorization mode of emitter {}", streamingAnnotation.get().annotationType().getSimpleName());
-		emitter.authozrizeUpdatesForSubscriptionQueryWithId(message.getIdentifier(), decisions,
+		emitter.authorizeUpdatesForSubscriptionQueryWithId(message.getIdentifier(), decisions,
 				streamingAnnotation.get().annotationType());
 		log.debug("Build pre-authorization-handler PDP for initial result of subscription query");
 

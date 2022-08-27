@@ -113,7 +113,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	/**
 	 * @param messageIdentifier
 	 */
-	public void authozrizeUpdatesForSubscriptionQueryWithId(String messageIdentifier) {
+	public void authorizeUpdatesForSubscriptionQueryWithId(String messageIdentifier) {
 		var enforcementConfiguration = new QueryEnforcementConfiguration(QueryAuthorizationMode.NO_AUTHORIZATION, null);
 		emitEnforcementConfiguration(messageIdentifier, enforcementConfiguration);
 	}
@@ -123,7 +123,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	 * @param decisions
 	 * @param clazz
 	 */
-	public void authozrizeUpdatesForSubscriptionQueryWithId(String messageIdentifier,
+	public void authorizeUpdatesForSubscriptionQueryWithId(String messageIdentifier,
 			Flux<AuthorizationDecision> decisions, Class<? extends Annotation> clazz) {
 		var enforcementConfiguration = new QueryEnforcementConfiguration(QueryAuthorizationMode.of(clazz), decisions);
 		emitEnforcementConfiguration(messageIdentifier, enforcementConfiguration);
@@ -159,7 +159,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 										removeHandler.run();
 										return true;
 									};
-
+		
 		activeQueries.put(query,
 				new QueryData<U>(QueryAuthorizationMode.UNDEFINED, enforcementConfigurationSink, updateSink));
 
