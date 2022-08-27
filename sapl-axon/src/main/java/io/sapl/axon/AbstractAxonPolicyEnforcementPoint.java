@@ -1,4 +1,4 @@
-package io.sapl.axon.queryhandling;
+package io.sapl.axon;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Executable;

@@ -18,6 +18,8 @@ import org.springframework.security.access.AccessDeniedException;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
+import io.sapl.axon.AbstractAxonPolicyEnforcementPoint;
+import io.sapl.axon.Annotations;
 import io.sapl.axon.annotation.PostHandleEnforce;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
