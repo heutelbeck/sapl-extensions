@@ -18,6 +18,8 @@ import org.springframework.security.access.AccessDeniedException;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
+import io.sapl.axon.AbstractAxonPolicyEnforcementPoint;
+import io.sapl.axon.Annotations;
 import io.sapl.axon.annotation.PostHandleEnforce;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
@@ -91,7 +93,8 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 			return queryResult.toFuture();
 		}
 		return queryResult.onErrorResume(enforcePostEnforceOnErrorResult(message, source, postEnforceAnnotation))
-				.flatMap(enforcePostEnforceOnSuccessfulQueryResult(message, source, postEnforceAnnotation)).toFuture();
+				.flatMap(enforcePostEnforceOnSuccessfulQueryResult(message, source, postEnforceAnnotation))
+				.toFuture();
 	}
 
 	private Function<? super Object, ? extends Mono<? extends Object>> enforcePostEnforceOnSuccessfulQueryResult(
@@ -145,11 +148,22 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 			}
 			try {
 				QueryMessage<?, ?> updatedQuery = constraintHandler.executePreHandlingHandlers(message);
-				return callDelegate(updatedQuery, source).map(constraintHandler::executePostHandlingHandlers)
+				return callDelegate(updatedQuery, source).map(replaceResourceIfRequired(decision, message))
+						.map(constraintHandler::executePostHandlingHandlers)
 						.onErrorMap(constraintHandler::executeOnErrorHandlers);
 			} catch (AccessDeniedException error) {
 				return Mono.error(constraintHandler.executeOnErrorHandlers(error));
 			}
+		};
+	}
+
+	private Function<Object, Object> replaceResourceIfRequired(AuthorizationDecision decision,
+			QueryMessage<?, ?> message) {
+		return o -> {
+			if (decision.getResource().isPresent())
+				return axonConstraintEnforcementService.deserializeResource(decision.getResource().get(),
+						message.getResponseType());
+			return o;
 		};
 	}
 
@@ -237,7 +251,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 			return Mono.fromFuture(((CompletableFuture<?>) result));
 		}
 
-		return Mono.just(result);
+		return result != null ? Mono.just(result) : Mono.empty();
 	}
 
 	private Object handleSubscriptionQuery(QueryMessage<?, ?> message, T source, Optional<ResponseType<?>> updateType)
@@ -268,7 +282,8 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 				streamingAnnotation.get().annotationType());
 		log.debug("Build pre-authorization-handler PDP for initial result of subscription query");
 
-		return decisions.next().flatMap(enforcePreEnforceDecision(message, source, updateType)).toFuture();
+		return decisions.next().flatMap(enforcePreEnforceDecision(message, source, updateType))
+				.toFuture();
 	}
 
 	private Optional<Annotation> uniqueStreamingEnforcementAnnotation() {

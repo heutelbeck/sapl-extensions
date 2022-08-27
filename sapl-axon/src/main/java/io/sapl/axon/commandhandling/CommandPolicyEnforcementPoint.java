@@ -10,9 +10,9 @@ import org.springframework.security.access.AccessDeniedException;
 
 import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
+import io.sapl.axon.AbstractAxonPolicyEnforcementPoint;
 import io.sapl.axon.annotation.PreHandleEnforce;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
-import io.sapl.axon.queryhandling.AbstractAxonPolicyEnforcementPoint;
 import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
 import lombok.extern.slf4j.Slf4j;
 
