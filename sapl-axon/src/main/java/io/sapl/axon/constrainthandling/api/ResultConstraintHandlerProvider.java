@@ -36,50 +36,56 @@ import io.sapl.spring.constraints.api.TypeSupport;
 
 public interface ResultConstraintHandlerProvider<T> extends Responsible, HasPriority, TypeSupport<T> {
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	default Function<ResultMessage<?>, ResultMessage<?>> getHandler(JsonNode constraint) {
+	default Function<Object, Object> getHandler(JsonNode constraint) {
 		return result -> {
-			var           newMetaData = mapMetadata(result.getMetaData());
-			ResultMessage resultMessage;
-			if (result.isExceptional()) {
-				var newThrowable = mapThrowable(result.exceptionResult());
-				var baseMessage  = new GenericMessage(result.getIdentifier(), result.getPayloadType(),
-						result.getPayload(), newMetaData);
+			if (result instanceof ResultMessage)
+				return getResultMessageHandler((ResultMessage<?>) result, constraint);
 
-				resultMessage = new GenericResultMessage(baseMessage, newThrowable);
-			} else {
-				var newPayload     = mapPayload(result.getPayload(), result.getPayloadType());
-				var newPayloadType = mapPayloadType(result.getPayloadType());
-				var baseMessage    = new GenericMessage(result.getIdentifier(), newPayloadType, newPayload,
-						newMetaData);
-				resultMessage = new GenericResultMessage(baseMessage);
-			}
-
-			if (result instanceof SubscriptionQueryUpdateMessage) {
-				return GenericSubscriptionQueryUpdateMessage.asUpdateMessage(resultMessage);
-			} else if (result instanceof QueryResponseMessage) {
-				return GenericQueryResponseMessage.asResponseMessage(resultMessage);
-			} else if (result instanceof CommandResultMessage) {
-				return GenericCommandResultMessage.asCommandResultMessage(resultMessage);
-			}
-
-			return resultMessage;
+			return mapPayload(constraint, result, Object.class);
 		};
 	};
 
-	default Throwable mapThrowable(Throwable exceptionResult) {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	default ResultMessage<?> getResultMessageHandler(ResultMessage<?> result, JsonNode constraint) {
+		var           newMetaData = mapMetadata(constraint, result.getMetaData());
+		ResultMessage resultMessage;
+		if (result.isExceptional()) {
+			var newThrowable = mapThrowable(constraint, result.exceptionResult());
+			var baseMessage  = new GenericMessage(result.getIdentifier(), result.getPayloadType(), result.getPayload(),
+					newMetaData);
+
+			resultMessage = new GenericResultMessage(baseMessage, newThrowable);
+		} else {
+			var newPayload     = mapPayload(constraint, result.getPayload(), result.getPayloadType());
+			var newPayloadType = mapPayloadType(constraint, result.getPayloadType());
+			var baseMessage    = new GenericMessage(result.getIdentifier(), newPayloadType, newPayload, newMetaData);
+			resultMessage = new GenericResultMessage(baseMessage);
+		}
+
+		if (result instanceof SubscriptionQueryUpdateMessage) {
+			return GenericSubscriptionQueryUpdateMessage.asUpdateMessage(resultMessage);
+		} else if (result instanceof QueryResponseMessage) {
+			return GenericQueryResponseMessage.asResponseMessage(resultMessage);
+		} else if (result instanceof CommandResultMessage) {
+			return GenericCommandResultMessage.asCommandResultMessage(resultMessage);
+		}
+
+		return resultMessage;
+	}
+
+	default Throwable mapThrowable(JsonNode constraint, Throwable exceptionResult) {
 		return exceptionResult;
 	}
 
-	default Class<?> mapPayloadType(Class<?> payloadType) {
+	default Class<?> mapPayloadType(JsonNode constraint, Class<?> payloadType) {
 		return payloadType;
 	}
 
-	default Object mapPayload(Object payload, Class<?> clazz) {
+	default Object mapPayload(JsonNode constraint, Object payload, Class<?> clazz) {
 		return payload;
 	}
 
-	default MetaData mapMetadata(MetaData originalMetadata) {
+	default MetaData mapMetadata(JsonNode constraint, MetaData originalMetadata) {
 		return originalMetadata;
 	}
 

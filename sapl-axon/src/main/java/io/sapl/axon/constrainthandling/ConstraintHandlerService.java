@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.Message;
-import org.axonframework.messaging.ResultMessage;
 import org.axonframework.messaging.annotation.ParameterResolverFactory;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.queryhandling.QueryMessage;
@@ -73,20 +72,39 @@ public class ConstraintHandlerService {
 
 		this.mapper                   = mapper;
 		this.parameterResolverFactory = parameterResolverFactory;
+
+		log.debug("Loading constraint handler providers...");
+
 		this.updatePredicateProviders = updatePredicateProviders;
+		logDeployedHandlers("Update Predicate Providers:", this.updatePredicateProviders);
 		// sort according to priority
 		this.globalRunnableProviders = globalRunnableProviders;
 		Collections.sort(this.globalRunnableProviders);
+		logDeployedHandlers("Update Runnable Providers:", this.globalRunnableProviders);
 		this.globalQueryMessageMappingProviders = globalQueryMessageMappingProviders;
 		Collections.sort(this.globalQueryMessageMappingProviders);
+		logDeployedHandlers("Query Mappers:", this.globalQueryMessageMappingProviders);
 		this.globalErrorMappingHandlerProviders = globalErrorMappingHandlerProviders;
 		Collections.sort(this.globalErrorMappingHandlerProviders);
+		logDeployedHandlers("Error Mappers:", this.globalErrorMappingHandlerProviders);
 		this.globalMappingProviders = globalMappingProviders;
 		Collections.sort(this.globalMappingProviders);
+		logDeployedHandlers("Mapping Mappers:", this.globalMappingProviders);
 		this.updateMappingProviders = updateMappingProviders;
 		Collections.sort(this.updateMappingProviders);
+		logDeployedHandlers("Update Mappers:", this.updateMappingProviders);
 		this.globalCommandMessageMappingProviders = globalCommandMessageMappingProviders;
 		Collections.sort(this.globalCommandMessageMappingProviders);
+		logDeployedHandlers("Command Mappers:", this.globalCommandMessageMappingProviders);
+	}
+
+	private void logDeployedHandlers(String description, Collection<?> handlers) {
+		if (handlers.isEmpty())
+			return;
+		log.debug(description);
+		for (var handler : handlers) {
+			log.debug(" - {}", handler.getClass().getSimpleName());
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -122,6 +140,7 @@ public class ConstraintHandlerService {
 		var resultMappingHandlers  = constructResultMappingHandlers(decision, obligationsWithoutHandler, type);
 		var handlersOnObject       = constructObjectConstraintHandlers(aggregate, command, decision,
 				obligationsWithoutHandler);
+
 		if (!obligationsWithoutHandler.isEmpty()) {
 			log.error("Could not find handlers for all obligations. Missing handlers for: {}",
 					obligationsWithoutHandler);
@@ -148,13 +167,14 @@ public class ConstraintHandlerService {
 		var onDecisionHandlers    = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
 		var queryMappingHandlers  = constructQueryMessageMappingHandlers(decision, obligationsWithoutHandler);
 		var errorMappingHandlers  = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
-		var resultMappingHandlers = constructResultMappingHandlers(decision, obligationsWithoutHandler, responseType);
+		var resultMappingHandlers = constructResultMessageMappingHandlers(decision, obligationsWithoutHandler,
+				responseType);
 
 		Function<?, ?> updateMappingHandlers = Functions.identity();
 		Predicate<?>   updateFilterPredicate = __ -> true;
 
 		if (updateType.isPresent()) {
-			updateMappingHandlers = constructUpdateMessageMappingHandlers(decision, obligationsWithoutHandler,
+			updateMappingHandlers = constructResultMessageMappingHandlers(decision, obligationsWithoutHandler,
 					updateType.get());
 			updateFilterPredicate = constructFilterPredicateHandlers(decision, obligationsWithoutHandler,
 					updateType.get());
@@ -170,11 +190,11 @@ public class ConstraintHandlerService {
 				resultMappingHandlers, updateMappingHandlers, updateFilterPredicate);
 	}
 
-	private <T> Function<ResultMessage<?>, ResultMessage<?>> constructUpdateMessageMappingHandlers(
-			AuthorizationDecision decision, HashSet<JsonNode> obligationsWithoutHandler, ResponseType<T> responseType) {
-		var obligationFun = constructUpdateMesaageMappingHandlers(decision.getObligations(),
+	private <T> Function<Object, Object> constructResultMessageMappingHandlers(AuthorizationDecision decision,
+			HashSet<JsonNode> obligationsWithoutHandler, ResponseType<T> responseType) {
+		var obligationFun = constructResultMesaageMappingHandlers(decision.getObligations(),
 				obligationsWithoutHandler::remove, responseType);
-		var adviceFun     = constructUpdateMesaageMappingHandlers(decision.getAdvice(), __ -> {
+		var adviceFun     = constructResultMesaageMappingHandlers(decision.getAdvice(), __ -> {
 							}, responseType);
 
 		return result -> {
@@ -194,13 +214,13 @@ public class ConstraintHandlerService {
 		};
 	}
 
-	private <T> Optional<Function<ResultMessage<?>, ResultMessage<?>>> constructUpdateMesaageMappingHandlers(
+	private <T> Optional<Function<Object, Object>> constructResultMesaageMappingHandlers(
 			Optional<ArrayNode> constraints, Consumer<JsonNode> onHandlerFound, ResponseType<T> responseType) {
 		return constraints.map(constraintsArray -> {
-			var handlers = new ArrayList<Function<ResultMessage<?>, ResultMessage<?>>>(constraintsArray.size());
+			var handlers = new ArrayList<Function<Object, Object>>(constraintsArray.size());
 			for (var constraint : constraintsArray) {
 				for (var provider : updateMappingProviders) {
-					if (responseType.getExpectedResponseType().isAssignableFrom(provider.getSupportedType())
+					if (provider.getSupportedType().isAssignableFrom(responseType.getExpectedResponseType())
 							&& provider.isResponsible(constraint)) {
 						onHandlerFound.accept(constraint);
 						handlers.add(provider.getHandler(constraint));
@@ -249,7 +269,8 @@ public class ConstraintHandlerService {
 
 		var onDecisionHandlers    = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
 		var errorMappingHandlers  = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
-		var resultMappingHandlers = constructResultMappingHandlers(decision, obligationsWithoutHandler, responseType);
+		var resultMappingHandlers = constructResultMessageMappingHandlers(decision, obligationsWithoutHandler,
+				responseType);
 
 		if (!obligationsWithoutHandler.isEmpty()) {
 			log.error("Could not find handlers for all obligations. Missing handlers for: {}",
@@ -268,18 +289,15 @@ public class ConstraintHandlerService {
 							});
 
 		return error -> {
-			log.debug("*** original {}", error);
 			var newError = error;
 			try {
 				newError = obligationFun.orElse(Functions.identity()).apply(newError);
-				log.debug("*** after o {}", newError);
 			} catch (Throwable t) {
 				log.error("Failed to execute obligation handlers.", t);
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
 				newError = adviceFun.orElse(Functions.identity()).apply(newError);
-				log.debug("*** after a {}", newError);
 			} catch (Throwable t) {
 				log.error("Failed to execute advice handlers.", t);
 			}

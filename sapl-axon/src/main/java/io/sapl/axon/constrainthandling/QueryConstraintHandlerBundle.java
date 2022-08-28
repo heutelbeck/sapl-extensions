@@ -17,34 +17,34 @@ import lombok.RequiredArgsConstructor;
 public class QueryConstraintHandlerBundle<I, U> {
 	public static final QueryConstraintHandlerBundle<?, ?> NOOP_BUNDLE = new QueryConstraintHandlerBundle<>();
 
-	protected final BiConsumer<AuthorizationDecision, Message<?>>    onDecision;
-	protected final Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMapper;
-	protected final Function<Throwable, Throwable>                   errorMapper;
-	protected final Function<I, I>                                   resultMapper;
-	protected final Function<ResultMessage<?>, ResultMessage<?>>     updateMapper;
-	protected final Predicate<ResultMessage<?>>                      filterPredicate;
+	protected final BiConsumer<AuthorizationDecision, Message<?>>    onDecisionHandlers;
+	protected final Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers;
+	protected final Function<Throwable, Throwable>                   errorMappers;
+	protected final Function<I, I>                                   initialResultMappers;
+	protected final Function<ResultMessage<?>, ResultMessage<?>>     updateMappers;
+	protected final Predicate<ResultMessage<?>>                      filterPredicates;
 
 	// @formatter:off
 	private QueryConstraintHandlerBundle() {
-		this.onDecision = (__,___)->{};
-		this.queryMapper = Function.identity();
-		this.errorMapper = Function.identity();
-		this.resultMapper = Function.identity();
-		this.updateMapper = Function.identity();
-		this.filterPredicate = __ -> true;
+		this.onDecisionHandlers = (__,___)->{};
+		this.queryMappers       = Function.identity();
+		this.errorMappers       = Function.identity();
+		this.initialResultMappers      = Function.identity();
+		this.updateMappers      = Function.identity();
+		this.filterPredicates   = __ -> true;
 	}
 	// @formatter:on
 
 	public void executeOnDecisionHandlers(AuthorizationDecision decision, Message<?> message) {
-		onDecision.accept(decision, message);
+		onDecisionHandlers.accept(decision, message);
 	}
 
 	public Throwable executeOnErrorHandlers(Throwable t) {
-		return errorMapper.apply(t);
+		return errorMappers.apply(t);
 	}
 
 	public QueryMessage<?, ?> executePreHandlingHandlers(QueryMessage<?, ?> message) {
-		return queryMapper.apply(message);
+		return queryMappers.apply(message);
 	}
 
 	@SuppressWarnings("unchecked") // The handlers have been validated to support the returnType
@@ -53,13 +53,13 @@ public class QueryConstraintHandlerBundle<I, U> {
 			return ((CompletableFuture<?>) o).thenApply(this::executePostHandlingHandlers);
 		}
 
-		return resultMapper.apply((I) o);
+		return initialResultMappers.apply((I) o);
 	}
 
 	public Optional<ResultMessage<?>> executeOnNextHandlers(ResultMessage<?> message) {
-		var updated = updateMapper.apply(message);
+		var updated = updateMappers.apply(message);
 
-		if (!filterPredicate.test(message))
+		if (!filterPredicates.test(message))
 			return Optional.empty();
 
 		return Optional.of(updated);

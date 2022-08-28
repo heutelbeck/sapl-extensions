@@ -504,7 +504,7 @@ public abstract class QueryTestsuite {
 		create(result).expectNext(QUERY).verifyComplete();
 
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(onDecisionProvider, times(1)).accept(any(),any());
+		verify(onDecisionProvider, times(1)).accept(any(), any());
 	}
 
 	@Test
@@ -594,7 +594,7 @@ public abstract class QueryTestsuite {
 		create(result).expectNext(QUERY).verifyComplete();
 
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(onDecisionProvider, times(1)).accept(any(),any());
+		verify(onDecisionProvider, times(1)).accept(any(), any());
 	}
 
 	@Test
@@ -686,7 +686,7 @@ public abstract class QueryTestsuite {
 						"CASEC1-19")
 				.verifyComplete();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(resultMessageMappingProvider, times(20)).mapPayload(any(), any());
+		verify(resultMessageMappingProvider, times(20)).mapPayload(any(), any(), any());
 		result.close();
 	}
 
@@ -726,7 +726,7 @@ public abstract class QueryTestsuite {
 				.expectNext("CASEC2-0", "CASEC2-2", "CASEC2-4", "CASEC2-8", "CASEC2-9", "CASEC2-10", "CASEC2-11")
 				.verifyComplete();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(resultMessageMappingProvider, times(9)).mapPayload(any(), any());
+		verify(resultMessageMappingProvider, times(9)).mapPayload(any(), any(), any());
 		result.close();
 	}
 
@@ -765,7 +765,7 @@ public abstract class QueryTestsuite {
 				.expectNext("CASEC3-0", "CASEC3-2", "CASEC3-4").expectErrorMatches(isAccessDenied()).verify();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
 		verify(accessDeniedHandler, times(1)).run();
-		verify(resultMessageMappingProvider, times(5)).mapPayload(any(), any());
+		verify(resultMessageMappingProvider, times(5)).mapPayload(any(), any(), any());
 		result.close();
 	}
 
@@ -810,7 +810,7 @@ public abstract class QueryTestsuite {
 		verify(accessDeniedHandler, times(0)).run();
 		verify(accessDeniedHandlerOnError, times(1)).accept(any(), any());
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(resultMessageMappingProvider, times(9)).mapPayload(any(), any());
+		verify(resultMessageMappingProvider, times(9)).mapPayload(any(), any(), any());
 		result.close();
 	}
 
@@ -908,7 +908,7 @@ public abstract class QueryTestsuite {
 		}
 
 		@Override
-		public Object mapPayload(Object payload, Class<?> clazz) {
+		public Object mapPayload(JsonNode constraint, Object payload, Class<?> clazz) {
 			return ((String) payload).toUpperCase();
 		}
 	}

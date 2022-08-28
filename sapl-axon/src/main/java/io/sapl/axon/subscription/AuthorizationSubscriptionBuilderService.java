@@ -80,7 +80,7 @@ public class AuthorizationSubscriptionBuilderService {
 	protected static final String UPDATE_RESPONSE_TYPE = "updateResponseType";
 
 	protected static final JsonNodeFactory  JSON        = JsonNodeFactory.instance;
-	protected static final ExpressionParser SEPL_PARSER = new SpelExpressionParser();
+	protected static final ExpressionParser SPEL_PARSER = new SpelExpressionParser();
 
 	protected final ObjectMapper mapper;
 
@@ -292,7 +292,7 @@ public class AuthorizationSubscriptionBuilderService {
 	}
 
 	protected JsonNode evaluateSpEL(String spelExpression, EvaluationContext seplEvaluationContext) {
-		var expression       = SEPL_PARSER.parseExpression(spelExpression);
+		var expression       = SPEL_PARSER.parseExpression(spelExpression);
 		var evaluationResult = expression.getValue(seplEvaluationContext);
 		return mapper.valueToTree(evaluationResult);
 	}
