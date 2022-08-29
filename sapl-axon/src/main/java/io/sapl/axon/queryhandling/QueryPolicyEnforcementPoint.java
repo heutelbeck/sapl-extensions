@@ -1,6 +1,7 @@
 package io.sapl.axon.queryhandling;
 
 import java.lang.annotation.Annotation;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -30,6 +31,8 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcementPoint<T> {
 
+	private static final Duration SUBSCRIPTION_TIMEOUT = Duration.ofSeconds(5L);
+	
 	private final SaplQueryUpdateEmitter emitter;
 
 	public QueryPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
@@ -275,14 +278,17 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 
 		var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(message,
 				streamingAnnotation.get(), handlerExecutable, Optional.empty());
-		var decisions         = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY).share()
-				.cache(1);
+		var decisions         = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY);
+		var tap = DecisionStreamTapping.tapForInitialValue(decisions, SUBSCRIPTION_TIMEOUT);
+		var initialDecision = tap.getT1();
+		var tappedDecisions = tap.getT2();
+		
 		log.debug("Set authorization mode of emitter {}", streamingAnnotation.get().annotationType().getSimpleName());
-		emitter.authozrizeUpdatesForSubscriptionQueryWithId(message.getIdentifier(), decisions,
+		emitter.authozrizeUpdatesForSubscriptionQueryWithId(message.getIdentifier(), tappedDecisions,
 				streamingAnnotation.get().annotationType());
 		log.debug("Build pre-authorization-handler PDP for initial result of subscription query");
 
-		return decisions.next().flatMap(enforcePreEnforceDecision(message, source, updateType))
+		return initialDecision.flatMap(enforcePreEnforceDecision(message, source, updateType))
 				.toFuture();
 	}
 
@@ -304,4 +310,5 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 	private Predicate<? super SubscriptionQueryMessage<?, ?, ?>> sameAsHandlededMessage(Message<?> message) {
 		return sub -> sub.getIdentifier().equals(message.getIdentifier());
 	}
+
 }

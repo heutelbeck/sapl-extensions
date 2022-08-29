@@ -203,8 +203,12 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
 
 	private void disposeDecisionsAndResourceAccessPoint() {
 		stopped.set(true);
+		log.info("decision sub: {}", decisionsSubscription.get().isDisposed());
+		log.info("data     sub: {}", dataSubscription.get().isDisposed());
 		disposeActiveIfPresent(decisionsSubscription);
 		disposeActiveIfPresent(dataSubscription);
+		log.info("decision sub:*{}", decisionsSubscription.get().isDisposed());
+		log.info("data     sub:*{}", dataSubscription.get().isDisposed());
 	}
 
 	private void disposeActiveIfPresent(AtomicReference<Disposable> atomicDisposable) {

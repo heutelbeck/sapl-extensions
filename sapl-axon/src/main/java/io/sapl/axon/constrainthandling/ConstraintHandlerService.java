@@ -403,13 +403,6 @@ public class ConstraintHandlerService {
 
 	@SuppressWarnings("unchecked")
 	private <T> Function<T, T> constructResultMappingHandlers(AuthorizationDecision decision,
-			HashSet<JsonNode> obligationsWithoutHandler, ResponseType<T> responseType) {
-		return (Function<T, T>) constructResultMappingHandlers(decision, obligationsWithoutHandler,
-				responseType.getExpectedResponseType());
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T> Function<T, T> constructResultMappingHandlers(AuthorizationDecision decision,
 			HashSet<JsonNode> obligationsWithoutHandler, Class<?> type) {
 		var obligationFun = constructResultMappingHandlers(decision.getObligations(), obligationsWithoutHandler::remove,
 				type);
