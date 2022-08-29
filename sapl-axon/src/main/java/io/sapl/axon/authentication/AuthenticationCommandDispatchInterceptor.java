@@ -8,6 +8,14 @@ import org.axonframework.messaging.MessageDispatchInterceptor;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * The AuthenticationCommandDispatchInterceptor adds the authentication metadata
+ * supplied by the AuthenticationMetadataProvider to all dispatched Commands.
+ * This identifies the subject for authorization.
+ * 
+ * @author Dominic Heutelbeck
+ *
+ */
 @RequiredArgsConstructor
 public class AuthenticationCommandDispatchInterceptor implements MessageDispatchInterceptor<CommandMessage<?>> {
 
