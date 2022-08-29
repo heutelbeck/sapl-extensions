@@ -96,11 +96,11 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 			return queryResult.toFuture();
 		}
 		return queryResult.onErrorResume(enforcePostEnforceOnErrorResult(message, postEnforceAnnotation))
-				.flatMap(enforcePostEnforceOnSuccessfulQueryResult(message, source, postEnforceAnnotation)).toFuture();
+				.flatMap(enforcePostEnforceOnSuccessfulQueryResult(message, postEnforceAnnotation)).toFuture();
 	}
 
 	private Function<? super Object, ? extends Mono<? extends Object>> enforcePostEnforceOnSuccessfulQueryResult(
-			QueryMessage<?, ?> message, T source, Optional<Annotation> postEnforceAnnotation) {
+			QueryMessage<?, ?> message, Optional<Annotation> postEnforceAnnotation) {
 		return actualQueryResultValue -> {
 			var postEnforcementAnnotation = (PostHandleEnforce) postEnforceAnnotation.get();
 			log.debug("Building a @PostHandlerEnforce PEP for the query handler of {}. ",
