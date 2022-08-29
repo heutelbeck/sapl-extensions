@@ -525,16 +525,16 @@ public abstract class QueryTestsuite {
 	@Test
 	void when_preHandlerSecuredQueryAndPermitWithResultMapperObligation_then_accessGrantedAndHandlerEnforced() {
 		var obligations = JSON.arrayNode();
-		obligations.add(JSON.textNode(MODIFY_RESULT));
+		obligations.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
 		var result = Mono.fromFuture(queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
-		create(result).expectNext(MODIFIED_RESULT).verifyComplete();
+		create(result).expectNext(QUERY.toUpperCase()).verifyComplete();
 
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(resultMappingProvider, times(1)).map(any());
+		verify(resultMessageMappingProvider, times(1)).mapPayload(any(),any(),any());
 	}
 
 	@Test
@@ -615,16 +615,16 @@ public abstract class QueryTestsuite {
 	@Test
 	void when_postHandlerSecuredQueryAndPermitWithResultMapperObligation_then_accessGrantedAndHandlerEnforced() {
 		var obligations = JSON.arrayNode();
-		obligations.add(JSON.textNode(MODIFY_RESULT));
+		obligations.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
 		var result = Mono.fromFuture(queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
-		create(result).expectNext(MODIFIED_RESULT).verifyComplete();
+		create(result).expectNext(QUERY.toUpperCase()).verifyComplete();
 
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(resultMappingProvider, times(1)).map(any());
+		verify(resultMessageMappingProvider, times(1)).mapPayload(any(),any(),any());
 	}
 
 	@Test
@@ -679,14 +679,14 @@ public abstract class QueryTestsuite {
 
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
 		create(result.initialResult().timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 10L))))
-				.expectNext(queryPayload).verifyComplete();
+				.expectNext(queryPayload.toUpperCase()).verifyComplete();
 		create(result.updates().timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 10L))).take(15))
 				.expectNext("CASEC1-0", "CASEC1-2", "CASEC1-4", "CASEC1-6", "CASEC1-8", "CASEC1-10", "CASEC1-11",
 						"CASEC1-12", "CASEC1-13", "CASEC1-14", "CASEC1-15", "CASEC1-16", "CASEC1-17", "CASEC1-18",
 						"CASEC1-19")
 				.verifyComplete();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(resultMessageMappingProvider, times(20)).mapPayload(any(), any(), any());
+		verify(resultMessageMappingProvider, times(21)).mapPayload(any(), any(), any());
 		result.close();
 	}
 
@@ -721,12 +721,12 @@ public abstract class QueryTestsuite {
 
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
 		create(result.initialResult().timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 10L))))
-				.expectNext(queryPayload).verifyComplete();
+				.expectNext(queryPayload.toUpperCase()).verifyComplete();
 		create(result.updates().timeout(Duration.ofMillis(emitIntervallMs * 2 * numberOfUpdates)).take(7))
 				.expectNext("CASEC2-0", "CASEC2-2", "CASEC2-4", "CASEC2-8", "CASEC2-9", "CASEC2-10", "CASEC2-11")
 				.verifyComplete();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(resultMessageMappingProvider, times(9)).mapPayload(any(), any(), any());
+		verify(resultMessageMappingProvider, times(10)).mapPayload(any(), any(), any());
 		result.close();
 	}
 
@@ -760,12 +760,12 @@ public abstract class QueryTestsuite {
 
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
 		create(result.initialResult().timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 10L))))
-				.expectNext(queryPayload).verifyComplete();
+				.expectNext(queryPayload.toUpperCase()).verifyComplete();
 		create(result.updates().timeout(Duration.ofMillis(emitIntervallMs * 2 * numberOfUpdates)).take(7))
 				.expectNext("CASEC3-0", "CASEC3-2", "CASEC3-4").expectErrorMatches(isAccessDenied()).verify();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
 		verify(accessDeniedHandler, times(1)).run();
-		verify(resultMessageMappingProvider, times(5)).mapPayload(any(), any(), any());
+		verify(resultMessageMappingProvider, times(6)).mapPayload(any(), any(), any());
 		result.close();
 	}
 
@@ -801,7 +801,7 @@ public abstract class QueryTestsuite {
 
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
 		create(result.initialResult().timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 10L))))
-				.expectNext(queryPayload).verifyComplete();
+				.expectNext(queryPayload.toUpperCase()).verifyComplete();
 
 		create(result.updates().onErrorContinue(accessDeniedHandlerOnError)
 				.timeout(Duration.ofMillis(emitIntervallMs * 2 * numberOfUpdates)).take(7))
@@ -810,7 +810,7 @@ public abstract class QueryTestsuite {
 		verify(accessDeniedHandler, times(0)).run();
 		verify(accessDeniedHandlerOnError, times(1)).accept(any(), any());
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(resultMessageMappingProvider, times(9)).mapPayload(any(), any(), any());
+		verify(resultMessageMappingProvider, times(10)).mapPayload(any(), any(), any());
 		result.close();
 	}
 
