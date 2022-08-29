@@ -1,5 +1,7 @@
 package io.sapl.axon.queryhandling;
 
+import org.axonframework.messaging.Message;
+import org.axonframework.messaging.ResultMessage;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.GenericSubscriptionQueryMessage;
@@ -12,12 +14,12 @@ import org.springframework.security.access.AccessDeniedException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
+import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.StandardException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -26,6 +28,7 @@ import static org.mockito.Mockito.*;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static io.sapl.axon.TestUtils.*;
 import static io.sapl.axon.queryhandling.EnforceUpdatesTillDeniedPolicyEnforcementPoint.of;
@@ -34,16 +37,22 @@ import static org.springframework.test.util.ReflectionTestUtils.*;
 public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	
 	private static final String MAPPER_FILED_NAME = "mapper";
+	private static final String ERROR_MAPPERS_FILED_NAME = "errorMappers";
 	private static final Duration DEFAULT_TIMEOUT = Duration.ofMillis(500);
 	private static final Duration DEFAULT_TIMESTEP = Duration.ofMillis(20);
 	private static final SubscriptionQueryUpdateMessage<TestUpdateResponseType> DEFAULT_UPDATE_MESSAGE = new GenericSubscriptionQueryUpdateMessage<TestUpdateResponseType>(new TestUpdateResponseType());
-	private static final JsonNode DEFAULT_OBLIGATION = JsonNodeFactory.instance.textNode("onDecisionDo");
 	
 	private static class TestQueryPayload { }
+	
 	private static class TestInitialResponse { }
+	
 	@EqualsAndHashCode
 	@JsonIgnoreProperties("hibernateLazyInitializer")
 	private static class TestUpdateResponseType { }
+	
+	@StandardException
+	@SuppressWarnings("serial")
+	private static class TestAccessDeniedException extends AccessDeniedException { }
 	
 	private static ConstraintHandlerService constraintHandlerService;
 	private static JsonNode defaultResource;
@@ -92,6 +101,65 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 		StepVerifier.create(enforcedUpdateMessageFlux)
 				.expectError(IllegalStateException.class)
 				.verify(DEFAULT_TIMEOUT.multipliedBy(3));
+	}
+	
+	@Test
+	void when_pep_decisionError_and_noUpdate_then_noEvent() {
+		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
+		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
+		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType, updateResponseType);
+		Flux<AuthorizationDecision> decisions = Flux.error(new TestAccessDeniedException());
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
+		
+		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
+		StepVerifier.create(enforcedUpdateMessageFlux)
+				.expectSubscription()
+				.expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+	}
+	
+	@Test
+	void when_pep_decisionError_and_singleUpdate_then_noEvent() {
+		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
+		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
+		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType, updateResponseType);
+		Flux<AuthorizationDecision> decisions = Flux.error(new TestAccessDeniedException());
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just(DEFAULT_UPDATE_MESSAGE);
+		
+		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
+		StepVerifier.create(enforcedUpdateMessageFlux)
+				.expectSubscription()
+				.expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+	}
+	
+	@Test
+	void when_pep_noDecision_and_updateError_then_noEvent() {
+		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
+		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
+		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType, updateResponseType);
+		Flux<AuthorizationDecision> decisions = Flux.just();
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.error(new TestAccessDeniedException());
+		
+		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
+		StepVerifier.create(enforcedUpdateMessageFlux)
+				.expectSubscription()
+				.expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+	}
+	
+	@Test
+	void when_pep_singleDecision_and_updateError_then_noEvent() {
+		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
+		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
+		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType, updateResponseType);
+		Flux<AuthorizationDecision> decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT));
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.error(new TestAccessDeniedException());
+		
+		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
+		StepVerifier.create(enforcedUpdateMessageFlux)
+				.expectError(TestAccessDeniedException.class)
+				.verify(DEFAULT_TIMEOUT);
 	}
 	
 	@Test
@@ -276,20 +344,6 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 				.verifyComplete();
 	}
 	
-	/*@Test
-	void when_pep_singlePermit_and_singleUpdate_and_obligation_then_() {
-		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
-		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType, updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT, Optional.empty(), Optional.of(DEFAULT_OBLIGATION), Optional.empty()));
-		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just(DEFAULT_UPDATE_MESSAGE);
-		
-		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux)
-				.expectNextMatches(matchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE))
-				.verifyComplete();
-	}*/
-	
 	@Test
 	void when_pep_permitThenDeny_and_singleUpdate_then_permit() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
@@ -400,6 +454,120 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 		StepVerifier.create(enforcedUpdateMessageFlux)
 				.expectNextMatches(matchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE))
 				.expectError(AccessDeniedException.class)
+				.verify(DEFAULT_TIMEOUT);
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	void when_pep_accessDeniedOnBuildQueryPreHandlerBundle_then_accessDenied() {
+		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
+		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
+		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType, updateResponseType);
+		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT));
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just(DEFAULT_UPDATE_MESSAGE);
+		
+		var constraintHandlerService = mock(ConstraintHandlerService.class);
+		when(constraintHandlerService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class), any(ResponseType.class), any(Optional.class)))
+				.thenThrow(AccessDeniedException.class);
+		
+		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
+		StepVerifier.create(enforcedUpdateMessageFlux)
+				.expectError(AccessDeniedException.class)
+				.verify(DEFAULT_TIMEOUT);
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	void when_pep_accessDeniedOnExecuteOnDecisionHandlers_then_accessDenied() {
+		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
+		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
+		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType, updateResponseType);
+		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT));
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just(DEFAULT_UPDATE_MESSAGE);
+		
+		var queryConstraintHandlerBundle = mock(QueryConstraintHandlerBundle.class);
+		setField(queryConstraintHandlerBundle, ERROR_MAPPERS_FILED_NAME, Function.<Throwable>identity());
+		doThrow(AccessDeniedException.class)
+				.when(queryConstraintHandlerBundle).executeOnDecisionHandlers(any(AuthorizationDecision.class), any(Message.class));
+		when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
+				.thenCallRealMethod();
+		
+		var constraintHandlerService = mock(ConstraintHandlerService.class);
+		when(constraintHandlerService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class), any(ResponseType.class), any(Optional.class)))
+				.thenReturn(queryConstraintHandlerBundle);
+		
+		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
+		StepVerifier.create(enforcedUpdateMessageFlux)
+				.expectError(AccessDeniedException.class)
+				.verify(DEFAULT_TIMEOUT);
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	void when_pep_accessDeniedOnDeserializeResource_then_accessDenied() {
+		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
+		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
+		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType, updateResponseType);
+		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT, Optional.of(defaultResource), Optional.empty(), Optional.empty()));
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just(DEFAULT_UPDATE_MESSAGE);
+		
+		var constraintHandlerService = mock(ConstraintHandlerService.class);
+		when(constraintHandlerService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class), any(ResponseType.class), any(Optional.class)))
+				.thenCallRealMethod();
+		when(constraintHandlerService.deserializeResource(any(JsonNode.class), any(ResponseType.class)))
+				.thenThrow(AccessDeniedException.class);
+		
+		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
+		StepVerifier.create(enforcedUpdateMessageFlux)
+				.expectError(AccessDeniedException.class)
+				.verify(DEFAULT_TIMEOUT);
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	void when_pep_exceptionAtExecuteOnNextHandlers_then_exception() {
+		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
+		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
+		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType, updateResponseType);
+		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT));
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just(DEFAULT_UPDATE_MESSAGE);
+		
+		var queryConstraintHandlerBundle = mock(QueryConstraintHandlerBundle.class);
+		when(queryConstraintHandlerBundle.executeOnNextHandlers(any(ResultMessage.class)))
+				.thenThrow(TestAccessDeniedException.class);
+		when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
+				.thenCallRealMethod();
+		
+		var constraintHandlerService = mock(ConstraintHandlerService.class);
+		when(constraintHandlerService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class), any(ResponseType.class), any(Optional.class)))
+				.thenReturn(queryConstraintHandlerBundle);
+		
+		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
+		StepVerifier.create(enforcedUpdateMessageFlux)
+				.expectError(TestAccessDeniedException.class)
+				.verify(DEFAULT_TIMEOUT);
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	void when_pep_exceptionAtExecuteOnErrorHandlers_then_exception() {
+		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
+		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
+		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType, updateResponseType);
+		Flux<AuthorizationDecision> decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT));
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.error(new TestAccessDeniedException());
+		
+		var queryConstraintHandlerBundle = mock(QueryConstraintHandlerBundle.class);
+		when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
+				.thenThrow(TestAccessDeniedException.class);
+		
+		var constraintHandlerService = mock(ConstraintHandlerService.class);
+		when(constraintHandlerService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class), any(ResponseType.class), any(Optional.class)))
+				.thenReturn(queryConstraintHandlerBundle);
+		
+		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
+		StepVerifier.create(enforcedUpdateMessageFlux)
+				.expectError(TestAccessDeniedException.class)
 				.verify(DEFAULT_TIMEOUT);
 	}
 }
