@@ -1,12 +1,15 @@
 package io.sapl.axon.queryhandling;
 
 import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.axonframework.common.Registration;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.messaging.unitofwork.DefaultUnitOfWork;
 import org.axonframework.monitoring.NoOpMessageMonitor;
 import org.axonframework.queryhandling.GenericSubscriptionQueryMessage;
 import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
@@ -15,8 +18,8 @@ import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.UpdateHandlerRegistration;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -51,23 +54,37 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@BeforeAll
-	public static void setup() {
+	static void setup() {
 		constraintHandlerService = mock(ConstraintHandlerService.class);
 	}
 	
+	final String TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE = "some-text";
+	
+	private SaplQueryUpdateEmitter emitter;
+	private SubscriptionQueryMessage<String, List<String>, String> subscriptionQueryMessage;
+	
+	@BeforeEach
+    void setUp() {
+        subscriptionQueryMessage = new GenericSubscriptionQueryMessage<>(
+                "some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
+                ResponseTypes.instanceOf(String.class));
+        subscriptionQueryMessage = subscriptionQueryMessage.andMetaData(Map.of("updateResponseType",subscriptionQueryMessage.getUpdateResponseType().getExpectedResponseType().getSimpleName()));
+        emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
+    }
+	
 	@Test
-	public void when_construct_without_updateMessageMonitor_then_return() {
+	void when_construct_without_updateMessageMonitor_then_return() {
 		new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
 	}
 	
 	@Test
-	public void when_construct_with_updateMessageMonitor_then_return() {
+	void when_construct_with_updateMessageMonitor_then_return() {
 		var updateMessageMonitor = NoOpMessageMonitor.INSTANCE;
 		new SaplQueryUpdateEmitter(Optional.of(updateMessageMonitor), constraintHandlerService);
 	}
 	
 	@Test
-	public void when_registerUpdateHandler_with_backpressure_then_ignoreBackpressure_and_callNonDeprecatedVariant() {
+	void when_registerUpdateHandler_with_backpressure_then_ignoreBackpressure_and_callNonDeprecatedVariant() {
 		var emitter = mock(SaplQueryUpdateEmitter.class);
 		when(emitter.registerUpdateHandler(any(SubscriptionQueryMessage.class), any(SubscriptionQueryBackpressure.class), any(Integer.class)))
 				.thenCallRealMethod();
@@ -82,9 +99,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_queryUpdateHandlerRegistered_with_nonRegisteredSubscriptionQuery_then_false() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_queryUpdateHandlerRegistered_with_nonRegisteredSubscriptionQuery_then_false() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 		
 		var queryUpdateHandlerRegistered = emitter.queryUpdateHandlerRegistered(query);
@@ -92,9 +107,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_queryUpdateHandlerRegistered_with_registeredSubscriptionQuery_then_true() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_queryUpdateHandlerRegistered_with_registeredSubscriptionQuery_then_true() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 		emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		
@@ -103,16 +116,12 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_authorizeUpdatesForSubscriptionQueryWithId_with_nonExistingMessageIdentifier_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_authorizeUpdatesForSubscriptionQueryWithId_with_nonExistingMessageIdentifier_then_return() {
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(DEFAULT_MESSAGE_IDENTIFIER);
 	}
 	
 	@Test
-	public void when_authorizeUpdatesForSubscriptionQueryWithId_with_existingMessageIdentifier_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_authorizeUpdatesForSubscriptionQueryWithId_with_existingMessageIdentifier_then_return() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 		var messageIdentifier = query.getIdentifier();
 		
@@ -121,9 +130,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_authorizeUpdatesForSubscriptionQueryWithId_with_nonExistingMessageIdentifier_and_decisionFlux_and_Annotation_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_authorizeUpdatesForSubscriptionQueryWithId_with_nonExistingMessageIdentifier_and_decisionFlux_and_Annotation_then_return() {
 		var decisions = Flux.<AuthorizationDecision>empty();
 		var clazz = Annotation.class;
 		
@@ -131,9 +138,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_authorizeUpdatesForSubscriptionQueryWithId_with_existingMessageIdentifier_and_decisionFlux_and_Annotation_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_authorizeUpdatesForSubscriptionQueryWithId_with_existingMessageIdentifier_and_decisionFlux_and_Annotation_then_return() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 		var decisions = Flux.<AuthorizationDecision>empty();
 		var clazz = Annotation.class;
@@ -143,9 +148,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_registerUpdateHandler_without_backpressure_then_UpdateHandlerRegistration() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_registerUpdateHandler_without_backpressure_then_UpdateHandlerRegistration() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 		
 		var updateHandlerRegistration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
@@ -153,9 +156,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_emit_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_emit_then_return() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> false;
 		var update = GenericSubscriptionQueryUpdateMessage.<FlaggedUpdateResponseType>asUpdateMessage(DEFAULT_UPDATE_RESPONSE_TYPE);
 		
@@ -163,9 +164,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_emit_with_closedFilter_and_existingSubscriptionQueries_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_emit_with_closedFilter_and_existingSubscriptionQueries_then_return() {
 		var queryA = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(FlaggedUpdateResponseType.class));
 		var queryB = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(FlaggedUpdateResponseType.class));
 
@@ -179,9 +178,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_emit_with_openFilter_and_existingSubscriptionQueries_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_emit_with_openFilter_and_existingSubscriptionQueries_then_return() {
 		var queryA = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(FlaggedUpdateResponseType.class));
 		var queryB = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(FlaggedUpdateResponseType.class));
 
@@ -195,9 +192,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_emit_with_paritallyOpenFilter_and_existingSubscriptionQueries_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_emit_with_paritallyOpenFilter_and_existingSubscriptionQueries_then_return() {
 		var queryA = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(FlaggedUpdateResponseType.class));
 		var queryB = new FlaggedSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(FlaggedUpdateResponseType.class));
 
@@ -211,18 +206,14 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_complete_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_complete_then_return() {
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> false;
 		
 		emitter.complete(filter);
 	}
 	
 	@Test
-	public void when_complete_with_closedFilter_and_existingSubscriptionQueries_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_complete_with_closedFilter_and_existingSubscriptionQueries_then_return() {
 		var queryA = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 		var queryB = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 
@@ -235,9 +226,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_complete_with_openFilter_and_existingSubscriptionQueries_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_complete_with_openFilter_and_existingSubscriptionQueries_then_return() {
 		var queryA = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 		var queryB = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 
@@ -250,9 +239,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_complete_with_partiallyOpenFilter_and_existingSubscriptionQueries_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_complete_with_partiallyOpenFilter_and_existingSubscriptionQueries_then_return() {
 		var queryA = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 		var queryB = new FlaggedSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 
@@ -266,9 +253,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_completeExceptionally_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_completeExceptionally_then_return() {
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> false;
 		var cause = new Throwable(DEFAULT_CAUSE);
 		
@@ -276,9 +261,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_completeExceptionally_with_closedFilter_and_existingSubscriptionQueries_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_completeExceptionally_with_closedFilter_and_existingSubscriptionQueries_then_return() {
 		var queryA = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 		var queryB = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 
@@ -292,9 +275,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_completeExceptionally_with_openFilter_and_existingSubscriptionQueries_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_completeExceptionally_with_openFilter_and_existingSubscriptionQueries_then_return() {
 		var queryA = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 		var queryB = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 
@@ -308,9 +289,7 @@ public class SaplQueryUpdateEmitterTests {
 	}
 	
 	@Test
-	public void when_completeExceptionally_with_partiallyOpenFilter_and_existingSubscriptionQueries_then_return() {
-		var emitter = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-		
+	void when_completeExceptionally_with_partiallyOpenFilter_and_existingSubscriptionQueries_then_return() {
 		var queryA = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 		var queryB = new FlaggedSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 
@@ -322,4 +301,32 @@ public class SaplQueryUpdateEmitterTests {
 				
 		emitter.completeExceptionally(filter, cause);
 	}
+	
+	@Test
+	void when_DispatchInterceptorRegistered_Then_NoException() {
+        emitter.registerDispatchInterceptor(
+                list -> (integer, updateMessage) -> GenericSubscriptionQueryUpdateMessage.asUpdateMessage(5));
+    }
+
+    @Test
+    void when_UnitOfWorkIsStartedAndTaskIsAdded_Then_TaskIsQueued() {
+        SubscriptionQueryMessage<String, List<String>, String> subscriptionQueryMessage = new GenericSubscriptionQueryMessage<>(
+                "some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
+                ResponseTypes.instanceOf(String.class));
+        var uow = DefaultUnitOfWork.startAndGet(subscriptionQueryMessage);
+
+        var unitOfWorkTasks = uow.resources();
+        assertEquals(0, unitOfWorkTasks.size());
+        emitter.complete(q -> true);
+        assertEquals(1, unitOfWorkTasks.size());
+        uow.commit();// Cleanup to not interfere with other tests
+
+    }
+
+    @Test
+    void when_UpdateHandlerRegistered_Then_ActiveSubscriptionsAreReturned() {
+        emitter.registerUpdateHandler(subscriptionQueryMessage, 1024);
+
+        assertTrue(emitter.activeSubscriptions().contains(subscriptionQueryMessage));
+    }
 }
