@@ -121,7 +121,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
 		}
 
 		try {
-			newBundle.executeOnDecisionHandlers(decision,query);
+			newBundle.executeOnDecisionHandlers(decision, query);
 		} catch (AccessDeniedException e) {
 			sink.error(constraintHandler.get().executeOnErrorHandlers(new AccessDeniedException("Access Denied")));
 			disposeDecisionsAndResourceAccessPoint();
@@ -203,16 +203,8 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
 
 	private void disposeDecisionsAndResourceAccessPoint() {
 		stopped.set(true);
-		if (decisionsSubscription.get() != null)
-			log.info("decision sub: {}", decisionsSubscription.get().isDisposed());
-		if (dataSubscription.get() != null)
-			log.info("data     sub: {}", dataSubscription.get().isDisposed());
 		disposeActiveIfPresent(decisionsSubscription);
 		disposeActiveIfPresent(dataSubscription);
-		if (decisionsSubscription.get() != null)
-			log.info("decision sub:*{}", decisionsSubscription.get().isDisposed());
-		if (dataSubscription.get() != null)
-			log.info("data     sub:*{}", dataSubscription.get().isDisposed());
 	}
 
 	private void disposeActiveIfPresent(AtomicReference<Disposable> atomicDisposable) {

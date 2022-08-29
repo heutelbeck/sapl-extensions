@@ -31,7 +31,7 @@ public class DecisionStreamTapping {
 
 	public static <V> Tuple2<Mono<V>, Flux<V>> tapForInitialValue(Flux<V> source, Duration timeout) {
 		var multicastSink = Sinks.many().replay().<V>limit(1);
-		var tappedSource  = source.log().doOnNext(v -> multicastSink.tryEmitNext(v)).subscribe();
+		var tappedSource  = source.doOnNext(v -> multicastSink.tryEmitNext(v)).subscribe();
 		var state         = new State(SubcriptionState.NONE, SubcriptionState.NONE);
 		var stateRef      = new AtomicReference<State>(state);
 		var multicastFlux = multicastSink.asFlux();

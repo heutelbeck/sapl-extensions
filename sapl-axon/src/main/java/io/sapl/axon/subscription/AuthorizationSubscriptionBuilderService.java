@@ -32,6 +32,7 @@ import org.axonframework.spring.stereotype.Aggregate;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
@@ -55,7 +56,6 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthorizationSubscriptionBuilderService {
 	protected static final String ACTION               = "action";
 	protected static final String ACTION_TYPE          = "actionType";
-	protected static final String AGGREGATE            = "aggregate";
 	protected static final String AGGREGATE_IDENTIFIER = "aggregateIdentifier";
 	protected static final String AGGREGATE_TYPE       = "aggregateType";
 	protected static final String ANONYMOUS            = "\"anonymous\"";
@@ -100,7 +100,7 @@ public class AuthorizationSubscriptionBuilderService {
 		var annotationAttributeValues = AnnotationUtils.getAnnotationAttributes(methodAnnotation);
 
 		var subject     = retrieveSubject(message, annotationAttributeValues);
-		var action      = retrieveCommandAction(message, annotationAttributeValues, AGGREGATE, aggregate);
+		var action      = retrieveCommandAction(message, annotationAttributeValues, aggregate);
 		var resource    = retrieveResourceFromTarget(message, aggregate, annotationAttributeValues);
 		var environment = retrieveEnvironment(annotationAttributeValues);
 
@@ -207,15 +207,14 @@ public class AuthorizationSubscriptionBuilderService {
 	}
 
 	protected JsonNode retrieveCommandAction(CommandMessage<?> message, Map<String, Object> annotationAttributes,
-			String keyForCommandHandlingObject, Object commandHandlingObject) {
+			Object commandHandlingObject) {
 		var spelExpression = annotationAttributes.get(ACTION);
 		if (expressionNotSet(spelExpression))
 			return messageToJson(message);
 
-		var seplEvaluationContext = new StandardEvaluationContext();
+		var seplEvaluationContext = new StandardEvaluationContext(commandHandlingObject);
 		seplEvaluationContext.setVariable(MESSAGE, message);
 		seplEvaluationContext.setVariable(PAYLOAD, message.getPayload());
-		seplEvaluationContext.setVariable(keyForCommandHandlingObject, commandHandlingObject);
 		return evaluateSpEL((String) spelExpression, seplEvaluationContext);
 
 	}
@@ -267,10 +266,9 @@ public class AuthorizationSubscriptionBuilderService {
 			return constructResourceWithAggregateInformation(message, aggregate);
 		}
 
-		var seplEvaluationContext = new StandardEvaluationContext();
+		var seplEvaluationContext = new StandardEvaluationContext(aggregate);
 		seplEvaluationContext.setVariable(MESSAGE, message);
 		seplEvaluationContext.setVariable(PAYLOAD, message.getPayload());
-		seplEvaluationContext.setVariable(AGGREGATE, aggregate);
 		return evaluateSpEL((String) spelExpression, seplEvaluationContext);
 	}
 
@@ -291,9 +289,14 @@ public class AuthorizationSubscriptionBuilderService {
 	}
 
 	protected JsonNode evaluateSpEL(String spelExpression, EvaluationContext seplEvaluationContext) {
-		var expression       = SPEL_PARSER.parseExpression(spelExpression);
-		var evaluationResult = expression.getValue(seplEvaluationContext);
-		return mapper.valueToTree(evaluationResult);
+		var expression = SPEL_PARSER.parseExpression(spelExpression);
+		try {
+			var evaluationResult = expression.getValue(seplEvaluationContext);
+			return mapper.valueToTree(evaluationResult);
+		} catch (SpelEvaluationException e) {
+			log.error("SePL Error: {}", e.getMessage());
+			throw e;
+		}
 	}
 
 	protected boolean expressionNotSet(Object spelExpression) {

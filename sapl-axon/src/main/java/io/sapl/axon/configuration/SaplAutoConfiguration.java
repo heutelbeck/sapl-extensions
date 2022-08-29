@@ -35,16 +35,42 @@ import io.sapl.spring.constraints.api.ErrorMappingConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 
+ * This AutoConfiguration class is registered in META-INF/spring.factories of
+ * this project, which ensures, that all Spring Boot applications using this
+ * module as a dependency will load this configuration class.
+ * 
+ * @author Dominic Heutelbeck
+ * 
+ */
 @Slf4j
 @Configuration
 public class SaplAutoConfiguration {
 
+	/**
+	 * For PEPs based on @EnforceRecoverableUpdatesIfDenied, the class @see
+	 * io.sapl.axon.queryhandlingRecoverableResponse must be serializable. XStream
+	 * uses a whitelist for determining which classes may be serialized. This method
+	 * registers the RecoverableResponse.
+	 * 
+	 * @param xStream XStream serialization if present.
+	 */
 	@Autowired
 	void whitelistSaplObjectsInXStream(Optional<XStream> xStream) {
 		xStream.ifPresent(xStr -> log.trace("Allow 'io.sapl.**' classes in XStream "));
 		xStream.ifPresent(xStr -> xStr.allowTypesByWildcard(new String[] { "io.sapl.**" }));
 	}
 
+	/**
+	 * 
+	 * The @see io.sapl.axon.authentication.AuthenticationMetadataProvider is
+	 * responsible for identifying the user triggering a Command or Query and to
+	 * provide matching metadata to be added by dispatch interceptors.
+	 * 
+	 * @param mapper The applications ObjectMapper.
+	 * @return An AuthenticationMetadataProvider.
+	 */
 	@Bean
 	@ConditionalOnMissingBean
 	AuthenticationMetadataProvider authenticationMetadataProvider(ObjectMapper mapper) {
@@ -52,6 +78,15 @@ public class SaplAutoConfiguration {
 		return new SpringSecurityAuthenticationMetadataProvider(mapper);
 	}
 
+	/**
+	 * 
+	 * MessageDispatchInterceptor for authenticating command messages.
+	 * 
+	 * @param authnProvider The applications AuthenticationMetadataProvider.
+	 * @param commandBus    The Axon Command Bus.
+	 * @return A MessageDispatchInterceptor for adding authentication metadata to
+	 *         commands.
+	 */
 	@Bean
 	AuthenticationCommandDispatchInterceptor authenticationCommandDispatchInterceptor(
 			AuthenticationMetadataProvider authnProvider, CommandBus commandBus) {
@@ -61,6 +96,15 @@ public class SaplAutoConfiguration {
 		return interceptor;
 	}
 
+	/**
+	 * 
+	 * MessageDispatchInterceptor for authenticating query messages.
+	 * 
+	 * @param authnProvider The applications AuthenticationMetadataProvider.
+	 * @param queryBus      The Axon Query Bus.
+	 * @return A MessageDispatchInterceptor for adding authentication metadata to
+	 *         queries.
+	 */
 	@Bean
 	AuthenticationQueryDispatchInterceptor authenticationQueryDispatchInterceptor(
 			AuthenticationMetadataProvider authnProvider, QueryBus queryBus) {
@@ -70,6 +114,46 @@ public class SaplAutoConfiguration {
 		return interceptor;
 	}
 
+	/**
+	 * The ConstraintHandlerService provides functionality to check the application
+	 * for capabilities to enforce constraints (obligations/advice) specified by the
+	 * PDP and to create customized bundles of handlers for individual authorization
+	 * decisions.
+	 * 
+	 * @param mapper                               The applications ObjectMapper.
+	 * @param parameterResolver                    The Axon ParameterResolverFactory
+	 *                                             for injecting arguments in
+	 *                                             command handler methods..
+	 * @param globalRunnableProviders              All
+	 *                                             OnDecisionConstraintHandlerProvider
+	 *                                             implementation in the
+	 *                                             ApplicationContext.
+	 * @param globalCommandMessageMappingProviders All
+	 *                                             CommandConstraintHandlerProvider
+	 *                                             implementation in the
+	 *                                             ApplicationContext.
+	 * @param globalQueryMappingProviders          All
+	 *                                             QueryConstraintHandlerProvider
+	 *                                             implementation in the
+	 *                                             ApplicationContext.
+	 * @param globalErrorMappingHandlerProviders   All
+	 *                                             ErrorMappingConstraintHandlerProvider
+	 *                                             implementation in the
+	 *                                             ApplicationContext.
+	 * @param globalMappingProviders               All
+	 *                                             MappingConstraintHandlerProvider
+	 *                                             implementation in the
+	 *                                             ApplicationContext.
+	 * @param filterPredicateProviders             All
+	 *                                             UpdateFilterConstraintHandlerProvider
+	 *                                             implementation in the
+	 *                                             ApplicationContext.
+	 * @param resulteMappingProviders              All
+	 *                                             ResultConstraintHandlerProvider
+	 *                                             implementation in the
+	 *                                             ApplicationContext.
+	 * @return
+	 */
 	@Bean
 	public ConstraintHandlerService axonConstraintHandlerService(ObjectMapper mapper,
 			ParameterResolverFactory parameterResolver,
@@ -86,6 +170,17 @@ public class SaplAutoConfiguration {
 				globalMappingProviders, filterPredicateProviders, resulteMappingProviders);
 	}
 
+	/**
+	 * A specialized QueryGateway offering explicit methods for recoverable
+	 * subscription queries. I.e., subscription queries which can recover from an
+	 * AccessDeniedException and continue to consume updates one access is granted
+	 * again.
+	 * 
+	 * @param queryBus             The Axon QueryBus
+	 * @param dispatchInterceptors All MessageDispatchInterceptor<QueryMessage> in
+	 *                             the application context.
+	 * @return A query gateway supporting recoverable subscription queries.
+	 */
 	@Bean
 	public SaplQueryGateway queryGateway(QueryBus queryBus,
 			List<MessageDispatchInterceptor<? super QueryMessage<?, ?>>> dispatchInterceptors) {

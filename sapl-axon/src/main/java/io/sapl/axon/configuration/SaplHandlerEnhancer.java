@@ -31,9 +31,18 @@ import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Default Implementation of Axon HandlerEnhancer which allows the enhancing of
- * CommandHandlingMember with the {@link SAPLCommandHandlingMember}.
+ * 
+ * The SaplHandlerEnhancer is responsible for adding Policy Enforcement Points
+ * to all command and query handlers in the system.
  *
+ * Upon application startup, Axon scans all classes for the @CommandHandler
+ * or @QueryHandler annotations. All of these are registered as
+ * MessageHandlingMembers and this Service is called for each of them, which
+ * then wraps all handlers with the respective CommandPolicyEnforcementPoint or
+ * QueryPolicyEnforcementPoint.
+ * 
+ * @author Dominic Heutelbeck
+ * 
  */
 @RequiredArgsConstructor
 public class SaplHandlerEnhancer implements HandlerEnhancerDefinition {

@@ -14,6 +14,14 @@ import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
 
+/**
+ * 
+ * Shared logic for PEPs loading the SAPL Annotations of the delegate MessageHandlingMember.
+ * 
+ * @author Dominic Heutelbeck
+ *
+ * @param <T> Payload Type
+ */
 public abstract class AbstractAxonPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember<T> {
 
 	protected final PolicyDecisionPoint                     pdp;
