@@ -32,7 +32,7 @@ import reactor.core.publisher.Mono;
 public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcementPoint<T> {
 
 	private static final Duration SUBSCRIPTION_TIMEOUT = Duration.ofSeconds(5L);
-	
+
 	private final SaplQueryUpdateEmitter emitter;
 
 	public QueryPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
@@ -95,13 +95,12 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		if (postEnforceAnnotation.isEmpty()) {
 			return queryResult.toFuture();
 		}
-		return queryResult.onErrorResume(enforcePostEnforceOnErrorResult(message, source, postEnforceAnnotation))
-				.flatMap(enforcePostEnforceOnSuccessfulQueryResult(message, source, postEnforceAnnotation))
-				.toFuture();
+		return queryResult.onErrorResume(enforcePostEnforceOnErrorResult(message, postEnforceAnnotation))
+				.flatMap(enforcePostEnforceOnSuccessfulQueryResult(message, postEnforceAnnotation)).toFuture();
 	}
 
 	private Function<? super Object, ? extends Mono<? extends Object>> enforcePostEnforceOnSuccessfulQueryResult(
-			QueryMessage<?, ?> message, T source, Optional<Annotation> postEnforceAnnotation) {
+			QueryMessage<?, ?> message, Optional<Annotation> postEnforceAnnotation) {
 		return actualQueryResultValue -> {
 			var postEnforcementAnnotation = (PostHandleEnforce) postEnforceAnnotation.get();
 			log.debug("Building a @PostHandlerEnforce PEP for the query handler of {}. ",
@@ -110,12 +109,12 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 					(QueryMessage<?, ?>) message, postEnforcementAnnotation, handlerExecutable,
 					Optional.of(actualQueryResultValue));
 			return pdp.decide(postEnforceAuthzSubscription).defaultIfEmpty(AuthorizationDecision.DENY).next()
-					.flatMap(enforcePostEnforceDecision(message, source, actualQueryResultValue));
+					.flatMap(enforcePostEnforceDecision(message, actualQueryResultValue));
 		};
 	}
 
 	private Function<? super Throwable, ? extends Mono<? extends Object>> enforcePostEnforceOnErrorResult(
-			QueryMessage<?, ?> message, T source, Optional<Annotation> postEnforceAnnotation) {
+			QueryMessage<?, ?> message, Optional<Annotation> postEnforceAnnotation) {
 		return error -> {
 			var postEnforcementAnnotation = (PostHandleEnforce) postEnforceAnnotation.get();
 			log.debug("Building a @PostHandlerEnforce PEP (error value) for the query handler of {}. ",
@@ -201,7 +200,7 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 
 	@SuppressWarnings("unchecked")
 	private Function<AuthorizationDecision, Mono<Object>> enforcePostEnforceDecision(QueryMessage<?, ?> message,
-			T source, Object returnObject) {
+			Object returnObject) {
 		return decision -> {
 			log.debug("PostHandlerEnforce {} for {} [{}]", decision, message.getPayloadType(), returnObject);
 			@SuppressWarnings("rawtypes")
@@ -279,17 +278,16 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(message,
 				streamingAnnotation.get(), handlerExecutable, Optional.empty());
 		var decisions         = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY);
-		var tap = DecisionStreamTapping.tapForInitialValue(decisions, SUBSCRIPTION_TIMEOUT);
-		var initialDecision = tap.getT1();
-		var tappedDecisions = tap.getT2();
-		
+		var tap               = DecisionStreamTapping.tapForInitialValue(decisions, SUBSCRIPTION_TIMEOUT);
+		var initialDecision   = tap.getT1();
+		var tappedDecisions   = tap.getT2();
+
 		log.debug("Set authorization mode of emitter {}", streamingAnnotation.get().annotationType().getSimpleName());
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(message.getIdentifier(), tappedDecisions,
 				streamingAnnotation.get().annotationType());
 		log.debug("Build pre-authorization-handler PDP for initial result of subscription query");
 
-		return initialDecision.flatMap(enforcePreEnforceDecision(message, source, updateType))
-				.toFuture();
+		return initialDecision.flatMap(enforcePreEnforceDecision(message, source, updateType)).toFuture();
 	}
 
 	private Optional<Annotation> uniqueStreamingEnforcementAnnotation() {

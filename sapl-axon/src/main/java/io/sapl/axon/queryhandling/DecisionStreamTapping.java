@@ -35,14 +35,16 @@ public class DecisionStreamTapping {
 		var state         = new State(SubcriptionState.NONE, SubcriptionState.NONE);
 		var stateRef      = new AtomicReference<State>(state);
 		var multicastFlux = multicastSink.asFlux();
-		var initialMono   = multicastFlux.next()
+
+		var initialMono = multicastFlux.next()
 				.doOnSubscribe(__ -> stateRef.getAndUpdate(s -> new State(SubcriptionState.SUBSCRIBED, s.updates)))
 				.doAfterTerminate(checkInitialTermination(multicastSink, tappedSource, stateRef));
-		;
+
 		var updatesFlux = multicastFlux
 				.doOnSubscribe(__ -> stateRef.getAndUpdate(s -> new State(s.initial, SubcriptionState.SUBSCRIBED)))
 				.doOnCancel(checkUpdateTermination(multicastSink, tappedSource, stateRef))
 				.doAfterTerminate(checkUpdateTermination(multicastSink, tappedSource, stateRef));
+		
 		Flux.interval(timeout).next().doOnNext(__ -> {
 			var s = stateRef.get();
 			if (s.initial == SubcriptionState.NONE || s.updates == SubcriptionState.NONE) {

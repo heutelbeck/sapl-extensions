@@ -279,7 +279,8 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 			log.info(
 					"An error occurred while trying to emit an update to a query '{}'. "
 							+ "The subscription will be cancelled. Exception summary: {}",
-					query.getQueryName(), e);
+					query.getQueryName(), e.getMessage());
+
 			monitorCallback.reportFailure(e);
 			activeQueries.remove(query);
 			emitError(query, e, updateHandler);

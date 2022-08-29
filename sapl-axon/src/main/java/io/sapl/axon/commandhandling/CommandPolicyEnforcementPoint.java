@@ -53,6 +53,10 @@ public class CommandPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcem
 		 */
 		var decision = pdp.decide(authzSubscription).blockFirst();
 		log.debug("PreHandleEnforce Decision {}", decision);
+		if (decision == null) {
+			log.error("PDP returned null.");
+			throw new AccessDeniedException("Access Denied");
+		}
 
 		var executable = delegate.unwrap(Executable.class);
 		var bundle     = axonConstraintEnforcementService.buildPreEnforceCommandConstraintHandlerBundle(decision,

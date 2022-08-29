@@ -75,25 +75,25 @@ public class ConstraintHandlerService {
 
 		log.debug("Loading constraint handler providers...");
 
-		this.updatePredicateProviders = updatePredicateProviders;
+		this.updatePredicateProviders = new ArrayList<>(updatePredicateProviders);
 		logDeployedHandlers("Update Predicate Providers:", this.updatePredicateProviders);
 		// sort according to priority
-		this.globalRunnableProviders = globalRunnableProviders;
+		this.globalRunnableProviders = new ArrayList<>(globalRunnableProviders);
 		Collections.sort(this.globalRunnableProviders);
 		logDeployedHandlers("Update Runnable Providers:", this.globalRunnableProviders);
-		this.globalQueryMessageMappingProviders = globalQueryMessageMappingProviders;
+		this.globalQueryMessageMappingProviders = new ArrayList<>(globalQueryMessageMappingProviders);
 		Collections.sort(this.globalQueryMessageMappingProviders);
-		logDeployedHandlers("Query Mappers:", this.globalQueryMessageMappingProviders);
-		this.globalErrorMappingHandlerProviders = globalErrorMappingHandlerProviders;
+		logDeployedHandlers("Query Mappers:", new ArrayList<>(this.globalQueryMessageMappingProviders));
+		this.globalErrorMappingHandlerProviders = new ArrayList<>(globalErrorMappingHandlerProviders);
 		Collections.sort(this.globalErrorMappingHandlerProviders);
 		logDeployedHandlers("Error Mappers:", this.globalErrorMappingHandlerProviders);
-		this.globalMappingProviders = globalMappingProviders;
+		this.globalMappingProviders = new ArrayList<>(globalMappingProviders);
 		Collections.sort(this.globalMappingProviders);
 		logDeployedHandlers("Mapping Mappers:", this.globalMappingProviders);
-		this.updateMappingProviders = updateMappingProviders;
+		this.updateMappingProviders = new ArrayList<>(updateMappingProviders);
 		Collections.sort(this.updateMappingProviders);
 		logDeployedHandlers("Update Mappers:", this.updateMappingProviders);
-		this.globalCommandMessageMappingProviders = globalCommandMessageMappingProviders;
+		this.globalCommandMessageMappingProviders = new ArrayList<>(globalCommandMessageMappingProviders);
 		Collections.sort(this.globalCommandMessageMappingProviders);
 		logDeployedHandlers("Command Mappers:", this.globalCommandMessageMappingProviders);
 	}
@@ -200,13 +200,13 @@ public class ConstraintHandlerService {
 		return result -> {
 			var newResult = result;
 			try {
-				newResult = obligationFun.orElse(Functions.identity()).apply(result);
+				newResult = obligationFun.orElseGet(() -> Functions.identity()).apply(result);
 			} catch (Throwable t) {
 				log.error("Failed to execute obligation handlers.", t);
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
-				newResult = adviceFun.orElse(Functions.identity()).apply(newResult);
+				newResult = adviceFun.orElseGet(() -> Functions.identity()).apply(newResult);
 			} catch (Throwable t) {
 				log.error("Failed to execute advice handlers.", t);
 			}
@@ -291,13 +291,13 @@ public class ConstraintHandlerService {
 		return error -> {
 			var newError = error;
 			try {
-				newError = obligationFun.orElse(Functions.identity()).apply(newError);
+				newError = obligationFun.orElseGet(() -> Functions.identity()).apply(newError);
 			} catch (Throwable t) {
 				log.error("Failed to execute obligation handlers.", t);
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
-				newError = adviceFun.orElse(Functions.identity()).apply(newError);
+				newError = adviceFun.orElseGet(() -> Functions.identity()).apply(newError);
 			} catch (Throwable t) {
 				log.error("Failed to execute advice handlers.", t);
 			}
@@ -331,13 +331,13 @@ public class ConstraintHandlerService {
 		return query -> {
 			var newQuery = query;
 			try {
-				newQuery = obligationFun.orElse(Functions.identity()).apply(newQuery);
+				newQuery = obligationFun.orElseGet(() -> Functions.identity()).apply(newQuery);
 			} catch (Throwable t) {
 				log.error("Failed to execute obligation handlers.", t);
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
-				newQuery = adviceFun.orElse(Functions.identity()).apply(newQuery);
+				newQuery = adviceFun.orElseGet(() -> Functions.identity()).apply(newQuery);
 			} catch (Throwable t) {
 				log.error("Failed to execute advice handlers.", t);
 			}
@@ -371,13 +371,13 @@ public class ConstraintHandlerService {
 		return query -> {
 			var newQuery = query;
 			try {
-				newQuery = obligationFun.orElse(Functions.identity()).apply(newQuery);
+				newQuery = obligationFun.orElseGet(() -> Functions.identity()).apply(newQuery);
 			} catch (Throwable t) {
 				log.error("Failed to execute obligation handlers.", t);
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
-				newQuery = adviceFun.orElse(Functions.identity()).apply(newQuery);
+				newQuery = adviceFun.orElseGet(() -> Functions.identity()).apply(newQuery);
 			} catch (Throwable t) {
 				log.error("Failed to execute advice handlers.", t);
 			}
@@ -412,13 +412,13 @@ public class ConstraintHandlerService {
 		return result -> {
 			var newResult = result;
 			try {
-				newResult = (T) obligationFun.orElse(Functions.identity()).apply(result);
+				newResult = (T) obligationFun.orElseGet(() -> Functions.identity()).apply(result);
 			} catch (Throwable t) {
 				log.error("Failed to execute obligation handlers.", t);
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
-				newResult = (T) adviceFun.orElse(Functions.identity()).apply(newResult);
+				newResult = (T) adviceFun.orElseGet(() -> Functions.identity()).apply(newResult);
 			} catch (Throwable t) {
 				log.error("Failed to execute advice handlers.", t);
 			}
@@ -549,7 +549,7 @@ public class ConstraintHandlerService {
 			return false;
 		}
 
-		if (value != null && value instanceof Boolean)
+		if (value instanceof Boolean)
 			return (Boolean) value;
 
 		log.warn("Expression returned non Boolean ({}). Expression \"{}\" on Class {} Method {}", value,
@@ -605,7 +605,7 @@ public class ConstraintHandlerService {
 
 		if (argument == null)
 			throw new IllegalStateException(
-					String.format("Could not resolve parameter of @ConstraintHandler {} {}. No value found.", method,
+					String.format("Could not resolve parameter of @ConstraintHandler %s %s. No value found.", method,
 							parameter.getName()));
 		return argument;
 	}

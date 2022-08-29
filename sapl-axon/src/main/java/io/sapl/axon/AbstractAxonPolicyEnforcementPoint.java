@@ -34,10 +34,10 @@ public abstract class AbstractAxonPolicyEnforcementPoint<T> extends WrappedMessa
 		this.handlerExecutable                = delegate.unwrap(Executable.class)
 				.orElseThrow(() -> new IllegalStateException(
 						"No underlying method or constructor found while wrapping the CommandHandlingMember."));
-		this.saplAnnotations                  = saplAnnotationsOnUnderlyingExecutable(delegate);
+		this.saplAnnotations                  = saplAnnotationsOnUnderlyingExecutable();
 	}
 
-	private final Set<Annotation> saplAnnotationsOnUnderlyingExecutable(MessageHandlingMember<T> delegate) {
+	private final Set<Annotation> saplAnnotationsOnUnderlyingExecutable() {
 		var allAnnotationsOnExecutable = handlerExecutable.getDeclaredAnnotations();
 		return Arrays.stream(allAnnotationsOnExecutable).filter(this::isSaplAnnotation)
 				.collect(Collectors.toUnmodifiableSet());
