@@ -1,7 +1,5 @@
 package io.sapl.axon.queryhandling;
 
-import static java.lang.String.format;
-
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
@@ -280,7 +278,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 			log.info(
 					"An error occurred while trying to emit an update to a query '{}'. "
 							+ "The subscription will be cancelled. Exception summary: {}",
-					query.getQueryName(), e.toString());
+					query.getQueryName(), e);
 			monitorCallback.reportFailure(e);
 			activeQueries.remove(query);
 			emitError(query, e, updateHandler);
@@ -303,8 +301,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		try {
 			updateHandler.emitError(cause, EmitFailureHandler.FAIL_FAST);
 		} catch (Exception e) {
-			log.error(format("An error happened while trying to inform update handler about the error. Query: %s",
-					query));
+			log.error("An error happened while trying to inform update handler about the error. Query: {}", query);
 		}
 	}
 
@@ -361,7 +358,9 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	 *         otherwise {@code false}.
 	 */
 	private boolean inStartedPhaseOfUnitOfWork() {
-		return CurrentUnitOfWork.isStarted() && UnitOfWork.Phase.STARTED.equals(CurrentUnitOfWork.get().phase());
+		if (CurrentUnitOfWork.isStarted())
+			return CurrentUnitOfWork.get().phase() == UnitOfWork.Phase.STARTED;
+		else return false;
 	}
 
 	private enum QueryAuthorizationMode {
