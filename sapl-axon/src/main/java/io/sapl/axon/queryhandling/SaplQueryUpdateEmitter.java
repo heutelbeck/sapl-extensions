@@ -216,6 +216,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 			log.error(
 					"ATTENTION: Due to a bug in Axon Framework, the update response type of the query was overwritten");
 			log.error("           with the initial response type. If these types were different, queries may break.");
+			log.error("           See: https://github.com/AxonFramework/AxonFramework/issues/2331");
 		}
 
 		return query;

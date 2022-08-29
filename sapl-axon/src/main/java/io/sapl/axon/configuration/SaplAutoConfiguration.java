@@ -27,6 +27,7 @@ import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.QueryConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.UpdateFilterConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.provider.ResponseMessagePayloadFilterProvider;
 import io.sapl.axon.queryhandling.SaplQueryGateway;
 import io.sapl.axon.queryhandling.SaplQueryUpdateEmitter;
 import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
@@ -113,4 +114,8 @@ public class SaplAutoConfiguration {
 		return new AuthorizationSubscriptionBuilderService(mapper);
 	}
 
+	@Bean
+	ResponseMessagePayloadFilterProvider responsePayloadFilterProvider(ObjectMapper mapper) {
+		return new ResponseMessagePayloadFilterProvider(mapper);
+	}
 }
