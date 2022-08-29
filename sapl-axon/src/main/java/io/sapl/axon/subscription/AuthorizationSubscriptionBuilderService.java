@@ -18,12 +18,11 @@ package io.sapl.axon.subscription;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Executable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.commons.beanutils.PropertyUtils;
 import org.axonframework.commandhandling.CommandMessage;
+import org.axonframework.common.ReflectionUtils;
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
 import org.axonframework.messaging.responsetypes.ResponseType;
@@ -178,8 +177,8 @@ public class AuthorizationSubscriptionBuilderService {
 		for (var field : fields) {
 			if (field.isAnnotationPresent(TargetAggregateIdentifier.class)) {
 				try {
-					return Optional.ofNullable(PropertyUtils.getProperty(message.getPayload(), field.getName()));
-				} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+					return Optional.ofNullable(ReflectionUtils.getFieldValue(field, message.getPayload()));
+				} catch (IllegalStateException e) {
 					log.error("Could not get TargetAggregateIdentifier from message", e);
 					return Optional.empty();
 				}
