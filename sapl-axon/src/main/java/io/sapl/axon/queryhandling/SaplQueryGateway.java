@@ -40,8 +40,29 @@ import org.axonframework.queryhandling.SubscriptionQueryResult;
 
 import reactor.util.concurrent.Queues;
 
+/**
+ * A custom QueryGateway for sending recoverable subscription queries. 
+ * 
+ * Usage:
+ * <pre>{@code
+ * var result = queryGateway.recoverableSubscriptionQuery(
+ *                querName, queryPayload,instanceOf(String.class), 
+ *                instanceOf(String.class), accessDeniedHandler);
+ * result.initialResult().log().subscribe();
+ * result.updates().onErrorContinue((t, o) -> { \/* do something *\/}).subscribe();
+ * }</pre>
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
+ */
 public class SaplQueryGateway extends DefaultQueryGateway {
 
+	/**
+	 * Creates the SaplQueryGateway
+	 * 
+	 * @param queryBus A QueryBus.
+	 * @param dispatchInterceptors Available interceptors.
+	 */
 	public SaplQueryGateway(QueryBus queryBus,
 			List<MessageDispatchInterceptor<? super QueryMessage<?, ?>>> dispatchInterceptors) {
 		super(DefaultQueryGateway.builder().dispatchInterceptors(dispatchInterceptors).queryBus(queryBus));

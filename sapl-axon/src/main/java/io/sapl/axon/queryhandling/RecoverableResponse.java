@@ -22,15 +22,33 @@ import org.springframework.security.access.AccessDeniedException;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
+/**
+ * Utility class for wrapping update response payloads, enabling recoverable
+ * subscription queries.
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
+ * 
+ * @param <U> Payload type.
+ */
 @Value
 @RequiredArgsConstructor
 public class RecoverableResponse<U> {
 
+	/**
+	 * Metadata key for the original update response type.
+	 */
 	public static final String RECOVERABLE_UPDATE_TYPE_KEY = "recoverableUpdateType";
 
 	ResponseType<U> reponseType;
 	U               payload;
 
+	/**
+	 * Unwraps the wrapped response. No response present implies an access denied
+	 * exception. In a map operation, this enables onErrorContinue.
+	 * 
+	 * @return Unwrapped update, or an AccessDeniedException.
+	 */
 	public U unwrap() {
 		if (payload == null)
 			throw new AccessDeniedException("Access Denied");
@@ -38,10 +56,20 @@ public class RecoverableResponse<U> {
 		return payload;
 	}
 
+	/**
+	 * @return true, if no payload present.
+	 */
 	public boolean isAccessDenied() {
 		return payload == null;
 	}
 
+	/**
+	 * Utility factory method creating access denied responses.
+	 * 
+	 * @param <T>         The Response type.
+	 * @param reponseType The Response type.
+	 * @return An access denied response.
+	 */
 	public static <T> RecoverableResponse<T> accessDenied(ResponseType<T> reponseType) {
 		return new RecoverableResponse<>(reponseType, null);
 	}

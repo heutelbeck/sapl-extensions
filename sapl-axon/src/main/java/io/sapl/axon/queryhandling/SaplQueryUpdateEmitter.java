@@ -60,6 +60,9 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
 	/**
 	 * Instantiate a {@link SaplQueryUpdateEmitter}
+	 * 
+	 * @param updateMessageMonitor A MessageMonitor;
+	 * @param constraintHandlerService The ConstraintHandlerService.
 	 */
 	public SaplQueryUpdateEmitter(
 			Optional<MessageMonitor<? super SubscriptionQueryUpdateMessage<?>>> updateMessageMonitor,
@@ -105,7 +108,9 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	}
 
 	/**
-	 * @param messageIdentifier
+	 * Authorizes the query with the identifier without further authorization needed.
+	 * 
+	 * @param messageIdentifier Query message Id.
 	 */
 	public void authorizeUpdatesForSubscriptionQueryWithId(String messageIdentifier) {
 		var enforcementConfiguration = new QueryEnforcementConfiguration(QueryAuthorizationMode.NO_AUTHORIZATION, null);
@@ -113,9 +118,11 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	}
 
 	/**
-	 * @param messageIdentifier
-	 * @param decisions
-	 * @param clazz
+	 * Authorizes the query with the identifier without SAPL authorization in place.
+	*
+	 * @param messageIdentifier Query message Id.
+	 * @param decisions The decision stream.
+	 * @param clazz The response type.
 	 */
 	public void authorizeUpdatesForSubscriptionQueryWithId(String messageIdentifier,
 			Flux<AuthorizationDecision> decisions, Class<? extends Annotation> clazz) {
@@ -136,6 +143,9 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 				}));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <U> UpdateHandlerRegistration<U> registerUpdateHandler(SubscriptionQueryMessage<?, ?, ?> registeredQuery,
@@ -218,6 +228,9 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		return query;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <U> void emit(Predicate<SubscriptionQueryMessage<?, ?, U>> filter,
 			SubscriptionQueryUpdateMessage<U> update) {
@@ -234,16 +247,25 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		return intercepted;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void complete(Predicate<SubscriptionQueryMessage<?, ?, ?>> filter) {
 		runOnAfterCommitOrNow(() -> doComplete(filter));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void completeExceptionally(Predicate<SubscriptionQueryMessage<?, ?, ?>> filter, Throwable cause) {
 		runOnAfterCommitOrNow(() -> doCompleteExceptionally(filter, cause));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Registration registerDispatchInterceptor(
 			MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>> interceptor) {
@@ -251,6 +273,9 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		return () -> dispatchInterceptors.remove(interceptor);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Set<SubscriptionQueryMessage<?, ?, ?>> activeSubscriptions() {
 		return activeQueries.keySet();

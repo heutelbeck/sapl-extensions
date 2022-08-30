@@ -46,7 +46,6 @@ public class SaplQueryUpdateEmitterTests {
 	
 	private static class FlaggedUpdateResponseType { }
 	
-	@SuppressWarnings("serial")
 	private static class FlaggedSubscriptionQueryMessage<Q, I, U> extends GenericSubscriptionQueryMessage<Q, I, U> {
 		public FlaggedSubscriptionQueryMessage(Q payload, ResponseType<I> responseType, ResponseType<U> updateResponseType) {
 			super(payload, responseType, updateResponseType);

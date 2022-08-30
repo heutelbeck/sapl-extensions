@@ -78,12 +78,11 @@ import java.lang.annotation.Target;
  * </ul>
  * 
  * Example:
- * 
  * <pre>{@code 
  *	@QueryHandler
- *	@PreHandleEnforce(action = "'FetchAll'", resource = "{ 'type':'patient' }")
- * 	Iterable<PatientDocument> handle(FetchAllPatients query) {
- *		return patientsRepository.findAll();
+ *	@PostHandleEnforce(action = "'Fetch'", resource = "{ 'type':'patient', 'value':#queryResult }")
+ *	Optional<PatientDocument> handle(FetchPatient query) {
+ *		return patientsRepository.findById(query.patientId());
  *	}
  * }</pre>
  * 

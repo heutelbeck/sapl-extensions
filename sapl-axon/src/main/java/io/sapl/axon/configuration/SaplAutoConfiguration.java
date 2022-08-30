@@ -152,10 +152,10 @@ public class SaplAutoConfiguration {
 	 *                                             ResultConstraintHandlerProvider
 	 *                                             implementation in the
 	 *                                             ApplicationContext.
-	 * @return
+	 * @return The ConstraintHandlerService.
 	 */
 	@Bean
-	public ConstraintHandlerService axonConstraintHandlerService(ObjectMapper mapper,
+	ConstraintHandlerService axonConstraintHandlerService(ObjectMapper mapper,
 			ParameterResolverFactory parameterResolver,
 			List<OnDecisionConstraintHandlerProvider> globalRunnableProviders,
 			List<CommandConstraintHandlerProvider> globalCommandMessageMappingProviders,
@@ -183,7 +183,7 @@ public class SaplAutoConfiguration {
 	 * @return A query gateway supporting recoverable subscription queries.
 	 */
 	@Bean
-	public SaplQueryGateway queryGateway(QueryBus queryBus,
+	SaplQueryGateway queryGateway(QueryBus queryBus,
 			List<MessageDispatchInterceptor<? super QueryMessage<?, ?>>> dispatchInterceptors) {
 		log.trace("Deploy SaplQueryGateway");
 		return new SaplQueryGateway(queryBus, dispatchInterceptors);
@@ -210,6 +210,10 @@ public class SaplAutoConfiguration {
 		return new AuthorizationSubscriptionBuilderService(mapper);
 	}
 
+	/**
+	 * @param mapper The application's ObjectMapper.
+	 * @return ResponseMessagePayloadFilterProvider for filtering obligations.
+	 */
 	@Bean
 	ResponseMessagePayloadFilterProvider responsePayloadFilterProvider(ObjectMapper mapper) {
 		return new ResponseMessagePayloadFilterProvider(mapper);

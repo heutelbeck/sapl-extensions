@@ -24,8 +24,27 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.sapl.spring.constraints.api.Responsible;
 import io.sapl.spring.constraints.api.TypeSupport;
 
+/**
+ * Base interface to for implementing constraint handlers that allow for the
+ * filtering of update messages.
+ * 
+ * Only update messages will be emitted, if the respective predicate is true for
+ * it.
+ * 
+ * TODO: apply filter to initial result.
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
+ * @param <T>
+ */
 public interface UpdateFilterConstraintHandlerProvider<T> extends Responsible, TypeSupport<T> {
 
+	/**
+	 * Create the predicate for the given constraint.
+	 * 
+	 * @param constraint The constraint.
+	 * @return A filter predicate.
+	 */
 	Predicate<ResultMessage<T>> getHandler(JsonNode constraint);
 
 }

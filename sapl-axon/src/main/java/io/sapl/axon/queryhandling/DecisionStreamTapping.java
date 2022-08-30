@@ -15,10 +15,18 @@ import reactor.core.publisher.Sinks.Many;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+/**
+ * Utility class for splitting off a decision stream into two for the initial
+ * result and the updates of a subscription query.
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
+ */
 @Slf4j
 @UtilityClass
 public class DecisionStreamTapping {
-	enum SubcriptionState {
+
+	private enum SubcriptionState {
 		NONE, SUBSCRIBED, CANCELLED
 	}
 
@@ -29,6 +37,16 @@ public class DecisionStreamTapping {
 		SubcriptionState updates;
 	}
 
+	/**
+	 * Splits off a decision stream into two for the initial result and the updates
+	 * of a subscription query.
+	 * 
+	 * @param <V>     Type of the Flux contents.
+	 * @param source  The original Flux.
+	 * @param timeout A timeout which terminates the stream if the two streams are
+	 *                not subscribed to.
+	 * @return A Tuple2 containing the split Mono and Flux.
+	 */
 	public static <V> Tuple2<Mono<V>, Flux<V>> tapForInitialValue(Flux<V> source, Duration timeout) {
 		var multicastSink = Sinks.many().replay().<V>limit(1);
 		var tappedSource  = source.doOnNext(v -> multicastSink.tryEmitNext(v)).subscribe();

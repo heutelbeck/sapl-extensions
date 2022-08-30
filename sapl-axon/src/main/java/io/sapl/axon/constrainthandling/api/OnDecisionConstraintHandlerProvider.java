@@ -26,6 +26,20 @@ import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
 
+/**
+ * 
+ * Base interface for implementing constraint handlers that will be triggered
+ * upon receiving a new decision from the PDP.
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
+ */
 public interface OnDecisionConstraintHandlerProvider extends Responsible, HasPriority {
-	BiConsumer<AuthorizationDecision,Message<?>> getHandler(JsonNode constraint);
+	/**
+	 * Creates the handler.
+	 * 
+	 * @param constraint The constraint.
+	 * @return The handler.
+	 */
+	BiConsumer<AuthorizationDecision, Message<?>> getHandler(JsonNode constraint);
 }
