@@ -3,6 +3,7 @@ package io.sapl.axon.queryhandling;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,11 +21,13 @@ import org.axonframework.messaging.unitofwork.UnitOfWork;
 import org.axonframework.monitoring.MessageMonitor;
 import org.axonframework.monitoring.NoOpMessageMonitor;
 import org.axonframework.queryhandling.GenericSubscriptionQueryMessage;
+import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.axonframework.queryhandling.SubscriptionQueryBackpressure;
 import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.UpdateHandlerRegistration;
+import org.springframework.security.access.AccessDeniedException;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.axon.annotation.EnforceDropUpdatesWhileDenied;
@@ -60,7 +63,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	/**
 	 * Instantiate a {@link SaplQueryUpdateEmitter}
 	 * 
-	 * @param updateMessageMonitor A MessageMonitor;
+	 * @param updateMessageMonitor     A MessageMonitor;
 	 * @param constraintHandlerService The ConstraintHandlerService.
 	 */
 	public SaplQueryUpdateEmitter(
@@ -100,14 +103,18 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 			return new QueryData<U>(newMode, enforcementConfigurationSink, updateSink);
 		}
 	}
-
+	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean queryUpdateHandlerRegistered(SubscriptionQueryMessage<?, ?, ?> query) {
 		return activeQueries.keySet().stream().anyMatch(q -> q.getIdentifier().equals(query.getIdentifier()));
 	}
 
 	/**
-	 * Authorizes the query with the identifier without further authorization needed.
+	 * Authorizes the query with the identifier without further authorization
+	 * needed.
 	 * 
 	 * @param messageIdentifier Query message Id.
 	 */
@@ -118,14 +125,24 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
 	/**
 	 * Authorizes the query with the identifier without SAPL authorization in place.
-	*
+	 *
 	 * @param messageIdentifier Query message Id.
-	 * @param decisions The decision stream.
-	 * @param clazz The response type.
+	 * @param decisions         The decision stream.
+	 * @param clazz             The response type.
 	 */
 	public void authorizeUpdatesForSubscriptionQueryWithId(String messageIdentifier,
 			Flux<AuthorizationDecision> decisions, Class<? extends Annotation> clazz) {
 		var enforcementConfiguration = new QueryEnforcementConfiguration(QueryAuthorizationMode.of(clazz), decisions);
+		emitEnforcementConfiguration(messageIdentifier, enforcementConfiguration);
+	}
+
+	/**
+	 * Immediately cancel subscription query.
+	 * 
+	 * @param messageIdentifier Query message Id.
+	 */
+	public void immediatelyDenySubscriptionWithId(String messageIdentifier) {
+		var enforcementConfiguration = new QueryEnforcementConfiguration(QueryAuthorizationMode.IMMEDIATE_DENY, null);
 		emitEnforcementConfiguration(messageIdentifier, enforcementConfiguration);
 	}
 
@@ -173,6 +190,13 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 			activeQueries.computeIfPresent(query,
 					(__, originalQueryData) -> originalQueryData.withMode(authzConfig.getMode()));
 
+			if (authzConfig.getMode() == QueryAuthorizationMode.IMMEDIATE_DENY) {
+				return Flux
+						.just(new GenericSubscriptionQueryUpdateMessage<>(
+								(Class<U>) registeredQuery.getUpdateResponseType().getExpectedResponseType(),
+								new AccessDeniedException("Access Denied"), Map.of()))
+						.doOnCancel(removeHandler).doOnTerminate(removeHandler);
+			}
 			if (authzConfig.getMode() == QueryAuthorizationMode.TILL_DENIED) {
 				return EnforceUpdatesTillDeniedPolicyEnforcementPoint.of(registeredQuery, authzConfig.getDecisions(),
 						updateMessageFlux, constraintHandlerService, query.getResponseType(),
@@ -387,7 +411,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	}
 
 	private enum QueryAuthorizationMode {
-		NO_AUTHORIZATION, TILL_DENIED, DROP_WHILE_DENIED, RECOVERABLE_IF_DENIED, UNDEFINED;
+		NO_AUTHORIZATION, TILL_DENIED, DROP_WHILE_DENIED, RECOVERABLE_IF_DENIED, UNDEFINED, IMMEDIATE_DENY;
 
 		public static QueryAuthorizationMode of(Class<? extends Annotation> clazz) {
 			if (clazz.isAssignableFrom(PreHandleEnforce.class))

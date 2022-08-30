@@ -315,6 +315,15 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 			return delegate.handle(message, source);
 		}
 
+		if (!annotationsMatching(saplAnnotations, Set.of(PostHandleEnforce.class)).isEmpty()) {
+			log.error("@PostHandleEnforce found while handling a subscription query. This is not allowed."
+					+ " Immediately deny access. Consider making usre there are distinct queries and "
+					+ "query handlers for normal queries and subscription queries, if your normal query requires "
+					+ "@PostHandleEnforce.");
+			emitter.immediatelyDenySubscriptionWithId(message.getIdentifier());
+			throw new AccessDeniedException("Access Denied");
+		}
+
 		var streamingAnnotation = uniqueStreamingEnforcementAnnotation();
 
 		if (streamingAnnotation.isEmpty()) {
