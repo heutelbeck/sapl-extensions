@@ -6,11 +6,11 @@ import java.util.Optional;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
+import org.axonframework.messaging.annotation.WrappedMessageHandlingMember;
 import org.springframework.security.access.AccessDeniedException;
 
 import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
-import io.sapl.axon.AbstractAxonPolicyEnforcementPoint;
 import io.sapl.axon.annotation.PreHandleEnforce;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
@@ -25,7 +25,12 @@ import lombok.extern.slf4j.Slf4j;
  * @param <T> The type of the handing object.
  */
 @Slf4j
-public class CommandPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcementPoint<T> {
+public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember<T> {
+
+	private final PolicyDecisionPoint                     pdp;
+	private final MessageHandlingMember<T>                delegate;
+	private final AuthorizationSubscriptionBuilderService subscriptionBuilder;
+	private final ConstraintHandlerService                axonConstraintEnforcementService;
 
 	/**
 	 * Instantiate a CommandPolicyEnforcementPoint.
@@ -39,11 +44,15 @@ public class CommandPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcem
 	public CommandPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
 			ConstraintHandlerService axonConstraintEnforcementService,
 			AuthorizationSubscriptionBuilderService subscriptionBuilder) {
-		super(delegate, pdp, axonConstraintEnforcementService, subscriptionBuilder);
+		super(delegate);
+		this.delegate                         = delegate;
+		this.pdp                              = pdp;
+		this.axonConstraintEnforcementService = axonConstraintEnforcementService;
+		this.subscriptionBuilder              = subscriptionBuilder;
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * 
 	 */
 	@Override
 	public Object handle(Message<?> message, T aggregate) throws Exception {

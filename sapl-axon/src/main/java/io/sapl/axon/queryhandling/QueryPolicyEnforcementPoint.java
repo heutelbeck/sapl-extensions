@@ -1,7 +1,10 @@
 package io.sapl.axon.queryhandling;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Executable;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -11,6 +14,7 @@ import java.util.stream.Collectors;
 
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
+import org.axonframework.messaging.annotation.WrappedMessageHandlingMember;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.queryhandling.QueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryMessage;
@@ -19,9 +23,10 @@ import org.springframework.security.access.AccessDeniedException;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
-import io.sapl.axon.AbstractAxonPolicyEnforcementPoint;
-import io.sapl.axon.Annotations;
+import io.sapl.axon.annotation.EnforceDropUpdatesWhileDenied;
+import io.sapl.axon.annotation.EnforceRecoverableUpdatesIfDenied;
 import io.sapl.axon.annotation.PostHandleEnforce;
+import io.sapl.axon.annotation.PreHandleEnforce;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
 import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
@@ -37,11 +42,26 @@ import reactor.core.publisher.Mono;
  * @param <T> The type of the handing object.
  */
 @Slf4j
-public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcementPoint<T> {
+public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember<T> {
 
 	private static final Duration SUBSCRIPTION_TIMEOUT = Duration.ofSeconds(5L);
 
-	private final SaplQueryUpdateEmitter emitter;
+	private static final Set<Class<?>> SAPL_AXON_ANNOTATIONS = Set.of(PreHandleEnforce.class, PostHandleEnforce.class,
+			EnforceDropUpdatesWhileDenied.class, EnforceRecoverableUpdatesIfDenied.class);
+
+	private static final Set<Class<?>> SUBSCRIPTION_ANNOTATIONS = Set.of(PreHandleEnforce.class,
+			EnforceDropUpdatesWhileDenied.class, EnforceRecoverableUpdatesIfDenied.class);
+
+	private static final Set<Class<?>> QUERY_ANNOTATIONS_IMPLYING_PREENFORCING = Set.of(PreHandleEnforce.class,
+			EnforceDropUpdatesWhileDenied.class, EnforceRecoverableUpdatesIfDenied.class);
+
+	private final SaplQueryUpdateEmitter                  emitter;
+	private final ConstraintHandlerService                axonConstraintEnforcementService;
+	private final AuthorizationSubscriptionBuilderService subscriptionBuilder;
+	private final PolicyDecisionPoint                     pdp;
+	private final Set<Annotation>                         saplAnnotations;
+	private final MessageHandlingMember<T>                delegate;
+	private final Executable                              handlerExecutable;
 
 	/**
 	 * Instantiate a QueryPolicyEnforcementPoint.
@@ -56,8 +76,16 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 	public QueryPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
 			ConstraintHandlerService axonConstraintEnforcementService, SaplQueryUpdateEmitter emitter,
 			AuthorizationSubscriptionBuilderService subscriptionBuilder) {
-		super(delegate, pdp, axonConstraintEnforcementService, subscriptionBuilder);
-		this.emitter = emitter;
+		super(delegate);
+		this.delegate                         = delegate;
+		this.pdp                              = pdp;
+		this.axonConstraintEnforcementService = axonConstraintEnforcementService;
+		this.subscriptionBuilder              = subscriptionBuilder;
+		this.handlerExecutable                = delegate.unwrap(Executable.class)
+				.orElseThrow(() -> new IllegalStateException(
+						"No underlying method or constructor found while wrapping the CommandHandlingMember."));
+		this.saplAnnotations                  = saplAnnotationsOnUnderlyingExecutable();
+		this.emitter                          = emitter;
 	}
 
 	/**
@@ -82,11 +110,11 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 			return delegate.handle(message, source);
 		}
 
-		var preEnforceAnnotationsPresent = Annotations.annotationsMatching(saplAnnotations,
-				Annotations.QUERY_ANNOTATIONS_IMPLYING_PREENFORCING);
+		var preEnforceAnnotationsPresent = annotationsMatching(saplAnnotations,
+				QUERY_ANNOTATIONS_IMPLYING_PREENFORCING);
 		if (preEnforceAnnotationsPresent.size() > 1) {
 			log.error("Only one of the follwoing annotations is allowed on a query handler at the same time: {}",
-					Annotations.QUERY_ANNOTATIONS_IMPLYING_PREENFORCING.stream().map(a -> "@" + a.getSimpleName())
+					QUERY_ANNOTATIONS_IMPLYING_PREENFORCING.stream().map(a -> "@" + a.getSimpleName())
 							.collect(Collectors.joining(", ")));
 			log.error(
 					"All of these annotations imply that there must be a policy-enforcement before invoking the annotated method.");
@@ -312,8 +340,8 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 	}
 
 	private Optional<Annotation> uniqueStreamingEnforcementAnnotation() {
-		Set<Annotation> streamingEnforcementAnnotations = Annotations.annotationsMatching(saplAnnotations,
-				Annotations.SUBSCRIPTION_ANNOTATIONS);
+		Set<Annotation> streamingEnforcementAnnotations = annotationsMatching(saplAnnotations,
+				SUBSCRIPTION_ANNOTATIONS);
 		if (streamingEnforcementAnnotations.size() != 1)
 			throw new IllegalStateException(
 					"The query handler for a streaming query has more than one SAPL annotation which can be used for policy enforcement on subscription queries.");
@@ -330,4 +358,26 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		return sub -> sub.getIdentifier().equals(message.getIdentifier());
 	}
 
+	private final Set<Annotation> saplAnnotationsOnUnderlyingExecutable() {
+		var allAnnotationsOnExecutable = handlerExecutable.getDeclaredAnnotations();
+		return Arrays.stream(allAnnotationsOnExecutable).filter(this::isSaplAnnotation)
+				.collect(Collectors.toUnmodifiableSet());
+	}
+
+	private boolean isSaplAnnotation(Annotation annotation) {
+		return SAPL_AXON_ANNOTATIONS.stream().filter(matchesAnnotationType(annotation)).findFirst().isPresent();
+	}
+
+	private Predicate<? super Class<?>> matchesAnnotationType(Annotation annotation) {
+		return aSaplAnnotation -> annotation.annotationType().isAssignableFrom(aSaplAnnotation);
+	}
+
+	private static Set<Annotation> annotationsMatching(Collection<Annotation> annotations, Set<Class<?>> types) {
+		return annotations.stream().filter(annotation -> annotationHasTypeIn(annotation, types))
+				.collect(Collectors.toUnmodifiableSet());
+	}
+
+	private static boolean annotationHasTypeIn(Annotation annotation, Set<Class<?>> types) {
+		return types.stream().anyMatch(type -> annotation.annotationType().isAssignableFrom(type));
+	}
 }
