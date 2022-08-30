@@ -1,7 +1,5 @@
 package io.sapl.axon.authentication;
 
-import java.util.Map;
-
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,8 +11,8 @@ import lombok.SneakyThrows;
 
 /**
  * 
- * Default implementation of an AuthenticationMetadataProvider. The subject is
- * read from the Spring Security SecurityContextHolder and serialized as Jackson
+ * Default implementation of an AuthenticationSupplier. The subject is read from
+ * the Spring Security SecurityContextHolder and serialized as Jackson
  * JsonObject. The service removes to remove credentials and passwords from the
  * created authentication data.
  * 
@@ -22,15 +20,16 @@ import lombok.SneakyThrows;
  *
  */
 @RequiredArgsConstructor
-public class SpringSecurityAuthenticationMetadataProvider implements AuthenticationMetadataProvider {
+public class SpringSecurityAuthenticationSupplier implements AuthenticationSupplier {
+
 	private final ObjectMapper mapper;
 
 	@Override
 	@SneakyThrows
-	public Map<String, Object> getSubjectMetadata() {
+	public String get() {
 		var authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null)
-			return Map.of("subject", "\"anonymous\"");
+			return "\"anonymous\"";
 
 		JsonNode subject = mapper.valueToTree(authentication.getPrincipal());
 		if (subject.isObject()) {
@@ -41,7 +40,6 @@ public class SpringSecurityAuthenticationMetadataProvider implements Authenticat
 				if (principal.isObject())
 					((ObjectNode) principal).remove("password");
 		}
-
-		return Map.of("subject", mapper.writeValueAsString(subject));
+		return mapper.writeValueAsString(subject);
 	}
 }

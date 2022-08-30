@@ -24,7 +24,6 @@ import java.util.Optional;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.common.ReflectionUtils;
 import org.axonframework.messaging.Message;
-import org.axonframework.messaging.annotation.MessageHandlingMember;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 import org.axonframework.queryhandling.QueryMessage;
@@ -42,81 +41,86 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.axon.annotation.PreHandleEnforce;
-import io.sapl.spring.method.metadata.PreEnforce;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * The AuthorizationSubscriptionBuilderService Object offers methods to get the
- * AuthorizationSubscription for Query Messages and for Command Messages.
+ * 
+ * The AuthorizationSubscriptionBuilderService Object offers methods to
+ * construct the AuthorizationSubscription for Query Messages and for Command
+ * Messages.
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
+ * 
  */
 @Slf4j
 @RequiredArgsConstructor
 public class AuthorizationSubscriptionBuilderService {
-	protected static final String ACTION               = "action";
-	protected static final String ACTION_TYPE          = "actionType";
-	protected static final String AGGREGATE_IDENTIFIER = "aggregateIdentifier";
-	protected static final String AGGREGATE_TYPE       = "aggregateType";
-	protected static final String ANONYMOUS            = "\"anonymous\"";
-	protected static final String CLASS_NAME           = "className";
-	protected static final String COMMAND              = "command";
-	protected static final String COMMAND_NAME         = "commandName";
-	protected static final String ENVIRONMENT          = "environment";
-	protected static final String EXECUTABLE           = "executable";
-	protected static final String MESSAGE              = "message";
-	protected static final String METADATA             = "metadata";
-	protected static final String METHOD_NAME          = "methodName";
-	protected static final String PAYLOAD              = "payload";
-	protected static final String PAYLOAD_TYPE         = "payloadType";
-	protected static final String PROJECTION_CLASS     = "projectionClass";
-	protected static final String QUERY                = "query";
-	protected static final String QUERY_NAME           = "queryName";
-	protected static final String QUERY_RESULT         = "queryResult";
-	protected static final String RESOURCE             = "resource";
-	protected static final String RESPONSE_TYPE        = "responseType";
-	protected static final String SUBJECT              = "subject";
-	protected static final String UPDATE_RESPONSE_TYPE = "updateResponseType";
+	private static final String ACTION               = "action";
+	private static final String ACTION_TYPE          = "actionType";
+	private static final String AGGREGATE_IDENTIFIER = "aggregateIdentifier";
+	private static final String AGGREGATE_TYPE       = "aggregateType";
+	private static final String ANONYMOUS            = "\"anonymous\"";
+	private static final String CLASS_NAME           = "className";
+	private static final String COMMAND              = "command";
+	private static final String COMMAND_NAME         = "commandName";
+	private static final String ENVIRONMENT          = "environment";
+	private static final String EXECUTABLE           = "executable";
+	private static final String MESSAGE              = "message";
+	private static final String METADATA             = "metadata";
+	private static final String METHOD_NAME          = "methodName";
+	private static final String PAYLOAD              = "payload";
+	private static final String PAYLOAD_TYPE         = "payloadType";
+	private static final String PROJECTION_CLASS     = "projectionClass";
+	private static final String QUERY                = "query";
+	private static final String QUERY_NAME           = "queryName";
+	private static final String QUERY_RESULT         = "queryResult";
+	private static final String RESOURCE             = "resource";
+	private static final String RESPONSE_TYPE        = "responseType";
+	private static final String SUBJECT              = "subject";
+	private static final String UPDATE_RESPONSE_TYPE = "updateResponseType";
 
-	protected static final JsonNodeFactory  JSON        = JsonNodeFactory.instance;
-	protected static final ExpressionParser SPEL_PARSER = new SpelExpressionParser();
+	private static final JsonNodeFactory  JSON        = JsonNodeFactory.instance;
+	private static final ExpressionParser SPEL_PARSER = new SpelExpressionParser();
 
-	protected final ObjectMapper mapper;
+	private final ObjectMapper mapper;
 
 	/**
-	 * Executed to get the AuthorizationSubscription for a Command Message. It gets
-	 * the message, target and the delegate and returns the constructed
-	 * AuthorizationSubscription.
-	 *
-	 * @param message   Representation of a Message, containing a Payload and
-	 *                  MetaData
-	 * @param aggregate Object, which contains state and methods to alter that state
-	 * @param delegate  Command handler, needed to set parameter from annotation
-	 * @return the AuthorizationSubscription for the Command
+	 * Executed to get the AuthorizationSubscription for a CommandMessage.
+	 * 
+	 * @param command          The CommandMessage to be handled.
+	 * @param handlerObject    The instance of the object with the @CommandHandler
+	 *                         to be executed.
+	 * @param methodAnnotation The annotation.
+	 * @return the AuthorizationSubscription for the Command.
 	 */
-	public AuthorizationSubscription constructAuthorizationSubscriptionForCommand(CommandMessage<?> message,
-			Object aggregate, PreHandleEnforce methodAnnotation) {
+	public AuthorizationSubscription constructAuthorizationSubscriptionForCommand(CommandMessage<?> command,
+			Object handlerObject, PreHandleEnforce methodAnnotation) {
 
 		var annotationAttributeValues = AnnotationUtils.getAnnotationAttributes(methodAnnotation);
 
-		var subject     = retrieveSubject(message, annotationAttributeValues);
-		var action      = retrieveCommandAction(message, annotationAttributeValues, aggregate);
-		var resource    = retrieveResourceFromTarget(message, aggregate, annotationAttributeValues);
-		var environment = retrieveEnvironment(annotationAttributeValues);
+		var subject     = constructSubjectNode(command, annotationAttributeValues, COMMAND);
+		var action      = constructCommandHandlingActionNode(command, annotationAttributeValues, handlerObject);
+		var resource    = constructCommandHandlingResourceNode(command, handlerObject, annotationAttributeValues);
+		var environment = constructEnvironmentNode(annotationAttributeValues);
 
 		return AuthorizationSubscription.of(subject, action, resource, environment);
 	}
 
 	/**
-	 * Executed to get the AuthorizationSubscription for a Query Message. It gets
-	 * the queryMessage and the annotation and returns the constructed
-	 * AuthorizationSubscription.
-	 *
-	 * @param queryMessage Representation of a QueryMessage, containing a Payload
-	 *                     and MetaData
-	 * @param annotation   Annotation from the respective method
-	 * @param executable   an executable
-	 * @param queryResult  a query result
+	 * Executed to get the AuthorizationSubscription for a QueryMessage.
+	 * 
+	 * @param queryMessage The QueryMessage to be handled.
+	 * @param annotation   The SAPL annotation of the @QueryHandler method to be
+	 *                     executed.
+	 * @param executable   The Executable representing the @QueryHandler method to
+	 *                     be executed.
+	 * @param queryResult  An Optional query result. If the client class is dealing
+	 *                     with a @PostHandleEnforce annotation, the Optional should
+	 *                     contain the object returned by the @QueryHandler method.
+	 *                     Else, leave the Optional empty.
 	 * @return the AuthorizationSubscription for the Query
 	 */
 	public AuthorizationSubscription constructAuthorizationSubscriptionForQuery(QueryMessage<?, ?> queryMessage,
@@ -124,17 +128,16 @@ public class AuthorizationSubscriptionBuilderService {
 
 		var annotationAttributeValues = AnnotationUtils.getAnnotationAttributes(annotation);
 
-		var subject     = retrieveSubject(queryMessage, annotationAttributeValues);
-		var action      = retrieveQueryAction(queryMessage, annotationAttributeValues, executable);
-		var resource    = retrieveResourceFromQueryMessage(queryMessage, annotationAttributeValues, executable,
+		var subject     = constructSubjectNode(queryMessage, annotationAttributeValues, QUERY);
+		var action      = constructQueryHandlingActionNode(queryMessage, annotationAttributeValues, executable);
+		var resource    = constructQueryHandlingResourceNode(queryMessage, annotationAttributeValues, executable,
 				queryResult);
-		var environment = retrieveEnvironment(annotationAttributeValues);
+		var environment = constructEnvironmentNode(annotationAttributeValues);
 
 		return AuthorizationSubscription.of(subject, action, resource, environment);
 	}
 
-	protected JsonNode constructResourceNode(QueryMessage<?, ?> message, Executable executable,
-			Optional<?> queryResult) {
+	private JsonNode constructResourceNode(QueryMessage<?, ?> message, Executable executable, Optional<?> queryResult) {
 		var resourceNode = JSON.objectNode();
 		var responseType = message.getResponseType().getExpectedResponseType().getSimpleName();
 
@@ -157,7 +160,7 @@ public class AuthorizationSubscriptionBuilderService {
 		return resourceNode;
 	}
 
-	protected <T> JsonNode constructResourceWithAggregateInformation(Message<?> message, T aggregate) {
+	private <T> JsonNode constructResourceWithAggregateInformation(Message<?> message, T aggregate) {
 		var json          = JSON.objectNode();
 		var aggregateType = message.getMetaData().get(AGGREGATE_TYPE);
 		if (aggregateType != null) {
@@ -172,7 +175,7 @@ public class AuthorizationSubscriptionBuilderService {
 		return json;
 	}
 
-	protected Optional<Object> aggregateIdFromMessage(Message<?> message) {
+	private Optional<Object> aggregateIdFromMessage(Message<?> message) {
 		var fields = message.getPayloadType().getDeclaredFields();
 		for (var field : fields) {
 			if (field.isAnnotationPresent(TargetAggregateIdentifier.class)) {
@@ -187,7 +190,7 @@ public class AuthorizationSubscriptionBuilderService {
 		return Optional.empty();
 	}
 
-	protected JsonNode messageToJson(Message<?> message) {
+	private JsonNode messageToJson(Message<?> message) {
 		var json = JSON.objectNode();
 		if (message instanceof QueryMessage) {
 			json.set(ACTION_TYPE, JSON.textNode(QUERY));
@@ -206,33 +209,29 @@ public class AuthorizationSubscriptionBuilderService {
 		return json;
 	}
 
-	protected JsonNode retrieveCommandAction(CommandMessage<?> message, Map<String, Object> annotationAttributes,
-			Object commandHandlingObject) {
+	private JsonNode constructCommandHandlingActionNode(CommandMessage<?> message,
+			Map<String, Object> annotationAttributes, Object commandHandlingObject) {
 		var spelExpression = annotationAttributes.get(ACTION);
 		if (expressionNotSet(spelExpression))
 			return messageToJson(message);
 
 		var seplEvaluationContext = new StandardEvaluationContext(commandHandlingObject);
 		seplEvaluationContext.setVariable(MESSAGE, message);
-		seplEvaluationContext.setVariable(PAYLOAD, message.getPayload());
-		return evaluateSpEL((String) spelExpression, seplEvaluationContext);
+		seplEvaluationContext.setVariable(COMMAND, message.getPayload());
+		seplEvaluationContext.setVariable(METADATA, message.getMetaData());
+		return evaluateSpel((String) spelExpression, seplEvaluationContext);
 
 	}
 
-	protected Object retrieveEnvironment(Map<String, Object> annotationAttributes) {
+	private Object constructEnvironmentNode(Map<String, Object> annotationAttributes) {
 		var spelExpression = annotationAttributes.get(ENVIRONMENT);
 		if (expressionNotSet(spelExpression))
 			return null;
 
-		return evaluateSpEL((String) spelExpression, new StandardEvaluationContext());
+		return evaluateSpel((String) spelExpression, new StandardEvaluationContext());
 	}
 
-	protected <T> Annotation retrievePreEnforceAnnotation(MessageHandlingMember<T> handler) {
-		var method = handler.unwrap(Executable.class).orElseThrow();
-		return AnnotationUtils.getAnnotation(method, PreEnforce.class);
-	}
-
-	protected JsonNode retrieveQueryAction(Message<?> message, Map<String, Object> annotationAttributes,
+	private JsonNode constructQueryHandlingActionNode(Message<?> message, Map<String, Object> annotationAttributes,
 			Executable executable) {
 		var spelExpression = annotationAttributes.get(ACTION);
 		if (expressionNotSet(spelExpression))
@@ -240,12 +239,13 @@ public class AuthorizationSubscriptionBuilderService {
 
 		var seplEvaluationContext = new StandardEvaluationContext();
 		seplEvaluationContext.setVariable(MESSAGE, message);
-		seplEvaluationContext.setVariable(PAYLOAD, message.getPayload());
+		seplEvaluationContext.setVariable(QUERY, message.getPayload());
+		seplEvaluationContext.setVariable(METADATA, message.getMetaData());
 		seplEvaluationContext.setVariable(EXECUTABLE, executable);
-		return evaluateSpEL((String) spelExpression, seplEvaluationContext);
+		return evaluateSpel((String) spelExpression, seplEvaluationContext);
 	}
 
-	protected JsonNode retrieveResourceFromQueryMessage(QueryMessage<?, ?> message,
+	private JsonNode constructQueryHandlingResourceNode(QueryMessage<?, ?> message,
 			Map<String, Object> annotationAttributes, Executable executable, Optional<?> queryResult) {
 		var spelExpression = annotationAttributes.get(RESOURCE);
 		if (expressionNotSet(spelExpression))
@@ -253,13 +253,14 @@ public class AuthorizationSubscriptionBuilderService {
 
 		var seplEvaluationContext = new StandardEvaluationContext();
 		seplEvaluationContext.setVariable(MESSAGE, message);
-		seplEvaluationContext.setVariable(PAYLOAD, message.getPayload());
+		seplEvaluationContext.setVariable(QUERY, message.getPayload());
+		seplEvaluationContext.setVariable(METADATA, message.getMetaData());
 		seplEvaluationContext.setVariable(EXECUTABLE, executable);
 		queryResult.ifPresent(result -> seplEvaluationContext.setVariable(QUERY_RESULT, result));
-		return evaluateSpEL((String) spelExpression, seplEvaluationContext);
+		return evaluateSpel((String) spelExpression, seplEvaluationContext);
 	}
 
-	protected <T> JsonNode retrieveResourceFromTarget(Message<?> message, T aggregate,
+	private <T> JsonNode constructCommandHandlingResourceNode(Message<?> message, T aggregate,
 			Map<String, Object> annotationAttributes) {
 		var spelExpression = annotationAttributes.get(RESOURCE);
 		if (expressionNotSet(spelExpression)) {
@@ -268,12 +269,14 @@ public class AuthorizationSubscriptionBuilderService {
 
 		var seplEvaluationContext = new StandardEvaluationContext(aggregate);
 		seplEvaluationContext.setVariable(MESSAGE, message);
-		seplEvaluationContext.setVariable(PAYLOAD, message.getPayload());
-		return evaluateSpEL((String) spelExpression, seplEvaluationContext);
+		seplEvaluationContext.setVariable(COMMAND, message.getPayload());
+		seplEvaluationContext.setVariable(METADATA, message.getMetaData());
+		return evaluateSpel((String) spelExpression, seplEvaluationContext);
 	}
 
 	@SneakyThrows
-	protected JsonNode retrieveSubject(Message<?> message, Map<String, Object> annotationAttributes) {
+	private JsonNode constructSubjectNode(Message<?> message, Map<String, Object> annotationAttributes,
+			String payloadId) {
 		var subject = message.getMetaData().getOrDefault(SUBJECT, ANONYMOUS);
 
 		var spelExpression = annotationAttributes.get(SUBJECT);
@@ -283,23 +286,27 @@ public class AuthorizationSubscriptionBuilderService {
 
 		var seplEvaluationContext = new StandardEvaluationContext();
 		seplEvaluationContext.setVariable(MESSAGE, message);
-		seplEvaluationContext.setVariable(PAYLOAD, message.getPayload());
+		seplEvaluationContext.setVariable(payloadId, message.getPayload());
 		seplEvaluationContext.setVariable(SUBJECT, subject);
-		return evaluateSpEL((String) spelExpression, seplEvaluationContext);
+		seplEvaluationContext.setVariable(METADATA, message.getMetaData());
+		return evaluateSpel((String) spelExpression, seplEvaluationContext);
 	}
 
-	protected JsonNode evaluateSpEL(String spelExpression, EvaluationContext seplEvaluationContext) {
+	private JsonNode evaluateSpel(String spelExpression, EvaluationContext seplEvaluationContext) {
 		var expression = SPEL_PARSER.parseExpression(spelExpression);
 		try {
 			var evaluationResult = expression.getValue(seplEvaluationContext);
 			return mapper.valueToTree(evaluationResult);
-		} catch (SpelEvaluationException e) {
-			log.error("SePL Error: {}", e.getMessage());
+		} catch (SpelEvaluationException | NullPointerException e) {
+			log.error(
+					"Failed to evaluate the SePL expression \"{}\" during"
+							+ " construction of an AuthorizationSubscription. Error: {}",
+					spelExpression, e.getMessage());
 			throw e;
 		}
 	}
 
-	protected boolean expressionNotSet(Object spelExpression) {
+	private boolean expressionNotSet(Object spelExpression) {
 		return !(spelExpression instanceof String) || ((String) spelExpression).isBlank();
 	}
 

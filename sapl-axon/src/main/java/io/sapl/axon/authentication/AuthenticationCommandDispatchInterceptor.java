@@ -1,6 +1,7 @@
 package io.sapl.axon.authentication;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 
 import org.axonframework.commandhandling.CommandMessage;
@@ -19,12 +20,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthenticationCommandDispatchInterceptor implements MessageDispatchInterceptor<CommandMessage<?>> {
 
-	private final AuthenticationMetadataProvider authnProvider;
+	private final AuthenticationSupplier authnProvider;
 
 	@Override
 	public BiFunction<Integer, CommandMessage<?>, CommandMessage<?>> handle(
 			List<? extends CommandMessage<?>> messages) {
-		return (index, command) -> command.andMetaData(authnProvider.getSubjectMetadata());
+		return (index, command) -> command.andMetaData(Map.of("subject", authnProvider.get()));
 	}
 
 }

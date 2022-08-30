@@ -13,11 +13,11 @@ import lombok.RequiredArgsConstructor;
 public class CommandConstraintHandlerBundle<R, T> {
 	public static final CommandConstraintHandlerBundle<?, ?> NOOP_BUNDLE = new CommandConstraintHandlerBundle<>();
 
-	protected final BiConsumer<AuthorizationDecision, Message<?>>  onDecision;
-	protected final Function<Throwable, Throwable>                 errorMapper;
-	protected final Function<CommandMessage<?>, CommandMessage<?>> commandMapper;
-	protected final Function<R, R>                                 resultMapper;
-	protected final Runnable                                       handlersOnObject;
+	private final BiConsumer<AuthorizationDecision, Message<?>>  onDecision;
+	private final Function<Throwable, Throwable>                 errorMapper;
+	private final Function<CommandMessage<?>, CommandMessage<?>> commandMapper;
+	private final Function<R, R>                                 resultMapper;
+	private final Runnable                                       handlersOnObject;
 
 	// @formatter:off
 	private CommandConstraintHandlerBundle() {

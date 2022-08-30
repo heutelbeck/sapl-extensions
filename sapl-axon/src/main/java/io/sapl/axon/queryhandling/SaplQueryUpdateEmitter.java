@@ -59,11 +59,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	private final List<MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>>> dispatchInterceptors = new CopyOnWriteArrayList<>();
 
 	/**
-	 * Instantiate a {@link SimpleQueryUpdateEmitter} based on the fields contained
-	 * in the {@link Builder}.
-	 *
-	 * @param builder the {@link Builder} used to instantiate a
-	 *                {@link SimpleQueryUpdateEmitter} instance
+	 * Instantiate a {@link SaplQueryUpdateEmitter}
 	 */
 	public SaplQueryUpdateEmitter(
 			Optional<MessageMonitor<? super SubscriptionQueryUpdateMessage<?>>> updateMessageMonitor,
@@ -157,7 +153,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 										removeHandler.run();
 										return true;
 									};
-		
+
 		activeQueries.put(query,
 				new QueryData<U>(QueryAuthorizationMode.UNDEFINED, enforcementConfigurationSink, updateSink));
 
@@ -362,7 +358,8 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	private boolean inStartedPhaseOfUnitOfWork() {
 		if (CurrentUnitOfWork.isStarted())
 			return CurrentUnitOfWork.get().phase() == UnitOfWork.Phase.STARTED;
-		else return false;
+		else
+			return false;
 	}
 
 	private enum QueryAuthorizationMode {

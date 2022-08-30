@@ -17,12 +17,12 @@ import lombok.RequiredArgsConstructor;
 public class QueryConstraintHandlerBundle<I, U> {
 	public static final QueryConstraintHandlerBundle<?, ?> NOOP_BUNDLE = new QueryConstraintHandlerBundle<>();
 
-	protected final BiConsumer<AuthorizationDecision, Message<?>>    onDecisionHandlers;
-	protected final Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers;
-	protected final Function<Throwable, Throwable>                   errorMappers;
-	protected final Function<I, I>                                   initialResultMappers;
-	protected final Function<ResultMessage<?>, ResultMessage<?>>     updateMappers;
-	protected final Predicate<ResultMessage<?>>                      filterPredicates;
+	private final BiConsumer<AuthorizationDecision, Message<?>>    onDecisionHandlers;
+	private final Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers;
+	private final Function<Throwable, Throwable>                   errorMappers;
+	private final Function<I, I>                                   initialResultMappers;
+	private final Function<ResultMessage<?>, ResultMessage<?>>     updateMappers;
+	private final Predicate<ResultMessage<?>>                      filterPredicates;
 
 	// @formatter:off
 	private QueryConstraintHandlerBundle() {

@@ -29,7 +29,10 @@ import lombok.experimental.UtilityClass;
 
 /**
  * The Annotations Object provides public static final Lists with possible
- * Annotations. It is used in the {@link SAPLQueryHandlingMember}.
+ * Annotations. 
+ *
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
  */
 @UtilityClass
 public class Annotations {

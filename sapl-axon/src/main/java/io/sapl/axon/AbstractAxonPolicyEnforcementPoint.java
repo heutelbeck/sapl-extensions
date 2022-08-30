@@ -19,6 +19,7 @@ import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
  * Shared logic for PEPs loading the SAPL Annotations of the delegate MessageHandlingMember.
  * 
  * @author Dominic Heutelbeck
+ * @since 2.1.0
  *
  * @param <T> Payload Type
  */

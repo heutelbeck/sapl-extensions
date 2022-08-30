@@ -18,9 +18,9 @@ import com.thoughtworks.xstream.XStream;
 
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.axon.authentication.AuthenticationCommandDispatchInterceptor;
-import io.sapl.axon.authentication.AuthenticationMetadataProvider;
 import io.sapl.axon.authentication.AuthenticationQueryDispatchInterceptor;
-import io.sapl.axon.authentication.SpringSecurityAuthenticationMetadataProvider;
+import io.sapl.axon.authentication.AuthenticationSupplier;
+import io.sapl.axon.authentication.SpringSecurityAuthenticationSupplier;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.api.CommandConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
@@ -73,25 +73,25 @@ public class SaplAutoConfiguration {
 	 */
 	@Bean
 	@ConditionalOnMissingBean
-	AuthenticationMetadataProvider authenticationMetadataProvider(ObjectMapper mapper) {
+	AuthenticationSupplier authenticationMetadataProvider(ObjectMapper mapper) {
 		log.trace("Deploy Spring AuthenticationMetadataProvider");
-		return new SpringSecurityAuthenticationMetadataProvider(mapper);
+		return new SpringSecurityAuthenticationSupplier(mapper);
 	}
 
 	/**
 	 * 
 	 * MessageDispatchInterceptor for authenticating command messages.
 	 * 
-	 * @param authnProvider The applications AuthenticationMetadataProvider.
+	 * @param authnSupplier The applications AuthenticationSupplier.
 	 * @param commandBus    The Axon Command Bus.
 	 * @return A MessageDispatchInterceptor for adding authentication metadata to
 	 *         commands.
 	 */
 	@Bean
 	AuthenticationCommandDispatchInterceptor authenticationCommandDispatchInterceptor(
-			AuthenticationMetadataProvider authnProvider, CommandBus commandBus) {
+			AuthenticationSupplier authnSupplier, CommandBus commandBus) {
 		log.trace("Deploy AuthenticationCommandDispatchInterceptor");
-		var interceptor = new AuthenticationCommandDispatchInterceptor(authnProvider);
+		var interceptor = new AuthenticationCommandDispatchInterceptor(authnSupplier);
 		commandBus.registerDispatchInterceptor(interceptor);
 		return interceptor;
 	}
@@ -100,16 +100,16 @@ public class SaplAutoConfiguration {
 	 * 
 	 * MessageDispatchInterceptor for authenticating query messages.
 	 * 
-	 * @param authnProvider The applications AuthenticationMetadataProvider.
+	 * @param authnSupplier The applications AuthenticationSupplier.
 	 * @param queryBus      The Axon Query Bus.
 	 * @return A MessageDispatchInterceptor for adding authentication metadata to
 	 *         queries.
 	 */
 	@Bean
-	AuthenticationQueryDispatchInterceptor authenticationQueryDispatchInterceptor(
-			AuthenticationMetadataProvider authnProvider, QueryBus queryBus) {
+	AuthenticationQueryDispatchInterceptor authenticationQueryDispatchInterceptor(AuthenticationSupplier authnSupplier,
+			QueryBus queryBus) {
 		log.trace("Deploy AuthenticationQueryDispatchInterceptor");
-		var interceptor = new AuthenticationQueryDispatchInterceptor(authnProvider);
+		var interceptor = new AuthenticationQueryDispatchInterceptor(authnSupplier);
 		queryBus.registerDispatchInterceptor(interceptor);
 		return interceptor;
 	}
@@ -177,8 +177,9 @@ public class SaplAutoConfiguration {
 	 * again.
 	 * 
 	 * @param queryBus             The Axon QueryBus
-	 * @param dispatchInterceptors All MessageDispatchInterceptor<QueryMessage> in
-	 *                             the application context.
+	 * @param dispatchInterceptors All
+	 *                             {@code MessageDispatchInterceptor<QueryMessage>}
+	 *                             in the application context.
 	 * @return A query gateway supporting recoverable subscription queries.
 	 */
 	@Bean
