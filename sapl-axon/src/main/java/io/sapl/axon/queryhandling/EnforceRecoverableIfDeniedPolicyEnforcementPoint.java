@@ -51,19 +51,19 @@ import reactor.core.publisher.Flux;
  *
  * The PEP does not permit onErrorContinue() downstream.
  *
- * @param <T> type of the update message payload contents
+ * @param <U> type of the update message payload contents
  */
-public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
-		extends Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<T>>> {
+public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
+		extends Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<U>>> {
 
 	private final SubscriptionQueryMessage<?, ?, ?> query;
 	private final Flux<AuthorizationDecision>       decisions;
-	private Flux<SubscriptionQueryUpdateMessage<T>> resourceAccessPoint;
+	private Flux<SubscriptionQueryUpdateMessage<U>> resourceAccessPoint;
 	private final ConstraintHandlerService          constraintHandlerService;
 	private final ResponseType<?>                   resultResponseType;
-	private final ResponseType<T>                   updateResponseType;
+	private final ResponseType<U>                   updateResponseType;
 
-	private EnforcementSink<SubscriptionQueryUpdateMessage<RecoverableResponse<T>>> sink;
+	private EnforcementSink<SubscriptionQueryUpdateMessage<RecoverableResponse<U>>> sink;
 
 	final AtomicReference<Disposable>                      decisionsSubscription = new AtomicReference<>();
 	final AtomicReference<Disposable>                      dataSubscription      = new AtomicReference<>();
@@ -72,9 +72,9 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 	final AtomicBoolean                                    stopped               = new AtomicBoolean(false);
 
 	private EnforceRecoverableIfDeniedPolicyEnforcementPoint(SubscriptionQueryMessage<?, ?, ?> query,
-			Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<T>> resourceAccessPoint,
+			Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<U>> resourceAccessPoint,
 			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
-			ResponseType<T> updateResponseType) {
+			ResponseType<U> updateResponseType) {
 		this.query                    = query;
 		this.decisions                = decisions;
 		this.resourceAccessPoint      = resourceAccessPoint;
@@ -107,7 +107,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 	}
 
 	@Override
-	public void subscribe(CoreSubscriber<? super SubscriptionQueryUpdateMessage<RecoverableResponse<T>>> actual) {
+	public void subscribe(CoreSubscriber<? super SubscriptionQueryUpdateMessage<RecoverableResponse<U>>> actual) {
 		if (sink != null)
 			throw new IllegalStateException("Operator may only be subscribed once.");
 		var context = actual.currentContext();
@@ -117,12 +117,12 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 		decisionsSubscription.set(decisions.doOnNext(this::handleNextDecision).contextWrite(context).subscribe());
 	}
 
-	private SubscriptionQueryUpdateMessage<RecoverableResponse<T>> newAccessDeniedUpdate() {
+	private SubscriptionQueryUpdateMessage<RecoverableResponse<U>> newAccessDeniedUpdate() {
 		return new GenericSubscriptionQueryUpdateMessage<>(RecoverableResponse.accessDenied(updateResponseType));
 	}
 
-	private SubscriptionQueryUpdateMessage<RecoverableResponse<T>> wrapPayloadInRecoverableResponse(
-			ResultMessage<T> msg) {
+	private SubscriptionQueryUpdateMessage<RecoverableResponse<U>> wrapPayloadInRecoverableResponse(
+			ResultMessage<U> msg) {
 		return GenericSubscriptionQueryUpdateMessage.asUpdateMessage(new GenericResultMessage<>(
 				new RecoverableResponse<>(updateResponseType, msg.getPayload()), msg.getMetaData()));
 	}
@@ -158,9 +158,9 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 
 		if (implicitDecision.getResource().isPresent()) {
 			try {
-				T newResponse = constraintHandlerService.deserializeResource(implicitDecision.getResource().get(),
+				U newResponse = constraintHandlerService.deserializeResource(implicitDecision.getResource().get(),
 						updateResponseType);
-				sink.next(new GenericSubscriptionQueryUpdateMessage<RecoverableResponse<T>>(
+				sink.next(new GenericSubscriptionQueryUpdateMessage<RecoverableResponse<U>>(
 						new RecoverableResponse<>(updateResponseType, newResponse)));
 				disposeDecisionsAndResourceAccessPoint();
 			} catch (AccessDeniedException e) {
@@ -179,7 +179,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 	}
 
 	@SuppressWarnings("unchecked")
-	private void handleNext(SubscriptionQueryUpdateMessage<T> value) {
+	private void handleNext(SubscriptionQueryUpdateMessage<U> value) {
 		// the following guard clause makes sure that the constraint handlers do not get
 		// called after downstream consumers cancelled. If the RAP is not consisting of
 		// delayed elements, but something like Flux.just(1,2,3) the handler would be
@@ -199,7 +199,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 		try {
 			var bundle = constraintHandler.get();
 			bundle.executeOnNextHandlers(value)
-					.ifPresent(val -> sink.next(wrapPayloadInRecoverableResponse((ResultMessage<T>) val)));
+					.ifPresent(val -> sink.next(wrapPayloadInRecoverableResponse((ResultMessage<U>) val)));
 		} catch (Throwable t) {
 			// Signal error but drop only the element with the failed obligation
 			// doing handleNextDecision(AuthorizationDecision.DENY); would drop all
@@ -210,6 +210,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 	}
 
 	private void handleComplete() {
+		System.out.println("Complete");
 		if (stopped.get())
 			return;
 		sink.complete();
@@ -222,6 +223,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 	}
 
 	private void handleError(Throwable error) {
+		System.out.println("Error " + error);
 		try {
 			sink.error(constraintHandler.get().executeOnErrorHandlers(error));
 		} catch (Throwable t) {

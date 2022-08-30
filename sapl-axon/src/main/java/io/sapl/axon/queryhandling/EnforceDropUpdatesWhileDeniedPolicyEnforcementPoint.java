@@ -210,6 +210,8 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
 
 	private Throwable handleAccessDenied(Throwable error) {
 		try {
+			if (constraintHandler.get() == null)
+				throw new AccessDeniedException(error.getLocalizedMessage(), error);
 			return constraintHandler.get().executeOnErrorHandlers(error);
 		} catch (Throwable t) {
 			disposeDecisionsAndResourceAccessPoint();
