@@ -60,7 +60,6 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 	}
 
 	@StandardException
-	@SuppressWarnings("serial")
 	private static class TestAccessDeniedException extends AccessDeniedException {
 	}
 

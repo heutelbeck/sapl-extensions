@@ -58,7 +58,6 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	}
 
 	@StandardException
-	@SuppressWarnings("serial")
 	private static class TestAccessDeniedException extends AccessDeniedException {
 	}
 
