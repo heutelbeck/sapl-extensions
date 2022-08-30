@@ -47,6 +47,17 @@ import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This service collects all constraint handlers available in the application
+ * context and context of command execution and assembles a constraint handler
+ * bundle for each decision.
+ * 
+ * It checks if all obligations can be satisfied or raises an
+ * AccessDeniedException.
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
+ */
 @Slf4j
 public class ConstraintHandlerService {
 	private final static SpelExpressionParser PARSER = new SpelExpressionParser();
@@ -61,13 +72,35 @@ public class ConstraintHandlerService {
 	private final List<UpdateFilterConstraintHandlerProvider<?>> updatePredicateProviders;
 	private final List<ResultConstraintHandlerProvider<?>>       updateMappingProviders;
 
+	/**
+	 * Instantiate the ConstraintHandlerService.
+	 * 
+	 * @param mapper                         The systems ObjectMapper
+	 * @param parameterResolverFactory       Axon parameter resolver factory.
+	 * @param onDecisionProviders            All OnDecisionConstraintHandlerProvider
+	 *                                       instances.
+	 * @param globalCommandProviders         All CommandConstraintHandlerProvider
+	 *                                       instances.
+	 * @param globalQueryProviders           All QueryConstraintHandlerProvider
+	 *                                       instances.
+	 * @param globalErrorHandlerProviders    All
+	 *                                       ErrorMappingConstraintHandlerProvider
+	 *                                       instances.
+	 * @param globalMappingProviders         All MappingConstraintHandlerProvider
+	 *                                       instances.
+	 * @param globalUpdatePredicateProviders All
+	 *                                       UpdateFilterConstraintHandlerProvider
+	 *                                       instances.
+	 * @param updateMappingProviders         All ResultConstraintHandlerProvider
+	 *                                       instances.
+	 */
 	public ConstraintHandlerService(ObjectMapper mapper, ParameterResolverFactory parameterResolverFactory,
-			List<OnDecisionConstraintHandlerProvider> globalRunnableProviders,
-			List<CommandConstraintHandlerProvider> globalCommandMessageMappingProviders,
-			List<QueryConstraintHandlerProvider> globalQueryMessageMappingProviders,
-			List<ErrorMappingConstraintHandlerProvider> globalErrorMappingHandlerProviders,
+			List<OnDecisionConstraintHandlerProvider> onDecisionProviders,
+			List<CommandConstraintHandlerProvider> globalCommandProviders,
+			List<QueryConstraintHandlerProvider> globalQueryProviders,
+			List<ErrorMappingConstraintHandlerProvider> globalErrorHandlerProviders,
 			List<MappingConstraintHandlerProvider<?>> globalMappingProviders,
-			List<UpdateFilterConstraintHandlerProvider<?>> updatePredicateProviders,
+			List<UpdateFilterConstraintHandlerProvider<?>> globalUpdatePredicateProviders,
 			List<ResultConstraintHandlerProvider<?>> updateMappingProviders) {
 
 		this.mapper                   = mapper;
@@ -75,16 +108,16 @@ public class ConstraintHandlerService {
 
 		log.debug("Loading constraint handler providers...");
 
-		this.updatePredicateProviders = new ArrayList<>(updatePredicateProviders);
+		this.updatePredicateProviders = new ArrayList<>(globalUpdatePredicateProviders);
 		logDeployedHandlers("Update Predicate Providers:", this.updatePredicateProviders);
 		// sort according to priority
-		this.globalRunnableProviders = new ArrayList<>(globalRunnableProviders);
+		this.globalRunnableProviders = new ArrayList<>(onDecisionProviders);
 		Collections.sort(this.globalRunnableProviders);
 		logDeployedHandlers("Update Runnable Providers:", this.globalRunnableProviders);
-		this.globalQueryMessageMappingProviders = new ArrayList<>(globalQueryMessageMappingProviders);
+		this.globalQueryMessageMappingProviders = new ArrayList<>(globalQueryProviders);
 		Collections.sort(this.globalQueryMessageMappingProviders);
 		logDeployedHandlers("Query Mappers:", new ArrayList<>(this.globalQueryMessageMappingProviders));
-		this.globalErrorMappingHandlerProviders = new ArrayList<>(globalErrorMappingHandlerProviders);
+		this.globalErrorMappingHandlerProviders = new ArrayList<>(globalErrorHandlerProviders);
 		Collections.sort(this.globalErrorMappingHandlerProviders);
 		logDeployedHandlers("Error Mappers:", this.globalErrorMappingHandlerProviders);
 		this.globalMappingProviders = new ArrayList<>(globalMappingProviders);
@@ -93,7 +126,7 @@ public class ConstraintHandlerService {
 		this.updateMappingProviders = new ArrayList<>(updateMappingProviders);
 		Collections.sort(this.updateMappingProviders);
 		logDeployedHandlers("Update Mappers:", this.updateMappingProviders);
-		this.globalCommandMessageMappingProviders = new ArrayList<>(globalCommandMessageMappingProviders);
+		this.globalCommandMessageMappingProviders = new ArrayList<>(globalCommandProviders);
 		Collections.sort(this.globalCommandMessageMappingProviders);
 		logDeployedHandlers("Command Mappers:", this.globalCommandMessageMappingProviders);
 	}
@@ -107,6 +140,15 @@ public class ConstraintHandlerService {
 		}
 	}
 
+	/**
+	 * Attempts to deserialize a JSON Object to the provided class.
+	 * 
+	 * @param <T>      Expected Type.
+	 * @param resource JSON representation of resource
+	 * @param type     Expected type.
+	 * @return The deserialized resource, or AccessDeniedException if
+	 *         deserialization fails.
+	 */
 	@SuppressWarnings("unchecked")
 	public <T> T deserializeResource(JsonNode resource, ResponseType<T> type) {
 		try {
@@ -117,8 +159,19 @@ public class ConstraintHandlerService {
 		}
 	}
 
+	/**
+	 * Build the bundle for command handling.
+	 * 
+	 * @param <T>           Type of the handler Object.
+	 * @param decision      The decision.
+	 * @param handlerObject The handlerObject.
+	 * @param executable    The Executable.
+	 * @param command       The command.
+	 * @return A CommandConstraintHandlerBundle.
+	 */
 	public <T> CommandConstraintHandlerBundle<?> buildPreEnforceCommandConstraintHandlerBundle(
-			AuthorizationDecision decision, T aggregate, Optional<Executable> executable, CommandMessage<?> command) {
+			AuthorizationDecision decision, T handlerObject, Optional<Executable> executable,
+			CommandMessage<?> command) {
 
 		if (decision.getResource().isPresent()) {
 			log.warn("PDP decision contained resource object for command handler. Access Denied. {}", decision);
@@ -138,7 +191,7 @@ public class ConstraintHandlerService {
 		var commandMappingHandlers = constructCommandMessageMappingHandlers(decision, obligationsWithoutHandler);
 		var errorMappingHandlers   = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
 		var resultMappingHandlers  = constructResultMappingHandlers(decision, obligationsWithoutHandler, type);
-		var handlersOnObject       = constructObjectConstraintHandlers(aggregate, command, decision,
+		var handlersOnObject       = constructObjectConstraintHandlers(handlerObject, command, decision,
 				obligationsWithoutHandler);
 
 		if (!obligationsWithoutHandler.isEmpty()) {
@@ -150,12 +203,15 @@ public class ConstraintHandlerService {
 				resultMappingHandlers, handlersOnObject);
 	}
 
-	public <T> Runnable constructHandlersOnObject(AuthorizationDecision decision, T aggregate,
-			Optional<Executable> executable) {
-		return () -> {
-		};
-	}
-
+	/**
+	 * Build the QueryConstraintHandlerBundle for pre-query handling.
+	 * 
+	 * @param decision     The decision.
+	 * @param responseType The response type.
+	 * @param updateType   The update type. Optional. Non-empty for subscription
+	 *                     queries.
+	 * @return A QueryConstraintHandlerBundle.
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public QueryConstraintHandlerBundle<?> buildQueryPreHandlerBundle(AuthorizationDecision decision,
 			ResponseType<?> responseType, Optional<ResponseType<?>> updateType) {
@@ -259,6 +315,13 @@ public class ConstraintHandlerService {
 		}).orElse(__ -> true);
 	}
 
+	/**
+	 * Build the QueryConstraintHandlerBundle for post-query handling.
+	 * 
+	 * @param decision     The decision.
+	 * @param responseType The response type.
+	 * @return A QueryConstraintHandlerBundle.
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public QueryConstraintHandlerBundle<?> buildQueryPostHandlerBundle(AuthorizationDecision decision,
 			ResponseType<?> responseType) {
@@ -511,7 +574,7 @@ public class ConstraintHandlerService {
 		return Optional.of(runAll(handlers));
 	}
 
-	public static List<Method> responsibleConstraintHandlerMethods(Object handlerObject, CommandMessage<?> command,
+	private static List<Method> responsibleConstraintHandlerMethods(Object handlerObject, CommandMessage<?> command,
 			JsonNode constraint) {
 		log.debug("Examining object for constraint handlers: {}", handlerObject);
 		if (handlerObject == null) // constructor command
@@ -557,7 +620,7 @@ public class ConstraintHandlerService {
 		return false;
 	}
 
-	public Runnable runMethod(Method method, Object contextObject, Message<?> message, AuthorizationDecision decision,
+	private Runnable runMethod(Method method, Object contextObject, Message<?> message, AuthorizationDecision decision,
 			JsonNode constraint) {
 		return () -> invokeMethod(method, contextObject, message, decision, constraint);
 	}

@@ -46,6 +46,8 @@ import io.sapl.spring.constraints.api.TypeSupport;
  * 
  * @author Dominic Heutelbeck
  * @since 2.1.0
+ *
+ * @param <T> The payload type.
  */
 public interface ResultConstraintHandlerProvider<T> extends Responsible, HasPriority, TypeSupport<T> {
 

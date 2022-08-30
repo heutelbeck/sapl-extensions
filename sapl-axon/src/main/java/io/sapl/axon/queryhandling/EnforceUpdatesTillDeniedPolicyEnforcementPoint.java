@@ -31,14 +31,14 @@ import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
+import io.sapl.spring.method.reactive.EnforcementSink;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.CoreSubscriber;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 
 /**
- * The EnforceTillDeniedPolicyEnforcementPoint implements continuous policy
- * enforcement on a Flux resource access point.
+ * The EnforceTillDeniedPolicyEnforcementPoint for SubscriptionUpdateMessages
  *
  * If the initial decision of the PDP is not PERMIT, an AccessDeniedException is
  * signaled downstream without subscribing to resource access point.
@@ -53,7 +53,7 @@ import reactor.core.publisher.Flux;
  *
  * The PEP does not permit onErrorContinue() downstream.
  *
- * @param <U> type of the Flux contents
+ * @param <U> type of the update message payload contents
  */
 @Slf4j
 public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<SubscriptionQueryUpdateMessage<U>> {
@@ -84,6 +84,19 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
 		this.updateResponseType       = updateResponseType;
 	}
 
+	/**
+	 * Wraps the source Flux.
+	 * 
+	 * @param <U>                      Update payload type.
+	 * @param query                    The Query
+	 * @param decisions                The PDP decision stream.
+	 * @param updateMessageFlux        The incoming messages.
+	 * @param constraintHandlerService The ConstraintHandlerService
+	 *                                 constraintHandlerService.
+	 * @param resultResponseType       The initial response type.
+	 * @param updateResponseType       The result response type.
+	 * @return A wrapped Flux of SubscriptionQueryUpdateMessage.
+	 */
 	public static <U> Flux<SubscriptionQueryUpdateMessage<U>> of(SubscriptionQueryMessage<?, ?, ?> query,
 			Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
 			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,

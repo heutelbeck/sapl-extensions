@@ -35,7 +35,7 @@ import io.sapl.spring.constraints.api.TypeSupport;
  * 
  * @author Dominic Heutelbeck
  * @since 2.1.0
- * @param <T>
+ * @param <T> Payload type.
  */
 public interface UpdateFilterConstraintHandlerProvider<T> extends Responsible, TypeSupport<T> {
 

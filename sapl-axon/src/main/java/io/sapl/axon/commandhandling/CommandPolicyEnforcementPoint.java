@@ -16,15 +16,35 @@ import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Wrapper for command handlers establishing a Policy Enforcement Point.
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
+ * 
+ * @param <T> The type of the handing object.
+ */
 @Slf4j
 public class CommandPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcementPoint<T> {
 
+	/**
+	 * Instantiate a CommandPolicyEnforcementPoint.
+	 * 
+	 * @param delegate                         The delegate handler.
+	 * @param pdp                              The Policy Decision Point.
+	 * @param axonConstraintEnforcementService The ConstraintHandlerService.
+	 * @param subscriptionBuilder              The
+	 *                                         AuthorizationSubscriptionBuilderService.
+	 */
 	public CommandPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
 			ConstraintHandlerService axonConstraintEnforcementService,
 			AuthorizationSubscriptionBuilderService subscriptionBuilder) {
 		super(delegate, pdp, axonConstraintEnforcementService, subscriptionBuilder);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Object handle(Message<?> message, T aggregate) throws Exception {
 		var preEnforceAnnotation = findPreEnforceAnnotation();

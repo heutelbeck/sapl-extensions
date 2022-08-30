@@ -9,6 +9,20 @@ import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
 import io.sapl.spring.constraints.providers.ContentFilterUtil;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * This provider offers the manipulation of ResultMessage payloads.
+ * 
+ * The constraint must be a JSON Object.
+ * 
+ * The constraint must contain the field "type" with value
+ * "filterMessagePayloadContent".
+ * 
+ * See {@link io.sapl.spring.constraints.providers.ContentFilterUtil} for
+ * supported actions.
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
+ */
 @RequiredArgsConstructor
 public class ResponseMessagePayloadFilterProvider implements ResultConstraintHandlerProvider<Object> {
 
@@ -17,6 +31,9 @@ public class ResponseMessagePayloadFilterProvider implements ResultConstraintHan
 
 	private final ObjectMapper objectMapper;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean isResponsible(JsonNode constraint) {
 		if (constraint == null || !constraint.isObject())
@@ -30,11 +47,17 @@ public class ResponseMessagePayloadFilterProvider implements ResultConstraintHan
 		return CONSTRAINT_TYPE.equals(type.asText());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Class<Object> getSupportedType() {
 		return Object.class;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
 		return ContentFilterUtil.getHandler(constraint, objectMapper).apply(payload);

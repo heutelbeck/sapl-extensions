@@ -33,13 +33,14 @@ import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
+import io.sapl.spring.method.reactive.EnforcementSink;
 import reactor.core.CoreSubscriber;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 
 /**
- * The EnforceDropWhileDeniedPolicyEnforcementPoint implements continuous policy
- * enforcement on a Flux resource access point.
+ * The EnforceDropWhileDeniedPolicyEnforcementPoint for
+ * SubscriptionUpdateMessages
  *
  * After an initial PERMIT, the PEP subscribes to the resource access point and
  * forwards events downstream until a non-PERMIT decision from the PDP is
@@ -50,7 +51,7 @@ import reactor.core.publisher.Flux;
  *
  * The PEP does not permit onErrorContinue() downstream.
  *
- * @param <T> type of the payload
+ * @param <T> type of the update message payload contents
  */
 public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 		extends Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<T>>> {
@@ -82,6 +83,19 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 		this.resultResponseType       = resultResponseType;
 	}
 
+	/**
+	 * Wraps the source Flux.
+	 * 
+	 * @param <V>                        Update payload type.
+	 * @param query                      The Query
+	 * @param decisions                  The PDP decision stream.
+	 * @param resourceAccessPoint        The incoming messages.
+	 * @param constraintHandlerService   The ConstraintHandlerService
+	 *                                   constraintHandlerService.
+	 * @param resultResponseType         The initial response type.
+	 * @param originalUpdateResponseType The result response type.
+	 * @return A wrapped Flux of SubscriptionQueryUpdateMessage.
+	 */
 	public static <V> Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<V>>> of(
 			SubscriptionQueryMessage<?, ?, ?> query, Flux<AuthorizationDecision> decisions,
 			Flux<SubscriptionQueryUpdateMessage<V>> resourceAccessPoint,

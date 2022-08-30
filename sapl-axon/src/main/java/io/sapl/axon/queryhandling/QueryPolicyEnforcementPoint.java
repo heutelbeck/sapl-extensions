@@ -28,6 +28,14 @@ import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
+/**
+ * Wrapper for query handlers establishing a Policy Enforcement Point.
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
+ * 
+ * @param <T> The type of the handing object.
+ */
 @Slf4j
 public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcementPoint<T> {
 
@@ -35,6 +43,16 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 
 	private final SaplQueryUpdateEmitter emitter;
 
+	/**
+	 * Instantiate a QueryPolicyEnforcementPoint.
+	 * 
+	 * @param delegate                         The delegate handler.
+	 * @param pdp                              The Policy Decision Point.
+	 * @param emitter                          The SaplQueryUpdateEmitter.
+	 * @param axonConstraintEnforcementService The ConstraintHandlerService.
+	 * @param subscriptionBuilder              The
+	 *                                         AuthorizationSubscriptionBuilderService.
+	 */
 	public QueryPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
 			ConstraintHandlerService axonConstraintEnforcementService, SaplQueryUpdateEmitter emitter,
 			AuthorizationSubscriptionBuilderService subscriptionBuilder) {
@@ -42,6 +60,9 @@ public class QueryPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcemen
 		this.emitter = emitter;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Object handle(Message<?> message, T source) throws Exception {
 
