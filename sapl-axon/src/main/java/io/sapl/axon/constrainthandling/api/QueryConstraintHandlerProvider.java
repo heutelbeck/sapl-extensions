@@ -31,20 +31,39 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
 
+/**
+ * 
+ * Base interface for implementing constraint handlers that can intercept a
+ * QueryMessage.
+ * 
+ * Users can choose to overwrite the
+ * {@link QueryConstraintHandlerProvider#getHandler} method to completely
+ * change the behavior, or to overwrite one of the specialized methods to only
+ * consume the message or to map individual aspect of the message.
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
+ */
 public interface QueryConstraintHandlerProvider extends Responsible, HasPriority {
 
+	/**
+	 * @param constraint The constraint required by the authorization decision.
+	 * @return The handler triggering all required side-effects and potentially
+	 *         changing the message.
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	default Function<QueryMessage<?, ?>, QueryMessage<?, ?>> getHandler(JsonNode constraint) {
 		return query -> {
-			var newPayload      = mapPayload(query.getPayload(), query.getPayloadType());
-			var newPayloadType  = mapPayloadType(query.getPayloadType());
-			var newMetaData     = mapMetadata(query.getMetaData());
-			var newQueryName    = mapQueryName(query.getQueryName());
-			var newResponseType = mapReponseType(query.getResponseType());
+			accept(query, constraint);
+			var newPayload      = mapPayload(query.getPayload(), query.getPayloadType(), constraint);
+			var newPayloadType  = mapPayloadType(query.getPayloadType(), constraint);
+			var newMetaData     = mapMetadata(query.getMetaData(), constraint);
+			var newQueryName    = mapQueryName(query.getQueryName(), constraint);
+			var newResponseType = mapReponseType(query.getResponseType(), constraint);
 			var baseMessage     = new GenericMessage(query.getIdentifier(), newPayloadType, newPayload, newMetaData);
 			if (query instanceof SubscriptionQueryMessage) {
 				var newUpdateResponseType = mapUpdateResponseType(
-						((SubscriptionQueryMessage) query).getUpdateResponseType());
+						((SubscriptionQueryMessage) query).getUpdateResponseType(), constraint);
 				return new GenericSubscriptionQueryMessage(baseMessage, newQueryName, newResponseType,
 						newUpdateResponseType);
 
@@ -53,27 +72,81 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
 		};
 	};
 
-	default ResponseType<?> mapReponseType(ResponseType<?> responseType) {
+	/**
+	 * 
+	 * Method for triggering side-effects.
+	 * 
+	 * @param message    The message.
+	 * @param constraint The constraint.
+	 */
+	default void accept(QueryMessage<?, ?> message, JsonNode constraint) {
+		// NOOP
+	}
+
+	/**
+	 * Method to change the response type.
+	 * 
+	 * @param responseType The original response type.
+	 * @param constraint  The constraint.
+	 * @return A potentially updated response type.
+	 */
+	default ResponseType<?> mapReponseType(ResponseType<?> responseType, JsonNode constraint) {
 		return responseType;
 	}
 
-	default ResponseType<?> mapUpdateResponseType(ResponseType<?> updateResponseType) {
+	/**
+	 * Method to change the updateResponseType type.
+	 * 
+	 * @param updateResponseType The original updateResponseType type.
+	 * @param constraint  The constraint.
+	 * @return A potentially updated updateResponseType type.
+	 */
+	default ResponseType<?> mapUpdateResponseType(ResponseType<?> updateResponseType, JsonNode constraint) {
 		return updateResponseType;
 	}
-
-	default Class<?> mapPayloadType(Class<?> payloadType) {
+	
+	/**
+	 * Method to change the payload type.
+	 * 
+	 * @param payloadType The original payload type.
+	 * @param constraint  The constraint.
+	 * @return A potentially updated payload type.
+	 */
+	default Class<?> mapPayloadType(Class<?> payloadType, JsonNode constraint) {
 		return payloadType;
 	}
 
-	default Object mapPayload(Object payload, Class<?> clazz) {
+	/**
+	 * Method to change the payload.
+	 * 
+	 * @param payload    The original payload.
+	 * @param clazz      The type of the payload.
+	 * @param constraint The constraint.
+	 * @return A potentially updated payload.
+	 */
+	default Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
 		return payload;
 	}
 
-	default String mapQueryName(String queryName) {
+	/**
+	 * Method to change the query name.
+	 * 
+	 * @param queryName  The original query name.
+	 * @param constraint The constraint.
+	 * @return A potentially updated queryName.
+	 */
+	default String mapQueryName(String queryName, JsonNode constraint) {
 		return queryName;
 	}
 
-	default MetaData mapMetadata(MetaData originalMetadata) {
+	/**
+	 * Method to change the metadata.
+	 *
+	 * @param originalMetadata The original metadata.
+	 * @param constraint       The constraint.
+	 * @return Potentially updated metadata.
+	 */
+	default MetaData mapMetadata(MetaData originalMetadata, JsonNode constraint) {
 		return originalMetadata;
 	}
 

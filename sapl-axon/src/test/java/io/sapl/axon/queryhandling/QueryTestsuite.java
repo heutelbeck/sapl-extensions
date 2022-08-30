@@ -519,7 +519,7 @@ public abstract class QueryTestsuite {
 		create(result).expectNext(MODIFIED_QUERY).verifyComplete();
 
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(querMappingProvider, times(1)).mapPayload(any(), any());
+		verify(querMappingProvider, times(1)).mapPayload(any(), any(), any());
 	}
 
 	@Test
@@ -534,7 +534,7 @@ public abstract class QueryTestsuite {
 		create(result).expectNext(QUERY.toUpperCase()).verifyComplete();
 
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(resultMessageMappingProvider, times(1)).mapPayload(any(),any(),any());
+		verify(resultMessageMappingProvider, times(1)).mapPayload(any(), any(), any());
 	}
 
 	@Test
@@ -609,7 +609,7 @@ public abstract class QueryTestsuite {
 		create(result).expectErrorMatches(isAccessDenied()).verify();
 
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(querMappingProvider, times(0)).mapPayload(any(), any());
+		verify(querMappingProvider, times(0)).mapPayload(any(), any(), any());
 	}
 
 	@Test
@@ -624,7 +624,7 @@ public abstract class QueryTestsuite {
 		create(result).expectNext(QUERY.toUpperCase()).verifyComplete();
 
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		verify(resultMessageMappingProvider, times(1)).mapPayload(any(),any(),any());
+		verify(resultMessageMappingProvider, times(1)).mapPayload(any(), any(), any());
 	}
 
 	@Test
@@ -908,7 +908,7 @@ public abstract class QueryTestsuite {
 		}
 
 		@Override
-		public Object mapPayload(JsonNode constraint, Object payload, Class<?> clazz) {
+		public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
 			return ((String) payload).toUpperCase();
 		}
 	}
@@ -939,7 +939,7 @@ public abstract class QueryTestsuite {
 		}
 
 		@Override
-		public Object mapPayload(Object payload, Class<?> clazz) {
+		public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
 			return MODIFIED_QUERY;
 		}
 

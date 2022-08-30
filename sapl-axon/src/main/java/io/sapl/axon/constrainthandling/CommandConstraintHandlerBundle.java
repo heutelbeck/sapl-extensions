@@ -21,6 +21,9 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public class CommandConstraintHandlerBundle<R> {
+	/**
+	 * A bundle which only contains handlers performing no operation.
+	 */
 	public static final CommandConstraintHandlerBundle<?> NOOP_BUNDLE = new CommandConstraintHandlerBundle<>();
 
 	private final BiConsumer<AuthorizationDecision, Message<?>>  onDecision;

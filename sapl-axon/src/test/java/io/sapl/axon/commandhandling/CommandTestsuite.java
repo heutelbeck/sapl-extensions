@@ -121,7 +121,7 @@ public abstract class CommandTestsuite {
 		assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is(MODIFIED_RESULT));
 		verify(resultMappingProvider, times(1)).map(any());
 		verify(onDecisionProvider, times(1)).accept(any(), any());
-		verify(querMappingProvider, times(1)).mapPayload(any(), any());
+		verify(querMappingProvider, times(1)).mapPayload(any(), any(), any());
 	}
 
 	@Test
@@ -273,7 +273,7 @@ public abstract class CommandTestsuite {
 		}
 
 		@Override
-		public Object mapPayload(Object payload, Class<?> clazz) {
+		public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
 			if (payload instanceof CommandOne) {
 				return new CommandOne(MODIFIED_COMMAND);
 			}

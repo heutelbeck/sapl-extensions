@@ -25,6 +25,9 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public class QueryConstraintHandlerBundle<I> {
+	/**
+	 * A bundle which only contains handlers performing no operation.
+	 */
 	public static final QueryConstraintHandlerBundle<?> NOOP_BUNDLE = new QueryConstraintHandlerBundle<>();
 
 	private final BiConsumer<AuthorizationDecision, Message<?>>    onDecisionHandlers;

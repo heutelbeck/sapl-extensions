@@ -36,7 +36,7 @@ public class ResponseMessagePayloadFilterProvider implements ResultConstraintHan
 	}
 
 	@Override
-	public Object mapPayload(JsonNode constraint, Object payload, Class<?> clazz) {
+	public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
 		return ContentFilterUtil.getHandler(constraint, objectMapper).apply(payload);
 	}
 }
