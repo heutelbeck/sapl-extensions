@@ -44,7 +44,7 @@ public class DecisionStreamTapping {
 				.doOnSubscribe(__ -> stateRef.getAndUpdate(s -> new State(s.initial, SubcriptionState.SUBSCRIBED)))
 				.doOnCancel(checkUpdateTermination(multicastSink, tappedSource, stateRef))
 				.doAfterTerminate(checkUpdateTermination(multicastSink, tappedSource, stateRef));
-		
+
 		Flux.interval(timeout).next().doOnNext(__ -> {
 			var s = stateRef.get();
 			if (s.initial == SubcriptionState.NONE || s.updates == SubcriptionState.NONE) {

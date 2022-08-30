@@ -54,7 +54,7 @@ import reactor.core.publisher.Flux;
  */
 public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 		extends Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<T>>> {
-	
+
 	private final SubscriptionQueryMessage<?, ?, ?> query;
 	private final Flux<AuthorizationDecision>       decisions;
 	private Flux<SubscriptionQueryUpdateMessage<T>> resourceAccessPoint;
@@ -64,14 +64,14 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 
 	private EnforcementSink<SubscriptionQueryUpdateMessage<RecoverableResponse<T>>> sink;
 
-	final AtomicReference<Disposable>                         decisionsSubscription = new AtomicReference<>();
-	final AtomicReference<Disposable>                         dataSubscription      = new AtomicReference<>();
-	final AtomicReference<AuthorizationDecision>              latestDecision        = new AtomicReference<>();
-	final AtomicReference<QueryConstraintHandlerBundle<?, ?>> constraintHandler     = new AtomicReference<>();
-	final AtomicBoolean                                       stopped               = new AtomicBoolean(false);
+	final AtomicReference<Disposable>                      decisionsSubscription = new AtomicReference<>();
+	final AtomicReference<Disposable>                      dataSubscription      = new AtomicReference<>();
+	final AtomicReference<AuthorizationDecision>           latestDecision        = new AtomicReference<>();
+	final AtomicReference<QueryConstraintHandlerBundle<?>> constraintHandler     = new AtomicReference<>();
+	final AtomicBoolean                                    stopped               = new AtomicBoolean(false);
 
-	private EnforceRecoverableIfDeniedPolicyEnforcementPoint(SubscriptionQueryMessage<?, ?, ?> query,Flux<AuthorizationDecision> decisions,
-			Flux<SubscriptionQueryUpdateMessage<T>> resourceAccessPoint,
+	private EnforceRecoverableIfDeniedPolicyEnforcementPoint(SubscriptionQueryMessage<?, ?, ?> query,
+			Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<T>> resourceAccessPoint,
 			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<T> updateResponseType) {
 		this.query                    = query;
@@ -82,11 +82,12 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 		this.resultResponseType       = resultResponseType;
 	}
 
-	public static <V> Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<V>>> of(SubscriptionQueryMessage<?, ?, ?> query,
-			Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<V>> resourceAccessPoint,
+	public static <V> Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<V>>> of(
+			SubscriptionQueryMessage<?, ?, ?> query, Flux<AuthorizationDecision> decisions,
+			Flux<SubscriptionQueryUpdateMessage<V>> resourceAccessPoint,
 			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<V> originalUpdateResponseType) {
-		var pep = new EnforceRecoverableIfDeniedPolicyEnforcementPoint<V>(query,decisions, resourceAccessPoint,
+		var pep = new EnforceRecoverableIfDeniedPolicyEnforcementPoint<V>(query, decisions, resourceAccessPoint,
 				constraintHandlerService, resultResponseType, originalUpdateResponseType);
 		return pep.doOnCancel(pep::handleCancel).onErrorStop();
 	}
@@ -114,8 +115,8 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 
 	private void handleNextDecision(AuthorizationDecision decision) {
 
-		var                                implicitDecision = decision;
-		QueryConstraintHandlerBundle<?, ?> newBundle        = QueryConstraintHandlerBundle.NOOP_BUNDLE;
+		var implicitDecision = decision;
+		var newBundle        = QueryConstraintHandlerBundle.NOOP_BUNDLE;
 
 		try {
 			newBundle = constraintHandlerService.buildQueryPreHandlerBundle(decision, resultResponseType,
@@ -133,7 +134,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<T>
 			sink.next(newAccessDeniedUpdate());
 
 		try {
-			newBundle.executeOnDecisionHandlers(decision,query);
+			newBundle.executeOnDecisionHandlers(decision, query);
 		} catch (AccessDeniedException e) {
 			sink.next(newAccessDeniedUpdate());
 			implicitDecision = AuthorizationDecision.INDETERMINATE;

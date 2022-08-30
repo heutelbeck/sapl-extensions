@@ -117,7 +117,7 @@ public class ConstraintHandlerService {
 		}
 	}
 
-	public <T> CommandConstraintHandlerBundle<?, ?> buildPreEnforceCommandConstraintHandlerBundle(
+	public <T> CommandConstraintHandlerBundle<?> buildPreEnforceCommandConstraintHandlerBundle(
 			AuthorizationDecision decision, T aggregate, Optional<Executable> executable, CommandMessage<?> command) {
 
 		if (decision.getResource().isPresent()) {
@@ -157,7 +157,7 @@ public class ConstraintHandlerService {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public QueryConstraintHandlerBundle<?, ?> buildQueryPreHandlerBundle(AuthorizationDecision decision,
+	public QueryConstraintHandlerBundle<?> buildQueryPreHandlerBundle(AuthorizationDecision decision,
 			ResponseType<?> responseType, Optional<ResponseType<?>> updateType) {
 
 		var obligationsWithoutHandler = new HashSet<JsonNode>();
@@ -260,7 +260,7 @@ public class ConstraintHandlerService {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public QueryConstraintHandlerBundle<?, ?> buildQueryPostHandlerBundle(AuthorizationDecision decision,
+	public QueryConstraintHandlerBundle<?> buildQueryPostHandlerBundle(AuthorizationDecision decision,
 			ResponseType<?> responseType) {
 
 		var obligationsWithoutHandler = new HashSet<JsonNode>();

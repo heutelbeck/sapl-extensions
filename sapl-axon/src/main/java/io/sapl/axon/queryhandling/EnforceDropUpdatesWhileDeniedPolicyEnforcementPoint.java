@@ -65,11 +65,11 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
 	private Flux<SubscriptionQueryUpdateMessage<U>>            resourceAccessPoint;
 	private EnforcementSink<SubscriptionQueryUpdateMessage<U>> sink;
 
-	final AtomicReference<Disposable>                         decisionsSubscription = new AtomicReference<>();
-	final AtomicReference<Disposable>                         dataSubscription      = new AtomicReference<>();
-	final AtomicReference<AuthorizationDecision>              latestDecision        = new AtomicReference<>();
-	final AtomicReference<QueryConstraintHandlerBundle<?, ?>> constraintHandler     = new AtomicReference<>();
-	final AtomicBoolean                                       stopped               = new AtomicBoolean(false);
+	final AtomicReference<Disposable>                      decisionsSubscription = new AtomicReference<>();
+	final AtomicReference<Disposable>                      dataSubscription      = new AtomicReference<>();
+	final AtomicReference<AuthorizationDecision>           latestDecision        = new AtomicReference<>();
+	final AtomicReference<QueryConstraintHandlerBundle<?>> constraintHandler     = new AtomicReference<>();
+	final AtomicBoolean                                    stopped               = new AtomicBoolean(false);
 
 	private EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint(SubscriptionQueryMessage<?, ?, ?> query,
 			Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
@@ -107,8 +107,8 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
 
 	@SuppressWarnings("unchecked")
 	private void handleNextDecision(AuthorizationDecision decision) {
-		var                                previousDecision = latestDecision.getAndSet(decision);
-		QueryConstraintHandlerBundle<?, ?> newBundle;
+		var                             previousDecision = latestDecision.getAndSet(decision);
+		QueryConstraintHandlerBundle<?> newBundle;
 		try {
 			newBundle = constraintHandlerService.buildQueryPreHandlerBundle(decision, resultResponseType,
 					Optional.of(updateResponseType));

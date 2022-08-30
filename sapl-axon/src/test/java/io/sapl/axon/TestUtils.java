@@ -8,7 +8,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class TestUtils {
 	
-	public Predicate<ResultMessage<?>> matchesIgnoringIdentifier(ResultMessage<?> resultMessage) {
+	public static Predicate<ResultMessage<?>> matchesIgnoringIdentifier(ResultMessage<?> resultMessage) {
 		return otherResultMessage -> {
 			
 			//message check
