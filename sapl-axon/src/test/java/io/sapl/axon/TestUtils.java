@@ -2,13 +2,25 @@ package io.sapl.axon;
 
 import java.util.function.Predicate;
 
+import org.axonframework.messaging.GenericResultMessage;
 import org.axonframework.messaging.ResultMessage;
+import io.sapl.axon.queryhandling.RecoverableResponse;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class TestUtils {
 	
-	public static Predicate<ResultMessage<?>> matchesIgnoringIdentifier(ResultMessage<?> resultMessage) {
+	public static <U> Predicate<ResultMessage<RecoverableResponse<U>>> isAccessDeniedResponse() {
+		return recoverableResponse -> {
+			if (recoverableResponse == null)
+				return false;
+			else if (recoverableResponse.getPayload() == null)
+				return false;
+			else return recoverableResponse.getPayload().isAccessDenied();
+		};
+	}
+	
+	public static <U> Predicate<ResultMessage<U>> matchesIgnoringIdentifier(ResultMessage<U> resultMessage) {
 		return otherResultMessage -> {
 			
 			//message check
@@ -50,6 +62,15 @@ public class TestUtils {
 				return false;
 			
 			return true;
+		};
+	}
+	
+	public static <U> Predicate<ResultMessage<RecoverableResponse<U>>> unwrappedMatchesIgnoringIdentifier(ResultMessage<U> resultMessage) {
+		return recoverableResultMessage -> {
+			if (TestUtils.<U>isAccessDeniedResponse().test(recoverableResultMessage))
+				return false;
+			var unwrapped = new GenericResultMessage<>(recoverableResultMessage.getPayload().unwrap());
+			return matchesIgnoringIdentifier(resultMessage).test(unwrapped);
 		};
 	}
 }

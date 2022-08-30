@@ -1,7 +1,7 @@
 package io.sapl.axon.queryhandling;
 
 import static io.sapl.axon.TestUtils.matchesIgnoringIdentifier;
-import static io.sapl.axon.queryhandling.EnforceUpdatesTillDeniedPolicyEnforcementPoint.of;
+import static io.sapl.axon.queryhandling.EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint.of;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -37,7 +37,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
+public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
 
 	private static final String MAPPER_FILED_NAME = "mapper";
 	private static final String ERROR_MAPPERS_FILED_NAME = "errorMappers";
@@ -180,7 +180,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	}
 
 	@Test
-	void when_pep_singleDeny_and_noUpdate_then_accessDenied() {
+	void when_pep_singleDeny_and_noUpdate_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -191,11 +191,12 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
-	void when_pep_singleIndeterminate_and_noUpdate_then_accessDenied() {
+	void when_pep_singleIndeterminate_and_noUpdate_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -206,11 +207,12 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
-	void when_pep_singleNotApplicable_and_noUpdate_then_accessDenied() {
+	void when_pep_singleNotApplicable_and_noUpdate_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -221,7 +223,8 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
@@ -257,7 +260,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	}
 
 	@Test
-	void when_pep_singleDeny_and_singleUpdate_then_accessDenied() {
+	void when_pep_singleDeny_and_singleUpdate_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -269,11 +272,12 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
-	void when_pep_singleIndeterminate_and_singleUpdate_then_accessDenied() {
+	void when_pep_singleIndeterminate_and_singleUpdate_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -285,11 +289,12 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
-	void when_pep_singleNotApplicable_and_singleUpdate_then_accessDenied() {
+	void when_pep_singleNotApplicable_and_singleUpdate_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -301,7 +306,8 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
@@ -321,7 +327,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	}
 
 	@Test
-	void when_pep_singleDeny_and_singleUpdate_and_ressource_then_accessDenied() {
+	void when_pep_singleDeny_and_singleUpdate_and_ressource_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -334,11 +340,12 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
-	void when_pep_singleIndeterminate_and_singleUpdate_and_ressource_then_accessDenied() {
+	void when_pep_singleIndeterminate_and_singleUpdate_and_ressource_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -351,11 +358,12 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
-	void when_pep_singleNotApplicable_and_singleUpdate_and_ressource_then_accessDenied() {
+	void when_pep_singleNotApplicable_and_singleUpdate_and_ressource_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -368,7 +376,8 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
@@ -407,7 +416,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	}
 
 	@Test
-	void when_pep_denyThenPermit_and_singleUpdate_then_accessDenied() {
+	void when_pep_denyThenPermit_and_singleUpdate_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -419,7 +428,8 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
@@ -444,7 +454,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	}
 
 	@Test
-	void when_pep_permitThenDeny_and_multipleUpdates_then_permitThenAccessDenied() {
+	void when_pep_permitThenDeny_and_multipleUpdates_then_permitThenNoEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -459,12 +469,12 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
 		StepVerifier.create(enforcedUpdateMessageFlux)
-				.expectNextMatches(matchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE))
-				.expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+				.expectNextMatches(matchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE)).expectNoEvent(DEFAULT_TIMESTEP)
+				.verifyComplete();
 	}
 
 	@Test
-	void when_pep_denyThenPermit_and_multipleUpdates_then_accessDenied() {
+	void when_pep_denyThenPermit_and_multipleUpdates_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -478,11 +488,12 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMESTEP)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
-	void when_pep_permitThenDenyThenPermit_and_multipleUpdates_then_permitThenAccessDenied() {
+	void when_pep_permitThenDenyThenPermit_and_multipleUpdates_then_permitThenNoEventThenPermit() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -499,8 +510,8 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
 		StepVerifier.create(enforcedUpdateMessageFlux)
-				.expectNextMatches(matchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE))
-				.expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+				.expectNextMatches(matchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE)).expectNoEvent(DEFAULT_TIMESTEP)
+				.expectNextMatches(matchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE)).verifyComplete();
 	}
 
 	@Test
@@ -525,7 +536,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	void when_pep_accessDeniedOnExecuteOnDecisionHandlers_then_accessDenied() {
+	void when_pep_accessDeniedOnExecuteOnDecisionHandlers_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -546,7 +557,8 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
+				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
@@ -574,7 +586,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	void when_pep_exceptionAtExecuteOnNextHandlers_then_exception() {
+	void when_pep_exceptionAtExecuteOnNextHandlers_then_complete() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
@@ -594,8 +606,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectError(TestAccessDeniedException.class)
-				.verify(DEFAULT_TIMEOUT);
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyComplete();
 	}
 
 	@Test
