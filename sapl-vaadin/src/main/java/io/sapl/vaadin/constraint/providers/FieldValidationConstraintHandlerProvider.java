@@ -28,7 +28,6 @@ import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
 
 import io.sapl.spring.constraints.api.ConsumerConstraintHandlerProvider;
-import io.sapl.vaadin.VaadinConstraintEnforcementService;
 
 /**
  * This Constraint Handler Provider can be used to apply validations on a field
