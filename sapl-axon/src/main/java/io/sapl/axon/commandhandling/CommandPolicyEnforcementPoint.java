@@ -43,8 +43,6 @@ public class CommandPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcem
 	private Object preEnforcePolices(CommandMessage<?> command, T aggregate, PreHandleEnforce preHandleEnforce)
 			throws Exception {
 
-		log.debug("PreHandleEnforce command {}", command);
-
 		var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForCommand(command, aggregate,
 				preHandleEnforce);
 		/*
@@ -52,7 +50,6 @@ public class CommandPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcem
 		 * asynchronously in the current version of Axon.
 		 */
 		var decision = pdp.decide(authzSubscription).blockFirst();
-		log.debug("PreHandleEnforce Decision {}", decision);
 		if (decision == null) {
 			log.error("PDP returned null.");
 			throw new AccessDeniedException("Access Denied");
@@ -94,8 +91,6 @@ public class CommandPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcem
 			throw bundle.executeOnErrorHandlers(t);
 		}
 
-		log.debug("Result before applying constraints: {}", result);
-
 		Object mappedResult = null;
 		try {
 			mappedResult = bundle.executePostHandlingHandlers(result);
@@ -103,7 +98,6 @@ public class CommandPolicyEnforcementPoint<T> extends AbstractAxonPolicyEnforcem
 			log.error("command result mapping failed: {}", t.getMessage(), t);
 			throw bundle.executeOnErrorHandlers(new AccessDeniedException("Access Denied"));
 		}
-		log.debug("Result after applying constraints : {}", mappedResult);
 
 		return mappedResult;
 

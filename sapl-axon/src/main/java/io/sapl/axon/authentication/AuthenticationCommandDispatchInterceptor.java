@@ -22,6 +22,9 @@ public class AuthenticationCommandDispatchInterceptor implements MessageDispatch
 
 	private final AuthenticationSupplier authnProvider;
 
+	/**
+	 * Adds the subject's authentication data to the "subject" field in the metadata as a JSON String. 
+	 */
 	@Override
 	public BiFunction<Integer, CommandMessage<?>, CommandMessage<?>> handle(
 			List<? extends CommandMessage<?>> messages) {

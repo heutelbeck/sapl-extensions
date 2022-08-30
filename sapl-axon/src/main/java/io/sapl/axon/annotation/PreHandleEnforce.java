@@ -23,8 +23,57 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The @PreEnforce annotation establishes a policy enforcement point (PEP)
- * before the invocation of the annotated method.
+ * The {@code @PostHandleEnforce} annotation establishes a policy enforcement
+ * point (PEP) for Handlers of standard (non-subscription) queries.
+ * 
+ * This annotation can be combined with {@code @PreHandleEnforce} for
+ * non-subscription queries.
+ * 
+ * If the {@code @QueryHandler} is invoked the query handler is first executed,
+ * and then the PDP is asked for one decision which is then enforced.
+ * 
+ * The advantage over {@code @PreHandleEnforce} is, that the query result can
+ * also be used to formulate the authorization subscription.
+ * 
+ * The parameters of the annotation can be used to customize the
+ * {@code AuthorizationSubscription} sent to the PDP. If a field is left empty,
+ * the PEP attempts to construct a reasonable subscription element from the
+ * security context, inspecting messages, and using reflection of the involved
+ * objects.
+ * 
+ * By default, the subject is determined by serializing the 'subject' field of
+ * the message metadata into a JsonNode using the default {@code ObjectMapper}.
+ * 
+ * To be able to construct reasonable {@code AuthorizationSubscription} objects,
+ * the following data is made available to the SpEL expression in its evaluation
+ * context:
+ * 
+ * <ul>
+ * <li>The variable {@code #message} is set to the {@code QueryMessage}.
+ * <li>The variable {@code #query} is set to the payload of the
+ * {@code QueryMessage} to be handled.
+ * <li>The variable {@code #metadata} is set to the metadata of the
+ * {@code QueryMessage} to be handled.
+ * <li>The variable {@code #executable} is set to the
+ * {@link java.lang.reflect.Executable} representing the method to be invoked to
+ * <li>The variable {@code #queryResult} is set to the value returned by the
+ * query handler.
+ * </ul>
+ * 
+ * Example:
+ * 
+ * <pre>
+ * {@code
+ * @QueryHandler 
+ * @PostHandleEnforce(action = "'Fetch'", resource = "{ 'type':'patient', 'value':#queryResult }")
+ * Optional<PatientDocument> handle(FetchPatient query) {
+ * 	return patientsRepository.findById(query.patientId());
+ * }
+ * }
+ * </pre>
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
  */
 @Inherited
 @Documented

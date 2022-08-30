@@ -21,7 +21,9 @@ import lombok.RequiredArgsConstructor;
 public class AuthenticationQueryDispatchInterceptor implements MessageDispatchInterceptor<QueryMessage<?, ?>> {
 
 	private final AuthenticationSupplier authnProvider;
-
+	/**
+	 * Adds the subject's authentication data to the "subject" field in the metadata as a JSON String. 
+	 */
 	@Override
 	public BiFunction<Integer, QueryMessage<?, ?>, QueryMessage<?, ?>> handle(
 			List<? extends QueryMessage<?, ?>> messages) {

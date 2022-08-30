@@ -24,6 +24,10 @@ public class SpringSecurityAuthenticationSupplier implements AuthenticationSuppl
 
 	private final ObjectMapper mapper;
 
+	/**
+	 * Extracts the authentication information from the Spring SecurityContext.
+	 * Defaults to "anonymous" if no authentication is present.
+	 */
 	@Override
 	@SneakyThrows
 	public String get() {

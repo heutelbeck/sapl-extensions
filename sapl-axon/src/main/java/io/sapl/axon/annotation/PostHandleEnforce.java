@@ -23,10 +23,72 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The @PostEnforce annotation establishes a policy enforcement point (PEP)
- * after the invocation of the annotated method, and alters the return value if
- * indicated by the policy decision point (PDP), if possible based on the
- * structure of the returned JSON object.
+ * The {@code @PreHandleEnforce} annotation establishes a policy enforcement
+ * point (PEP) for Handlers of standard or subscription queries.
+ * 
+ * This annotation can be combined with {@code @PostHandleEnforce} for 
+ * non-subscription queries. 
+ * 
+ * If the {@code @QueryHandler} is invoked using a non-subscription query, the
+ * PDP is asked for one decision which is then enforced.
+ * 
+ * In case of a subscription query, the policy enforcement strategy implemented
+ * by this PEP is to wait for the PDP's first decision.
+ * 
+ * If the initial decision is PERMIT, then send the initial response and
+ * subscribe to the query updates.
+ * 
+ * If the initial decision is DENY, deny access to the initial response and the
+ * subscription is cancelled.
+ * 
+ * If the new decision is a PERMIT, updates continue to be propagated to the
+ * client.
+ * 
+ * On each decision, constraints will be respected and updated.
+ * 
+ * If a following decision is DENY, access to updates is denied and the 
+ * subscription is cancelled.
+ * 
+ * If a decision contains a resource, the PEP assumes that this is a final
+ * update message to be sent. It is sent and the query subscription is
+ * terminated.
+ * 
+ * The parameters of the annotation can be used to customize the
+ * {@code AuthorizationSubscription} sent to the PDP. If a field is left empty,
+ * the PEP attempts to construct a reasonable subscription element from the
+ * security context, inspecting messages, and using reflection of the involved
+ * objects.
+ * 
+ * By default, the subject is determined by serializing the 'subject' field of
+ * the message metadata into a JsonNode using the default {@code ObjectMapper}.
+ * 
+ * To be able to construct reasonable {@code AuthorizationSubscription} objects,
+ * the following data is made available to the SpEL expression in its evaluation
+ * context:
+ * 
+ * <ul>
+ * <li>The variable {@code #message} is set to the {@code QueryMessage}.
+ * <li>The variable {@code #query} is set to the payload of the
+ * {@code QueryMessage} to be handled.
+ * <li>The variable {@code #metadata} is set to the metadata of the
+ * {@code QueryMessage} to be handled.
+ * <li>The variable {@code #executable} is set to the
+ * {@link java.lang.reflect.Executable} representing the method to be invoked to
+ * generate the initial query response.
+ * </ul>
+ * 
+ * Example:
+ * 
+ * <pre>{@code 
+ *	@QueryHandler
+ *	@PreHandleEnforce(action = "'FetchAll'", resource = "{ 'type':'patient' }")
+ * 	Iterable<PatientDocument> handle(FetchAllPatients query) {
+ *		return patientsRepository.findAll();
+ *	}
+ * }</pre>
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
  */
 @Inherited
 @Documented

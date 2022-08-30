@@ -23,33 +23,86 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The @EnforceRecoverableIfDenied annotation establishes a reactive policy
- * enforcement point (PEP). The PEP is only applicable to methods returning a
- * {@link org.reactivestreams.Publisher Publisher}, i.e., a
- * {@link reactor.core.publisher.Flux Flux} or a
- * {@link reactor.core.publisher.Mono Mono}.
- *
- * The publisher returned by the method is wrapped by the PEP. The PEP starts
- * processing, i.e, sending a subscription to the PDP, upon subscription time.
- *
- * The established PEP also wires in matching handlers for obligations and
- * advice into the matching signal paths of the publisher.
- *
- * Subscribe to the resource after the first decision, make it a hot source.
- * Filter out all events from the data stream wile the most recent decision is
- * not PERMIT. However, on a non-permit signal an AccessDeniedException
- * downstream. Enable the client to recover and wait for the resource to become
- * available again.
- *
- * Keep the subscription alive as long as the client does.
- *
- * The client is aware of access denied events.
- *
- *
- * The parameters subject, action, resource, and environment can be used to
- * explicitly set the corresponding keys in the SAPL authorization subscription,
- * assuming that the Spring context and ObjectMapper are configured to be able
- * to serialize the resulting value into JSON.
+ * The {@code @EnforceRecoverableUpdatesIfDenied} annotation establishes a
+ * policy enforcement point (PEP) for Handlers of subscription queries.
+ * 
+ * The idea is to enable the client to decide be aware of access denied events
+ * while updates are dropped while access is not granted.
+ * 
+ * To do so, the client must use the
+ * {@link io.sapl.axon.queryhandling.SaplQueryGateway}. This gateway
+ * transparently changes the query to expect a
+ * {@link io.sapl.axon.queryhandling.RecoverableResponse} and unwraps this
+ * response for the client. It allows the client to consume access denied events
+ * and to then react, continue to consume updates (using
+ * {@link reactor.core.publisher.Flux#onErrorContinue} once access is granted
+ * again, or to terminate the query.
+ * 
+ * If the {@code @QueryHandler} is invoked using a non-subscription query, the
+ * PEP falls back to the behavior of
+ * {@link io.sapl.axon.annotation.PreHandleEnforce}.
+ * 
+ * This PEP expects the update response type to be
+ * {@link io.sapl.axon.queryhandling.RecoverableResponse}. If this is not the
+ * case, the PEP falls back to the behavior of
+ * {@link io.sapl.axon.annotation.PreHandleEnforce}.
+ * 
+ * The policy enforcement strategy implemented by this PEP is to wait for the
+ * PDP's first decision.
+ * 
+ * If the initial decision is PERMIT, then send the initial response and
+ * subscribe to the query updates.
+ * 
+ * If the initial decision is DENY, deny access to the initial response, but
+ * stay subscribed to the query updates, but drop all events until a new
+ * decision is sent by the PDP. Also propagate the access denied event to the
+ * query.
+ * 
+ * If the new decision is a PERMIT, updates start up back to be propagated to
+ * the client.
+ * 
+ * On each decision, constraints will be respected and updated.
+ * 
+ * If a decision contains a resource, the PEP assumes that this is a final
+ * update message to be sent. It is sent and the query subscription is
+ * terminated.
+ * 
+ * The parameters of the annotation can be used to customize the
+ * {@code AuthorizationSubscription} sent to the PDP. If a field is left empty,
+ * the PEP attempts to construct a reasonable subscription element from the
+ * security context, inspecting messages, and using reflection of the involved
+ * objects.
+ * 
+ * By default, the subject is determined by serializing the 'subject' field of
+ * the message metadata into a JsonNode using the default {@code ObjectMapper}.
+ * 
+ * To be able to construct reasonable {@code AuthorizationSubscription} objects,
+ * the following data is made available to the SpEL expression in its evaluation
+ * context:
+ * 
+ * <ul>
+ * <li>The variable {@code #message} is set to the {@code QueryMessage}.
+ * <li>The variable {@code #query} is set to the payload of the
+ * {@code QueryMessage} to be handled.
+ * <li>The variable {@code #metadata} is set to the metadata of the
+ * {@code QueryMessage} to be handled.
+ * <li>The variable {@code #executable} is set to the
+ * {@link java.lang.reflect.Executable} representing the method to be invoked to
+ * generate the initial query response.
+ * </ul>
+ * 
+ * Example:
+ * 
+ * <pre>{@code
+ * @QueryHandler 
+ * @EnforceRecoverableUpdatesIfDenied(action = "'Monitor'", resource = "{ 'type':'measurement', 'id':#query.patientId(), 'monitorType':#query.type() }")
+ * Optional<VitalSignMeasurement> handle(MonitorVitalSignOfPatient query) {
+ * 	return repository.findById(query.patientId()).map(v -> v.lastKnownMeasurements().get(query.type()));
+ * }
+ * }</pre>
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
  */
 @Inherited
 @Documented
