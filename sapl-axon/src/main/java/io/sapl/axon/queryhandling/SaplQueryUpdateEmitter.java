@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
 
-import org.axonframework.axonserver.connector.query.subscription.GrpcBackedSubscriptionQueryMessage;
 import org.axonframework.common.Registration;
 import org.axonframework.messaging.GenericMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
@@ -103,7 +102,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 			return new QueryData<U>(newMode, enforcementConfigurationSink, updateSink);
 		}
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -241,13 +240,6 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 					new GenericMessage<>(query.getIdentifier(), query.getPayload(), query.getMetaData()),
 					query.getQueryName(), query.getResponseType(), originalUpdateResponseType);
 
-		if (query instanceof GrpcBackedSubscriptionQueryMessage) {
-			log.error(
-					"ATTENTION: Due to a bug in Axon Framework, the update response type of the query was overwritten");
-			log.error("           with the initial response type. If these types were different, queries may break.");
-			log.error("           See: https://github.com/AxonFramework/AxonFramework/issues/2331");
-		}
-
 		return query;
 	}
 
@@ -307,7 +299,8 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	@SuppressWarnings("unchecked")
 	private <U> void doEmit(Predicate<SubscriptionQueryMessage<?, ?, U>> filter,
 			SubscriptionQueryUpdateMessage<U> update) {
-		activeQueries.keySet().stream().filter(sqm -> filter.test((SubscriptionQueryMessage<?, ?, U>) sqm))
+		activeQueries.keySet().stream().filter(sqm -> sqm.getUpdateResponseType().matches(update.getPayloadType()))
+				.filter(sqm -> filter.test((SubscriptionQueryMessage<?, ?, U>) sqm))
 				.forEach(query -> Optional.ofNullable(activeQueries.get(query))
 						.ifPresent(uh -> doEmit(query, uh.getUpdateSink(), update)));
 	}
