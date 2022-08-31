@@ -22,36 +22,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+
 /**
- * The {@code @PreHandleEnforce} annotation establishes a policy enforcement
- * point (PEP) for Handlers of standard or subscription queries.
+ * The {@code @PostHandleEnforce} annotation establishes a policy enforcement
+ * point (PEP) for Handlers of standard (non-subscription) queries.
  * 
- * This annotation can be combined with {@code @PostHandleEnforce} for 
- * non-subscription queries. 
+ * This annotation can be combined with {@code @PreHandleEnforce} for
+ * non-subscription queries.
  * 
- * If the {@code @QueryHandler} is invoked using a non-subscription query, the
- * PDP is asked for one decision which is then enforced.
+ * If the {@code @QueryHandler} is invoked the query handler is first executed,
+ * and then the PDP is asked for one decision which is then enforced.
  * 
- * In case of a subscription query, the policy enforcement strategy implemented
- * by this PEP is to wait for the PDP's first decision.
- * 
- * If the initial decision is PERMIT, then send the initial response and
- * subscribe to the query updates.
- * 
- * If the initial decision is DENY, deny access to the initial response and the
- * subscription is cancelled.
- * 
- * If the new decision is a PERMIT, updates continue to be propagated to the
- * client.
- * 
- * On each decision, constraints will be respected and updated.
- * 
- * If a following decision is DENY, access to updates is denied and the 
- * subscription is cancelled.
- * 
- * If a decision contains a resource, the PEP assumes that this is a final
- * update message to be sent. It is sent and the query subscription is
- * terminated.
+ * The advantage over {@code @PreHandleEnforce} is, that the query result can
+ * also be used to formulate the authorization subscription.
  * 
  * The parameters of the annotation can be used to customize the
  * {@code AuthorizationSubscription} sent to the PDP. If a field is left empty,
@@ -74,17 +57,21 @@ import java.lang.annotation.Target;
  * {@code QueryMessage} to be handled.
  * <li>The variable {@code #executable} is set to the
  * {@link java.lang.reflect.Executable} representing the method to be invoked to
- * generate the initial query response.
+ * <li>The variable {@code #queryResult} is set to the value returned by the
+ * query handler.
  * </ul>
  * 
  * Example:
- * <pre>{@code 
- *	@QueryHandler
- *	@PostHandleEnforce(action = "'Fetch'", resource = "{ 'type':'patient', 'value':#queryResult }")
- *	Optional<PatientDocument> handle(FetchPatient query) {
- *		return patientsRepository.findById(query.patientId());
- *	}
- * }</pre>
+ * 
+ * <pre>
+ * {@code
+ * @QueryHandler 
+ * @PostHandleEnforce(action = "'Fetch'", resource = "{ 'type':'patient', 'value':#queryResult }")
+ * Optional<PatientDocument> handle(FetchPatient query) {
+ * 	return patientsRepository.findById(query.patientId());
+ * }
+ * }
+ * </pre>
  * 
  * @author Dominic Heutelbeck
  * @since 2.1.0
