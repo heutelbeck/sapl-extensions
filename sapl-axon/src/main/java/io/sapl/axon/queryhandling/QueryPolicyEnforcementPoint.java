@@ -44,7 +44,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember<T> {
 
-	private static final Duration SUBSCRIPTION_TIMEOUT = Duration.ofSeconds(5L);
+	private static final Duration CONNECTION_TTL = Duration.ofMillis(500L);
 
 	private static final Set<Class<?>> SAPL_AXON_ANNOTATIONS = Set.of(PreHandleEnforce.class, PostHandleEnforce.class,
 			EnforceDropUpdatesWhileDenied.class, EnforceRecoverableUpdatesIfDenied.class);
@@ -336,9 +336,9 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 		var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(message,
 				streamingAnnotation.get(), handlerExecutable, Optional.empty());
 		var decisions         = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY);
-		var tap               = DecisionStreamTapping.tapForInitialValue(decisions, SUBSCRIPTION_TIMEOUT);
-		var initialDecision   = tap.getT1();
-		var tappedDecisions   = tap.getT2();
+		var tap               = new DecisionTap(decisions, CONNECTION_TTL);
+		var initialDecision   = tap.oneDecision();
+		var tappedDecisions   = tap.decisions();
 
 		log.debug("Set authorization mode of emitter {}", streamingAnnotation.get().annotationType().getSimpleName());
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(message.getIdentifier(), tappedDecisions,

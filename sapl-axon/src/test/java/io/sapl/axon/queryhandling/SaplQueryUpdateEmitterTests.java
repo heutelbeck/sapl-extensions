@@ -1,5 +1,12 @@
 package io.sapl.axon.queryhandling;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +27,6 @@ import org.axonframework.queryhandling.UpdateHandlerRegistration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;

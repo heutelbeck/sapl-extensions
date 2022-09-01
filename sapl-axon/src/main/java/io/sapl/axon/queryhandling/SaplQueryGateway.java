@@ -48,7 +48,7 @@ import reactor.util.concurrent.Queues;
  * var result = queryGateway.recoverableSubscriptionQuery(
  *                querName, queryPayload,instanceOf(String.class), 
  *                instanceOf(String.class), accessDeniedHandler);
- * result.initialResult().log().subscribe();
+ * result.initialResult().subscribe();
  * result.updates().onErrorContinue((t, o) -> { \/* do something *\/}).subscribe();
  * }</pre>
  * 

@@ -4,6 +4,7 @@ import java.util.function.Predicate;
 
 import org.axonframework.messaging.GenericResultMessage;
 import org.axonframework.messaging.ResultMessage;
+
 import io.sapl.axon.queryhandling.RecoverableResponse;
 import lombok.experimental.UtilityClass;
 
