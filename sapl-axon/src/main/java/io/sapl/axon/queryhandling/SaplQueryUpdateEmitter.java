@@ -14,6 +14,8 @@ import java.util.function.Predicate;
 import org.axonframework.common.Registration;
 import org.axonframework.messaging.GenericMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
+import org.axonframework.messaging.responsetypes.MultipleInstancesResponseType;
+import org.axonframework.messaging.responsetypes.OptionalResponseType;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.unitofwork.CurrentUnitOfWork;
 import org.axonframework.messaging.unitofwork.UnitOfWork;
@@ -299,10 +301,22 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	@SuppressWarnings("unchecked")
 	private <U> void doEmit(Predicate<SubscriptionQueryMessage<?, ?, U>> filter,
 			SubscriptionQueryUpdateMessage<U> update) {
-		activeQueries.keySet().stream().filter(sqm -> sqm.getUpdateResponseType().matches(update.getPayloadType()))
+		activeQueries.keySet().stream().filter(payloadMatchesQueryResponseType(update.getPayloadType()))
 				.filter(sqm -> filter.test((SubscriptionQueryMessage<?, ?, U>) sqm))
 				.forEach(query -> Optional.ofNullable(activeQueries.get(query))
 						.ifPresent(uh -> doEmit(query, uh.getUpdateSink(), update)));
+	}
+
+	private Predicate<SubscriptionQueryMessage<?, ?, ?>> payloadMatchesQueryResponseType(Class<?> payloadType) {
+		return sqm -> {
+			if (sqm.getUpdateResponseType() instanceof MultipleInstancesResponseType) {
+				return payloadType.isArray() || Iterable.class.isAssignableFrom(payloadType);
+			}
+			if (sqm.getUpdateResponseType() instanceof OptionalResponseType) {
+				return Optional.class.isAssignableFrom(payloadType);
+			}
+			return sqm.getUpdateResponseType().getExpectedResponseType().isAssignableFrom(payloadType);
+		};
 	}
 
 	@SuppressWarnings("unchecked")

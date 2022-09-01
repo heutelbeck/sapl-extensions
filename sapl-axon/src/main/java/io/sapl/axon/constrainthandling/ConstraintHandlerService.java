@@ -62,15 +62,15 @@ import lombok.extern.slf4j.Slf4j;
 public class ConstraintHandlerService {
 	private final static SpelExpressionParser PARSER = new SpelExpressionParser();
 
-	private final ObjectMapper                                   mapper;
-	private final ParameterResolverFactory                       parameterResolverFactory;
-	private final List<OnDecisionConstraintHandlerProvider>      globalRunnableProviders;
-	private final List<CommandConstraintHandlerProvider>         globalCommandMessageMappingProviders;
-	private final List<QueryConstraintHandlerProvider>           globalQueryMessageMappingProviders;
-	private final List<ErrorMappingConstraintHandlerProvider>    globalErrorMappingHandlerProviders;
-	private final List<MappingConstraintHandlerProvider<?>>      globalMappingProviders;
-	private final List<UpdateFilterConstraintHandlerProvider<?>> updatePredicateProviders;
-	private final List<ResultConstraintHandlerProvider<?>>       updateMappingProviders;
+	private final ObjectMapper                                mapper;
+	private final ParameterResolverFactory                    parameterResolverFactory;
+	private final List<OnDecisionConstraintHandlerProvider>   globalRunnableProviders;
+	private final List<CommandConstraintHandlerProvider>      globalCommandMessageMappingProviders;
+	private final List<QueryConstraintHandlerProvider>        globalQueryMessageMappingProviders;
+	private final List<ErrorMappingConstraintHandlerProvider> globalErrorMappingHandlerProviders;
+	private final List<MappingConstraintHandlerProvider<?>>   globalMappingProviders;
+	private final List<UpdateFilterConstraintHandlerProvider> updatePredicateProviders;
+	private final List<ResultConstraintHandlerProvider>       updateMappingProviders;
 
 	/**
 	 * Instantiate the ConstraintHandlerService.
@@ -100,8 +100,8 @@ public class ConstraintHandlerService {
 			List<QueryConstraintHandlerProvider> globalQueryProviders,
 			List<ErrorMappingConstraintHandlerProvider> globalErrorHandlerProviders,
 			List<MappingConstraintHandlerProvider<?>> globalMappingProviders,
-			List<UpdateFilterConstraintHandlerProvider<?>> globalUpdatePredicateProviders,
-			List<ResultConstraintHandlerProvider<?>> updateMappingProviders) {
+			List<UpdateFilterConstraintHandlerProvider> globalUpdatePredicateProviders,
+			List<ResultConstraintHandlerProvider> updateMappingProviders) {
 
 		this.mapper                   = mapper;
 		this.parameterResolverFactory = parameterResolverFactory;
@@ -276,8 +276,7 @@ public class ConstraintHandlerService {
 			var handlers = new ArrayList<Function<Object, Object>>(constraintsArray.size());
 			for (var constraint : constraintsArray) {
 				for (var provider : updateMappingProviders) {
-					if (provider.getSupportedType().isAssignableFrom(responseType.getExpectedResponseType())
-							&& provider.isResponsible(constraint)) {
+					if (provider.supports(responseType) && provider.isResponsible(constraint)) {
 						onHandlerFound.accept(constraint);
 						handlers.add(provider.getHandler(constraint));
 					}
@@ -304,8 +303,7 @@ public class ConstraintHandlerService {
 			var handlers = new ArrayList<Predicate<T>>(constraintsArray.size());
 			for (var constraint : constraintsArray) {
 				for (var provider : updatePredicateProviders) {
-					if (responseType.getExpectedResponseType().isAssignableFrom(provider.getSupportedType())
-							&& provider.isResponsible(constraint)) {
+					if (provider.supports(responseType) && provider.isResponsible(constraint)) {
 						onHandlerFound.accept(constraint);
 						handlers.add((Predicate<T>) provider.getHandler(constraint));
 					}

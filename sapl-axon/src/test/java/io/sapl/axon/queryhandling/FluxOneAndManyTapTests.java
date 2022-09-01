@@ -206,4 +206,16 @@ public class FluxOneAndManyTapTests {
 		verify(doFinally, times(2)).accept(any());
 	}
 
+	@Test
+	void when_delayedManySubscription_then_onlyOneIsBufferedAndReplayed() throws InterruptedException {
+		var ttl    = 2000L;
+		var source = Flux.just(1, 2, 3, 4, 5, 6, 8, 9)
+				.concatWith(Flux.just(100, 101, 102).delayElements(Duration.ofMillis(500L)));
+		var tap    = new FluxOneAndManyTap<Integer>(source, Duration.ofMillis(ttl));
+
+		tap.one().block();
+		Thread.sleep(200L);
+		StepVerifier.create(tap.many()).expectNext(9, 100, 101, 102).verifyComplete();
+	}
+
 }

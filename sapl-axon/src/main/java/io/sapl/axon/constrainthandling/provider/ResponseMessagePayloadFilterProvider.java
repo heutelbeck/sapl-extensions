@@ -1,6 +1,14 @@
 package io.sapl.axon.constrainthandling.provider;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.axonframework.messaging.responsetypes.ResponseType;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,10 +32,12 @@ import lombok.RequiredArgsConstructor;
  * @since 2.1.0
  */
 @RequiredArgsConstructor
-public class ResponseMessagePayloadFilterProvider implements ResultConstraintHandlerProvider<Object> {
+public class ResponseMessagePayloadFilterProvider implements ResultConstraintHandlerProvider {
 
-	private static final String CONSTRAINT_TYPE = "filterMessagePayloadContent";
-	private static final String TYPE            = "type";
+	private static final String               CONSTRAINT_TYPE = "filterMessagePayloadContent";
+	private static final String               TYPE            = "type";
+	private static final Set<ResponseType<?>> SUPPORTED_TYPES = Set.of(ResponseTypes.instanceOf(Object.class),
+			ResponseTypes.optionalInstanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
 
 	private final ObjectMapper objectMapper;
 
@@ -51,8 +61,8 @@ public class ResponseMessagePayloadFilterProvider implements ResultConstraintHan
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Class<Object> getSupportedType() {
-		return Object.class;
+	public Set<ResponseType<?>> getSupportedResponseTypes() {
+		return SUPPORTED_TYPES;
 	}
 
 	/**
@@ -60,6 +70,19 @@ public class ResponseMessagePayloadFilterProvider implements ResultConstraintHan
 	 */
 	@Override
 	public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
+		if (payload instanceof Optional)
+			return ((Optional<?>) payload).map(x -> mapPayload(x, clazz, constraint));
+		if(payload instanceof Collection)
+			return mapCollectionContents((Collection<?>) payload, constraint);
+		return mapElement(payload, constraint);
+	}
+
+	private Object mapElement(Object payload, JsonNode constraint) {
 		return ContentFilterUtil.getHandler(constraint, objectMapper).apply(payload);
 	}
+
+	private List<?> mapCollectionContents(Collection<?> payload, JsonNode constraint) {
+		return payload.stream().map(o -> mapElement(o,constraint)).collect(Collectors.toList());
+	}
+
 }

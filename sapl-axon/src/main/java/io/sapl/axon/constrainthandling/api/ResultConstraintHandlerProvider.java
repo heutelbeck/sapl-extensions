@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
-import io.sapl.spring.constraints.api.TypeSupport;
 
 /**
  * 
@@ -47,9 +46,8 @@ import io.sapl.spring.constraints.api.TypeSupport;
  * @author Dominic Heutelbeck
  * @since 2.1.0
  *
- * @param <T> The payload type.
  */
-public interface ResultConstraintHandlerProvider<T> extends Responsible, HasPriority, TypeSupport<T> {
+public interface ResultConstraintHandlerProvider extends Responsible, HasPriority, ResponseTypeSupport {
 
 	/**
 	 * @param constraint The constraint required by the authorization decision.

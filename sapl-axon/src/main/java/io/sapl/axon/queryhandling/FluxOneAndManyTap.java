@@ -12,25 +12,27 @@ import reactor.core.publisher.SignalType;
 import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.Many;
 import reactor.core.publisher.Sinks.One;
+import reactor.util.concurrent.Queues;
 
 /**
- * This class wraps a source {@code Flux<T>} and provides two reactive accessors to the
- * Flux.
+ * This class wraps a source {@code Flux<T>} and provides two reactive accessors
+ * to the Flux.
  * 
- * The first accessor is a {@code Mono<T>} and the second accessor is a {@code Flux<T>}.
+ * The first accessor is a {@code Mono<T>} and the second accessor is a
+ * {@code Flux<T>}.
  * 
  * The purpose is to avoid the creation of two independent subscriptions to the
  * source when these are subscribed to in a short period of time.
  * 
- * The primary use-case is the sharing of a {@code Flux<AuthorizationDecision>} between
- * the PEP in the {@code @QueryHandler} producing the initial result and the PEP
- * in the UpdateEmitter.
+ * The primary use-case is the sharing of a {@code Flux<AuthorizationDecision>}
+ * between the PEP in the {@code @QueryHandler} producing the initial result and
+ * the PEP in the UpdateEmitter.
  * 
  * Axon does not enforce that the initial result and the updates are subscribed
  * both or in a specific sequence.
  * 
- * The FluxOneAndManyTap keeps the connection to the source {@code Flux} alive and
- * caches the last event of the source for the provided TTL.
+ * The FluxOneAndManyTap keeps the connection to the source {@code Flux} alive
+ * and caches the last event of the source for the provided TTL.
  * 
  * If one of the accessors is subscribed to after the other within the set TTL,
  * the source is only subscribed to once, and a cached value of propagated
@@ -50,14 +52,14 @@ public class FluxOneAndManyTap<T> {
 	private final Flux<T>  source;
 	private final Duration connectionTtl;
 
-	AtomicReference<T>          cache            = new AtomicReference<>();
-	AtomicReference<Disposable> sourceDisposable = new AtomicReference<>();
-	AtomicReference<One<T>>     oneSink          = new AtomicReference<>();
-	AtomicReference<Many<T>>    manySink         = new AtomicReference<>();
-	boolean                     oneCalled        = false;
-	AtomicBoolean               oneSubscribed    = new AtomicBoolean(false);
-	boolean                     manyCalled       = false;
-	AtomicBoolean               manySubscribed   = new AtomicBoolean(false);
+	private AtomicReference<T>          cache            = new AtomicReference<>();
+	private AtomicReference<Disposable> sourceDisposable = new AtomicReference<>();
+	private AtomicReference<One<T>>     oneSink          = new AtomicReference<>();
+	private AtomicReference<Many<T>>    manySink         = new AtomicReference<>();
+	private boolean                     oneCalled        = false;
+	private AtomicBoolean               oneSubscribed    = new AtomicBoolean(false);
+	private boolean                     manyCalled       = false;
+	private AtomicBoolean               manySubscribed   = new AtomicBoolean(false);
 
 	/**
 	 * Create a FluxOneAndManyTap
@@ -89,7 +91,7 @@ public class FluxOneAndManyTap<T> {
 				throw new IllegalStateException("the one Mono may only be subscribed to once!");
 			}
 			/*
-			 * Check of there has been a cached value in the meantime.
+			 * Check if there has been a cached value in the meantime.
 			 */
 			var cachedDecision = cache.get();
 			if (cachedDecision != null) {
@@ -115,7 +117,7 @@ public class FluxOneAndManyTap<T> {
 	private void scheduleConnectionAndCacheTimeoutForOneDecision() {
 		/*
 		 * if the Flux has not been subscribed to yet, keep the connection alive and
-		 * cache valid for the given ttl
+		 * cache valid for the given TTL
 		 */
 		Mono.just(0).delayElement(connectionTtl).doOnNext(__ -> {
 			if (manySink.get() == null)
@@ -136,11 +138,11 @@ public class FluxOneAndManyTap<T> {
 		 * Unicast ensured, that this can only be subscribed to once. No additional
 		 * check necessary
 		 */
-		Many<T> sink = Sinks.many().unicast().onBackpressureBuffer();
+		Many<T> sink = Sinks.many().unicast().onBackpressureBuffer(Queues.<T>one().get());
 
 		return sink.asFlux().doOnSubscribe(sub -> {
 			/*
-			 * Check of there has been a cached value.
+			 * Check if there has been a cached value.
 			 */
 			var cachedDecision = cache.get();
 			if (cachedDecision != null) {
@@ -164,7 +166,7 @@ public class FluxOneAndManyTap<T> {
 	private void scheduleConnectionAndCacheTimeoutForManyDecisions() {
 		/*
 		 * if the Mono has not been subscribed to yet, keep the connection alive and
-		 * cache valid for the given ttl
+		 * cache valid for the given TTL
 		 */
 		Mono.just(0).delayElement(connectionTtl).doOnNext(__ -> {
 			if (oneSink.get() == null)
@@ -231,8 +233,7 @@ public class FluxOneAndManyTap<T> {
 			if (d != null)
 				return d;
 
-			var newDisposable = subscribeToSource();
-			return newDisposable;
+			return subscribeToSource();
 		});
 	}
 

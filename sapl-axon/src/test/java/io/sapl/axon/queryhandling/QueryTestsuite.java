@@ -19,12 +19,16 @@ import static org.mockito.Mockito.when;
 import static reactor.test.StepVerifier.create;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.ResultMessage;
+import org.axonframework.messaging.responsetypes.ResponseType;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryHandler;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.hamcrest.Matcher;
@@ -40,7 +44,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 import io.sapl.api.pdp.AuthorizationDecision;
@@ -55,15 +62,21 @@ import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.QueryConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.UpdateFilterConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.provider.ResponseMessagePayloadFilterProvider;
 import io.sapl.axon.queryhandling.QueryTestsuite.TestScenarioConfiguration;
 import io.sapl.spring.constraints.api.ErrorMappingConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 @SpringBootTest
 @Import(TestScenarioConfiguration.class)
 public abstract class QueryTestsuite {
+	private static final String LIST_RESPONSE_QUERY              = "ListResponseQuery";
 	private static final String ONLY_EVEN_NUMBERS                = "only even numbers in string";
 	private static final String ANONYMOUS                        = "anonymous";
 	private static final String BAD_ANNOTATIONS1                 = "BadAnnotations1";
@@ -96,6 +109,9 @@ public abstract class QueryTestsuite {
 	PolicyDecisionPoint pdp;
 
 	@Autowired
+	ObjectMapper mapper;
+
+	@Autowired
 	SaplQueryGateway queryGateway;
 
 	@Autowired
@@ -118,6 +134,9 @@ public abstract class QueryTestsuite {
 
 	@SpyBean
 	ResultMessageMappingProvider resultMessageMappingProvider;
+
+	@Autowired
+	ResponseMessagePayloadFilterProvider responseMessagePayloadFilterProvider;
 
 	@Test
 	void when_unsecuredQuery_then_resultReturnsAndPdpNotCalled() {
@@ -814,6 +833,54 @@ public abstract class QueryTestsuite {
 		result.close();
 	}
 
+	@Test
+	void when_constraintWantsCollectionFilter_then_CollectionsAreFiltered()
+			throws JsonMappingException, JsonProcessingException {
+
+		var emitIntervallMs = 200L;
+		var queryPayload    = "caseCX1";
+		var numberOfUpdates = 20L;
+
+		var constraints = JSON.arrayNode();
+		constraints.add(mapper.readTree("{ \"type\" : \"filterMessagePayloadContent\", \"actions\": [" + "{"
+				+ "  \"type\" : \"blacken\"," + "  \"path\" : \"$.name\"," + "  \"discloseLeft\": 2" + "}," + "{"
+				+ "  \"type\" : \"delete\"," + "  \"path\" : \"$.age\"" + "}" + "] }"));
+
+		var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints));
+
+		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
+
+		// Normal Query
+
+		var result = Mono.fromFuture(
+				queryGateway.query(LIST_RESPONSE_QUERY, QUERY, ResponseTypes.multipleInstancesOf(DataPoint.class)));
+		StepVerifier.create(result)
+				.expectNext(List.of(new DataPoint("Ad\u2588", null), new DataPoint("Al\u2588\u2588", null),
+						new DataPoint("Al\u2588\u2588\u2588", null), new DataPoint("Bo\u2588", null)))
+				.verifyComplete();
+
+		// Subscription Query
+
+		var subscriptionResult = queryGateway.subscriptionQuery(LIST_RESPONSE_QUERY, queryPayload,
+				ResponseTypes.multipleInstancesOf(DataPoint.class), ResponseTypes.multipleInstancesOf(DataPoint.class));
+
+		StepVerifier.create(subscriptionResult.initialResult())
+				.expectNext(List.of(new DataPoint("Ad\u2588", null), new DataPoint("Al\u2588\u2588", null),
+						new DataPoint("Al\u2588\u2588\u2588", null), new DataPoint("Bo\u2588", null)))
+				.verifyComplete();
+
+		Flux.interval(Duration.ofMillis(emitIntervallMs))
+				.doOnNext(i -> emitter.emit(query -> query.getPayload().toString().equals(queryPayload),
+						List.of(new DataPoint("Gerald", 22), new DataPoint("Tina", 5))))
+				.take(Duration.ofMillis(emitIntervallMs * numberOfUpdates + emitIntervallMs / 2L)).subscribe();
+
+		StepVerifier.create(subscriptionResult.updates().take(2).timeout(Duration.ofSeconds(4000L))).expectNext(
+				List.of(new DataPoint("Ge\u2588\u2588\u2588\u2588", null), new DataPoint("Ti\u2588\u2588", null)),
+				List.of(new DataPoint("Ge\u2588\u2588\u2588\u2588", null), new DataPoint("Ti\u2588\u2588", null)))
+				.verifyComplete();
+
+	}
+
 	// @formatter:off
 	static class Projection {
 		
@@ -871,10 +938,24 @@ public abstract class QueryTestsuite {
 		@PostHandleEnforce(action="'"+FAILING_POST_QUERY+"'", resource=RESOURCE_EXPR)
 		public String handlePostEnforceFail(String query) { throw new RuntimeException("PANIC"); }
 
+		@QueryHandler(queryName = LIST_RESPONSE_QUERY)
+		@PreHandleEnforce(action="'"+LIST_RESPONSE_QUERY+"'", resource=RESOURCE_EXPR)
+		public List<DataPoint> handleListResponse(String query) { 
+			return List.of(new DataPoint("Ada", 11), new DataPoint("Alan", 45), new DataPoint("Alice", 23), new DataPoint("Bob",8));
+		}
+
 	}
 	// @formatter:on
 
-	static class ResultFilterProvider implements UpdateFilterConstraintHandlerProvider<String> {
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class DataPoint {
+		String  name;
+		Integer age;
+	};
+
+	static class ResultFilterProvider implements UpdateFilterConstraintHandlerProvider {
 
 		@Override
 		public boolean isResponsible(JsonNode constraint) {
@@ -882,20 +963,21 @@ public abstract class QueryTestsuite {
 		}
 
 		@Override
-		public Class<String> getSupportedType() {
-			return String.class;
+		public Set<ResponseType<?>> getSupportedResponseTypes() {
+			return Set.of(ResponseTypes.instanceOf(String.class));
 		}
 
 		@Override
-		public Predicate<ResultMessage<String>> getHandler(JsonNode constraint) {
+		public Predicate<ResultMessage<?>> getHandler(JsonNode constraint) {
 			return update -> {
-				String[] split = update.getPayload().split("-");
+				String[] split = ((String) update.getPayload()).split("-");
 				return Integer.valueOf(split[1]) % 2 == 0;
 			};
 		}
+
 	}
 
-	static class ResultMessageMappingProvider implements ResultConstraintHandlerProvider<String> {
+	static class ResultMessageMappingProvider implements ResultConstraintHandlerProvider {
 
 		@Override
 		public boolean isResponsible(JsonNode constraint) {
@@ -903,8 +985,8 @@ public abstract class QueryTestsuite {
 		}
 
 		@Override
-		public Class<String> getSupportedType() {
-			return String.class;
+		public Set<ResponseType<?>> getSupportedResponseTypes() {
+			return Set.of(ResponseTypes.instanceOf(String.class));
 		}
 
 		@Override
@@ -1021,6 +1103,28 @@ public abstract class QueryTestsuite {
 		@Bean
 		Projection projection() {
 			return new Projection();
+		}
+
+		@Bean
+		ResponseMessagePayloadFilterProvider responseMessagePayloadFilterProvider(ObjectMapper mapper) {
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			System.out.println("******************");
+			return new ResponseMessagePayloadFilterProvider(mapper);
 		}
 
 		@Bean

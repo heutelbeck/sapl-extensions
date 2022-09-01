@@ -162,8 +162,8 @@ public class SaplAutoConfiguration {
 			List<QueryConstraintHandlerProvider> globalQueryMappingProviders,
 			List<ErrorMappingConstraintHandlerProvider> globalErrorMappingHandlerProviders,
 			List<MappingConstraintHandlerProvider<?>> globalMappingProviders,
-			List<UpdateFilterConstraintHandlerProvider<?>> filterPredicateProviders,
-			List<ResultConstraintHandlerProvider<?>> resulteMappingProviders) {
+			List<UpdateFilterConstraintHandlerProvider> filterPredicateProviders,
+			List<ResultConstraintHandlerProvider> resulteMappingProviders) {
 		log.trace("Deploy ConstraintHandlerService");
 		return new ConstraintHandlerService(mapper, parameterResolver, globalRunnableProviders,
 				globalCommandMessageMappingProviders, globalQueryMappingProviders, globalErrorMappingHandlerProviders,

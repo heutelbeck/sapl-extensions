@@ -22,7 +22,6 @@ import org.axonframework.messaging.ResultMessage;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import io.sapl.spring.constraints.api.Responsible;
-import io.sapl.spring.constraints.api.TypeSupport;
 
 /**
  * Base interface to for implementing constraint handlers that allow for the
@@ -35,9 +34,8 @@ import io.sapl.spring.constraints.api.TypeSupport;
  * 
  * @author Dominic Heutelbeck
  * @since 2.1.0
- * @param <T> Payload type.
  */
-public interface UpdateFilterConstraintHandlerProvider<T> extends Responsible, TypeSupport<T> {
+public interface UpdateFilterConstraintHandlerProvider extends Responsible, ResponseTypeSupport {
 
 	/**
 	 * Create the predicate for the given constraint.
@@ -45,6 +43,6 @@ public interface UpdateFilterConstraintHandlerProvider<T> extends Responsible, T
 	 * @param constraint The constraint.
 	 * @return A filter predicate.
 	 */
-	Predicate<ResultMessage<T>> getHandler(JsonNode constraint);
+	Predicate<ResultMessage<?>> getHandler(JsonNode constraint);
 
 }
