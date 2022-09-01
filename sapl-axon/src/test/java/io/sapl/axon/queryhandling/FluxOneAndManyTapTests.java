@@ -20,7 +20,7 @@ import reactor.core.publisher.SignalType;
 import reactor.test.StepVerifier;
 
 @SuppressWarnings("unchecked")
-public class DecisionTapTests {
+public class FluxOneAndManyTapTests {
 
 	Consumer<Subscription>      onSubscribe;
 	Consumer<SignalType>        doFinally;
@@ -38,11 +38,11 @@ public class DecisionTapTests {
 
 	@Test
 	void when_oneDecisionIsCalledTwice_then_throw() throws InterruptedException {
-		var tap = new DecisionTap(source, Duration.ofMillis(50L));
+		var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(50L));
 
 		assertThrows(IllegalStateException.class, () -> {
-			tap.oneDecision();
-			tap.oneDecision();
+			tap.one();
+			tap.one();
 		});
 		verify(onSubscribe, times(0)).accept(any());
 		verify(doFinally, times(0)).accept(any());
@@ -50,20 +50,20 @@ public class DecisionTapTests {
 
 	@Test
 	void when_oneDecisionIsSunbscribedToTwice_then_throw() throws InterruptedException {
-		var tap = new DecisionTap(source, Duration.ofMillis(50L));
+		var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(50L));
 
-		var one = tap.oneDecision();
+		var one = tap.one();
 		one.subscribe();
 		StepVerifier.create(one).expectError(IllegalStateException.class).verify();
 	}
 
 	@Test
 	void when_decisionsIsCalledTwice_then_throw() throws InterruptedException {
-		var tap = new DecisionTap(source, Duration.ofMillis(50L));
+		var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(50L));
 
 		assertThrows(IllegalStateException.class, () -> {
-			tap.decisions();
-			tap.decisions();
+			tap.many();
+			tap.many();
 		});
 		verify(onSubscribe, times(0)).accept(any());
 		verify(doFinally, times(0)).accept(any());
@@ -71,9 +71,9 @@ public class DecisionTapTests {
 
 	@Test
 	void when_manyDecisionIsSunbscribedToTwice_then_throw() throws InterruptedException {
-		var tap = new DecisionTap(source, Duration.ofMillis(50L));
+		var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(50L));
 
-		var many = tap.decisions();
+		var many = tap.many();
 		many.take(1).blockLast();
 		StepVerifier.create(many).expectError(IllegalStateException.class).verify();
 	}
@@ -81,11 +81,11 @@ public class DecisionTapTests {
 	@Test
 	void when_oneThenManyNoDelay_then_AllEventsAreConsumed() throws InterruptedException {
 		var ttl = 200L;
-		var tap = new DecisionTap(source, Duration.ofMillis(ttl));
+		var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
 
-		StepVerifier.create(tap.oneDecision().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
+		StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
 				.verifyComplete();
-		StepVerifier.create(tap.decisions().map(AuthorizationDecision::getDecision))
+		StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
 				.expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
 				.verifyComplete();
 
@@ -98,12 +98,12 @@ public class DecisionTapTests {
 	@Test
 	void when_oneThenManyDelayButNotTillAfterNextUpdate_then_AllEventsAreConsumed() throws InterruptedException {
 		var ttl = 500L;
-		var tap = new DecisionTap(source, Duration.ofMillis(ttl));
+		var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
 
-		StepVerifier.create(tap.oneDecision().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
+		StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
 				.verifyComplete();
 		Thread.sleep(200L); // shorter than event delay and ttl
-		StepVerifier.create(tap.decisions().map(AuthorizationDecision::getDecision))
+		StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
 				.expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
 				.verifyComplete();
 
@@ -117,12 +117,12 @@ public class DecisionTapTests {
 	void when_oneThenManyDelayLongerThanUpdateDelayButShorterThanTTL_then_decisionsDoesGet2ndEventFirst()
 			throws InterruptedException {
 		var ttl = 1500L;
-		var tap = new DecisionTap(source, Duration.ofMillis(ttl));
+		var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
 
-		StepVerifier.create(tap.oneDecision().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
+		StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
 				.verifyComplete();
 		Thread.sleep(750); // longer than event delay shorter than ttl
-		StepVerifier.create(tap.decisions().map(AuthorizationDecision::getDecision))
+		StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
 				.expectNext(Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY).verifyComplete();
 
 		Thread.sleep(ttl + 200L); // Wait for the cache to time out
@@ -135,12 +135,12 @@ public class DecisionTapTests {
 	void when_oneThenManyDelayLongerThanUpdateDelayAndTTL_then_decisionsGetAllEventsAsItIsANewSubscription_and_PDPisSubscribedToTwice()
 			throws InterruptedException {
 		var ttl = 750L;
-		var tap = new DecisionTap(source, Duration.ofMillis(ttl));
+		var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
 
-		StepVerifier.create(tap.oneDecision().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
+		StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
 				.verifyComplete();
 		Thread.sleep(1000L); // longer than event delay shorter than ttl
-		StepVerifier.create(tap.decisions().map(AuthorizationDecision::getDecision))
+		StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
 				.expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
 				.verifyComplete();
 
@@ -153,12 +153,12 @@ public class DecisionTapTests {
 	@Test
 	void when_manyThenOneNoDelay_then_AllEventsAreConsumedOneGetsFinalOne() throws InterruptedException {
 		var ttl = 200L;
-		var tap = new DecisionTap(source, Duration.ofMillis(ttl));
+		var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
 
-		StepVerifier.create(tap.decisions().map(AuthorizationDecision::getDecision))
+		StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
 				.expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
 				.verifyComplete();
-		StepVerifier.create(tap.oneDecision().map(AuthorizationDecision::getDecision)).expectNext(Decision.DENY)
+		StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.DENY)
 				.verifyComplete();
 
 		Thread.sleep(ttl + 200L); // Wait for the cache to time out
@@ -170,14 +170,14 @@ public class DecisionTapTests {
 	@Test
 	void when_manyThenOneDelayButShorterThanTTL_then_AllEventsAreConsumedOneGetsFinalOne() throws InterruptedException {
 		var ttl = 500L;
-		var tap = new DecisionTap(source, Duration.ofMillis(ttl));
+		var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
 
-		StepVerifier.create(tap.decisions().map(AuthorizationDecision::getDecision))
+		StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
 				.expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
 				.verifyComplete();
 		Thread.sleep(200L); // shorter than event delay and ttl
 
-		StepVerifier.create(tap.oneDecision().map(AuthorizationDecision::getDecision)).expectNext(Decision.DENY)
+		StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.DENY)
 				.verifyComplete();
 
 		Thread.sleep(ttl + 200L); // Wait for the cache to time out
@@ -190,14 +190,14 @@ public class DecisionTapTests {
 	void when_manyThenOneDelayButLongerThanTTL_then_AllEventsAreConsumedOneGetsFirstOneAgainAsItIsNewSubscription()
 			throws InterruptedException {
 		var ttl = 500L;
-		var tap = new DecisionTap(source, Duration.ofMillis(ttl));
+		var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
 
-		StepVerifier.create(tap.decisions().map(AuthorizationDecision::getDecision))
+		StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
 				.expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
 				.verifyComplete();
 		Thread.sleep(750L); // longer than ttl
 
-		StepVerifier.create(tap.oneDecision().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
+		StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
 				.verifyComplete();
 
 		Thread.sleep(ttl + 200L); // Wait for the cache to time out

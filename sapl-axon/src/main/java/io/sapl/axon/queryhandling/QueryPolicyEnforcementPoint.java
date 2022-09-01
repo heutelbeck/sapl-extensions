@@ -336,9 +336,9 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 		var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(message,
 				streamingAnnotation.get(), handlerExecutable, Optional.empty());
 		var decisions         = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY);
-		var tap               = new DecisionTap(decisions, CONNECTION_TTL);
-		var initialDecision   = tap.oneDecision();
-		var tappedDecisions   = tap.decisions();
+		var tap               = new FluxOneAndManyTap<AuthorizationDecision>(decisions, CONNECTION_TTL);
+		var initialDecision   = tap.one();
+		var tappedDecisions   = tap.many();
 
 		log.debug("Set authorization mode of emitter {}", streamingAnnotation.get().annotationType().getSimpleName());
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(message.getIdentifier(), tappedDecisions,

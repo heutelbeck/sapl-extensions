@@ -5,7 +5,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import io.sapl.api.pdp.AuthorizationDecision;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,39 +13,80 @@ import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.Many;
 import reactor.core.publisher.Sinks.One;
 
-public class DecisionTap {
+/**
+ * This class wraps a source {@code Flux<T>} and provides two reactive accessors to the
+ * Flux.
+ * 
+ * The first accessor is a {@code Mono<T>} and the second accessor is a {@code Flux<T>}.
+ * 
+ * The purpose is to avoid the creation of two independent subscriptions to the
+ * source when these are subscribed to in a short period of time.
+ * 
+ * The primary use-case is the sharing of a {@code Flux<AuthorizationDecision>} between
+ * the PEP in the {@code @QueryHandler} producing the initial result and the PEP
+ * in the UpdateEmitter.
+ * 
+ * Axon does not enforce that the initial result and the updates are subscribed
+ * both or in a specific sequence.
+ * 
+ * The FluxOneAndManyTap keeps the connection to the source {@code Flux} alive and
+ * caches the last event of the source for the provided TTL.
+ * 
+ * If one of the accessors is subscribed to after the other within the set TTL,
+ * the source is only subscribed to once, and a cached value of propagated
+ * first, if available.
+ * 
+ * IF the second subscription does occurs later than the TTL after the end of
+ * the first accessor subscription, the connection is dropped after TTL and the
+ * source is newly subscribed to.
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
+ * 
+ * @param <T> The type of the Flux payload.
+ */
+public class FluxOneAndManyTap<T> {
 
-	private final Flux<AuthorizationDecision> source;
-	private final Duration                    connectionTtl;
-	boolean                                   oneDecisionCalled = false;
-	boolean                                   decisionsCalled   = false;
+	private final Flux<T>  source;
+	private final Duration connectionTtl;
 
-	AtomicReference<AuthorizationDecision>       cache                 = new AtomicReference<>();
-	AtomicReference<Disposable>                  sourceDisposable      = new AtomicReference<>();
-	AtomicReference<One<AuthorizationDecision>>  oneDecisionSink       = new AtomicReference<>();
-	AtomicReference<Many<AuthorizationDecision>> manyDecisionsSink     = new AtomicReference<>();
-	AtomicBoolean                                oneDecisionSubscribed = new AtomicBoolean(false);
-	AtomicBoolean                                decisionsSubscribed   = new AtomicBoolean(false);
+	AtomicReference<T>          cache            = new AtomicReference<>();
+	AtomicReference<Disposable> sourceDisposable = new AtomicReference<>();
+	AtomicReference<One<T>>     oneSink          = new AtomicReference<>();
+	AtomicReference<Many<T>>    manySink         = new AtomicReference<>();
+	boolean                     oneCalled        = false;
+	AtomicBoolean               oneSubscribed    = new AtomicBoolean(false);
+	boolean                     manyCalled       = false;
+	AtomicBoolean               manySubscribed   = new AtomicBoolean(false);
 
-	public DecisionTap(Flux<AuthorizationDecision> source, Duration connectionTtl) {
+	/**
+	 * Create a FluxOneAndManyTap
+	 * 
+	 * @param source        The source Flux.
+	 * @param connectionTtl Time-to-live for connection to source and cache value.
+	 */
+	public FluxOneAndManyTap(Flux<T> source, Duration connectionTtl) {
 		this.source        = source;
 		this.connectionTtl = connectionTtl;
 	}
 
-	public Mono<AuthorizationDecision> oneDecision() {
-		if (oneDecisionCalled)
-			throw new IllegalStateException("oneDecision() may only be called once!");
+	/**
+	 * @return A single value of the source.
+	 */
+	public Mono<T> one() {
+		if (oneCalled)
+			throw new IllegalStateException("one() may only be called once!");
 
-		oneDecisionCalled = true;
+		oneCalled = true;
 
-		var sink = Sinks.<AuthorizationDecision>one();
+		var sink = Sinks.<T>one();
 
 		return sink.asMono().doOnSubscribe(sub -> {
 			/*
 			 * Ensure the mono is only consumed once.
 			 */
-			if (oneDecisionSubscribed.getAndSet(true)) {
-				throw new IllegalStateException("the oneDecision Mono may only be subscribed to once!");
+			if (oneSubscribed.getAndSet(true)) {
+				throw new IllegalStateException("the one Mono may only be subscribed to once!");
 			}
 			/*
 			 * Check of there has been a cached value in the meantime.
@@ -59,13 +99,13 @@ public class DecisionTap {
 			/*
 			 * No cache so far. Publish the sink.
 			 */
-			oneDecisionSink.set(sink);
+			oneSink.set(sink);
 
 			subscribeIfNoActiveSubscriptionToSourcePresent();
 		}).doFinally(signal -> {
-			oneDecisionSink.set(null); // remove the sink as a listener for updates to the source
+			oneSink.set(null); // remove the sink as a listener for updates to the source
 
-			if (decisionsSubscribed.get())
+			if (manySubscribed.get())
 				return;
 
 			scheduleConnectionAndCacheTimeoutForOneDecision();
@@ -78,22 +118,25 @@ public class DecisionTap {
 		 * cache valid for the given ttl
 		 */
 		Mono.just(0).delayElement(connectionTtl).doOnNext(__ -> {
-			if (manyDecisionsSink.get() == null)
+			if (manySink.get() == null)
 				dropConnectionAndClearCache();
 		}).subscribe();
 	}
 
-	public Flux<AuthorizationDecision> decisions() {
-		if (decisionsCalled)
-			throw new IllegalStateException("decisions() may only be called once!");
+	/**
+	 * @return Full subscription to the source.
+	 */
+	public Flux<T> many() {
+		if (manyCalled)
+			throw new IllegalStateException("many() may only be called once!");
 
-		decisionsCalled = true;
+		manyCalled = true;
 
 		/*
 		 * Unicast ensured, that this can only be subscribed to once. No additional
 		 * check necessary
 		 */
-		Many<AuthorizationDecision> sink = Sinks.many().unicast().onBackpressureBuffer();
+		Many<T> sink = Sinks.many().unicast().onBackpressureBuffer();
 
 		return sink.asFlux().doOnSubscribe(sub -> {
 			/*
@@ -104,14 +147,14 @@ public class DecisionTap {
 				sink.tryEmitNext(cachedDecision);
 			}
 
-			manyDecisionsSink.set(sink);
+			manySink.set(sink);
 
 			subscribeIfNoActiveSubscriptionToSourcePresent();
 		}).doFinally(signal -> {
 			// remove the sink as a listener for updates to the source
-			manyDecisionsSink.set(null);
+			manySink.set(null);
 
-			if (oneDecisionSubscribed.get())
+			if (oneSubscribed.get())
 				return;
 
 			scheduleConnectionAndCacheTimeoutForManyDecisions();
@@ -124,7 +167,7 @@ public class DecisionTap {
 		 * cache valid for the given ttl
 		 */
 		Mono.just(0).delayElement(connectionTtl).doOnNext(__ -> {
-			if (oneDecisionSink.get() == null)
+			if (oneSink.get() == null)
 				dropConnectionAndClearCache();
 		}).subscribe();
 	}
@@ -143,10 +186,10 @@ public class DecisionTap {
 	}
 
 	private Disposable subscribeToSource() {
-		return source.doOnNext(decision -> cache.set(decision)).doOnNext(decision -> {
-			cache.set(decision);
-			updateOne(sink -> sink.tryEmitValue(decision));
-			updateMany(sink -> sink.tryEmitNext(decision));
+		return source.doOnNext(v -> cache.set(v)).doOnNext(v -> {
+			cache.set(v);
+			updateOne(sink -> sink.tryEmitValue(v));
+			updateMany(sink -> sink.tryEmitNext(v));
 		}).doOnError(error -> {
 			updateOne(sink -> sink.tryEmitError(error));
 			updateMany(sink -> sink.tryEmitError(error));
@@ -159,8 +202,8 @@ public class DecisionTap {
 		}).subscribe();
 	}
 
-	private void updateOne(Consumer<One<AuthorizationDecision>> update) {
-		oneDecisionSink.getAndUpdate(sink -> {
+	private void updateOne(Consumer<One<T>> update) {
+		oneSink.getAndUpdate(sink -> {
 			/*
 			 * If present the oneDecisionSink is a one-time-use object. Emit the update and
 			 * remove it.
@@ -171,8 +214,8 @@ public class DecisionTap {
 		});
 	}
 
-	private void updateMany(Consumer<Many<AuthorizationDecision>> update) {
-		manyDecisionsSink.getAndUpdate(sink -> {
+	private void updateMany(Consumer<Many<T>> update) {
+		manySink.getAndUpdate(sink -> {
 			if (sink != null)
 				update.accept(sink);
 			return sink;
