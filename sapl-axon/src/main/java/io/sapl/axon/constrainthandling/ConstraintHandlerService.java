@@ -44,6 +44,8 @@ import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.UpdateFilterConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.ErrorMappingConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -273,17 +275,34 @@ public class ConstraintHandlerService {
 	private <T> Optional<Function<Object, Object>> constructResultMesaageMappingHandlers(
 			Optional<ArrayNode> constraints, Consumer<JsonNode> onHandlerFound, ResponseType<T> responseType) {
 		return constraints.map(constraintsArray -> {
-			var handlers = new ArrayList<Function<Object, Object>>(constraintsArray.size());
+			var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<Object, Object>>>(
+					constraintsArray.size());
+
 			for (var constraint : constraintsArray) {
 				for (var provider : updateMappingProviders) {
 					if (provider.supports(responseType) && provider.isResponsible(constraint)) {
 						onHandlerFound.accept(constraint);
-						handlers.add(provider.getHandler(constraint));
+						handlersWithPriority.add(
+								new HandlerWithPriority<>(provider.getHandler(constraint), provider.getPriority()));
 					}
 				}
 			}
-			return mapAll(handlers);
+			Collections.sort(handlersWithPriority);
+
+			return mapAll(handlersWithPriority);
 		});
+	}
+
+	@Data
+	@AllArgsConstructor
+	static class HandlerWithPriority<T> implements Comparable<HandlerWithPriority<T>> {
+		T   handler;
+		int priority;
+
+		@Override
+		public int compareTo(HandlerWithPriority<T> o) {
+			return Integer.compare(o.getPriority(), getPriority());
+		}
 	}
 
 	private <T> Predicate<T> constructFilterPredicateHandlers(AuthorizationDecision decision,
@@ -369,16 +388,20 @@ public class ConstraintHandlerService {
 	private Optional<Function<Throwable, Throwable>> constructErrorMappingHandlers(Optional<ArrayNode> constraints,
 			Consumer<JsonNode> onHandlerFound) {
 		return constraints.map(constraintsArray -> {
-			var handlers = new ArrayList<Function<Throwable, Throwable>>(constraintsArray.size());
+			var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<Throwable, Throwable>>>(
+					constraintsArray.size());
+
 			for (var constraint : constraintsArray) {
 				for (var provider : globalErrorMappingHandlerProviders) {
 					if (provider.isResponsible(constraint)) {
 						onHandlerFound.accept(constraint);
-						handlers.add(provider.getHandler(constraint));
+						handlersWithPriority.add(
+								new HandlerWithPriority<>(provider.getHandler(constraint), provider.getPriority()));
 					}
 				}
 			}
-			return mapAll(handlers);
+			Collections.sort(handlersWithPriority);
+			return mapAll(handlersWithPriority);
 		});
 	}
 
@@ -409,16 +432,20 @@ public class ConstraintHandlerService {
 	private Optional<Function<CommandMessage<?>, CommandMessage<?>>> constructCommandMessageMappingHandlers(
 			Optional<ArrayNode> constraints, Consumer<JsonNode> onHandlerFound) {
 		return constraints.map(constraintsArray -> {
-			var handlers = new ArrayList<Function<CommandMessage<?>, CommandMessage<?>>>(constraintsArray.size());
+			var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<CommandMessage<?>, CommandMessage<?>>>>(
+					constraintsArray.size());
+
 			for (var constraint : constraintsArray) {
 				for (var provider : globalCommandMessageMappingProviders) {
 					if (provider.isResponsible(constraint)) {
 						onHandlerFound.accept(constraint);
-						handlers.add(provider.getHandler(constraint));
+						handlersWithPriority.add(
+								new HandlerWithPriority<>(provider.getHandler(constraint), provider.getPriority()));
 					}
 				}
 			}
-			return mapAll(handlers);
+			Collections.sort(handlersWithPriority);
+			return mapAll(handlersWithPriority);
 		});
 	}
 
@@ -449,16 +476,20 @@ public class ConstraintHandlerService {
 	private Optional<Function<QueryMessage<?, ?>, QueryMessage<?, ?>>> constructQueryMessageMappingHandlers(
 			Optional<ArrayNode> constraints, Consumer<JsonNode> onHandlerFound) {
 		return constraints.map(constraintsArray -> {
-			var handlers = new ArrayList<Function<QueryMessage<?, ?>, QueryMessage<?, ?>>>(constraintsArray.size());
+			var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<QueryMessage<?, ?>, QueryMessage<?, ?>>>>(
+					constraintsArray.size());
+
 			for (var constraint : constraintsArray) {
 				for (var provider : globalQueryMessageMappingProviders) {
 					if (provider.isResponsible(constraint)) {
 						onHandlerFound.accept(constraint);
-						handlers.add(provider.getHandler(constraint));
+						handlersWithPriority.add(
+								new HandlerWithPriority<>(provider.getHandler(constraint), provider.getPriority()));
 					}
 				}
 			}
-			return mapAll(handlers);
+			Collections.sort(handlersWithPriority);
+			return mapAll(handlersWithPriority);
 		});
 	}
 
@@ -491,17 +522,20 @@ public class ConstraintHandlerService {
 	private <T> Optional<Function<T, T>> constructResultMappingHandlers(Optional<ArrayNode> constraints,
 			Consumer<JsonNode> onHandlerFound, Class<?> responseType) {
 		return constraints.map(constraintsArray -> {
-			var handlers = new ArrayList<Function<T, T>>(constraintsArray.size());
+			var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<T, T>>>(constraintsArray.size());
+
 			for (var constraint : constraintsArray) {
 				for (var provider : globalMappingProviders) {
 					if (responseType.isAssignableFrom(provider.getSupportedType())
 							&& provider.isResponsible(constraint)) {
 						onHandlerFound.accept(constraint);
-						handlers.add((Function<T, T>) provider.getHandler(constraint));
+						handlersWithPriority.add(new HandlerWithPriority<>(
+								(Function<T, T>) provider.getHandler(constraint), provider.getPriority()));
 					}
 				}
 			}
-			return mapAll(handlers);
+			Collections.sort(handlersWithPriority);
+			return mapAll(handlersWithPriority);
 		});
 	}
 
@@ -697,8 +731,8 @@ public class ConstraintHandlerService {
 		};
 	}
 
-	private static <V> Function<V, V> mapAll(Collection<Function<V, V>> handlers) {
-		return handlers.stream().reduce(Function.identity(),
+	private static <V> Function<V, V> mapAll(Collection<HandlerWithPriority<Function<V, V>>> handlers) {
+		return handlers.stream().map(HandlerWithPriority::getHandler).reduce(Function.identity(),
 				(merged, newFunction) -> x -> newFunction.apply(merged.apply(x)));
 	}
 

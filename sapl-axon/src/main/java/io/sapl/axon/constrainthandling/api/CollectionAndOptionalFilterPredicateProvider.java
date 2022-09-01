@@ -20,13 +20,13 @@ import com.fasterxml.jackson.databind.JsonNode;
  * @author Dominic Heutelbeck
  * @since 2.1.0
  */
-public interface CollectionAndOptionalFilterPredicateProvider extends ResultConstraintHandlerProvider {
+public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultConstraintHandlerProvider {
 
 	/**
 	 * {@inheritDoc}
 	 */
 	default int getPriority() {
-		return 10; // Execute before other mapping handlers
+		return 1000; // Execute before other mapping handlers
 	}
 
 	/**
@@ -40,30 +40,32 @@ public interface CollectionAndOptionalFilterPredicateProvider extends ResultCons
 	/**
 	 * {@inheritDoc}
 	 */
+	@SuppressWarnings("unchecked")
 	default Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
 		if (payload instanceof Optional) {
-			return filterOptional((Optional<?>) payload, constraint);
+			return filterOptional((Optional<T>) payload, constraint);
 		}
-		return filterCollection((Collection<?>) payload, constraint);
+		return filterCollection((Collection<T>) payload, constraint);
 	};
 
-	private Optional<?> filterOptional(Optional<?> payload, JsonNode constraint) {
+	private Optional<T> filterOptional(Optional<T> payload, JsonNode constraint) {
 		return payload.filter(x -> test(x, constraint));
 	};
 
-	private Collection<?> filterCollection(Collection<?> payload, JsonNode constraint) {
+	private Collection<T> filterCollection(Collection<T> payload, JsonNode constraint) {
+		System.out.println("PAYLOAD: "+payload);
 		return payload.stream().filter(x -> test(x, constraint)).collect(Collectors.toList());
 	};
 
 	/**
 	 * @return The type contained in the {@code Collection} or {@code Optional}.
 	 */
-	Class<?> getContainedType();
+	Class<T> getContainedType();
 
 	/**
 	 * @param o          The object to test.
 	 * @param constraint The constraint
 	 * @return true to indicate that {@code o} should stay in the container.
 	 */
-	boolean test(Object o, JsonNode constraint);
+	boolean test(T o, JsonNode constraint);
 }

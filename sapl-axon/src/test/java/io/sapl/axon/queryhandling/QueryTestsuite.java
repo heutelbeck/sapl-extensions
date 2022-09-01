@@ -58,6 +58,7 @@ import io.sapl.axon.annotation.EnforceRecoverableUpdatesIfDenied;
 import io.sapl.axon.annotation.PostHandleEnforce;
 import io.sapl.axon.annotation.PreHandleEnforce;
 import io.sapl.axon.configuration.SaplAutoConfiguration;
+import io.sapl.axon.constrainthandling.api.CollectionAndOptionalFilterPredicateProvider;
 import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.QueryConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
@@ -76,6 +77,7 @@ import reactor.test.StepVerifier;
 @SpringBootTest
 @Import(TestScenarioConfiguration.class)
 public abstract class QueryTestsuite {
+	private static final String REMOVE_YOUNGER_THAN18            = "removeYoungerThan18";
 	private static final String LIST_RESPONSE_QUERY              = "ListResponseQuery";
 	private static final String ONLY_EVEN_NUMBERS                = "only even numbers in string";
 	private static final String ANONYMOUS                        = "anonymous";
@@ -137,6 +139,9 @@ public abstract class QueryTestsuite {
 
 	@Autowired
 	ResponseMessagePayloadFilterProvider responseMessagePayloadFilterProvider;
+
+	@SpyBean
+	FilterPredicateExampleProvider rilterPredicateExampleProvider;
 
 	@Test
 	void when_unsecuredQuery_then_resultReturnsAndPdpNotCalled() {
@@ -845,6 +850,7 @@ public abstract class QueryTestsuite {
 		constraints.add(mapper.readTree("{ \"type\" : \"filterMessagePayloadContent\", \"actions\": [" + "{"
 				+ "  \"type\" : \"blacken\"," + "  \"path\" : \"$.name\"," + "  \"discloseLeft\": 2" + "}," + "{"
 				+ "  \"type\" : \"delete\"," + "  \"path\" : \"$.age\"" + "}" + "] }"));
+		constraints.add(mapper.readTree("\"" + REMOVE_YOUNGER_THAN18 + "\""));
 
 		var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints));
 
@@ -855,8 +861,7 @@ public abstract class QueryTestsuite {
 		var result = Mono.fromFuture(
 				queryGateway.query(LIST_RESPONSE_QUERY, QUERY, ResponseTypes.multipleInstancesOf(DataPoint.class)));
 		StepVerifier.create(result)
-				.expectNext(List.of(new DataPoint("Ad\u2588", null), new DataPoint("Al\u2588\u2588", null),
-						new DataPoint("Al\u2588\u2588\u2588", null), new DataPoint("Bo\u2588", null)))
+				.expectNext(List.of(new DataPoint("Al\u2588\u2588", null), new DataPoint("Al\u2588\u2588\u2588", null)))
 				.verifyComplete();
 
 		// Subscription Query
@@ -865,8 +870,8 @@ public abstract class QueryTestsuite {
 				ResponseTypes.multipleInstancesOf(DataPoint.class), ResponseTypes.multipleInstancesOf(DataPoint.class));
 
 		StepVerifier.create(subscriptionResult.initialResult())
-				.expectNext(List.of(new DataPoint("Ad\u2588", null), new DataPoint("Al\u2588\u2588", null),
-						new DataPoint("Al\u2588\u2588\u2588", null), new DataPoint("Bo\u2588", null)))
+				.expectNext(List.of(new DataPoint("Al\u2588\u2588", null), new DataPoint("Al\u2588\u2588\u2588", null)))
+
 				.verifyComplete();
 
 		Flux.interval(Duration.ofMillis(emitIntervallMs))
@@ -874,9 +879,9 @@ public abstract class QueryTestsuite {
 						List.of(new DataPoint("Gerald", 22), new DataPoint("Tina", 5))))
 				.take(Duration.ofMillis(emitIntervallMs * numberOfUpdates + emitIntervallMs / 2L)).subscribe();
 
-		StepVerifier.create(subscriptionResult.updates().take(2).timeout(Duration.ofSeconds(4000L))).expectNext(
-				List.of(new DataPoint("Ge\u2588\u2588\u2588\u2588", null), new DataPoint("Ti\u2588\u2588", null)),
-				List.of(new DataPoint("Ge\u2588\u2588\u2588\u2588", null), new DataPoint("Ti\u2588\u2588", null)))
+		StepVerifier.create(subscriptionResult.updates().take(2).timeout(Duration.ofSeconds(4000L)))
+				.expectNext(List.of(new DataPoint("Ge\u2588\u2588\u2588\u2588", null)),
+						List.of(new DataPoint("Ge\u2588\u2588\u2588\u2588", null)))
 				.verifyComplete();
 
 	}
@@ -1068,6 +1073,26 @@ public abstract class QueryTestsuite {
 
 	}
 
+	private static class FilterPredicateExampleProvider
+			implements CollectionAndOptionalFilterPredicateProvider<DataPoint> {
+
+		@Override
+		public boolean isResponsible(JsonNode constraint) {
+			return constraint.isTextual() && REMOVE_YOUNGER_THAN18.equals(constraint.textValue());
+		}
+
+		@Override
+		public Class<DataPoint> getContainedType() {
+			return DataPoint.class;
+		}
+
+		@Override
+		public boolean test(DataPoint o, JsonNode constraint) {
+			return o.getAge() >= 18;
+		}
+
+	}
+
 	private void assertThatSubject(Matcher<JsonNode> matcher) {
 		assertThatAuthzSubscriptionProperty("subject", matcher);
 	}
@@ -1106,24 +1131,12 @@ public abstract class QueryTestsuite {
 		}
 
 		@Bean
+		FilterPredicateExampleProvider FilterPredicateExampleProvider() {
+			return new FilterPredicateExampleProvider();
+		}
+
+		@Bean
 		ResponseMessagePayloadFilterProvider responseMessagePayloadFilterProvider(ObjectMapper mapper) {
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
-			System.out.println("******************");
 			return new ResponseMessagePayloadFilterProvider(mapper);
 		}
 
