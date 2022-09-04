@@ -304,4 +304,19 @@ This handler attempts to map the payload to JSON, then applies the actions and a
 
 If encountering an ```Optional```, ```Iterable```, or ```array```, the actions are applied to the individual objects in these container classes.
 
+#### ```@ConstraintHandler``` Methods on Aggregates and Services
 
+There are use-cases, where a constraint handler requires access to the aggregate handling a command. For example, an obligation may imply the need to apply additonal events to the aggregate in the context of the running ```UnitOfWork```, or the handler may require aggregate state information. 
+
+This can be achieved by adding methods annotated with ```@ConstraintHandler``` to the aggregate. Note that this also works for domain services with command handlers. 
+
+```java
+  @ConstraintHandler("#constraint.get('type').textValue() == 'documentSuspisiousManipulation'")
+  public void handleSuspiciousManipulation(JsonNode constraint) {
+    apply(new SuspiciousManipulation(id, constraint.get("username").textValue()));
+  }
+```
+
+Similar to the constraint handler provider beans, first the PEP will have to determine if a ```@ConstraintHandler``` is responsible to handle any given constraint. To do so, the PEP inspects the object determined to have the matching ```@CommandHandler``` method. For each such method it evaluates the SpEL expression in the ```ConstraintHandler``` annotation. This method is consideren responsible when the expression is empty, or if it evaluates to ```true```. In the evaluation context of the expression, the object handling the command is the root object. The variable ```#constraint``` is set to the JSON value representing the constraint. The variable ```#command```is set to the command message.
+
+These constraint handlers are invoked immediately before invoking the command handler. The method may have optional parameters which are resolved like parameters of command and event handlers in Axon, including the constraint as a ```JsonNode```, the command payload, or the ```AuthorizationDecision```.
