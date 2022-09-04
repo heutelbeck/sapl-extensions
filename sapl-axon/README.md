@@ -270,4 +270,40 @@ Further there are the follwoing interfaces from ```io.sapl.spring.constraints.ap
 - The ```ErrorMappingConstraintHandlerProvider``` returns  a ```Function<Throwable, Throwable>``` used to modify errors before sending them downstream.
 
 
+#### Modifying Response Messages with the ```ResponseMessagePayloadFilterProvider```
+
+The Axon Extension comes with a default constraint handler provider pre-configures. The ```ResponseMessagePayloadFilterProvider``` can be used to modify the payload of ```ResponseMessage```s. The JSON constraint may specify a number of modification actions that indicate to perform an operation on a node in the JSON document identified by a JSONPath expression. A policy triggering this handler may look like this: 
+
+```
+policy "authenticated users may see filtered" 
+permit subject != "anononymous"
+obligation
+{
+  "type"    : "filterMessagePayloadContent",
+  "actions" : [
+                { 
+		  "type" : "blacken", 
+		  "path" : "$.latestIcd11Code", 
+		  "discloseLeft": 2
+		},
+		{ 
+		  "type" : "delete", 
+		  "path" : "$.latestDiagnosisText"
+		},
+		{ 
+		  "type" : "replace", 
+		  "path" : "$.name",
+		  "replacement" : "[Name Hidden]"
+		}
+              ]
+	}
+```
+
+This handler is triggered when the constraint is a JOSN Object, where  ```type``` equals ```filterMessagePayloadContent```. Then the array ```actions``` indicated a sequence of modificatiions to be made to the payload. The action ```replace``` attempts to replace the sub-section of the payload indicated by the JSONPath expression with the content of ```replacement```. The action ```delete``` sets the seclecte field to ```null```. The action ```blacken``` assumes the indicated value is a string, and the parts not excluded by ```discloseLeft``` or ```discloseRight``` are replaced with the character in ```replacement``` (defaulting to an unicode quare). 
+
+This handler attapts to map the payload to JSON, then applied the actions and attempts to map it mach to the original class. 
+
+If encountering an ```Optional```, ```Iterable```, or ```array``` the actions are applied on the individual objects in these container classes.
+
+
 
