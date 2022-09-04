@@ -112,4 +112,98 @@ These interceptors add the authenticated user to the message metadata. The key t
 
 To customize this behaviour the developer can supply an ```AuthenticationSupplier``` Bean.
 
-### 
+### Securing the Command Side
+
+Establishing a Policy Enforcement Point (PEP) for a command is straightforward and only requires the addition of a single ```@PreHandleEnforce```annotation on the method carrying the Axon annotation ```@CommandHandler```, independently if this method resides within an aggregate or in a domain servcie. 
+
+```java
+	@CommandHandler
+	@PreHandleEnforce
+	void handle(HospitalisePatient cmd) {
+		apply(new PatientHospitalised(cmd.id(), cmd.ward()));
+	}
+```
+
+Whenever this annotaiton is present on a ```@CommandHandler```, a PEP is wrapped around the invocation of the command handler. Upon receiving a command, after the potential replay of an aggregate, and before calling the ```handle``` method, this PEP constructs an ```AuthorizationSubscription```, and gets a single ```AuthorizationDecision``` from the Policy Decision Point (PDP). Depending on the decision, i.e., is it ```PERMIT``` or not, the ```handle``` method is invoked, or access is denied. Further, any additional constraints, i.e., obligations or adivice, are attepted to be enforced as well. A failure of enforcing obligations will also result in the PEP to deny access, i.e., it fails the command execution with an ```AccessDeniedException```. 
+
+Whithout further information, the PEP has to make a best-effort to formulate a meaningful authorization subscription based on technical information available. So it will attempt to add all available information about the command and the target aggregate to the subscription. In the case of the command above, this could look like this:
+
+```JSON
+{
+  "subject": {
+    "username": "cheryl",
+    "authorities": [],
+    "accountNonExpired": true,
+    "accountNonLocked": true,
+    "credentialsNonExpired": true,
+    "enabled": true,
+    "assignedWard": "ICCU",
+    "position": "DOCTOR"
+  },
+  "action": {
+    "actionType": "command",
+    "commandName": "io.sapl.demo.axon.command.PatientCommandAPI$HospitalisePatient",
+    "payload": {
+      "id": "0",
+      "ward": "ICCU"
+    },
+    "payloadType": "io.sapl.demo.axon.command.PatientCommandAPI$HospitalisePatient",
+    "metadata": {
+      "subject": "{\"username\":\"cheryl\",\"authorities\":[],\"accountNonExpired\":true,\"accountNonLocked\":true,\"credentialsNonExpired\":true,\"enabled\":true,\"assignedWard\":\"ICCU\",\"position\":\"DOCTOR\"}"
+    }
+  },
+  "resource": {
+    "aggregateType": "Patient",
+    "aggregateIdentifier": "0"
+  }
+}
+```
+
+To make these authorization questions more domain-specific, and thus the policies to be written closer to the domain's ubiquitous language, developers may customize the the authorization subscription by providing explicit [Spring Expression Language (SpEL)](https://docs.spring.io/spring-framework/docs/3.2.x/spring-framework-reference/html/expressions.html) expressions as parameters in the annotation:
+
+```java
+	@CommandHandler
+	@PreHandleEnforce(action = "{'command':'HospitalisePatient', 'ward':#command.ward()}", resource = "{ 'type':'Patient', 'id':id, 'ward':ward }")
+	void handle(HospitalisePatient cmd) {
+		apply(new PatientHospitalised(cmd.id(), cmd.ward()));
+	}
+```
+
+These SpEL expresseions will make differnt objects available for construction of the authorization subscription. The command will be available as ```#command```, the complete ```CommandMessage``` is available as ```#message```, the metadata map as ```#metadata```, the ```Ececutable``` refering to the handler method as ```#executable``` and the aggregate, or domain service Bean are set as the root object of the SpEL evaluation context and its members and methoda are direclty accessible, if publilc.
+
+In the ecample above, the action SpEL accesses the ```ward()``` method of the command. Also in the resource expression the member variables ```id``` and ```ward``` of the aggregate are directly accessed. Note, that for this to be possible, the respective fields must be ```public```. 
+
+The resulting authorization subscription could look like this:
+
+```JSON
+{
+  "subject": {
+    "username": "cheryl",
+    "authorities": [],
+    "accountNonExpired": true,
+    "accountNonLocked": true,
+    "credentialsNonExpired": true,
+    "enabled": true,
+    "assignedWard": "ICCU",
+    "position": "DOCTOR"
+  },
+  "action": {
+    "command": "HospitalisePatient",
+    "ward": "ICCU"
+  },
+  "resource": {
+    "type": "Patient",
+    "id": "0",
+    "ward": "NONE"
+  }
+}
+```
+
+And a matching SAPL policies may look like this:
+
+```
+policy "only doctors may hospitalize patients but only into their own wards, system may do it as well"
+permit 	action.command == "HospitalisePatient"
+where 
+		subject == "SYSTEM" || (subject.position == "DOCTOR" && action.ward ==  subject.assignedWard);
+```
