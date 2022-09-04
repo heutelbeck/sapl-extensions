@@ -99,3 +99,17 @@ Finally, the embedded PDP (in its default configuration) requires a folder in th
 
 The ```algorithm``` property selects an algorithm used to resolve conflicting results from policy evaluation. In this case, the algorithm will ensure that the PDP always returns a ```deny``` decision if no policy evaluation returns an explicit ```permit``` decision. You can use the ```variables``` property to define environment variables, e.g., the configuration of policy information points (PIPs). All policies can access the content of these variables.
 
+## Securing Axon Applications with SAPL
+
+Just like axon itself, SAPL supports the CQRS-ES pattern and it is possible to independently secure access to the comamnd end query side. Hoever, for both sides to be secured, authentication of the users triggereing both commands and queries is a prerequisite. 
+
+### Authentication of Commands and Queries
+
+By default, the SAPL Axon extension will use Spring autoconfiguration to deploy some infrastrcuture code. This includes the ```AuthenticationCommandDispatchInterceptor```and the ```AuthenticationQueryDispatchInterceptor```. 
+These ```MessageDispatchInterceptor``` implementations are responsible for adding authentication information to any command or query message before dispatching it to the respective bus. 
+
+These interceptors add the authenticated user to the message metadata. The key to identify the user is ```subject``` and the SAPL extension expects the value to be a valid JSON string. The default implementation uses the default ```ObjectMapper``` deplyed in the application context to write the ```Authentication``` including the ```Principal``` object to this field. It also removes ```credentials``` and ```password```field from the objects before adding the objects to the metadata. 
+
+To customize this behaviour the developer can supply an ```AuthenticationSupplier``` Bean.
+
+### 
