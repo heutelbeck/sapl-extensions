@@ -5,7 +5,6 @@ This library supports the implementation of Attribute-based Access Control (ABAC
 ## What is Attribute-based Access Control?
 
 Attribute-based Access Control (ABAC) is an expressive access control model. 
-In this tutorial, you will learn how secure services and APIs of a Spring Boot application using the SAPL Engine to implement ABAC. The tutorial assumes basic familiarity with the development process of Spring applications.
 
 ![ABAC](assets/abac.png)
 
@@ -19,11 +18,11 @@ Resource attributes may include owners, security classification, categories, or 
 
 Environment attributes include data like the system and infrastructure context or time.
 
-An application performing authorization of an action formulates an authorization question by collecting attributes of the subject, action, resource, and environment as required by the domain and asks a decision-making component which then makes a decision based on domain-specific rules which the application then has to enforce.
+An application performing authorization of an action formulates an authorization question by collecting attributes of the subject, action, resource, and environment as required by the domain and asks a decision-making component which then makes a decision based on domain-specific rules, which the application then has to enforce.
 
 ### The SAPL Attribute-Based Access Control (ABAC) Architecture
 
-SAPL implements its interpretation of ABAC called Attribute Stream-Based Access Control (ASBAC). It uses publish-subscribe as its primary mode of interaction between the individual components. This tutorial will explain the basic ideas. The [SAPL Documentation](https://sapl.io/docs/2.1.0-SNAPSHOT/sapl-reference.html#reference-architecture) provides a more complete discussion of the architecture. 
+SAPL implements its interpretation of ABAC called Attribute Stream-Based Access Control (ASBAC). It uses publish-subscribe as its primary mode of interaction between the individual components. This tutorial will explain the basic ideas. The [SAPL Documentation](https://sapl.io/docs/2.1.0-SNAPSHOT/sapl-reference.html#reference-architecture) provides a complete discussion of the architecture. 
 
 ![SAPL ABAC/ASBAC Architecture](assets/sapl-architecture.png)
 
@@ -67,7 +66,7 @@ SAPL provides a bill of materials module, helping you to use compatible versions
     </dependencyManagement>
 ```
  
-To develop an application using SAPL, the project rquires two components. First, it needs a component for making authorization decisions, the so-called policy decision point (PDP). SAPL supports embedfing the PDP within your application or to use a dedicated server application and delegate the decision-making to this remote service. For an embedded PDP making decisions locally based on policies stored in the application resources. The following dependency is responsible:
+For an application using SAPL, its project requires two components. First, the so-called policy decision point (PDP) needs a component for making authorization decisions. SAPL supports embedding the PDP within your application or using a dedicated server application and delegating the decision-making to this remote service. An embedded PDP makes decisions locally based on policies stored in the application resources. The following dependency is responsible:
 
 ```xml
         <dependency>
@@ -79,7 +78,7 @@ To develop an application using SAPL, the project rquires two components. First,
 For connecting to using PDP servers, use ```<artifactId>sapl-spring-pdp-embedded</artifactId>```.
 
 
-SAPL provides a deep integration with Axon and Spring Security. This integration enables simple deployment of policy enforcement points in Spring application using a declarative aspect-oriented programming style. Add the following dependency to your project:
+SAPL provides deep integration with Axon and Spring Security. This integration enables simple deployment of policy enforcement points in Spring application using a declarative aspect-oriented programming style. Add the following dependency to your project:
 
 ```xml
         <dependency>
@@ -88,7 +87,7 @@ SAPL provides a deep integration with Axon and Spring Security. This integration
         </dependency>
 ```
 
-Finally, the embedded PDP (in its default configuration) requires a folder in the resources ```src/main/resources``` called ```policies```, and a configuration file called ```pdp.json```. To start add the following content to this file: 
+Finally, the embedded PDP (in its default configuration) requires a folder in the resources ```src/main/resources``` called ```policies```, and a configuration file called ```pdp.json```. To start, add the following content to this file: 
 
 ```json
 {
@@ -101,20 +100,20 @@ The ```algorithm``` property selects an algorithm used to resolve conflicting re
 
 ## Securing Axon Applications with SAPL
 
-Just like axon itself, SAPL supports the CQRS-ES pattern and it is possible to independently secure access to the comamnd end query side. Hoever, for both sides to be secured, authentication of the users triggereing both commands and queries is a prerequisite. 
+Just like Axon itself, SAPL supports the CQRS-ES pattern, and it is possible to secure access to the command end query side independently. However, for both sides to be secured, authentication of the users triggering both commands and queries is a prerequisite. 
 
 ### Authentication of Commands and Queries
 
-By default, the SAPL Axon extension will use Spring autoconfiguration to deploy some infrastrcuture code. This includes the ```AuthenticationCommandDispatchInterceptor```and the ```AuthenticationQueryDispatchInterceptor```. 
+By default, the SAPL Axon extension will use Spring autoconfiguration to deploy some infrastructure code. This configuration includes the ```AuthenticationCommandDispatchInterceptor``` and the ```AuthenticationQueryDispatchInterceptor```. 
 These ```MessageDispatchInterceptor``` implementations are responsible for adding authentication information to any command or query message before dispatching it to the respective bus. 
 
-These interceptors add the authenticated user to the message metadata. The key to identify the user is ```subject``` and the SAPL extension expects the value to be a valid JSON string. The default implementation uses the default ```ObjectMapper``` deplyed in the application context to write the ```Authentication``` including the ```Principal``` object to this field. It also removes ```credentials``` and ```password```field from the objects before adding the objects to the metadata. 
+These interceptors add the authenticated user to the message metadata. The key to identifying the user is ```subject```. The SAPL extension expects the value to be a valid JSON string. The default implementation uses the default ```ObjectMapper``` deployed in the application context to write the ```Authentication``` including the ```Principal``` object to this field. It also removes ```credentials``` and ```password``` field from the objects before adding the objects to the metadata. 
 
-To customize this behaviour the developer can supply an ```AuthenticationSupplier``` Bean.
+To customize this behavior the developer can supply an ```AuthenticationSupplier``` Bean.
 
 ### Securing the Command Side
 
-Establishing a Policy Enforcement Point (PEP) for a command is straightforward and only requires the addition of a single ```@PreHandleEnforce```annotation on the method carrying the Axon annotation ```@CommandHandler```, independently if this method resides within an aggregate or in a domain servcie. 
+Establishing a Policy Enforcement Point (PEP) for a command is straightforward. It only requires the addition of a single ```@PreHandleEnforce```annotation on the method carrying the Axon annotation ```@CommandHandler```, independently if this method resides within an aggregate or in a domain service. 
 
 ```java
 	@CommandHandler
@@ -124,9 +123,9 @@ Establishing a Policy Enforcement Point (PEP) for a command is straightforward a
 	}
 ```
 
-Whenever this annotaiton is present on a ```@CommandHandler```, a PEP is wrapped around the invocation of the command handler. Upon receiving a command, after the potential replay of an aggregate, and before calling the ```handle``` method, this PEP constructs an ```AuthorizationSubscription```, and gets a single ```AuthorizationDecision``` from the Policy Decision Point (PDP). Depending on the decision, i.e., is it ```PERMIT``` or not, the ```handle``` method is invoked, or access is denied. Further, any additional constraints, i.e., obligations or adivice, are attepted to be enforced as well. A failure of enforcing obligations will also result in the PEP to deny access, i.e., it fails the command execution with an ```AccessDeniedException```. 
+Whenever this annotation is present on a ```@CommandHandler```, a PEP is wrapped around the invocation of the command handler. Upon receiving a command, after the potential replay of an aggregate, and before calling the ```handle``` method, this PEP constructs an ```AuthorizationSubscription```, and gets a single ```AuthorizationDecision``` from the Policy Decision Point (PDP). Depending on the decision, i.e., is it ```PERMIT``` or not, the ```handle``` method is invoked, or it denies access. Further, any additional constraints, i.e., obligations or advice, are attempted to be enforced. Failure to enforce obligations will also result in the PEP denying access, i.e., failing the command execution with an ```AccessDeniedException```. 
 
-Whithout further information, the PEP has to make a best-effort to formulate a meaningful authorization subscription based on technical information available. So it will attempt to add all available information about the command and the target aggregate to the subscription. In the case of the command above, this could look like this:
+Without further information, the PEP has to make the best effort to formulate a meaningful authorization subscription based on the technical information available. So it will attempt to add all available information about the command and the target aggregate to the subscription. In the case of the command above, this could look like this:
 
 ```JSON
 {
@@ -159,7 +158,7 @@ Whithout further information, the PEP has to make a best-effort to formulate a m
 }
 ```
 
-To make these authorization questions more domain-specific, and thus the policies to be written closer to the domain's ubiquitous language, developers may customize the the authorization subscription by providing explicit [Spring Expression Language (SpEL)](https://docs.spring.io/spring-framework/docs/3.2.x/spring-framework-reference/html/expressions.html) expressions as parameters in the annotation:
+To make these authorization questions more domain-specific, and thus the policies to be written closer to the domain's ubiquitous language, developers may customize the authorization subscription by providing explicit [Spring Expression Language (SpEL)](https://docs.spring.io/spring-framework/docs/3.2.x/spring-framework-reference/html/expressions.html) expressions as parameters in the annotation:
 
 ```java
 	@CommandHandler
@@ -169,9 +168,9 @@ To make these authorization questions more domain-specific, and thus the policie
 	}
 ```
 
-These SpEL expresseions will make differnt objects available for construction of the authorization subscription. The command will be available as ```#command```, the complete ```CommandMessage``` is available as ```#message```, the metadata map as ```#metadata```, the ```Ececutable``` refering to the handler method as ```#executable``` and the aggregate, or domain service Bean are set as the root object of the SpEL evaluation context and its members and methoda are direclty accessible, if publilc.
+These SpEL expressions will make different objects available for the construction of the authorization subscription. The command will be available as ```#command```, the complete ```CommandMessage``` is available as ```#message```, the metadata map as ```#metadata```, the ```Executable```refers to the handler method as ```#executable``` and the aggregate, or domain service Bean are set as the root object of the SpEL evaluation context and its members and method are directly accessible, if public.
 
-In the ecample above, the action SpEL accesses the ```ward()``` method of the command. Also in the resource expression the member variables ```id``` and ```ward``` of the aggregate are directly accessed. Note, that for this to be possible, the respective fields must be ```public```. 
+In the example above, the action SpEL accesses the command's ```ward()``` method. Also, in the resource expression, the member variables ```id``` and ```ward``` of the aggregate are directly accessed. Note that for this to be possible, the respective fields must be ```public```. 
 
 The resulting authorization subscription could look like this:
 
@@ -199,10 +198,10 @@ The resulting authorization subscription could look like this:
 }
 ```
 
-And a matching SAPL policies may look like this:
+And a matching SAPL policy may look like this:
 
 ```
-policy "only doctors may hospitalize patients but only into their own wards, system may do it as well"
+policy "only doctors may hospitalize patients but only into their wards, the system may do it as well."
 permit 	action.command == "HospitalisePatient"
 where 
   subject == "SYSTEM" || (subject.position == "DOCTOR" && action.ward ==  subject.assignedWard);
@@ -210,25 +209,25 @@ where
 
 ### Securing the Query Side
 
-The ```@QueryHandler``` methods can be sucrued simmilarly to the command side by adding SAPL annotations. However, for the query side there are four different types of PEPs which correspond to different annotations. Also these annotations behave different, if the query is a normal or a subscription query.
+The ```@QueryHandler``` methods can be secured similarly to the command side by adding SAPL annotations. However, for the query side, there are four different types of PEPs. Each PEP type corresponds to different annotations. Also, these annotations behave differently if the query is a normal or a subscription query.
 
 #### Security Annoatrions and Non-Subscription Queries
 
-- ```@PreHandleEnforce```: Established a PEP which constructs the authorization subscription and gets a decision *before* invoking the ```@QueryHandler``` method. 
-- ```@PostHandleEnforce```: Established a PEP which constructs the authorization subscription and gets a decision *after* invoking the ```@QueryHandler``` method. This annotation can be used, if the query result is required to construct the authorization subscription. The query result is made available as ```#queryResult``` for SpEL expression in the annotaiton.
-- ```@EnforceDropUpdatesWhileDenied```: An annotation typically used for subscription queries. Falls back to the behavior of ```@PreHandleEnforce``` if it encounters a non-subscription query at runtime.
-- ```@EnforceRecoverableUpdatesIfDenied```: An annotation typically used for subscription queries. Falls back to the behavior of ```@PreHandleEnforce``` if it encounters a non-subscription query at runtime.
+- ```@PreHandleEnforce```: Established a PEP that constructs the authorization subscription and gets a decision *before* invoking the ```@QueryHandler``` method. 
+- ```@PostHandleEnforce```: Established a PEP that constructs the authorization subscription and gets a decision *after* invoking the ```@QueryHandler``` method. Developers can use this annotation if the query result is required to construct the authorization subscription. The query result is available as ```#queryResult``` for SpEL expression in the annotation.
+- ```@EnforceDropUpdatesWhileDenied```: An annotation typically used for subscription queries. It falls back to the behavior of ```@PreHandleEnforce``` if it encounters a non-subscription query at runtime.
+- ```@EnforceRecoverableUpdatesIfDenied```: An annotation typically used for subscription queries. It falls back to the behavior of ```@PreHandleEnforce``` if it encounters a non-subscription query at runtime.
 
 ### Security Annotations and Subscription Queries
 
-- ```@PreHandleEnforce```: Established a PEP which constructs the authorization subscription and gets a decision *before* invoking the ```@QueryHandler``` method for the initial query result. If the inital decision of the PDP is *not* ```PERMIT```, access is denied to both the initial result and the updates. If the initial decision  is ```PERMIT```, the initial result is delivered and updates are staring to be delivered until a first decision implying ```DENY``` is sent by the PDP. Then updates are stopped and the query is terminated.
-- ```@PostHandleEnforce```: The post invocation idea does not translate well to subscription queries. Access is denied by default. It is suggested to have dedicated queries for subscription ans non-subscription queries if such different PEPs must be implemented.
-- ```@EnforceDropUpdatesWhileDenied```: This annotation will not deliver and drop updates when the last known decision is implying ```DENY``` but it will not cancel the query. It will resume sending updates when a new ```PERMIT```decision is sent by the PDP.
-- ```@EnforceRecoverableUpdatesIfDenied```: This annotation will not deliver and drop updates when the last known decision is implying ```DENY``` but it will not cancel the query. It will resume sending updates when a new ```PERMIT```decision is sent by the PDP. Additionally, the fact that access is denied wil be sent to the client that it is aware of this facr. This PEP requires the use of the ```SaplQueryGateway``` to send recoverable queries.
+- ```@PreHandleEnforce```: Established a PEP that constructs the authorization subscription and gets a decision *before* invoking the ```@QueryHandler``` method for the initial query result. If the initial decision of the PDP is *not* ```PERMIT```, access is denied to both the initial result and the updates. If the initial decision is ```PERMIT```, the initial result is delivered, and updates are starting to deliver until a first decision implying ```DENY``` is sent by the PDP. Then updates are stopped, and the PEP terminates the query.
+- ```@PostHandleEnforce```: The post invocation idea does not translate well to subscription queries, and access is denied by default. We suggest having dedicated queries for subscription and non-subscription queries if the domain requires different PEPs for the different types of queries.
+- ```@EnforceDropUpdatesWhileDenied```: This annotation will not deliver and drop updates when the last known decision is implying ```DENY```, but it will not cancel the query. It will resume sending updates when the PDP sends a new ```PERMIT```decision.
+- ```@EnforceRecoverableUpdatesIfDenied```: This annotation will not deliver and drop updates when the last known decision is implying ```DENY```, but it will not cancel the query. It will resume sending updates when the PDP sends a new ```PERMIT```decision. Additionally, the fact that access is denied will be sent to the client that it is aware of this fact. This PEP requires the use of the ```SaplQueryGateway``` to send recoverable queries.
 
-The first three PEPs are straight forward and the subscription can be customized using SpEL in the same way as for queries. For the ```@EnforceRecoverableUpdatesIfDenied``` the client application has to do a dew more steps to be able to react on access denied events in the update stream. As Axon terminates a subscription query, whenever an exception is sent, the updates have to be wrapped in a dedicated event and be unwrapped at the client side. Also, the client side has to explicitly signal to the query handling side that the updates must be wrapped.
+The first three PEPs are straightforward forward, and the subscription can be customized using SpEL in the same way as for queries. For the ```@EnforceRecoverableUpdatesIfDenied```, the client application has to do a few more steps to react on access denied events in the update stream. As Axon terminates a subscription query, whenever it sends an exception in a subscription query response, the updates have to be wrapped in a dedicated event and be unwrapped at the client side. Also, the client side has to explicitly signal to the query handling side that PEP must wrap the updates.
 
-To do so, the query is sent via tha the ```SaplQueryGateway``` which signals the request to the query sinde and unwraps the updates transparently for the client. The client now can to decide to continue to stay subcribed by using ```onErrorContinue``` on the update ```FLux```.
+To do so, the client sends the query via the ```SaplQueryGateway```, which signals the request to the query sinde and unwraps the updates transparently for the client. The client now can decide to continue to stay subscribed by using ```onErrorContinue``` on the update ```FLux```.
 
 ```java
   @Autowired
@@ -245,38 +244,38 @@ To do so, the query is sent via tha the ```SaplQueryGateway``` which signals the
 
 ### Constraint Handling - Obligations and Advice
 
-SAPL allows the PDP to make decisions which only grant access under certain additional constraints that the PEP must fulfill (i.e., obligations) or should fulfill (i.e., advice). Each such constraint is expressed as an arbritary JSON value in the decisons obligations or advice field. Whenever any obligation is present and the PEP has no way to fulfill the requested constraint, access must be denied.
+SAPL allows the PDP to make decisions that only grant access under certain additional constraints that the PEP must fulfill (i.e., obligations) or should fulfill (i.e., advice). Each constraint is expressed as an arbitrary JSON value in the decisions obligations or advice field. The PEP must deny access whenever any obligation is present, and the PEP has no way to fulfill the requested constraint.
 
-The automatically created PEPs of the SAPL Axon extension support the incection of handlers for constraints at different points in the execution paths of commands and queries. There are to basic categories of constraint hadlers. Constraint handler methods annotated by the ```@ConstraintHandler``` annotations, and constraint handler provider beans.
+The automatically created PEPs of the SAPL Axon extension support the insection of handlers for constraints at different points in the execution paths of commands and queries. There are two basic categories of constraint handlers. Constraint handler methods are annotated by the ```@ConstraintHandler``` annotations and constraint handler provider beans.
 
 #### Constraint Handler Provider Beans
 
-A constraint handler provider bean is a factory bean creating concrete constraint handlers for specific constraints. All of these beans implement the ```Responsible``` interface wich offers the method ```boolean isResponsible(JsonNode constraint)```. Whenever the PDP sends a decision to a PEP, the PEP asks all handler provider beans if they are responsible for any given constraint in the decision. A handler provider is resposible for a constraint, if it's ```isResponsible``` method returns  ```true``` for the constraint.  for certain types. If the resulting handler is type dependant, the handler provider implement the ```TypeSupport```or ```ResponseTypeSupport``` interface to enable the PEP to check for type compatibility. 
+A constraint handler provider bean is a factory bean creating concrete constraint handlers for specific constraints. All of these beans implement the ```Responsible``` interface, which offers the method ```boolean isResponsible(JsonNode constraint)```. Whenever the PDP sends a decision to a PEP, the PEP asks all handler provider beans if they are responsible for any given constraint in the decision. A handler provider is responsible for a constraint if its ```isResponsible``` method returns  ```true``` for the constraint. If the matching handler is type-dependent, its handler provider implements the ```TypeSupport```or ```ResponseTypeSupport``` interface to enable the PEP to check for type compatibility. 
 
-Once the PEP identified a handler provider to be resposible (```isResponsible``` returns ```true``` and the types involved are compatible), then the PEP asks the  handler provider to generate a constraint handler for the constraint. Typically such a handler is something like a ```Runnable```, ```Consumer```, or ```Function```. Finally, the PEP hooks the handlers into the execution path of the command or query handling.
+Once the PEP identifies a handler provider as responsible (```isResponsible``` returns ```true``` and the types involved are compatible), the PEP asks the handler provider to generate a constraint handler for the constraint. Typically such a handler is something like a ```Runnable```, ```Consumer```, or ```Function```. Finally, the PEP hooks the handlers into the command or query handling execution path.
 
 The different Axon-specific handler provider interfaces reside in the package ```io.sapl.constrainthandling.api```:
 
-- ```CommandConstraintHandlerProvider``` returns a ```Function<CommandMessage<?>, CommandMessage<?>>``` to either trigger side effects based on the command content or to modify the command before handling. To implement a ```CommandConstraintHandlerProvider``` the interface offers a number of utility methods that can be used if the developer only wants to modify a specific part of the command, e.g., ``` Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint)``` to modify the contents of the paload of the message.
-- ```QueryConstraintHandlerProvider``` returns a ```Function<QueryMessage<?>, QueryMessage<?>>``` to either trigger side effects based on the query content or to modify the query before handling. To implement a ```QueryConstraintHandlerProvider``` the interface offers a number of utility methods that can be used if the developer only wants to modify a specific part of the query, e.g., ``` Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint)``` to modify the contents of the paload of the message.
+- ```CommandConstraintHandlerProvider``` returns a ```Function<CommandMessage<?>, CommandMessage<?>>``` to either trigger side effects based on the command content or to modify the command before handling. To implement a ```CommandConstraintHandlerProvider``` the interface offers several utility methods that developers can use if they only want to modify a specific part of the query, e.g., ``` Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint)``` to modify the contents of the payload of the message.
+- ```QueryConstraintHandlerProvider``` returns a ```Function<QueryMessage<?>, QueryMessage<?>>``` to either trigger side effects based on the query content or to modify the query before handling. To implement a ```QueryConstraintHandlerProvider``` the interface offers several utility methods that developers can use if they only want to modify a specific part of the query, e.g., ``` Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint)``` to modify the contents of the payload of the message.
 - ```OnDecisionConstraintHandlerProvider```returns a ```BiConsumer<AuthorizationDecision, Message<?>>``` which is executed whenever the PDP returns a new decision.
 - The ```ResultConstraintHandlerProvider``` returns a ```Function<Object, Object>``` which is applied to query result messages.
-- The ```UpdateFilterConstraintHandlerProvider``` is used to filter update messages of subscriptin queries. It returns a ```Predicate<ResultMessage<?>>``` and if present, only updates satisfying the predicate are sent downstream.
+- The ```UpdateFilterConstraintHandlerProvider```filters update messages of subscription queries. It returns a ```Predicate<ResultMessage<?>>```; if present, only updates satisfying the predicate are sent downstream.
 - The ```CollectionAndOptionalFilterPredicateProvider``` is a sub-type of ```ResultConstraintHandlerProvider```. The developer can implement the ```boolean test(T o, JsonNode constraint)``` method. And when a query returns an ```Iterable```, ```array```, or ```Optional```. The handler will remove all elements that do not satisfy this predicate.
 
-Further there are the follwoing interfaces from ```io.sapl.spring.constraints.api``` which are used in the Axon extension as well:
+Further, there are the following interfaces from ```io.sapl.spring.constraints.api``` which are used in the Axon extension as well:
 
 - The ```MappingConstraintHandlerProvider``` returns a ```Function<T, T>``` used to modify command results.
-- The ```ErrorMappingConstraintHandlerProvider``` returns  a ```Function<Throwable, Throwable>``` used to modify errors before sending them downstream.
+- The ```ErrorMappingConstraintHandlerProvider``` returns a ```Function<Throwable, Throwable>``` used to modify errors before sending them downstream.
 
 
 #### Modifying Response Messages with the ```ResponseMessagePayloadFilterProvider```
 
-The Axon Extension comes with a default constraint handler provider pre-configures. The ```ResponseMessagePayloadFilterProvider``` can be used to modify the payload of ```ResponseMessage```s. The JSON constraint may specify a number of modification actions that indicate to perform an operation on a node in the JSON document identified by a JSONPath expression. A policy triggering this handler may look like this: 
+The Axon Extension comes with a default constraint handler provider pre-configured. The ```ResponseMessagePayloadFilterProvider``` can be used to modify the payload of ```ResponseMessage```s. The JSON constraint may specify a number of modification actions that indicate to operate on a node in the JSON document identified by a JSONPath expression. A policy triggering this handler may look like this: 
 
 ```
-policy "authenticated users may see filtered" 
-permit subject != "anononymous"
+policy "authenticated users may see filtered." 
+permit subject != "anonymous"
 obligation
 {
   "type"    : "filterMessagePayloadContent",
@@ -299,11 +298,10 @@ obligation
 	}
 ```
 
-This handler is triggered when the constraint is a JOSN Object, where  ```type``` equals ```filterMessagePayloadContent```. Then the array ```actions``` indicated a sequence of modificatiions to be made to the payload. The action ```replace``` attempts to replace the sub-section of the payload indicated by the JSONPath expression with the content of ```replacement```. The action ```delete``` sets the seclecte field to ```null```. The action ```blacken``` assumes the indicated value is a string, and the parts not excluded by ```discloseLeft``` or ```discloseRight``` are replaced with the character in ```replacement``` (defaulting to an unicode quare). 
+This handler is triggered when the constraint is a JOSN Object, where  ```type``` equals ```filterMessagePayloadContent```. Then the array ```actions``` indicated a sequence of modifications to be made to the payload. The action ```replace``` attempts to replace the sub-section of the payload indicated by the JSONPath expression with the content of ```replacement```. The action ```delete``` sets the selected field to ```null```. The action ```blacken``` assumes the indicated value is a string, and the parts not excluded by ```discloseLeft``` or ```discloseRight``` are replaced with the character in ```replacement``` (defaulting to an Unicode square). 
 
-This handler attapts to map the payload to JSON, then applied the actions and attempts to map it mach to the original class. 
+This handler attempts to map the payload to JSON, then applies the actions and attempts to map it map to the original class. 
 
-If encountering an ```Optional```, ```Iterable```, or ```array``` the actions are applied on the individual objects in these container classes.
-
+If encountering an ```Optional```, ```Iterable```, or ```array```, the actions are applied to the individual objects in these container classes.
 
 
