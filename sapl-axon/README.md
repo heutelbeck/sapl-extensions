@@ -255,3 +255,19 @@ A constraint handler provider bean is a factory bean creating concrete constrain
 
 Once the PEP identified a handler provider to be resposible (```isResponsible``` returns ```true``` and the types involved are compatible), then the PEP asks the  handler provider to generate a constraint handler for the constraint. Typically such a handler is something like a ```Runnable```, ```Consumer```, or ```Function```. Finally, the PEP hooks the handlers into the execution path of the command or query handling.
 
+The different Axon-specific handler provider interfaces reside in the package ```io.sapl.constrainthandling.api```:
+
+- ```CommandConstraintHandlerProvider``` returns a ```Function<CommandMessage<?>, CommandMessage<?>>``` to either trigger side effects based on the command content or to modify the command before handling. To implement a ```CommandConstraintHandlerProvider``` the interface offers a number of utility methods that can be used if the developer only wants to modify a specific part of the command, e.g., ``` Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint)``` to modify the contents of the paload of the message.
+- ```QueryConstraintHandlerProvider``` returns a ```Function<QueryMessage<?>, QueryMessage<?>>``` to either trigger side effects based on the query content or to modify the query before handling. To implement a ```QueryConstraintHandlerProvider``` the interface offers a number of utility methods that can be used if the developer only wants to modify a specific part of the query, e.g., ``` Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint)``` to modify the contents of the paload of the message.
+- ```OnDecisionConstraintHandlerProvider```returns a ```BiConsumer<AuthorizationDecision, Message<?>>``` which is executed whenever the PDP returns a new decision.
+- The ```ResultConstraintHandlerProvider``` returns a ```Function<Object, Object>``` which is applied to query result messages.
+- The ```UpdateFilterConstraintHandlerProvider``` is used to filter update messages of subscriptin queries. It returns a ```Predicate<ResultMessage<?>>``` and if present, only updates satisfying the predicate are sent downstream.
+- The ```CollectionAndOptionalFilterPredicateProvider``` is a sub-type of ```ResultConstraintHandlerProvider```. The developer can implement the ```boolean test(T o, JsonNode constraint)``` method. And when a query returns an ```Iterable```, ```array```, or ```Optional```. The handler will remove all elements that do not satisfy this predicate.
+
+Further there are the follwoing interfaces from ```io.sapl.spring.constraints.api``` which are used in the Axon extension as well:
+
+- The ```MappingConstraintHandlerProvider``` returns a ```Function<T, T>``` used to modify command results.
+- The ```ErrorMappingConstraintHandlerProvider``` returns  a ```Function<Throwable, Throwable>``` used to modify errors before sending them downstream.
+
+
+
