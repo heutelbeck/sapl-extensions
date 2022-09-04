@@ -243,3 +243,15 @@ To do so, the query is sent via tha the ```SaplQueryGateway``` which signals the
   result.updates().onErrorContinue((t, o) -> accessDeniedHandler.run()).subscribe(this::handleUpdates);
 ```
 
+### Constraint Handling - Obligations and Advice
+
+SAPL allows the PDP to make decisions which only grant access under certain additional constraints that the PEP must fulfill (i.e., obligations) or should fulfill (i.e., advice). Each such constraint is expressed as an arbritary JSON value in the decisons obligations or advice field. Whenever any obligation is present and the PEP has no way to fulfill the requested constraint, access must be denied.
+
+The automatically created PEPs of the SAPL Axon extension support the incection of handlers for constraints at different points in the execution paths of commands and queries. There are to basic categories of constraint hadlers. Constraint handler methods annotated by the ```@ConstraintHandler``` annotations, and constraint handler provider beans.
+
+#### Constraint Handler Provider Beans
+
+A constraint handler provider bean is a factory bean creating concrete constraint handlers for specific constraints. All of these beans implement the ```Responsible``` interface wich offers the method ```boolean isResponsible(JsonNode constraint)```. Whenever the PDP sends a decision to a PEP, the PEP asks all handler provider beans if they are responsible for any given constraint in the decision. A handler provider is resposible for a constraint, if it's ```isResponsible``` method returns  ```true``` for the constraint.  for certain types. If the resulting handler is type dependant, the handler provider implement the ```TypeSupport```or ```ResponseTypeSupport``` interface to enable the PEP to check for type compatibility. 
+
+Once the PEP identified a handler provider to be resposible (```isResponsible``` returns ```true``` and the types involved are compatible), then the PEP asks the  handler provider to generate a constraint handler for the constraint. Typically such a handler is something like a ```Runnable```, ```Consumer```, or ```Function```. Finally, the PEP hooks the handlers into the execution path of the command or query handling.
+
