@@ -7,7 +7,7 @@ This library supports the implementation of Attribute-based Access Control (ABAC
 Attribute-based Access Control (ABAC) is an expressive access control model. 
 In this tutorial, you will learn how secure services and APIs of a Spring Boot application using the SAPL Engine to implement ABAC. The tutorial assumes basic familiarity with the development process of Spring applications.
 
-![ABAC](assets/abac.png | width=800)
+![ABAC](assets/abac.png)
 
 ABAC decides on granting access by inspecting attributes of the subject, resource, action, and environment. 
 
@@ -25,7 +25,7 @@ An application performing authorization of an action formulates an authorization
 
 SAPL implements its interpretation of ABAC called Attribute Stream-Based Access Control (ASBAC). It uses publish-subscribe as its primary mode of interaction between the individual components. This tutorial will explain the basic ideas. The [SAPL Documentation](/docs/2.1.0-SNAPSHOT/sapl-reference.html#reference-architecture) provides a more complete discussion of the architecture. 
 
-![SAPL ABAC/ASBAC Architecture](assets/sapl-architecture.png | width=800)
+![SAPL ABAC/ASBAC Architecture](assets/sapl-architecture.png)
 
 In your application, there will be several code paths where a subject attempts to perform some action on a resource, and based on the domain's requirements, the action must be authorized. For example, in a zero-trust system, all actions triggered by users or other components must be explicitly authorized. 
 
