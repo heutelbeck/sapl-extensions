@@ -237,7 +237,7 @@ To do so, the query is sent via tha the ```SaplQueryGateway``` which signals the
   /* ... */
   
   var result = queryGateway.recoverableSubscriptionQuery(RECOVERABLE_QUERY, queryPayload,
-     instanceOf(String.class), instanceOf(String.class), () -> { /* Runnable on dey */});
+     instanceOf(String.class), instanceOf(String.class), () -> { /* Runnable on deny */});
 
   result.initialResult().subscribe(this::handleInitialResult);
   result.updates().onErrorContinue((t, o) -> accessDeniedHandler.run()).subscribe(this::handleUpdates);
