@@ -205,5 +205,41 @@ And a matching SAPL policies may look like this:
 policy "only doctors may hospitalize patients but only into their own wards, system may do it as well"
 permit 	action.command == "HospitalisePatient"
 where 
-		subject == "SYSTEM" || (subject.position == "DOCTOR" && action.ward ==  subject.assignedWard);
+  subject == "SYSTEM" || (subject.position == "DOCTOR" && action.ward ==  subject.assignedWard);
 ```
+
+### Securing the Query Side
+
+The ```@QueryHandler``` methods can be sucrued simmilarly to the command side by adding SAPL annotations. However, for the query side there are four different types of PEPs which correspond to different annotations. Also these annotations behave different, if the query is a normal or a subscription query.
+
+#### Security Annoatrions and Non-Subscription Queries
+
+- ```@PreHandleEnforce```: Established a PEP which constructs the authorization subscription and gets a decision *before* invoking the ```@QueryHandler``` method. 
+- ```@PostHandleEnforce```: Established a PEP which constructs the authorization subscription and gets a decision *after* invoking the ```@QueryHandler``` method. This annotation can be used, if the query result is required to construct the authorization subscription. The query result is made available as ```#queryResult``` for SpEL expression in the annotaiton.
+- ```@EnforceDropUpdatesWhileDenied```: An annotation typically used for subscription queries. Falls back to the behavior of ```@PreHandleEnforce``` if it encounters a non-subscription query at runtime.
+- ```@EnforceRecoverableUpdatesIfDenied```: An annotation typically used for subscription queries. Falls back to the behavior of ```@PreHandleEnforce``` if it encounters a non-subscription query at runtime.
+
+### Security Annotations and Subscription Queries
+
+- ```@PreHandleEnforce```: Established a PEP which constructs the authorization subscription and gets a decision *before* invoking the ```@QueryHandler``` method for the initial query result. If the inital decision of the PDP is *not* ```PERMIT```, access is denied to both the initial result and the updates. If the initial decision  is ```PERMIT```, the initial result is delivered and updates are staring to be delivered until a first decision implying ```DENY``` is sent by the PDP. Then updates are stopped and the query is terminated.
+- ```@PostHandleEnforce```: The post invocation idea does not translate well to subscription queries. Access is denied by default. It is suggested to have dedicated queries for subscription ans non-subscription queries if such different PEPs must be implemented.
+- ```@EnforceDropUpdatesWhileDenied```: This annotation will not deliver and drop updates when the last known decision is implying ```DENY``` but it will not cancel the query. It will resume sending updates when a new ```PERMIT```decision is sent by the PDP.
+- ```@EnforceRecoverableUpdatesIfDenied```: This annotation will not deliver and drop updates when the last known decision is implying ```DENY``` but it will not cancel the query. It will resume sending updates when a new ```PERMIT```decision is sent by the PDP. Additionally, the fact that access is denied wil be sent to the client that it is aware of this facr. This PEP requires the use of the ```SaplQueryGateway``` to send recoverable queries.
+
+The first three PEPs are straight forward and the subscription can be customized using SpEL in the same way as for queries. For the ```@EnforceRecoverableUpdatesIfDenied``` the client application has to do a dew more steps to be able to react on access denied events in the update stream. As Axon terminates a subscription query, whenever an exception is sent, the updates have to be wrapped in a dedicated event and be unwrapped at the client side. Also, the client side has to explicitly signal to the query handling side that the updates must be wrapped.
+
+To do so, the query is sent via tha the ```SaplQueryGateway``` which signals the request to the query sinde and unwraps the updates transparently for the client. The client now can to decide to continue to stay subcribed by using ```onErrorContinue``` on the update ```FLux```.
+
+```java
+  @Autowired
+  SaplQueryGateway queryGateway;
+  
+  /* ... */
+  
+  var result = queryGateway.recoverableSubscriptionQuery(RECOVERABLE_QUERY, queryPayload,
+     instanceOf(String.class), instanceOf(String.class), () -> { /* Runnable on dey */});
+
+  result.initialResult().subscribe(this::handleInitialResult);
+  result.updates().onErrorContinue((t, o) -> accessDeniedHandler.run()).subscribe(this::handleUpdates);
+```
+
