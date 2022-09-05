@@ -307,18 +307,22 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 						.ifPresent(uh -> doEmit(query, uh.getUpdateSink(), update)));
 	}
 
-	private Predicate<SubscriptionQueryMessage<?, ?, ?>> payloadMatchesQueryResponseType(Class<?> payloadType) {
-		return sqm -> {
-			if (sqm.getUpdateResponseType() instanceof MultipleInstancesResponseType) {
-				return payloadType.isArray() || Iterable.class.isAssignableFrom(payloadType);
+    private Predicate<SubscriptionQueryMessage<?,?,?>> payloadMatchesQueryResponseType(Class<?> payloadType) {
+		return sqm -> {			
+			if(sqm.getUpdateResponseType() instanceof MultipleInstancesResponseType) {
+				return payloadType.isArray() ||	Iterable.class.isAssignableFrom(payloadType);
 			}
-			if (sqm.getUpdateResponseType() instanceof OptionalResponseType) {
+			if(sqm.getUpdateResponseType() instanceof OptionalResponseType) {
 				return Optional.class.isAssignableFrom(payloadType);
-			}
+			}		
+// TODO: Add for 4.6.0 			
+//			if(sqm.getUpdateResponseType() instanceof PublisherResponseType) {
+//				return Publisher.class.isAssignableFrom(payloadType);
+//			}			
 			return sqm.getUpdateResponseType().getExpectedResponseType().isAssignableFrom(payloadType);
 		};
 	}
-
+ 
 	@SuppressWarnings("unchecked")
 	private <U> void doEmit(SubscriptionQueryMessage<?, ?, ?> query, Sinks.Many<?> updateHandler,
 			SubscriptionQueryUpdateMessage<U> update) {

@@ -72,6 +72,8 @@ import java.lang.annotation.Target;
  * <li>The variable {@code #message} is set to the {@code QueryMessage}.
  * <li>The variable {@code #query} is set to the payload of the
  * {@code QueryMessage} to be handled.
+ * <li>The variable {@code #command} is set to the payload of the
+ * {@code CommandMessage} to be handled.
  * <li>The variable {@code #metadata} is set to the metadata of the
  * {@code QueryMessage} to be handled.
  * <li>The variable {@code #executable} is set to the
