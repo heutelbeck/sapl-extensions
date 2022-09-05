@@ -210,7 +210,6 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
 	}
 
 	private void handleComplete() {
-		System.out.println("Complete");
 		if (stopped.get())
 			return;
 		sink.complete();
@@ -223,7 +222,6 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
 	}
 
 	private void handleError(Throwable error) {
-		System.out.println("Error " + error);
 		try {
 			sink.error(constraintHandler.get().executeOnErrorHandlers(error));
 		} catch (Throwable t) {

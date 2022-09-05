@@ -53,7 +53,6 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
 	};
 
 	private Collection<T> filterCollection(Collection<T> payload, JsonNode constraint) {
-		System.out.println("PAYLOAD: "+payload);
 		return payload.stream().filter(x -> test(x, constraint)).collect(Collectors.toList());
 	};
 
