@@ -1,8 +1,11 @@
 package io.sapl.axon.constrainthandling.api;
 
-import java.lang.reflect.Type;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
+import org.axonframework.messaging.responsetypes.MultipleInstancesResponseType;
+import org.axonframework.messaging.responsetypes.OptionalResponseType;
 import org.axonframework.messaging.responsetypes.ResponseType;
 
 /**
@@ -28,9 +31,28 @@ public interface ResponseTypeSupport {
 	 * @return true if a response can be converted based on the given
 	 *         {@code responseType} and false if it cannot
 	 */
-	default boolean supports(Type responseType) {
-		return getSupportedResponseTypes().stream().filter(type -> type.matches(responseType)).findFirst().isPresent();
-	};
+	default boolean supports(Class<?> responseType) {
+		return getSupportedResponseTypes().stream().filter(isSupportedType(responseType)).findFirst().isPresent();
+	}
+
+	private Predicate<? super ResponseType<?>> isSupportedType(Class<?> payloadType) {
+		return type -> {
+			new Exception().printStackTrace();
+			System.out.println("Supported type: " + type.getClass().getSimpleName() + " - "
+					+ type.getExpectedResponseType().getSimpleName() + " -?> " + payloadType.getSimpleName());
+			if (type instanceof MultipleInstancesResponseType) {
+				return payloadType.isArray() || Iterable.class.isAssignableFrom(payloadType);
+			}
+			if (type instanceof OptionalResponseType) {
+				return Optional.class.isAssignableFrom(payloadType);
+			}
+// TODO: Add for 4.6.0 			
+//			if(type instanceof PublisherResponseType) {
+//				return Publisher.class.isAssignableFrom(payloadType);
+//			}			
+			return type.getExpectedResponseType().isAssignableFrom(payloadType);
+		};
+	}
 
 	/**
 	 * Checks if the constraint handler can work with the given type.
@@ -41,6 +63,14 @@ public interface ResponseTypeSupport {
 	 *         {@code responseType} and false if it cannot
 	 */
 	default boolean supports(ResponseType<?> responseType) {
-		return supports(responseType.getExpectedResponseType());
+		return getSupportedResponseTypes().stream().filter(compatibleResponseType(responseType)).findFirst().isPresent();
 	};
+
+	private Predicate<? super ResponseType<?>> compatibleResponseType(ResponseType<?> responseType) {
+		return supportedType -> {
+			if (supportedType.getClass().equals(responseType.getClass()))
+				return false;
+			return supportedType.getExpectedResponseType().isAssignableFrom(responseType.getExpectedResponseType());
+		};
+	}
 }
