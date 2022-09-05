@@ -1,5 +1,7 @@
 package io.sapl.axon.commandhandling;
 
+import static io.sapl.axon.TestUtilities.isAccessDenied;
+import static io.sapl.axon.TestUtilities.isCausedBy;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,7 +45,6 @@ import io.sapl.axon.commandhandling.model.TestAggregateAPI.UpdateMember;
 import io.sapl.axon.configuration.SaplAutoConfiguration;
 import io.sapl.axon.constrainthandling.api.CommandConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
-import io.sapl.axon.queryhandling.TestUtilities;
 import io.sapl.spring.constraints.api.ErrorMappingConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
 import lombok.Value;
@@ -97,7 +98,7 @@ public abstract class CommandTestsuite {
 	void when_securedCommandHandler_and_Deny_then_accessDenied() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
-		assertTrue(TestUtilities.isAccessDenied().test(thrown));
+		assertTrue(isAccessDenied().test(thrown));
 	}
 
 	@Test
@@ -107,7 +108,7 @@ public abstract class CommandTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
-		assertTrue(TestUtilities.isAccessDenied().test(thrown));
+		assertTrue(isAccessDenied().test(thrown));
 	}
 
 	@Test
@@ -132,7 +133,7 @@ public abstract class CommandTestsuite {
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
 		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandTwo("foo")));
-		assertTrue(TestUtilities.isCausedBy(IllegalArgumentException.class).test(thrown));
+		assertTrue(isCausedBy(IllegalArgumentException.class).test(thrown));
 		verify(errorMappingProvider, times(1)).map(any());
 	}
 
@@ -177,14 +178,14 @@ public abstract class CommandTestsuite {
 		var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
 		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
-		assertTrue(TestUtilities.isAccessDenied().test(thrown));
+		assertTrue(isAccessDenied().test(thrown));
 	}
 
 	@Test
 	void when_securedAggregateCreationCommand_and_Deny_then_accessDenies() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CreateAggregate("id3")));
-		assertTrue(TestUtilities.isAccessDenied().test(thrown));
+		assertTrue(isAccessDenied().test(thrown));
 	}
 
 	@SuppressWarnings("unchecked")

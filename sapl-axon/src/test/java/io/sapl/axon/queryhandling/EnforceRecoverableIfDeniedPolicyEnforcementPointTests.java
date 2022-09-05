@@ -1,7 +1,7 @@
 package io.sapl.axon.queryhandling;
 
-import static io.sapl.axon.TestUtils.isAccessDeniedResponse;
-import static io.sapl.axon.TestUtils.unwrappedMatchesIgnoringIdentifier;
+import static io.sapl.axon.TestUtilities.isAccessDeniedResponse;
+import static io.sapl.axon.TestUtilities.unwrappedMatchesIgnoringIdentifier;
 import static io.sapl.axon.queryhandling.EnforceRecoverableIfDeniedPolicyEnforcementPoint.of;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;

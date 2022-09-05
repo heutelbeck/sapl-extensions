@@ -4,12 +4,13 @@ import java.util.function.Predicate;
 
 import org.axonframework.messaging.GenericResultMessage;
 import org.axonframework.messaging.ResultMessage;
+import org.springframework.security.access.AccessDeniedException;
 
 import io.sapl.axon.queryhandling.RecoverableResponse;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class TestUtils {
+public class TestUtilities {
 	
 	public static <U> Predicate<ResultMessage<RecoverableResponse<U>>> isAccessDeniedResponse() {
 		return recoverableResponse -> {
@@ -68,10 +69,47 @@ public class TestUtils {
 	
 	public static <U> Predicate<ResultMessage<RecoverableResponse<U>>> unwrappedMatchesIgnoringIdentifier(ResultMessage<U> resultMessage) {
 		return recoverableResultMessage -> {
-			if (TestUtils.<U>isAccessDeniedResponse().test(recoverableResultMessage))
+			if (TestUtilities.<U>isAccessDeniedResponse().test(recoverableResultMessage))
 				return false;
 			var unwrapped = new GenericResultMessage<>(recoverableResultMessage.getPayload().unwrap());
 			return matchesIgnoringIdentifier(resultMessage).test(unwrapped);
+		};
+	}
+	
+	public static Predicate<Throwable> isAccessDenied() {
+		return t -> {
+			if (t instanceof AccessDeniedException)
+				return true;
+
+			if (t.getMessage().contains(AccessDeniedException.class.getName()))
+				return true;
+
+			if (t.getMessage().toUpperCase().contains("ACCESS DENIED"))
+				return true;
+			
+			// in case the remote service closed the stream before it could be subscribed to
+			if (t.getMessage().toUpperCase().contains("ALREADY BEEN COMPLETED"))
+				return true;
+
+			if (t.getCause() == null)
+				return false;
+
+			return isAccessDenied().test(t.getCause());
+		};
+	}
+
+	public static Predicate<Throwable> isCausedBy(Class<? extends Throwable> cause) {
+		return t -> {
+			if (cause.isAssignableFrom(t.getClass()))
+				return true;
+
+			if (t.getMessage().contains(cause.getSimpleName()))
+				return true;
+
+			if (t.getCause() == null)
+				return false;
+
+			return isCausedBy(cause).test(t.getCause());
 		};
 	}
 }

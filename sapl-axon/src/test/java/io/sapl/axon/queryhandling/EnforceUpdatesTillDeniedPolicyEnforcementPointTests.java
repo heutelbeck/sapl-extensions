@@ -1,6 +1,6 @@
 package io.sapl.axon.queryhandling;
 
-import static io.sapl.axon.TestUtils.matchesIgnoringIdentifier;
+import static io.sapl.axon.TestUtilities.matchesIgnoringIdentifier;
 import static io.sapl.axon.queryhandling.EnforceUpdatesTillDeniedPolicyEnforcementPoint.of;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
