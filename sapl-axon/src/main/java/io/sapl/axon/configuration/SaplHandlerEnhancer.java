@@ -51,6 +51,7 @@ public class SaplHandlerEnhancer implements HandlerEnhancerDefinition {
 	private final ConstraintHandlerService                axonConstraintEnforcementService;
 	private final SaplQueryUpdateEmitter                  emitter;
 	private final AuthorizationSubscriptionBuilderService subscriptionBuilder;
+	private final SaplAxonProperties                      properties;
 
 	@Override
 	public <T> MessageHandlingMember<T> wrapHandler(MessageHandlingMember<T> original) {
@@ -64,7 +65,7 @@ public class SaplHandlerEnhancer implements HandlerEnhancerDefinition {
 
 		if (interfaces.contains(QueryHandlingMember.class)) {
 			return new QueryPolicyEnforcementPoint<>(original, pdp, axonConstraintEnforcementService, emitter,
-					subscriptionBuilder);
+					subscriptionBuilder, properties);
 		}
 
 		return original;

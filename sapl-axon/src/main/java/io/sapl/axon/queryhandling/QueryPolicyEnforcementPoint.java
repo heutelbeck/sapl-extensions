@@ -2,7 +2,6 @@ package io.sapl.axon.queryhandling;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Executable;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
@@ -27,6 +26,7 @@ import io.sapl.axon.annotation.EnforceDropUpdatesWhileDenied;
 import io.sapl.axon.annotation.EnforceRecoverableUpdatesIfDenied;
 import io.sapl.axon.annotation.PostHandleEnforce;
 import io.sapl.axon.annotation.PreHandleEnforce;
+import io.sapl.axon.configuration.SaplAxonProperties;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
 import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
@@ -44,8 +44,6 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember<T> {
 
-	private static final Duration CONNECTION_TTL = Duration.ofMillis(500L);
-
 	private static final Set<Class<?>> SAPL_AXON_ANNOTATIONS = Set.of(PreHandleEnforce.class, PostHandleEnforce.class,
 			EnforceDropUpdatesWhileDenied.class, EnforceRecoverableUpdatesIfDenied.class);
 
@@ -62,6 +60,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 	private final Set<Annotation>                         saplAnnotations;
 	private final MessageHandlingMember<T>                delegate;
 	private final Executable                              handlerExecutable;
+	private final SaplAxonProperties                      properties;
 
 	/**
 	 * Instantiate a QueryPolicyEnforcementPoint.
@@ -75,7 +74,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 	 */
 	public QueryPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
 			ConstraintHandlerService axonConstraintEnforcementService, SaplQueryUpdateEmitter emitter,
-			AuthorizationSubscriptionBuilderService subscriptionBuilder) {
+			AuthorizationSubscriptionBuilderService subscriptionBuilder, SaplAxonProperties properties) {
 		super(delegate);
 		this.delegate                         = delegate;
 		this.pdp                              = pdp;
@@ -86,6 +85,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 						"No underlying method or constructor found while wrapping the CommandHandlingMember."));
 		this.saplAnnotations                  = saplAnnotationsOnUnderlyingExecutable();
 		this.emitter                          = emitter;
+		this.properties                       = properties;
 	}
 
 	/**
@@ -336,7 +336,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 		var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(message,
 				streamingAnnotation.get(), handlerExecutable, Optional.empty());
 		var decisions         = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY);
-		var tap               = new FluxOneAndManyTap<AuthorizationDecision>(decisions, CONNECTION_TTL);
+		var tap               = new FluxOneAndManyTap<AuthorizationDecision>(decisions, properties.getSubscriptionQueryDecisionCacheTTL());
 		var initialDecision   = tap.one();
 		var tappedDecisions   = tap.many();
 

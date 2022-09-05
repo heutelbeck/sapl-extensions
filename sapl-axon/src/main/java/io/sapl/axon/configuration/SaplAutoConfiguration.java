@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.xstream.XStream;
@@ -46,6 +47,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Configuration
+@Import(SaplAxonProperties.class)
 public class SaplAutoConfiguration {
 
 	/**
@@ -198,9 +200,9 @@ public class SaplAutoConfiguration {
 	@Bean
 	SaplHandlerEnhancer saplEnhancer(PolicyDecisionPoint pdp, ConstraintHandlerService axonConstraintEnforcementService,
 			SaplQueryUpdateEmitter emitter, AuthorizationSubscriptionBuilderService subscriptionBuilder,
-			ObjectMapper mapper) {
+			ObjectMapper mapper, SaplAxonProperties properties) {
 		log.trace("Deploy SaplHandlerEnhancer");
-		return new SaplHandlerEnhancer(pdp, axonConstraintEnforcementService, emitter, subscriptionBuilder);
+		return new SaplHandlerEnhancer(pdp, axonConstraintEnforcementService, emitter, subscriptionBuilder, properties);
 	}
 
 	@Bean

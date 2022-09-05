@@ -63,13 +63,14 @@ public interface ResponseTypeSupport {
 	 *         {@code responseType} and false if it cannot
 	 */
 	default boolean supports(ResponseType<?> responseType) {
-		return getSupportedResponseTypes().stream().filter(compatibleResponseType(responseType)).findFirst().isPresent();
+		return getSupportedResponseTypes().stream().filter(compatibleResponseType(responseType)).findFirst()
+				.isPresent();
 	};
 
 	private Predicate<? super ResponseType<?>> compatibleResponseType(ResponseType<?> responseType) {
 		return supportedType -> {
 			if (supportedType.getClass().equals(responseType.getClass()))
-				return false;
+				return true;
 			return supportedType.getExpectedResponseType().isAssignableFrom(responseType.getExpectedResponseType());
 		};
 	}
