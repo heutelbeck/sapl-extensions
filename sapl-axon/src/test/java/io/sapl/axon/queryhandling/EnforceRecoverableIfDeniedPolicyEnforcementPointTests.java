@@ -21,6 +21,7 @@ import org.axonframework.queryhandling.GenericSubscriptionQueryMessage;
 import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
@@ -36,6 +37,7 @@ import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.StandardException;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -78,6 +80,15 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 				.thenCallRealMethod();
 		defaultResource = mapper.valueToTree(new TestUpdateResponseType());
 	}
+	
+	//private Logger logger = Logger.getLogger(this.getClass().getName());
+	
+	@BeforeEach
+	void beforeEach() {
+		Hooks.onErrorDropped(error -> {
+            //logger.log(Level.WARNING, "Exception happened:", error);
+        });
+	}
 
 	@Test
 	void when_pep_empty_then_noEvent() {
@@ -91,8 +102,8 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, resourceAccessPoint, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
-				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription()
+				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
@@ -107,10 +118,10 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, resourceAccessPoint, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
-				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription()
+				.verifyTimeout(DEFAULT_TIMEOUT);
 		StepVerifier.create(enforcedUpdateMessageFlux).expectError(IllegalStateException.class)
-				.verify(DEFAULT_TIMEOUT.multipliedBy(3));
+				.verify(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
@@ -125,8 +136,8 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, resourceAccessPoint, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
-				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription()
+				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
@@ -142,8 +153,8 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, resourceAccessPoint, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
-				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription()
+				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
@@ -159,8 +170,8 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, resourceAccessPoint, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
-				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription()
+				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
@@ -256,8 +267,8 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, resourceAccessPoint, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
-				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription()
+				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
@@ -673,7 +684,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 		StepVerifier.create(enforcedUpdateMessageFlux)
 				.expectNextMatches(unwrappedMatchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE))
 				.expectNextMatches(unwrappedMatchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE))
-				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+				.verifyTimeout(DEFAULT_TIMEOUT);
 		System.out.println("----             ----");
 		System.out.println("----     END     ----");
 		System.out.println("----             ----");

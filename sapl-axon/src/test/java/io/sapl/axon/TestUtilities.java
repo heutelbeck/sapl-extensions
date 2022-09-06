@@ -4,6 +4,8 @@ import java.util.function.Predicate;
 
 import org.axonframework.messaging.GenericResultMessage;
 import org.axonframework.messaging.ResultMessage;
+import org.axonframework.queryhandling.SubscriptionQueryMessage;
+import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.springframework.security.access.AccessDeniedException;
 
 import io.sapl.axon.queryhandling.RecoverableResponse;
@@ -22,24 +24,25 @@ public class TestUtilities {
 		};
 	}
 	
+	public static <U> Predicate<SubscriptionQueryMessage<?, ?, U>> alwaysTrue(SubscriptionQueryUpdateMessage<U> forUpdate) {
+		return val -> true;
+	}
+	
 	public static <U> Predicate<ResultMessage<U>> matchesIgnoringIdentifier(ResultMessage<U> resultMessage) {
+		return matchesIgnoringIdentifier(resultMessage.getPayloadType(), resultMessage);
+	}
+	
+	@SuppressWarnings("unlikely-arg-type")
+	public static <U1, U2> Predicate<ResultMessage<U2>> matchesIgnoringIdentifier(Class<U2> otherClazz, ResultMessage<U1> resultMessage) {
 		return otherResultMessage -> {
 			
 			//message check
 			if (resultMessage != null && otherResultMessage != null) {
-					
-				//payload check
-				if (resultMessage.getPayload() != null && otherResultMessage.getPayload() != null) {
-					if (!resultMessage.getPayload().equals(otherResultMessage.getPayload()))
-						return false;
-				}
 				
-				//payload null-equality check
-				else if (resultMessage.getPayload() == null ^ otherResultMessage.getPayload() == null)
-					return false;
-				
+				var isNotExceptional = true;
 				//exception check
 				if (resultMessage.isExceptional() && otherResultMessage.isExceptional()) {
+					isNotExceptional = false;
 					if (!resultMessage.exceptionResult().getClass().equals(otherResultMessage.exceptionResult().getClass()))
 						return false;
 				}
@@ -47,6 +50,19 @@ public class TestUtilities {
 				//exception null-equality check
 				else if (resultMessage.isExceptional() ^ otherResultMessage.isExceptional())
 					return false;
+				
+				if (isNotExceptional) {
+					
+					//payload check
+					if (resultMessage.getPayload() != null && otherResultMessage.getPayload() != null) {
+						if (!resultMessage.getPayload().equals(otherResultMessage.getPayload()))
+							return false;
+					}
+					
+					//payload null-equality check
+					else if (resultMessage.getPayload() == null ^ otherResultMessage.getPayload() == null)
+						return false;
+				}
 				
 				//metadata check
 				if (resultMessage.getMetaData() != null && resultMessage.getMetaData() != null) {
