@@ -20,6 +20,7 @@ import org.axonframework.queryhandling.GenericSubscriptionQueryMessage;
 import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -34,6 +35,7 @@ import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.StandardException;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -76,6 +78,15 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 				.thenCallRealMethod();
 		defaultResource = mapper.valueToTree(new TestUpdateResponseType());
 	}
+	
+	//private Logger logger = Logger.getLogger(this.getClass().getName());
+	
+	@BeforeEach
+	void beforeEach() {
+		Hooks.onErrorDropped(error -> {
+            //logger.log(Level.WARNING, "Exception happened:", error);
+        });
+	}
 
 	@Test
 	void when_pep_empty_then_noEvent() {
@@ -89,8 +100,8 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
-				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription()
+				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
@@ -105,10 +116,10 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
-				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription()
+				.verifyTimeout(DEFAULT_TIMEOUT);
 		StepVerifier.create(enforcedUpdateMessageFlux).expectError(IllegalStateException.class)
-				.verify(DEFAULT_TIMEOUT.multipliedBy(3));
+				.verify(DEFAULT_TIMEOUT.multipliedBy(2));
 	}
 
 	@Test
@@ -123,8 +134,8 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
-				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription()
+				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
@@ -140,8 +151,8 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
-				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription()
+				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
@@ -157,8 +168,8 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
-				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription()
+				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
@@ -251,8 +262,8 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
 				resultResponseType, updateResponseType);
-		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().expectNoEvent(DEFAULT_TIMEOUT)
-				.verifyTimeout(DEFAULT_TIMEOUT.multipliedBy(2));
+		StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription()
+				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test

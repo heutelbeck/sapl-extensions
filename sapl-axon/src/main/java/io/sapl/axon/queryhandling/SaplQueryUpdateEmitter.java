@@ -310,7 +310,9 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
     private Predicate<SubscriptionQueryMessage<?,?,?>> payloadMatchesQueryResponseType(Class<?> payloadType) {
 		return sqm -> {			
 			if(sqm.getUpdateResponseType() instanceof MultipleInstancesResponseType) {
-				return payloadType.isArray() ||	Iterable.class.isAssignableFrom(payloadType);
+				if (payloadType.isArray())
+					return true;
+				else return Iterable.class.isAssignableFrom(payloadType);
 			}
 			if(sqm.getUpdateResponseType() instanceof OptionalResponseType) {
 				return Optional.class.isAssignableFrom(payloadType);
@@ -365,6 +367,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	private void doCompleteExceptionally(Predicate<SubscriptionQueryMessage<?, ?, ?>> filter, Throwable cause) {
 		activeQueries.keySet().stream().filter(filter)
 				.forEach(query -> Optional.ofNullable(activeQueries.get(query)).ifPresent(queryData -> {
+
 					if (queryData.getMode() != QueryAuthorizationMode.UNDEFINED) {
 						emitError(query, cause, queryData.getUpdateSink());
 					} else {
@@ -425,11 +428,11 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		NO_AUTHORIZATION, TILL_DENIED, DROP_WHILE_DENIED, RECOVERABLE_IF_DENIED, UNDEFINED, IMMEDIATE_DENY;
 
 		public static QueryAuthorizationMode of(Class<? extends Annotation> clazz) {
-			if (clazz.isAssignableFrom(PreHandleEnforce.class))
+			if (PreHandleEnforce.class.isAssignableFrom(clazz))
 				return TILL_DENIED;
-			if (clazz.isAssignableFrom(EnforceDropUpdatesWhileDenied.class))
+			if (EnforceDropUpdatesWhileDenied.class.isAssignableFrom(clazz))
 				return DROP_WHILE_DENIED;
-			if (clazz.isAssignableFrom(EnforceRecoverableUpdatesIfDenied.class))
+			if (EnforceRecoverableUpdatesIfDenied.class.isAssignableFrom(clazz))
 				return RECOVERABLE_IF_DENIED;
 
 			throw new IllegalArgumentException(
