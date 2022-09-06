@@ -345,7 +345,7 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		emitter.emit(alwaysTrue(), update);
+		emitter.emit(alwaysTrue(update), update);
 		
 		create(registration.getUpdates())
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
@@ -363,7 +363,7 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		emitter.emit(alwaysTrue(), update);
+		emitter.emit(alwaysTrue(update), update);
 		
 		create(registration.getUpdates())
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
@@ -381,7 +381,7 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		emitter.emit(alwaysTrue(), update);
+		emitter.emit(alwaysTrue(update), update);
 		
 		create(registration.getUpdates())
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))

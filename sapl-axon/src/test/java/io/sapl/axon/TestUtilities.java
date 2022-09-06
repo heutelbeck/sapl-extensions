@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import org.axonframework.messaging.GenericResultMessage;
 import org.axonframework.messaging.ResultMessage;
 import org.axonframework.queryhandling.SubscriptionQueryMessage;
+import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.springframework.security.access.AccessDeniedException;
 
 import io.sapl.axon.queryhandling.RecoverableResponse;
@@ -23,7 +24,7 @@ public class TestUtilities {
 		};
 	}
 	
-	public static <U> Predicate<SubscriptionQueryMessage<?, ?, U>> alwaysTrue() {
+	public static <U> Predicate<SubscriptionQueryMessage<?, ?, U>> alwaysTrue(SubscriptionQueryUpdateMessage<U> forUpdate) {
 		return val -> true;
 	}
 	
