@@ -1,5 +1,6 @@
 package io.sapl.axon.queryhandling;
 
+import static io.sapl.axon.TestUtilities.alwaysTrue;
 import static io.sapl.axon.TestUtilities.matchesIgnoringIdentifier;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -344,7 +345,7 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		emitter.emit(Predicate.not(Predicate.isEqual(new Object())), update);
+		emitter.emit(alwaysTrue(), update);
 		
 		create(registration.getUpdates())
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
@@ -362,7 +363,7 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		emitter.emit(Predicate.not(Predicate.isEqual(new Object())), update);
+		emitter.emit(alwaysTrue(), update);
 		
 		create(registration.getUpdates())
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
@@ -380,7 +381,7 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		emitter.emit(Predicate.not(Predicate.isEqual(new Object())), update);
+		emitter.emit(alwaysTrue(), update);
 		
 		create(registration.getUpdates())
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))

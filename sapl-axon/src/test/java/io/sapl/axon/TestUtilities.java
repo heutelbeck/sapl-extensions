@@ -4,6 +4,7 @@ import java.util.function.Predicate;
 
 import org.axonframework.messaging.GenericResultMessage;
 import org.axonframework.messaging.ResultMessage;
+import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.springframework.security.access.AccessDeniedException;
 
 import io.sapl.axon.queryhandling.RecoverableResponse;
@@ -20,6 +21,10 @@ public class TestUtilities {
 				return false;
 			else return recoverableResponse.getPayload().isAccessDenied();
 		};
+	}
+	
+	public static <U> Predicate<SubscriptionQueryMessage<?, ?, U>> alwaysTrue() {
+		return val -> true;
 	}
 	
 	public static <U> Predicate<ResultMessage<U>> matchesIgnoringIdentifier(ResultMessage<U> resultMessage) {
