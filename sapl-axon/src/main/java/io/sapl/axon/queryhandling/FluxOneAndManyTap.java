@@ -106,6 +106,7 @@ public class FluxOneAndManyTap<T> {
 			subscribeIfNoActiveSubscriptionToSourcePresent();
 		}).doFinally(signal -> {
 			oneSink.set(null); // remove the sink as a listener for updates to the source
+			oneSubscribed.set(false);
 
 			if (manySubscribed.get())
 				return;
@@ -155,6 +156,7 @@ public class FluxOneAndManyTap<T> {
 		}).doFinally(signal -> {
 			// remove the sink as a listener for updates to the source
 			manySink.set(null);
+			manySubscribed.set(false);
 
 			if (oneSubscribed.get())
 				return;
