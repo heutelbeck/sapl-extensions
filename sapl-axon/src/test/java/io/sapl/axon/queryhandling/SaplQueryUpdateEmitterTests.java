@@ -2,16 +2,16 @@ package io.sapl.axon.queryhandling;
 
 import static io.sapl.axon.TestUtilities.alwaysTrue;
 import static io.sapl.axon.TestUtilities.matchesIgnoringIdentifier;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static reactor.test.StepVerifier.create;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static reactor.test.StepVerifier.create;
 
 import java.lang.annotation.Annotation;
 import java.time.Duration;
@@ -38,7 +38,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.reactivestreams.Publisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.util.ReflectionTestUtils;
 
