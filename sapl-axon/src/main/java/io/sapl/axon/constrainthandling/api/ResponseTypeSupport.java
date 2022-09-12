@@ -36,10 +36,7 @@ public interface ResponseTypeSupport {
 	}
 
 	private Predicate<? super ResponseType<?>> isSupportedType(Class<?> payloadType) {
-		return type -> {
-			new Exception().printStackTrace();
-			System.out.println("Supported type: " + type.getClass().getSimpleName() + " - "
-					+ type.getExpectedResponseType().getSimpleName() + " -?> " + payloadType.getSimpleName());
+		return type -> {		
 			if (type instanceof MultipleInstancesResponseType) {
 				return payloadType.isArray() || Iterable.class.isAssignableFrom(payloadType);
 			}
