@@ -123,7 +123,7 @@ public class ConstraintHandlerServiceTests {
 		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
 
 		var resource = new TextNode("resourceString");
-		var<String> type = ResponseTypes.instanceOf(String.class);
+		var type = ResponseTypes.instanceOf(String.class);
 
 		var deserialized = service.deserializeResource(resource, type);
 
@@ -135,7 +135,7 @@ public class ConstraintHandlerServiceTests {
 		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
 
 		var resource = new TextNode("resourceString");
-		var<Integer> type = ResponseTypes.instanceOf(Integer.class);
+		var type = ResponseTypes.instanceOf(Integer.class);
 
 		assertThrows(AccessDeniedException.class, () -> service.deserializeResource(resource, type));
 	}
@@ -178,7 +178,7 @@ public class ConstraintHandlerServiceTests {
 	void when_deserializeResource_with_multipleStringRessource_then_returnAllStrings() {
 		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
 
-		var<String> listOfStrings = List.of("resourceString", "otherResourceString");
+		var listOfStrings = List.of("resourceString", "otherResourceString");
 		var resource = factory.arrayNode().add("resourceString").add("otherResourceString");
 		var type = ResponseTypes.multipleInstancesOf(String.class);
 
@@ -191,7 +191,7 @@ public class ConstraintHandlerServiceTests {
 	void when_deserializeResource_with_multipleStringRessource_and_onlyOneEntry_then_returnSingleString() {
 		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
 
-		var<String> listOfStrings = List.of("resourceString");
+		var listOfStrings = List.of("resourceString");
 		var resource = factory.arrayNode().add("resourceString");
 		var type = ResponseTypes.multipleInstancesOf(String.class);
 
@@ -238,7 +238,7 @@ public class ConstraintHandlerServiceTests {
 		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
 
 		var resource = new TextNode("resourceString");
-		var<String> type = new UnknownResponseType<>(String.class);
+		var type = new UnknownResponseType<>(String.class);
 
 		assertThrows(AccessDeniedException.class, () -> service.deserializeResource(resource, type));
 	}
@@ -994,43 +994,43 @@ public class ConstraintHandlerServiceTests {
 			int numOfglobalErrorMappingHandlerProviders, int numOfglobalMappingProviders,
 			int numOfupdatePredicateProviders, int numOfupdateMappingProviders) {
 
-		var<OnDecisionConstraintHandlerProvider> globalRunnableProviders = new ArrayList<OnDecisionConstraintHandlerProvider>();
+		var globalRunnableProviders = new ArrayList<OnDecisionConstraintHandlerProvider>();
 		if (numOfglobalRunnableProviders > 0)
 			globalRunnableProviders.add(firstOnDecisionConstraintHandlerProvider);
 		if (numOfglobalRunnableProviders > 1)
 			globalRunnableProviders.add(secondOnDecisionConstraintHandlerProvider);
 
-		var<CommandConstraintHandlerProvider> globalCommandMessageMappingProviders = new ArrayList<CommandConstraintHandlerProvider>();
+		var globalCommandMessageMappingProviders = new ArrayList<CommandConstraintHandlerProvider>();
 		if (numOfglobalCommandMessageMappingProviders > 0)
 			globalCommandMessageMappingProviders.add(firstCommandConstraintHandlerProvider);
 		if (numOfglobalCommandMessageMappingProviders > 1)
 			globalCommandMessageMappingProviders.add(secondCommandConstraintHandlerProvider);
 
-		var<QueryConstraintHandlerProvider> globalQueryMessageMappingProviders = new ArrayList<QueryConstraintHandlerProvider>();
+		var globalQueryMessageMappingProviders = new ArrayList<QueryConstraintHandlerProvider>();
 		if (numOfglobalQueryMessageMappingProviders > 0)
 			globalQueryMessageMappingProviders.add(firstQueryConstraintHandlerProvider);
 		if (numOfglobalQueryMessageMappingProviders > 1)
 			globalQueryMessageMappingProviders.add(secondQueryConstraintHandlerProvider);
 
-		var<ErrorMappingConstraintHandlerProvider> globalErrorMappingHandlerProviders = new ArrayList<ErrorMappingConstraintHandlerProvider>();
+		var globalErrorMappingHandlerProviders = new ArrayList<ErrorMappingConstraintHandlerProvider>();
 		if (numOfglobalErrorMappingHandlerProviders > 0)
 			globalErrorMappingHandlerProviders.add(firstErrorMappingConstraintHandlerProvider);
 		if (numOfglobalErrorMappingHandlerProviders > 1)
 			globalErrorMappingHandlerProviders.add(secondErrorMappingConstraintHandlerProvider);
 
-		var<MappingConstraintHandlerProvider> globalMappingProviders = new ArrayList<MappingConstraintHandlerProvider<?>>();
+		var globalMappingProviders = new ArrayList<MappingConstraintHandlerProvider<?>>();
 		if (numOfglobalMappingProviders > 0)
 			globalMappingProviders.add(firstMappingConstraintHandlerProvider);
 		if (numOfglobalMappingProviders > 1)
 			globalMappingProviders.add(secondMappingConstraintHandlerProvider);
 
-		var<UpdateFilterConstraintHandlerProvider> updatePredicateProviders = new ArrayList<UpdateFilterConstraintHandlerProvider>();
+		var updatePredicateProviders = new ArrayList<UpdateFilterConstraintHandlerProvider>();
 		if (numOfupdatePredicateProviders > 0)
 			updatePredicateProviders.add(firstUpdateFilterConstraintHandlerProvider);
 		if (numOfupdatePredicateProviders > 1)
 			updatePredicateProviders.add(secondUpdateFilterConstraintHandlerProvider);
 
-		var<ResultConstraintHandlerProvider> updateMappingProviders = new ArrayList<ResultConstraintHandlerProvider>();
+		var updateMappingProviders = new ArrayList<ResultConstraintHandlerProvider>();
 		if (numOfupdateMappingProviders > 0)
 			updateMappingProviders.add(firstResultConstraintHandlerProvider);
 		if (numOfupdateMappingProviders > 1)
