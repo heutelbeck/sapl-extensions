@@ -21,6 +21,9 @@ import java.util.stream.Collectors;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.annotation.ParameterResolverFactory;
+import org.axonframework.messaging.responsetypes.InstanceResponseType;
+import org.axonframework.messaging.responsetypes.MultipleInstancesResponseType;
+import org.axonframework.messaging.responsetypes.OptionalResponseType;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.queryhandling.QueryMessage;
 import org.springframework.expression.spel.SpelEvaluationException;
@@ -64,15 +67,15 @@ import lombok.extern.slf4j.Slf4j;
 public class ConstraintHandlerService {
 	private final static SpelExpressionParser PARSER = new SpelExpressionParser();
 
-	private final ObjectMapper                                mapper;
-	private final ParameterResolverFactory                    parameterResolverFactory;
-	private final List<OnDecisionConstraintHandlerProvider>   globalRunnableProviders;
-	private final List<CommandConstraintHandlerProvider>      globalCommandMessageMappingProviders;
-	private final List<QueryConstraintHandlerProvider>        globalQueryMessageMappingProviders;
+	private final ObjectMapper mapper;
+	private final ParameterResolverFactory parameterResolverFactory;
+	private final List<OnDecisionConstraintHandlerProvider> globalRunnableProviders;
+	private final List<CommandConstraintHandlerProvider> globalCommandMessageMappingProviders;
+	private final List<QueryConstraintHandlerProvider> globalQueryMessageMappingProviders;
 	private final List<ErrorMappingConstraintHandlerProvider> globalErrorMappingHandlerProviders;
-	private final List<MappingConstraintHandlerProvider<?>>   globalMappingProviders;
+	private final List<MappingConstraintHandlerProvider<?>> globalMappingProviders;
 	private final List<UpdateFilterConstraintHandlerProvider> updatePredicateProviders;
-	private final List<ResultConstraintHandlerProvider>       updateMappingProviders;
+	private final List<ResultConstraintHandlerProvider> updateMappingProviders;
 
 	/**
 	 * Instantiate the ConstraintHandlerService.
@@ -105,7 +108,7 @@ public class ConstraintHandlerService {
 			List<UpdateFilterConstraintHandlerProvider> globalUpdatePredicateProviders,
 			List<ResultConstraintHandlerProvider> updateMappingProviders) {
 
-		this.mapper                   = mapper;
+		this.mapper = mapper;
 		this.parameterResolverFactory = parameterResolverFactory;
 
 		log.debug("Loading constraint handler providers...");
@@ -152,12 +155,27 @@ public class ConstraintHandlerService {
 	 *         deserialization fails.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T deserializeResource(JsonNode resource, ResponseType<T> type) {
-		
+	public <T> Object deserializeResource(JsonNode resource, ResponseType<T> type) {
+
 		try {
-			return mapper.treeToValue(resource, (Class<T>) type.getExpectedResponseType());
+			if (InstanceResponseType.class.isAssignableFrom(type.getClass())) {
+				return mapper.treeToValue(resource, (Class<T>) type.getExpectedResponseType());
+			}
+			if (MultipleInstancesResponseType.class.isAssignableFrom(type.getClass())) {
+				if (!ArrayNode.class.isAssignableFrom(resource.getClass()))
+					throw new IllegalArgumentException("resource is no array, however a MultipleInstancesResponseType was expected!");
+				var deserialized = mapper.treeToValue(resource, List.class);
+				if (!deserialized.isEmpty())
+					if (!type.getExpectedResponseType().isAssignableFrom(deserialized.get(0).getClass()))
+						throw new IllegalArgumentException("Unsupported entry in resource: " + deserialized.get(0).getClass() + ", expected: " + type.getExpectedResponseType());
+				return deserialized;
+			}
+			if (OptionalResponseType.class.isAssignableFrom(type.getClass())) {
+				return Optional.ofNullable(mapper.treeToValue(resource, (Class<T>) type.getExpectedResponseType()));
+			}
+			throw new IllegalArgumentException("Unsupported ResponseType: " + type.getClass());
 		} catch (JsonProcessingException | IllegalArgumentException e) {
-			log.error("Failed to deserialize resource object from decision", e);
+			log.error("Failed to deserialize resource object from decision: {}", e.getLocalizedMessage());
 			throw new AccessDeniedException("Access Denied");
 		}
 	}
@@ -190,11 +208,11 @@ public class ConstraintHandlerService {
 
 		Class<?> type = returnType.orElse(Object.class);
 
-		var onDecisionHandlers     = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
+		var onDecisionHandlers = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
 		var commandMappingHandlers = constructCommandMessageMappingHandlers(decision, obligationsWithoutHandler);
-		var errorMappingHandlers   = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
-		var resultMappingHandlers  = constructResultMappingHandlers(decision, obligationsWithoutHandler, type);
-		var handlersOnObject       = constructObjectConstraintHandlers(handlerObject, command, decision,
+		var errorMappingHandlers = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
+		var resultMappingHandlers = constructResultMappingHandlers(decision, obligationsWithoutHandler, type);
+		var handlersOnObject = constructObjectConstraintHandlers(handlerObject, command, decision,
 				obligationsWithoutHandler);
 
 		if (!obligationsWithoutHandler.isEmpty()) {
@@ -223,14 +241,14 @@ public class ConstraintHandlerService {
 		decision.getObligations()
 				.ifPresent(obligations -> obligations.forEach(obligation -> obligationsWithoutHandler.add(obligation)));
 
-		var onDecisionHandlers    = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
-		var queryMappingHandlers  = constructQueryMessageMappingHandlers(decision, obligationsWithoutHandler);
-		var errorMappingHandlers  = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
+		var onDecisionHandlers = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
+		var queryMappingHandlers = constructQueryMessageMappingHandlers(decision, obligationsWithoutHandler);
+		var errorMappingHandlers = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
 		var resultMappingHandlers = constructResultMessageMappingHandlers(decision, obligationsWithoutHandler,
 				responseType);
 
 		Function<?, ?> updateMappingHandlers = Functions.identity();
-		Predicate<?>   updateFilterPredicate = __ -> true;
+		Predicate<?> updateFilterPredicate = __ -> true;
 
 		if (updateType.isPresent()) {
 			updateMappingHandlers = constructResultMessageMappingHandlers(decision, obligationsWithoutHandler,
@@ -253,8 +271,8 @@ public class ConstraintHandlerService {
 			HashSet<JsonNode> obligationsWithoutHandler, ResponseType<T> responseType) {
 		var obligationFun = constructResultMesaageMappingHandlers(decision.getObligations(),
 				obligationsWithoutHandler::remove, responseType);
-		var adviceFun     = constructResultMesaageMappingHandlers(decision.getAdvice(), __ -> {
-							}, responseType);
+		var adviceFun = constructResultMesaageMappingHandlers(decision.getAdvice(), __ -> {
+		}, responseType);
 
 		return result -> {
 			var newResult = result;
@@ -297,7 +315,7 @@ public class ConstraintHandlerService {
 	@Data
 	@AllArgsConstructor
 	static class HandlerWithPriority<T> implements Comparable<HandlerWithPriority<T>> {
-		T   handler;
+		T handler;
 		int priority;
 
 		@Override
@@ -310,7 +328,7 @@ public class ConstraintHandlerService {
 			HashSet<JsonNode> obligationsWithoutHandler, ResponseType<T> responseType) {
 		Predicate<T> obligationFilterPredicate = constructPredicate(decision.getObligations(), responseType,
 				obligationsWithoutHandler::remove);
-		Predicate<T> adviceFilterPredicate     = constructPredicate(decision.getAdvice(), responseType,
+		Predicate<T> adviceFilterPredicate = constructPredicate(decision.getAdvice(), responseType,
 				obligationsWithoutHandler::remove);
 		return t -> onErrorFallbackTo(obligationFilterPredicate, false).test(t)
 				&& onErrorFallbackTo(adviceFilterPredicate, true).test(t);
@@ -348,8 +366,8 @@ public class ConstraintHandlerService {
 		decision.getObligations()
 				.ifPresent(obligations -> obligations.forEach(obligation -> obligationsWithoutHandler.add(obligation)));
 
-		var onDecisionHandlers    = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
-		var errorMappingHandlers  = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
+		var onDecisionHandlers = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
+		var errorMappingHandlers = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
 		var resultMappingHandlers = constructResultMessageMappingHandlers(decision, obligationsWithoutHandler,
 				responseType);
 
@@ -366,8 +384,8 @@ public class ConstraintHandlerService {
 	private Function<Throwable, Throwable> constructErrorMappingHandlers(AuthorizationDecision decision,
 			HashSet<JsonNode> obligationsWithoutHandler) {
 		var obligationFun = constructErrorMappingHandlers(decision.getObligations(), obligationsWithoutHandler::remove);
-		var adviceFun     = constructErrorMappingHandlers(decision.getAdvice(), __ -> {
-							});
+		var adviceFun = constructErrorMappingHandlers(decision.getAdvice(), __ -> {
+		});
 
 		return error -> {
 			var newError = error;
@@ -410,23 +428,23 @@ public class ConstraintHandlerService {
 			AuthorizationDecision decision, HashSet<JsonNode> obligationsWithoutHandler) {
 		var obligationFun = constructCommandMessageMappingHandlers(decision.getObligations(),
 				obligationsWithoutHandler::remove);
-		var adviceFun     = constructCommandMessageMappingHandlers(decision.getAdvice(), __ -> {
-							});
+		var adviceFun = constructCommandMessageMappingHandlers(decision.getAdvice(), __ -> {
+		});
 
-		return query -> {
-			var newQuery = query;
+		return command -> {
+			var newCommand = command;
 			try {
-				newQuery = obligationFun.orElseGet(() -> Functions.identity()).apply(newQuery);
+				newCommand = obligationFun.orElseGet(() -> Functions.identity()).apply(newCommand);
 			} catch (Throwable t) {
 				log.error("Failed to execute obligation handlers.", t);
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
-				newQuery = adviceFun.orElseGet(() -> Functions.identity()).apply(newQuery);
+				newCommand = adviceFun.orElseGet(() -> Functions.identity()).apply(newCommand);
 			} catch (Throwable t) {
 				log.error("Failed to execute advice handlers.", t);
 			}
-			return newQuery;
+			return newCommand;
 		};
 	}
 
@@ -454,8 +472,8 @@ public class ConstraintHandlerService {
 			AuthorizationDecision decision, HashSet<JsonNode> obligationsWithoutHandler) {
 		var obligationFun = constructQueryMessageMappingHandlers(decision.getObligations(),
 				obligationsWithoutHandler::remove);
-		var adviceFun     = constructQueryMessageMappingHandlers(decision.getAdvice(), __ -> {
-							});
+		var adviceFun = constructQueryMessageMappingHandlers(decision.getAdvice(), __ -> {
+		});
 
 		return query -> {
 			var newQuery = query;
@@ -499,8 +517,8 @@ public class ConstraintHandlerService {
 			HashSet<JsonNode> obligationsWithoutHandler, Class<?> type) {
 		var obligationFun = constructResultMappingHandlers(decision.getObligations(), obligationsWithoutHandler::remove,
 				type);
-		var adviceFun     = constructResultMappingHandlers(decision.getAdvice(), __ -> {
-							}, type);
+		var adviceFun = constructResultMappingHandlers(decision.getAdvice(), __ -> {
+		}, type);
 
 		return result -> {
 			var newResult = result;
@@ -527,7 +545,7 @@ public class ConstraintHandlerService {
 
 			for (var constraint : constraintsArray) {
 				for (var provider : globalMappingProviders) {
-					if (responseType.isAssignableFrom(provider.getSupportedType())
+					if (provider.getSupportedType().isAssignableFrom(responseType)
 							&& provider.isResponsible(constraint)) {
 						onHandlerFound.accept(constraint);
 						handlersWithPriority.add(new HandlerWithPriority<>(
@@ -542,10 +560,10 @@ public class ConstraintHandlerService {
 
 	private BiConsumer<AuthorizationDecision, Message<?>> constructOnDecisionHandlers(AuthorizationDecision decision,
 			Set<JsonNode> obligationsWithoutHandler) {
-		var onDecisionObligationHandlers = ondecisionHandlers(decision.getObligations(),
+		var onDecisionObligationHandlers = onDecisionHandlers(decision.getObligations(),
 				obligationsWithoutHandler::remove);
-		var onDecisionAdviceHandlers     = ondecisionHandlers(decision.getAdvice(), __ -> {
-											});
+		var onDecisionAdviceHandlers = onDecisionHandlers(decision.getAdvice(), __ -> {
+		});
 
 		return (auhtzDecision, message) -> {
 			onDecisionObligationHandlers.map(biConsumer -> (Runnable) (() -> biConsumer.accept(auhtzDecision, message)))
@@ -555,7 +573,7 @@ public class ConstraintHandlerService {
 		};
 	}
 
-	private Optional<BiConsumer<AuthorizationDecision, Message<?>>> ondecisionHandlers(Optional<ArrayNode> constraints,
+	private Optional<BiConsumer<AuthorizationDecision, Message<?>>> onDecisionHandlers(Optional<ArrayNode> constraints,
 			Consumer<JsonNode> onHandlerFound) {
 		return constraints.map(obligations -> {
 			var handlers = new ArrayList<BiConsumer<AuthorizationDecision, Message<?>>>(obligations.size());
@@ -575,9 +593,8 @@ public class ConstraintHandlerService {
 			AuthorizationDecision decision, Set<JsonNode> obligationsWithoutHandler) {
 		var obligationHandlers = collectConstraintHandlerMethods(decision.getObligations(), aggregate, command,
 				decision, obligationsWithoutHandler::remove);
-		var adviceHandlers     = collectConstraintHandlerMethods(decision.getAdvice(), aggregate, command, decision,
-				__ -> {
-										});
+		var adviceHandlers = collectConstraintHandlerMethods(decision.getAdvice(), aggregate, command, decision, __ -> {
+		});
 
 		return () -> {
 			obligationHandlers.map(this::obligation).ifPresent(Runnable::run);
@@ -667,8 +684,8 @@ public class ConstraintHandlerService {
 
 	private Object[] resolveArgumentsForMethodParameters(Method method, Message<?> message,
 			AuthorizationDecision decision, JsonNode constraint) {
-		var parameters     = method.getParameters();
-		var arguments      = new Object[parameters.length];
+		var parameters = method.getParameters();
+		var arguments = new Object[parameters.length];
 		var parameterIndex = 0;
 		for (var parameter : parameters) {
 			if (message.getPayloadType().isAssignableFrom(parameter.getType())) {

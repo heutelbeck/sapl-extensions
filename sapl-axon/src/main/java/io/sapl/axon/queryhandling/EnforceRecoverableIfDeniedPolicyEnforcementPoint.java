@@ -127,6 +127,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
 				new RecoverableResponse<>(updateResponseType, msg.getPayload()), msg.getMetaData()));
 	}
 
+	@SuppressWarnings("unchecked")
 	private void handleNextDecision(AuthorizationDecision decision) {
 
 		var implicitDecision = decision;
@@ -158,7 +159,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
 
 		if (implicitDecision.getResource().isPresent()) {
 			try {
-				U newResponse = constraintHandlerService.deserializeResource(implicitDecision.getResource().get(),
+				U newResponse = (U) constraintHandlerService.deserializeResource(implicitDecision.getResource().get(),
 						updateResponseType);
 				sink.next(new GenericSubscriptionQueryUpdateMessage<RecoverableResponse<U>>(
 						new RecoverableResponse<>(updateResponseType, newResponse)));

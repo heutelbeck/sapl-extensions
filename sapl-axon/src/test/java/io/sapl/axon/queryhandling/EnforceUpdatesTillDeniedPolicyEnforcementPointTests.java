@@ -384,7 +384,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	@Test
 	void when_pep_singlePermit_and_singleUpdate_and_ressource_then_permit() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
-		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
+		var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
 		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
 		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT, Optional.of(defaultResource),
