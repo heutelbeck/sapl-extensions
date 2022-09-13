@@ -157,27 +157,51 @@ public class ConstraintHandlerService {
 	@SuppressWarnings("unchecked")
 	public <T> Object deserializeResource(JsonNode resource, ResponseType<T> type) {
 
-		try {
-			if (InstanceResponseType.class.isAssignableFrom(type.getClass())) {
+		if (InstanceResponseType.class.isAssignableFrom(type.getClass())) {
+			try {
 				return mapper.treeToValue(resource, (Class<T>) type.getExpectedResponseType());
+			} catch (JsonProcessingException | IllegalArgumentException e) {
+				log.error("Failed to deserialize resource object from decision: {}", e.getLocalizedMessage());
+				throw new AccessDeniedException("Access Denied");
 			}
-			if (MultipleInstancesResponseType.class.isAssignableFrom(type.getClass())) {
-				if (!ArrayNode.class.isAssignableFrom(resource.getClass()))
-					throw new IllegalArgumentException(
-							"resource is no array, however a MultipleInstancesResponseType was expected!");
-				var deserialized = mapper.treeToValue(resource, List.class);
-				if (!deserialized.isEmpty())
-					if (!type.getExpectedResponseType().isAssignableFrom(deserialized.get(0).getClass()))
-						throw new IllegalArgumentException("Unsupported entry in resource: "
-								+ deserialized.get(0).getClass() + ", expected: " + type.getExpectedResponseType());
-				return deserialized;
+		}
+
+		else if (MultipleInstancesResponseType.class.isAssignableFrom(type.getClass())) {
+
+			if (!ArrayNode.class.isAssignableFrom(resource.getClass())) {
+				log.error("resource is no array, however a MultipleInstancesResponseType was expected!");
+				throw new AccessDeniedException("Access Denied");
 			}
-			if (OptionalResponseType.class.isAssignableFrom(type.getClass())) {
+
+			var deserialized = List.of();
+			try {
+				deserialized = mapper.treeToValue(resource, List.class);
+			} catch (JsonProcessingException | IllegalArgumentException e) {
+				log.error("Failed to deserialize resource object from decision: {}", e.getLocalizedMessage());
+				throw new AccessDeniedException("Access Denied");
+			}
+
+			if (!deserialized.isEmpty())
+				if (!type.getExpectedResponseType().isAssignableFrom(deserialized.get(0).getClass())) {
+					log.error("Unsupported entry in resource: " + deserialized.get(0).getClass() + ", expected: "
+							+ type.getExpectedResponseType());
+					throw new AccessDeniedException("Access Denied");
+				}
+
+			return deserialized;
+		}
+
+		else if (OptionalResponseType.class.isAssignableFrom(type.getClass())) {
+			try {
 				return Optional.ofNullable(mapper.treeToValue(resource, (Class<T>) type.getExpectedResponseType()));
+			} catch (JsonProcessingException | IllegalArgumentException e) {
+				log.error("Failed to deserialize resource object from decision: {}", e.getLocalizedMessage());
+				throw new AccessDeniedException("Access Denied");
 			}
-			throw new IllegalArgumentException("Unsupported ResponseType: " + type.getClass());
-		} catch (JsonProcessingException | IllegalArgumentException e) {
-			log.error("Failed to deserialize resource object from decision: {}", e.getLocalizedMessage());
+		}
+
+		else {
+			log.error("Unsupported ResponseType: {}", type.getClass());
 			throw new AccessDeniedException("Access Denied");
 		}
 	}
