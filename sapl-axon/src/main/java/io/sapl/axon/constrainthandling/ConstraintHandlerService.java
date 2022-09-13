@@ -688,12 +688,12 @@ public class ConstraintHandlerService {
 		var arguments = new Object[parameters.length];
 		var parameterIndex = 0;
 		for (var parameter : parameters) {
-			if (message.getPayloadType().isAssignableFrom(parameter.getType())) {
-				arguments[parameterIndex++] = message.getPayload();
-			} else if (JsonNode.class.isAssignableFrom(parameter.getType())) {
+			if (JsonNode.class.isAssignableFrom(parameter.getType())) {
 				arguments[parameterIndex++] = constraint;
 			} else if (AuthorizationDecision.class.isAssignableFrom(parameter.getType())) {
 				arguments[parameterIndex++] = decision;
+			} else if (message.getPayloadType().isAssignableFrom(parameter.getType())) {
+				arguments[parameterIndex++] = message.getPayload();
 			} else {
 				arguments[parameterIndex] = revolveAxonAndSpringParameters(method, message, parameters, parameterIndex,
 						parameter);
@@ -706,15 +706,15 @@ public class ConstraintHandlerService {
 	private Object revolveAxonAndSpringParameters(Method method, Message<?> message, Parameter[] parameters,
 			int parameterIndex, Parameter parameter) {
 
-		var factory = parameterResolverFactory.createInstance(method, parameters, parameterIndex);
+		var resolver = parameterResolverFactory.createInstance(method, parameters, parameterIndex);
 
-		if (factory == null)
+		if (resolver == null)
 			throw new IllegalStateException(String.format(
 					"Could not resolve parameter of @ConstraintHandler. method='%s' parameterName='%s'. No matching parameter resolver found.",
 					method, parameter.getName()));
 
 		@SuppressWarnings("unchecked")
-		Object argument = factory.resolveParameterValue(message);
+		Object argument = resolver.resolveParameterValue(message);
 
 		if (argument == null)
 			throw new IllegalStateException(

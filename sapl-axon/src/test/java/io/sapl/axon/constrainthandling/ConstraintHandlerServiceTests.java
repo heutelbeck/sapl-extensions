@@ -1,8 +1,10 @@
 package io.sapl.axon.constrainthandling;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -14,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+
+import org.axonframework.commandhandling.GenericCommandMessage;
 import org.axonframework.messaging.annotation.DefaultParameterResolverFactory;
 import org.axonframework.messaging.annotation.ParameterResolverFactory;
 import org.axonframework.messaging.responsetypes.AbstractResponseType;
@@ -31,6 +35,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
+import io.sapl.axon.annotation.ConstraintHandler;
 import io.sapl.axon.constrainthandling.api.CommandConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.QueryConstraintHandlerProvider;
@@ -57,6 +62,72 @@ public class ConstraintHandlerServiceTests {
 			return null;
 		}
 
+	}
+
+	private static class EmptyHandlerObject {
+
+		public void noHandle() {
+		}
+	}
+
+	private static class SingleHandlerObject extends EmptyHandlerObject {
+
+		@ConstraintHandler
+		public void handle1() {
+		}
+	}
+
+	private static class MalformedHandlerObject extends SingleHandlerObject {
+
+		@Override
+		@ConstraintHandler("malformed")
+		public void handle1() {
+		}
+	}
+
+	private static class SpELHandlerObject extends SingleHandlerObject {
+
+		@Override
+		@ConstraintHandler("#constraint.textValue() == 'constraint'")
+		public void handle1() {
+		}
+	}
+
+	private static class NonBooleanSpELHandlerObject extends SpELHandlerObject {
+
+		@Override
+		@ConstraintHandler("#constraint.textValue()")
+		public void handle1() {
+		}
+	}
+
+	private static class MultipleHandlerObject extends SpELHandlerObject {
+
+		@ConstraintHandler
+		public void handle2() {
+		}
+	}
+
+	private static class HandlerObjectWithParameters extends EmptyHandlerObject {
+
+		@ConstraintHandler
+		public void handle1(Object payload, JsonNode constraint, AuthorizationDecision decistion) {
+		}
+	}
+
+	private static class HandlerObjectWithUnresolvedParameters extends EmptyHandlerObject {
+
+		@ConstraintHandler
+		public void handle1(JsonNode constraint, AuthorizationDecision decistion, Object contextParameter) {
+		}
+	}
+
+	private static class ThrowingHandlerObject extends EmptyHandlerObject {
+
+		@ConstraintHandler
+		public void handle1() throws Exception {
+			throw new Exception();
+		}
 	}
 
 	private static ObjectMapper mapper;
@@ -929,7 +1000,7 @@ public class ConstraintHandlerServiceTests {
 		verify(firstMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
 		verify(secondMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
 	}
-	
+
 	@Test
 	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_advice_and_oneSupported_then_oneResultMappingHandlers() {
 		var alternativeMappingConstraintHandlerProvider = spy(new MappingConstraintHandlerProvider<String>() {
@@ -985,6 +1056,249 @@ public class ConstraintHandlerServiceTests {
 
 		verify(firstMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
 		verify(secondMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+	}
+
+//================================================================
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_obligation_and_handlerObject_and_noHandlers_then_accessDenied() {
+		var handlerObject = spy(new EmptyHandlerObject());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var obligations = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+
+		assertThrows(AccessDeniedException.class, () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision,
+				handlerObject, Optional.empty(), null));
+
+		verify(handlerObject, times(0)).noHandle();
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_obligation_and_handlerObject_and_oneHandlers_then_oneConstraintHandlers() {
+		var handlerObject = spy(new SingleHandlerObject());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var obligations = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+
+		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, Optional.empty(),
+				null);
+		bundle.executeAggregateConstraintHandlerMethods();
+
+		verify(handlerObject, times(0)).noHandle();
+		verify(handlerObject, times(1)).handle1();
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_obligation_and_handlerObject_and_malformedHandlers_then_accessDenied() {
+		var handlerObject = spy(new MalformedHandlerObject());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var obligations = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+
+		assertThrows(AccessDeniedException.class, () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision,
+				handlerObject, Optional.empty(), null));
+
+		verify(handlerObject, times(0)).noHandle();
+		verify(handlerObject, times(0)).handle1();
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_obligation_and_handlerObject_and_spelHandlers_then_oneConstraintHandlers() {
+		var handlerObject = spy(new SpELHandlerObject());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var obligations = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+
+		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, Optional.empty(),
+				null);
+		bundle.executeAggregateConstraintHandlerMethods();
+
+		verify(handlerObject, times(0)).noHandle();
+		verify(handlerObject, times(1)).handle1();
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_obligation_and_handlerObject_and_nonBooleanSpelHandlers_then_accessDenied() {
+		var handlerObject = spy(new NonBooleanSpELHandlerObject());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var obligations = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+
+		assertThrows(AccessDeniedException.class, () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision,
+				handlerObject, Optional.empty(), null));
+
+		verify(handlerObject, times(0)).noHandle();
+		verify(handlerObject, times(0)).handle1();
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_obligation_and_handlerObject_and_multipleHandlers_then_allConstraintHandlers() {
+		var handlerObject = spy(new MultipleHandlerObject());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var obligations = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+
+		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, Optional.empty(),
+				null);
+		bundle.executeAggregateConstraintHandlerMethods();
+
+		verify(handlerObject, times(0)).noHandle();
+		verify(handlerObject, times(1)).handle1();
+		verify(handlerObject, times(1)).handle2();
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_advice_and_handlerObject_and_noHandlers_then_noConstraintHandlers() {
+		var handlerObject = spy(new EmptyHandlerObject());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var advices = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, Optional.empty(),
+				null);
+		bundle.executeAggregateConstraintHandlerMethods();
+
+		verify(handlerObject, times(0)).noHandle();
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_advice_and_handlerObject_and_oneHandlers_then_oneConstraintHandlers() {
+		var handlerObject = spy(new SingleHandlerObject());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var advices = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, Optional.empty(),
+				null);
+		bundle.executeAggregateConstraintHandlerMethods();
+
+		verify(handlerObject, times(0)).noHandle();
+		verify(handlerObject, times(1)).handle1();
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_advice_and_handlerObject_and_malformedHandlers_then_noConstraintHandlers() {
+		var handlerObject = spy(new MalformedHandlerObject());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var advices = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, Optional.empty(),
+				null);
+		bundle.executeAggregateConstraintHandlerMethods();
+
+		verify(handlerObject, times(0)).noHandle();
+		verify(handlerObject, times(0)).handle1();
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_advice_and_handlerObject_and_spelHandlers_then_oneConstraintHandlers() {
+		var handlerObject = spy(new SpELHandlerObject());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var advices = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, Optional.empty(),
+				null);
+		bundle.executeAggregateConstraintHandlerMethods();
+
+		verify(handlerObject, times(0)).noHandle();
+		verify(handlerObject, times(1)).handle1();
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_advice_and_handlerObject_and_nonBooleanSpelHandlers_then_noConstraintHandlers() {
+		var handlerObject = spy(new NonBooleanSpELHandlerObject());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var advices = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, Optional.empty(),
+				null);
+		bundle.executeAggregateConstraintHandlerMethods();
+
+		verify(handlerObject, times(0)).noHandle();
+		verify(handlerObject, times(0)).handle1();
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_advice_and_handlerObject_and_multipleHandlers_then_allConstraintHandlers() {
+		var handlerObject = spy(new MultipleHandlerObject());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var advices = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, Optional.empty(),
+				null);
+		bundle.executeAggregateConstraintHandlerMethods();
+
+		verify(handlerObject, times(0)).noHandle();
+		verify(handlerObject, times(1)).handle1();
+		verify(handlerObject, times(1)).handle2();
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_someConstraint_and_handlerObject_and_parameterizedHandler_then_parameterizedConstraintHandlers() {
+		var handlerObject = spy(new HandlerObjectWithParameters());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var advices = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+		var payload = new Object();
+
+		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, Optional.empty(),
+				new GenericCommandMessage<>(payload));
+		bundle.executeAggregateConstraintHandlerMethods();
+
+		verify(handlerObject, times(0)).noHandle();
+		verify(handlerObject, times(1)).handle1(payload, advices.get(0), decision);
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_someConstraint_and_handlerObject_and_unresolvedParameterizedHandler_then_parameterizedConstraintHandlers() {
+		var handlerObject = spy(new HandlerObjectWithUnresolvedParameters());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var advices = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+		var payload = "payload";
+
+		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, Optional.empty(),
+				new GenericCommandMessage<>(payload));
+		bundle.executeAggregateConstraintHandlerMethods();
+
+		verify(handlerObject, times(0)).noHandle();
+		verify(handlerObject, times(0)).handle1(eq(advices.get(0)), eq(decision), any(Object.class));
+	}
+
+	@Test
+	void when_buildPreEnforceCommandConstraintHandlerBundle_with_someConstraint_and_handlerObject_and_throwingHandlers_then_sneakyThrows() {
+		var handlerObject = spy(new ThrowingHandlerObject());
+		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+
+		var advices = factory.arrayNode().add("constraint");
+		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+		assertDoesNotThrow(() -> {
+			var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject,
+					Optional.empty(), null);
+			bundle.executeAggregateConstraintHandlerMethods();
+
+			verify(handlerObject, times(0)).noHandle();
+			verify(handlerObject, times(1)).handle1();
+		});
 	}
 
 //================================================================
