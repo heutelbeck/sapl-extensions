@@ -182,7 +182,7 @@ public class AuthorizationSubscriptionBuilderService {
 				try {
 					return Optional.ofNullable(ReflectionUtils.getFieldValue(field, message.getPayload()));
 				} catch (IllegalStateException e) {
-					log.error("Could not get TargetAggregateIdentifier from message", e);
+					log.error("Could not get TargetAggregateIdentifier from message. {}", e.getLocalizedMessage());
 					return Optional.empty();
 				}
 			}
@@ -301,7 +301,7 @@ public class AuthorizationSubscriptionBuilderService {
 			log.error(
 					"Failed to evaluate the SePL expression \"{}\" during"
 							+ " construction of an AuthorizationSubscription. Error: {}",
-					spelExpression, e.getMessage());
+					spelExpression, e.getLocalizedMessage());
 			throw e;
 		}
 	}
