@@ -163,11 +163,13 @@ public class ConstraintHandlerService {
 			}
 			if (MultipleInstancesResponseType.class.isAssignableFrom(type.getClass())) {
 				if (!ArrayNode.class.isAssignableFrom(resource.getClass()))
-					throw new IllegalArgumentException("resource is no array, however a MultipleInstancesResponseType was expected!");
+					throw new IllegalArgumentException(
+							"resource is no array, however a MultipleInstancesResponseType was expected!");
 				var deserialized = mapper.treeToValue(resource, List.class);
 				if (!deserialized.isEmpty())
 					if (!type.getExpectedResponseType().isAssignableFrom(deserialized.get(0).getClass()))
-						throw new IllegalArgumentException("Unsupported entry in resource: " + deserialized.get(0).getClass() + ", expected: " + type.getExpectedResponseType());
+						throw new IllegalArgumentException("Unsupported entry in resource: "
+								+ deserialized.get(0).getClass() + ", expected: " + type.getExpectedResponseType());
 				return deserialized;
 			}
 			if (OptionalResponseType.class.isAssignableFrom(type.getClass())) {
@@ -279,13 +281,13 @@ public class ConstraintHandlerService {
 			try {
 				newResult = obligationFun.orElseGet(() -> Functions.identity()).apply(result);
 			} catch (Throwable t) {
-				log.error("Failed to execute obligation handlers.", t);
+				log.error("Failed to execute obligation handlers. {}", t.getLocalizedMessage());
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
 				newResult = adviceFun.orElseGet(() -> Functions.identity()).apply(newResult);
 			} catch (Throwable t) {
-				log.error("Failed to execute advice handlers.", t);
+				log.error("Failed to execute advice handlers. {}", t.getLocalizedMessage());
 			}
 			return newResult;
 		};
@@ -392,13 +394,13 @@ public class ConstraintHandlerService {
 			try {
 				newError = obligationFun.orElseGet(() -> Functions.identity()).apply(newError);
 			} catch (Throwable t) {
-				log.error("Failed to execute obligation handlers.", t);
+				log.error("Failed to execute obligation handlers. {}", t.getLocalizedMessage());
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
 				newError = adviceFun.orElseGet(() -> Functions.identity()).apply(newError);
 			} catch (Throwable t) {
-				log.error("Failed to execute advice handlers.", t);
+				log.error("Failed to execute advice handlers. {}", t.getLocalizedMessage());
 			}
 			return newError;
 		};
@@ -436,13 +438,13 @@ public class ConstraintHandlerService {
 			try {
 				newCommand = obligationFun.orElseGet(() -> Functions.identity()).apply(newCommand);
 			} catch (Throwable t) {
-				log.error("Failed to execute obligation handlers.", t);
+				log.error("Failed to execute obligation handlers. {}", t.getLocalizedMessage());
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
 				newCommand = adviceFun.orElseGet(() -> Functions.identity()).apply(newCommand);
 			} catch (Throwable t) {
-				log.error("Failed to execute advice handlers.", t);
+				log.error("Failed to execute advice handlers. {}", t.getLocalizedMessage());
 			}
 			return newCommand;
 		};
@@ -480,13 +482,13 @@ public class ConstraintHandlerService {
 			try {
 				newQuery = obligationFun.orElseGet(() -> Functions.identity()).apply(newQuery);
 			} catch (Throwable t) {
-				log.error("Failed to execute obligation handlers.", t);
+				log.error("Failed to execute obligation handlers. {}", t.getLocalizedMessage());
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
 				newQuery = adviceFun.orElseGet(() -> Functions.identity()).apply(newQuery);
 			} catch (Throwable t) {
-				log.error("Failed to execute advice handlers.", t);
+				log.error("Failed to execute advice handlers. {}", t.getLocalizedMessage());
 			}
 			return newQuery;
 		};
@@ -525,13 +527,13 @@ public class ConstraintHandlerService {
 			try {
 				newResult = (T) obligationFun.orElseGet(() -> Functions.identity()).apply(result);
 			} catch (Throwable t) {
-				log.error("Failed to execute obligation handlers.", t);
+				log.error("Failed to execute obligation handlers. {}", t.getLocalizedMessage());
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
 				newResult = (T) adviceFun.orElseGet(() -> Functions.identity()).apply(newResult);
 			} catch (Throwable t) {
-				log.error("Failed to execute advice handlers.", t);
+				log.error("Failed to execute advice handlers. {}", t.getLocalizedMessage());
 			}
 			return newResult;
 		};
@@ -733,7 +735,7 @@ public class ConstraintHandlerService {
 			try {
 				handler.run();
 			} catch (Throwable t) {
-				log.error("Failed to execute obligation handlers.", t);
+				log.error("Failed to execute obligation handlers. {}", t.getLocalizedMessage());
 				throw new AccessDeniedException("Access Denied");
 			}
 		};
@@ -744,7 +746,7 @@ public class ConstraintHandlerService {
 			try {
 				handler.run();
 			} catch (Throwable t) {
-				log.error("Failed to execute adivce handlers.", t);
+				log.error("Failed to execute adivce handlers. {}", t.getLocalizedMessage());
 			}
 		};
 	}
@@ -768,7 +770,7 @@ public class ConstraintHandlerService {
 			try {
 				return p.test(t);
 			} catch (Throwable e) {
-				log.error("Failed to evaluate predicate.", e);
+				log.error("Failed to evaluate predicate. {}", e.getLocalizedMessage());
 				return fallback;
 			}
 		};

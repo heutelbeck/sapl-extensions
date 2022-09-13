@@ -30,12 +30,12 @@ public class QueryConstraintHandlerBundle<I> {
 	 */
 	public static final QueryConstraintHandlerBundle<?> NOOP_BUNDLE = new QueryConstraintHandlerBundle<>();
 
-	private final BiConsumer<AuthorizationDecision, Message<?>>    onDecisionHandlers;
+	private final BiConsumer<AuthorizationDecision, Message<?>> onDecisionHandlers;
 	private final Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers;
-	private final Function<Throwable, Throwable>                   errorMappers;
-	private final Function<I, I>                                   initialResultMappers;
-	private final Function<ResultMessage<?>, ResultMessage<?>>     updateMappers;
-	private final Predicate<ResultMessage<?>>                      filterPredicates;
+	private final Function<Throwable, Throwable> errorMappers;
+	private final Function<I, I> initialResultMappers;
+	private final Function<ResultMessage<?>, ResultMessage<?>> updateMappers;
+	private final Predicate<ResultMessage<?>> filterPredicates;
 
 	/**
 	 * Constructs a bundle with all no operation functions.
@@ -108,6 +108,6 @@ public class QueryConstraintHandlerBundle<I> {
 		if (!filterPredicates.test(message))
 			return Optional.empty();
 
-		return Optional.of(updated);
+		return Optional.ofNullable(updated);
 	}
 }
