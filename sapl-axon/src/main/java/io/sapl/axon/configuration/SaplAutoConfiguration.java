@@ -28,6 +28,7 @@ import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.QueryConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.UpdateFilterConstraintHandlerProvider;
+import io.sapl.axon.constrainthandling.provider.ResponseMessagePayloadFilterPredicateProvider;
 import io.sapl.axon.constrainthandling.provider.ResponseMessagePayloadFilterProvider;
 import io.sapl.axon.queryhandling.SaplQueryGateway;
 import io.sapl.axon.queryhandling.SaplQueryUpdateEmitter;
@@ -220,4 +221,14 @@ public class SaplAutoConfiguration {
 	ResponseMessagePayloadFilterProvider responsePayloadFilterProvider(ObjectMapper mapper) {
 		return new ResponseMessagePayloadFilterProvider(mapper);
 	}
+
+	/**
+	 * @param mapper The application's ObjectMapper.
+	 * @return ResponseMessagePayloadFilterProvider for filtering obligations.
+	 */
+	@Bean
+	ResponseMessagePayloadFilterPredicateProvider responseMessagePayloadFilterPredicateProvider(ObjectMapper mapper) {
+		return new ResponseMessagePayloadFilterPredicateProvider(mapper);
+	}
+
 }

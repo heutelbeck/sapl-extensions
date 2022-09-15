@@ -1,12 +1,7 @@
 package io.sapl.axon.constrainthandling.provider;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
@@ -71,24 +66,7 @@ public class ResponseMessagePayloadFilterProvider implements ResultConstraintHan
 	 */
 	@Override
 	public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
-		var predicate = ContentFilterUtil.predicateFromConditions(constraint, objectMapper);
-
-		if (payload instanceof Optional)
-			return ((Optional<?>) payload).map(x -> mapElement(x, constraint, predicate));
-		if (payload instanceof Collection)
-			return mapCollectionContents((Collection<?>) payload, constraint, predicate);
-		return mapElement(payload, constraint, predicate);
-	}
-
-	private Object mapElement(Object payload, JsonNode constraint, Predicate<Object> predicate) {
-		if (predicate.test(payload))
-			return ContentFilterUtil.getHandler(constraint, objectMapper).apply(payload);
-
-		return payload;
-	}
-
-	private List<?> mapCollectionContents(Collection<?> payload, JsonNode constraint, Predicate<Object> predicate) {
-		return payload.stream().map(o -> mapElement(o, constraint, predicate)).collect(Collectors.toList());
+		return ContentFilterUtil.getHandler(constraint, objectMapper).apply(payload);
 	}
 
 }
