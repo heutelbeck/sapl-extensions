@@ -69,6 +69,8 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 	 * @param pdp                              The Policy Decision Point.
 	 * @param emitter                          The SaplQueryUpdateEmitter.
 	 * @param axonConstraintEnforcementService The ConstraintHandlerService.
+	 * @param properties                       The configuration class for TTL
+	 *                                         settings.
 	 * @param subscriptionBuilder              The
 	 *                                         AuthorizationSubscriptionBuilderService.
 	 */
@@ -336,7 +338,8 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 		var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(message,
 				streamingAnnotation.get(), handlerExecutable, Optional.empty());
 		var decisions         = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY);
-		var tap               = new FluxOneAndManyTap<AuthorizationDecision>(decisions, properties.getSubscriptionQueryDecisionCacheTTL());
+		var tap               = new FluxOneAndManyTap<AuthorizationDecision>(decisions,
+				properties.getSubscriptionQueryDecisionCacheTTL());
 		var initialDecision   = tap.one();
 		var tappedDecisions   = tap.many();
 
