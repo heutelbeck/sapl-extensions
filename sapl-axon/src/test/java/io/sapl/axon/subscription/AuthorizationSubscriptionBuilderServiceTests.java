@@ -1,5 +1,12 @@
 package io.sapl.axon.subscription;
 
+import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.ACTION_TYPE;
+import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.AGGREGATE_IDENTIFIER;
+import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.AGGREGATE_TYPE;
+import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.COMMAND;
+import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.COMMAND_NAME;
+import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.PAYLOAD;
+import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.PAYLOAD_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,30 +29,6 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 
 public class AuthorizationSubscriptionBuilderServiceTests {
-
-	private static final String ACTION = "action";
-	private static final String ACTION_TYPE = "actionType";
-	private static final String AGGREGATE_IDENTIFIER = "aggregateIdentifier";
-	private static final String AGGREGATE_TYPE = "aggregateType";
-	private static final String ANONYMOUS = "\"anonymous\"";
-	private static final String CLASS_NAME = "className";
-	private static final String COMMAND = "command";
-	private static final String COMMAND_NAME = "commandName";
-	private static final String ENVIRONMENT = "environment";
-	private static final String EXECUTABLE = "executable";
-	private static final String MESSAGE = "message";
-	private static final String METADATA = "metadata";
-	private static final String METHOD_NAME = "methodName";
-	private static final String PAYLOAD = "payload";
-	private static final String PAYLOAD_TYPE = "payloadType";
-	private static final String PROJECTION_CLASS = "projectionClass";
-	private static final String QUERY = "query";
-	private static final String QUERY_NAME = "queryName";
-	private static final String QUERY_RESULT = "queryResult";
-	private static final String RESOURCE = "resource";
-	private static final String RESPONSE_TYPE = "responseType";
-	private static final String SUBJECT = "subject";
-	private static final String UPDATE_RESPONSE_TYPE = "updateResponseType";
 
 	private static final String TEST_AGGREGATE_IDENTIFIER = "testTargetAggregateIdentifier";
 	private static final String TEST_ANONYMOUS = "anonymous";
