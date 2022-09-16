@@ -1,21 +1,5 @@
 package io.sapl.axon.subscription;
 
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.ACTION_TYPE;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.AGGREGATE_IDENTIFIER;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.AGGREGATE_TYPE;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.CLASS_NAME;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.COMMAND;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.COMMAND_NAME;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.METADATA;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.METHOD_NAME;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.PAYLOAD;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.PAYLOAD_TYPE;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.PROJECTION_CLASS;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.QUERY;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.QUERY_NAME;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.QUERY_RESULT;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.RESPONSE_TYPE;
-import static io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService.UPDATE_RESPONSE_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -46,20 +30,42 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 
 public class AuthorizationSubscriptionBuilderServiceTests {
+	private static final String ACTION_TYPE          = "actionType";
+	private static final String AGGREGATE_IDENTIFIER = "aggregateIdentifier";
+	private static final String AGGREGATE_TYPE       = "aggregateType";
+	private static final String CLASS_NAME           = "className";
+	private static final String COMMAND              = "command";
+	private static final String COMMAND_NAME         = "commandName";
+	private static final String METADATA             = "metadata";
+	private static final String METHOD_NAME          = "methodName";
+	private static final String PAYLOAD              = "payload";
+	private static final String PAYLOAD_TYPE         = "payloadType";
+	private static final String PROJECTION_CLASS     = "projectionClass";
+	private static final String QUERY                = "query";
+	private static final String QUERY_NAME           = "queryName";
+	private static final String QUERY_RESULT         = "queryResult";
+	private static final String RESPONSE_TYPE        = "responseType";
+	private static final String UPDATE_RESPONSE_TYPE = "updateResponseType";
 
 	private static final String TEST_AGGREGATE_IDENTIFIER = "testAggregateIdentifier";
-	private static final String TEST_DOCUMENT_IDENTIFIER = "testDocumentIdentifier";
-	private static final String TEST_ANONYMOUS = "anonymous";
-	private static final String TEST_SUBJECT = "testSubject";
-	private static final String TEST_ACTION = "testAction";
-	private static final String TEST_RESOURCE = "testResource";
-	private static final String TEST_AGGREGATE_TYPE = "testAggregateType";
-	private static final String TEST_ENVIRONMENT = "testEnvironment";
+	private static final String TEST_DOCUMENT_IDENTIFIER  = "testDocumentIdentifier";
+	private static final String TEST_ANONYMOUS            = "anonymous";
+	private static final String TEST_SUBJECT              = "testSubject";
+	private static final String TEST_ACTION               = "testAction";
+	private static final String TEST_RESOURCE             = "testResource";
+	private static final String TEST_AGGREGATE_TYPE       = "testAggregateType";
+	private static final String TEST_ENVIRONMENT          = "testEnvironment";
 
 	@Value
 	private static class TestCommand {
 		@TargetAggregateIdentifier
 		Object targetAggregateIdentifier;
+		Object someOtherField = "someOtherValue";
+	}
+	
+	@Value
+	private static class NonAnnotatedTestCommand {
+		Object nonAnnotatedTargetAggregateIdentifier;
 		Object someOtherField = "someOtherValue";
 	}
 
@@ -131,6 +137,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		@PreHandleEnforce(environment = "'testEnvironment'")
 		public void handle9(TestCommand cmd) {
 		}
+		
+		@CommandHandler
+		@PreHandleEnforce
+		public void handle10(NonAnnotatedTestCommand cmd) {
+		}
 	}
 
 	private static class TestCommandHandlingObject {
@@ -177,6 +188,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		@CommandHandler
 		@PreHandleEnforce(environment = "'testEnvironment'")
 		public void handle9(TestCommand cmd) {
+		}
+		
+		@CommandHandler
+		@PreHandleEnforce
+		public void handle10(NonAnnotatedTestCommand cmd) {
 		}
 	}
 
@@ -254,12 +270,12 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		}
 	}
 
-	private static ObjectMapper mapper;
+	private static ObjectMapper                            mapper;
 	private static AuthorizationSubscriptionBuilderService service;
 
 	@BeforeAll
 	static void beforeAll() {
-		mapper = new ObjectMapper();
+		mapper  = new ObjectMapper();
 		service = new AuthorizationSubscriptionBuilderService(mapper);
 	}
 
@@ -270,10 +286,10 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var command = new GenericCommandMessage<>(payload);
 
 		var handlerObject1 = new TestAggregate(TEST_AGGREGATE_IDENTIFIER);
-		var annotation1 = TestAggregate.class.getDeclaredMethod("handle1", TestCommand.class)
+		var annotation1    = TestAggregate.class.getDeclaredMethod("handle1", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 		var handlerObject2 = new TestCommandHandlingObject();
-		var annotation2 = TestCommandHandlingObject.class.getDeclaredMethod("handle1", TestCommand.class)
+		var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle1", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 
 		var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
@@ -302,10 +318,10 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var command = new GenericCommandMessage<>(payload);
 
 		var handlerObject1 = new TestAggregate(TEST_AGGREGATE_IDENTIFIER);
-		var annotation1 = TestAggregate.class.getDeclaredMethod("handle2", TestCommand.class)
+		var annotation1    = TestAggregate.class.getDeclaredMethod("handle2", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 		var handlerObject2 = new TestCommandHandlingObject();
-		var annotation2 = TestCommandHandlingObject.class.getDeclaredMethod("handle2", TestCommand.class)
+		var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle2", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 
 		assertThrows(SpelEvaluationException.class,
@@ -321,10 +337,10 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var command = new GenericCommandMessage<>(payload);
 
 		var handlerObject1 = new TestAggregate(TEST_AGGREGATE_IDENTIFIER);
-		var annotation1 = TestAggregate.class.getDeclaredMethod("handle3", TestCommand.class)
+		var annotation1    = TestAggregate.class.getDeclaredMethod("handle3", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 		var handlerObject2 = new TestCommandHandlingObject();
-		var annotation2 = TestCommandHandlingObject.class.getDeclaredMethod("handle3", TestCommand.class)
+		var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle3", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 
 		var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
@@ -353,10 +369,10 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var command = new GenericCommandMessage<>(payload);
 
 		var handlerObject1 = new TestAggregate(TEST_AGGREGATE_IDENTIFIER);
-		var annotation1 = TestAggregate.class.getDeclaredMethod("handle4", TestCommand.class)
+		var annotation1    = TestAggregate.class.getDeclaredMethod("handle4", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 		var handlerObject2 = new TestCommandHandlingObject();
-		var annotation2 = TestCommandHandlingObject.class.getDeclaredMethod("handle4", TestCommand.class)
+		var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle4", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 
 		assertThrows(SpelEvaluationException.class,
@@ -372,10 +388,10 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var command = new GenericCommandMessage<>(payload);
 
 		var handlerObject1 = new TestAggregate(TEST_AGGREGATE_IDENTIFIER);
-		var annotation1 = TestAggregate.class.getDeclaredMethod("handle5", TestCommand.class)
+		var annotation1    = TestAggregate.class.getDeclaredMethod("handle5", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 		var handlerObject2 = new TestCommandHandlingObject();
-		var annotation2 = TestCommandHandlingObject.class.getDeclaredMethod("handle5", TestCommand.class)
+		var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle5", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 
 		var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
@@ -398,10 +414,10 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var command = new GenericCommandMessage<>(payload);
 
 		var handlerObject1 = new TestAggregate(TEST_AGGREGATE_IDENTIFIER);
-		var annotation1 = TestAggregate.class.getDeclaredMethod("handle6", TestCommand.class)
+		var annotation1    = TestAggregate.class.getDeclaredMethod("handle6", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 		var handlerObject2 = new TestCommandHandlingObject();
-		var annotation2 = TestCommandHandlingObject.class.getDeclaredMethod("handle6", TestCommand.class)
+		var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle6", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 
 		assertThrows(SpelEvaluationException.class,
@@ -417,10 +433,10 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var command = new GenericCommandMessage<>(payload);
 
 		var handlerObject1 = new TestAggregate(TEST_AGGREGATE_IDENTIFIER);
-		var annotation1 = TestAggregate.class.getDeclaredMethod("handle7", TestCommand.class)
+		var annotation1    = TestAggregate.class.getDeclaredMethod("handle7", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 		var handlerObject2 = new TestCommandHandlingObject();
-		var annotation2 = TestCommandHandlingObject.class.getDeclaredMethod("handle7", TestCommand.class)
+		var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle7", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 
 		var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
@@ -441,7 +457,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		assertNull(subscription1.getEnvironment());
 		assertNull(subscription2.getEnvironment());
 	}
-	
+
 	@Test
 	void when_constructAuthorizationSubscriptionForCommand_with_noHandlerObject_then_noHandlerObjectInResource()
 			throws NoSuchMethodException, SecurityException {
@@ -503,6 +519,38 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		assertNull(subscription1.getEnvironment());
 		assertNull(subscription2.getEnvironment());
 	}
+	
+	@Test
+	void when_constructAuthorizationSubscriptionForCommand_with_commandWithoutTargetIdentifier_then_noIdentifierInResource()
+			throws NoSuchMethodException, SecurityException {
+		var payload = new NonAnnotatedTestCommand(TEST_AGGREGATE_IDENTIFIER);
+		var command = new GenericCommandMessage<>(payload);
+
+		var handlerObject1 = new TestAggregate(TEST_AGGREGATE_IDENTIFIER);
+		var annotation1    = TestAggregate.class.getDeclaredMethod("handle10", NonAnnotatedTestCommand.class)
+				.getAnnotation(PreHandleEnforce.class);
+		var handlerObject2 = new TestCommandHandlingObject();
+		var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle10", NonAnnotatedTestCommand.class)
+				.getAnnotation(PreHandleEnforce.class);
+
+		var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
+		var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
+
+		assertEquals(TEST_ANONYMOUS, subscription1.getSubject().asText());
+		assertEquals(TEST_ANONYMOUS, subscription2.getSubject().asText());
+		assertEquals(COMMAND, subscription1.getAction().get(ACTION_TYPE).asText());
+		assertEquals(COMMAND, subscription2.getAction().get(ACTION_TYPE).asText());
+		assertEquals(NonAnnotatedTestCommand.class.getName(), subscription1.getAction().get(COMMAND_NAME).asText());
+		assertEquals(NonAnnotatedTestCommand.class.getName(), subscription2.getAction().get(COMMAND_NAME).asText());
+		assertEquals(asTree(payload), subscription1.getAction().get(PAYLOAD));
+		assertEquals(asTree(payload), subscription2.getAction().get(PAYLOAD));
+		assertEquals(NonAnnotatedTestCommand.class.getName(), subscription1.getAction().get(PAYLOAD_TYPE).asText());
+		assertEquals(NonAnnotatedTestCommand.class.getName(), subscription2.getAction().get(PAYLOAD_TYPE).asText());
+		assertEquals(aggregateInfoWithoutIdentifier(), subscription1.getResource());
+		assertEquals(handlerInfoWithoutIdentifier(), subscription2.getResource());
+		assertNull(subscription1.getEnvironment());
+		assertNull(subscription2.getEnvironment());
+	}
 
 	@Test
 	void when_constructAuthorizationSubscriptionForCommand_with_malformedEnvironment_then_exception()
@@ -511,10 +559,10 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var command = new GenericCommandMessage<>(payload);
 
 		var handlerObject1 = new TestAggregate(TEST_AGGREGATE_IDENTIFIER);
-		var annotation1 = TestAggregate.class.getDeclaredMethod("handle8", TestCommand.class)
+		var annotation1    = TestAggregate.class.getDeclaredMethod("handle8", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 		var handlerObject2 = new TestCommandHandlingObject();
-		var annotation2 = TestCommandHandlingObject.class.getDeclaredMethod("handle8", TestCommand.class)
+		var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle8", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 
 		assertThrows(SpelEvaluationException.class,
@@ -530,10 +578,10 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var command = new GenericCommandMessage<>(payload);
 
 		var handlerObject1 = new TestAggregate(TEST_AGGREGATE_IDENTIFIER);
-		var annotation1 = TestAggregate.class.getDeclaredMethod("handle9", TestCommand.class)
+		var annotation1    = TestAggregate.class.getDeclaredMethod("handle9", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 		var handlerObject2 = new TestCommandHandlingObject();
-		var annotation2 = TestCommandHandlingObject.class.getDeclaredMethod("handle9", TestCommand.class)
+		var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle9", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 
 		var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
@@ -856,6 +904,12 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		node.put(AGGREGATE_IDENTIFIER, TEST_AGGREGATE_IDENTIFIER);
 		return node;
 	}
+	
+	private static JsonNode aggregateInfoWithoutIdentifier() {
+		var node = JsonNodeFactory.instance.objectNode();
+		node.put(AGGREGATE_TYPE, TestAggregate.class.getSimpleName());
+		return node;
+	}
 
 	private static JsonNode handlerInfo() {
 		var node = JsonNodeFactory.instance.objectNode();
@@ -867,6 +921,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var node = JsonNodeFactory.instance.objectNode();
 		node.put(AGGREGATE_TYPE, aggregateType);
 		node.put(AGGREGATE_IDENTIFIER, TEST_AGGREGATE_IDENTIFIER);
+		return node;
+	}
+	
+	private static JsonNode handlerInfoWithoutIdentifier() {
+		var node = JsonNodeFactory.instance.objectNode();
 		return node;
 	}
 
