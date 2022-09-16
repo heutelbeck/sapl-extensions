@@ -17,6 +17,8 @@ import com.fasterxml.jackson.databind.JsonNode;
  * {@code CollectionAndOptionalFilterPredicateProvider#test(Object, JsonNode)}
  * method.
  * 
+ *  @param <T> Payload type
+ *   
  * @author Dominic Heutelbeck
  * @since 2.1.0
  */
