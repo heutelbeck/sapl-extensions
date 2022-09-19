@@ -1,5 +1,6 @@
 package io.sapl.axon;
 
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import org.axonframework.messaging.GenericResultMessage;
@@ -26,6 +27,31 @@ public class TestUtilities {
 	
 	public static <U> Predicate<SubscriptionQueryMessage<?, ?, U>> alwaysTrue(SubscriptionQueryUpdateMessage<U> forUpdate) {
 		return val -> true;
+	}
+	
+	public static boolean matches(ResultMessage<?> messageA, Object other) {
+		
+		if (Objects.equals(messageA, other))
+			return true;
+		
+		if (messageA == null)
+			return false;
+		
+		if (!ResultMessage.class.isAssignableFrom(other.getClass()))
+			return false;
+		
+		var messageB = (ResultMessage<?>) other;
+		
+		if (messageA.isExceptional() != messageB.isExceptional())
+			return false;
+		
+		if (messageA.isExceptional())
+			return messageA.exceptionResult().getClass().isAssignableFrom(messageB.exceptionResult().getClass())
+					&& messageA.exceptionResult().getLocalizedMessage().equals(messageB.exceptionResult().getLocalizedMessage());
+		
+		else return messageA.getIdentifier().equals(messageB.getIdentifier())
+				&& messageA.getMetaData().equals(messageB.getMetaData())
+				&& messageA.getPayload().equals(messageB.getPayload());
 	}
 	
 	public static <U> Predicate<ResultMessage<U>> matchesIgnoringIdentifier(ResultMessage<U> resultMessage) {
