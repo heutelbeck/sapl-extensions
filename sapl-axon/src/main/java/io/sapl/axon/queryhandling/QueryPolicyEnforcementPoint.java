@@ -327,37 +327,30 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 
 		var streamingAnnotation = uniqueStreamingEnforcementAnnotation();
 
-		if (streamingAnnotation.isEmpty()) {
-			log.debug(
-					"No SAPL annotation for streaming present. Authorize all updates and delegate to potential handling of @PostHandleEnforce.");
-			emitter.authorizeUpdatesForSubscriptionQueryWithId(message.getIdentifier());
-			return handleSimpleQuery(message, source);
-		}
-
 		var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(message,
-				streamingAnnotation.get(), handlerExecutable, Optional.empty());
+				streamingAnnotation, handlerExecutable, Optional.empty());
 		var decisions = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY);
 		var tap = new FluxOneAndManyTap<AuthorizationDecision>(decisions,
 				properties.getSubscriptionQueryDecisionCacheTTL());
 		var initialDecision = tap.one();
 		var tappedDecisions = tap.many();
 
-		log.debug("Set authorization mode of emitter {}", streamingAnnotation.get().annotationType().getSimpleName());
+		log.debug("Set authorization mode of emitter {}", streamingAnnotation.annotationType().getSimpleName());
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(message.getIdentifier(), tappedDecisions,
-				streamingAnnotation.get().annotationType());
+				streamingAnnotation.annotationType());
 		log.debug("Build pre-authorization-handler PDP for initial result of subscription query");
 
 		return initialDecision.flatMap(enforcePreEnforceDecision(message, source, updateType)).toFuture();
 	}
 
-	private Optional<Annotation> uniqueStreamingEnforcementAnnotation() {
+	private Annotation uniqueStreamingEnforcementAnnotation() {
 		Set<Annotation> streamingEnforcementAnnotations = annotationsMatching(saplAnnotations,
 				SUBSCRIPTION_ANNOTATIONS);
 		if (streamingEnforcementAnnotations.size() != 1)
 			throw new IllegalStateException(
 					"The query handler for a streaming query has more than one SAPL annotation which can be used for policy enforcement on subscription queries.");
 
-		return saplAnnotations.stream().findFirst();
+		return saplAnnotations.stream().findFirst().get();
 	}
 
 	private Optional<ResponseType<?>> updateTypeIfSubscriptionQuery(Message<?> message) {
