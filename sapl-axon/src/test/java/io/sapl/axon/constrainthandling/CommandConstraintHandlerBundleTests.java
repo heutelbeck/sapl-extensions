@@ -22,48 +22,53 @@ public class CommandConstraintHandlerBundleTests {
 		var message = new GenericCommandMessage<>("message payload");
 		var exception = new Exception("another exception message");
 		var result = "some result";
-		
+
 		BiConsumer<AuthorizationDecision, Message<?>> onDecision = (decisionInternal, messageInternal) -> {
 			assertEquals(decision, decisionInternal);
 			assertEquals(message, messageInternal);
 			onDecisionCounter.getAndIncrement();
 		};
 		Function<Throwable, Throwable> errorMapper = __ -> new Exception("some spectial message");
-		Function<CommandMessage<?>, CommandMessage<?>> commandMapper = __ -> new GenericCommandMessage<>("special payload");
+		Function<CommandMessage<?>, CommandMessage<?>> commandMapper = __ -> new GenericCommandMessage<>(
+				"special payload");
 		Function<String, String> resultMapper = __ -> "special result";
 		Runnable handlersOnObject = () -> {
 			handlerOnObjectCounter.getAndIncrement();
 		};
-		var bundle = new CommandConstraintHandlerBundle<>(onDecision, errorMapper, commandMapper, resultMapper, handlersOnObject);
-		
+		var bundle = new CommandConstraintHandlerBundle<>(onDecision, errorMapper, commandMapper, resultMapper,
+				handlersOnObject);
+
 		bundle.executeOnDecisionHandlers(decision, message);
 		assertEquals(1, onDecisionCounter.get());
-		
+
 		var mappedException = bundle.executeOnErrorHandlers(exception);
 		assertEquals(Exception.class, mappedException.getClass());
 		assertEquals("some spectial message", mappedException.getLocalizedMessage());
-		
+
 		bundle.executeAggregateConstraintHandlerMethods();
 		assertEquals(1, handlerOnObjectCounter.get());
-		
+
 		var mappedCommandMessage = bundle.executeCommandMappingHandlers(message);
 		assertEquals(GenericCommandMessage.class, mappedCommandMessage.getClass());
 		assertEquals(String.class, mappedCommandMessage.getPayloadType());
 		assertEquals("special payload", mappedCommandMessage.getPayload());
-		
+
 		var mappedResult = bundle.executePostHandlingHandlers(result);
 		assertEquals("special result", mappedResult);
 	}
-	
+
 	@Test
 	void when_mappedErrorIsThrowable_convertToRuntimeException() {
-		BiConsumer<AuthorizationDecision, Message<?>> onDecision = (__, ___) -> { };
+		BiConsumer<AuthorizationDecision, Message<?>> onDecision = (__, ___) -> {
+		};
 		Function<Throwable, Throwable> errorMapper = __ -> new Throwable("some spectial message");
-		Function<CommandMessage<?>, CommandMessage<?>> commandMapper = __ ->null;
+		Function<CommandMessage<?>, CommandMessage<?>> commandMapper = __ -> null;
 		Function<String, String> resultMapper = __ -> null;
-		Runnable handlersOnObject = () -> { };
-		var bundle = new CommandConstraintHandlerBundle<>(onDecision, errorMapper, commandMapper, resultMapper, handlersOnObject);
-		
+		Runnable handlersOnObject = () -> {
+		};
+		var bundle = new CommandConstraintHandlerBundle<>(onDecision, errorMapper, commandMapper, resultMapper,
+				handlersOnObject);
+
 		var exception = new Exception("another exception message");
 		var mappedException = bundle.executeOnErrorHandlers(exception);
 		assertEquals(RuntimeException.class, mappedException.getClass());
