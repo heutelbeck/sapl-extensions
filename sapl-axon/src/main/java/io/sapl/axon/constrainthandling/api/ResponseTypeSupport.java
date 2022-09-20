@@ -66,8 +66,8 @@ public interface ResponseTypeSupport {
 
 	private Predicate<? super ResponseType<?>> compatibleResponseType(ResponseType<?> responseType) {
 		return supportedType -> {
-			if (supportedType.getClass().equals(responseType.getClass()))
-				return true;
+			if (!supportedType.getClass().equals(responseType.getClass()))
+				return false;
 			return supportedType.getExpectedResponseType().isAssignableFrom(responseType.getExpectedResponseType());
 		};
 	}
