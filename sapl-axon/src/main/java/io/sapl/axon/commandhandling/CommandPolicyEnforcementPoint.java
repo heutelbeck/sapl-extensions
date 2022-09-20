@@ -60,7 +60,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
 		if (preEnforceAnnotation.isPresent()) {
 			return preEnforcePolices((CommandMessage<?>) message, aggregate, preEnforceAnnotation.get());
 		} else {
-			return super.handle(message, aggregate);
+			return delegate.handle(message, aggregate);
 		}
 	}
 
@@ -115,7 +115,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
 
 		Object result = null;
 		try {
-			result = super.handle(mappedCommand, aggregate);
+			result = delegate.handle(mappedCommand, aggregate);
 		} catch (Exception t) {
 			throw bundle.executeOnErrorHandlers(t);
 		}
