@@ -6,7 +6,9 @@ import java.util.function.Predicate;
 
 import org.axonframework.messaging.responsetypes.MultipleInstancesResponseType;
 import org.axonframework.messaging.responsetypes.OptionalResponseType;
+import org.axonframework.messaging.responsetypes.PublisherResponseType;
 import org.axonframework.messaging.responsetypes.ResponseType;
+import org.reactivestreams.Publisher;
 
 /**
  * Interface for constraint handlers requiring a specific response type to be
@@ -43,10 +45,9 @@ public interface ResponseTypeSupport {
 			if (type instanceof OptionalResponseType) {
 				return Optional.class.isAssignableFrom(payloadType);
 			}
-// TODO: Add for 4.6.0 			
-//			if(type instanceof PublisherResponseType) {
-//				return Publisher.class.isAssignableFrom(payloadType);
-//			}			
+			if(type instanceof PublisherResponseType) {
+				return Publisher.class.isAssignableFrom(payloadType);
+			}			
 			return type.getExpectedResponseType().isAssignableFrom(payloadType);
 		};
 	}

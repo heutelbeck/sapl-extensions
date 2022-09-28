@@ -8,11 +8,13 @@ import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.axonframework.messaging.annotation.ParameterResolverFactory;
 import org.axonframework.queryhandling.QueryBus;
 import org.axonframework.queryhandling.QueryMessage;
+import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.xstream.XStream;
@@ -193,7 +195,8 @@ public class SaplAutoConfiguration {
 	}
 
 	@Bean
-	SaplQueryUpdateEmitter updateEmitter(ConstraintHandlerService axonConstraintEnforcementService) {
+	@Primary
+	QueryUpdateEmitter updateEmitter(ConstraintHandlerService axonConstraintEnforcementService) {
 		log.trace("Deploy SaplQueryUpdateEmitter");
 		return new SaplQueryUpdateEmitter(Optional.empty(), axonConstraintEnforcementService);
 	}

@@ -16,6 +16,7 @@ import org.axonframework.messaging.GenericMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.axonframework.messaging.responsetypes.MultipleInstancesResponseType;
 import org.axonframework.messaging.responsetypes.OptionalResponseType;
+import org.axonframework.messaging.responsetypes.PublisherResponseType;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.unitofwork.CurrentUnitOfWork;
 import org.axonframework.messaging.unitofwork.UnitOfWork;
@@ -28,6 +29,7 @@ import org.axonframework.queryhandling.SubscriptionQueryBackpressure;
 import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.UpdateHandlerRegistration;
+import org.reactivestreams.Publisher;
 import org.springframework.security.access.AccessDeniedException;
 
 import io.sapl.api.pdp.AuthorizationDecision;
@@ -307,24 +309,24 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 						.ifPresent(uh -> doEmit(query, uh.getUpdateSink(), update)));
 	}
 
-    private Predicate<SubscriptionQueryMessage<?,?,?>> payloadMatchesQueryResponseType(Class<?> payloadType) {
-		return sqm -> {			
-			if(sqm.getUpdateResponseType() instanceof MultipleInstancesResponseType) {
+	private Predicate<SubscriptionQueryMessage<?, ?, ?>> payloadMatchesQueryResponseType(Class<?> payloadType) {
+		return sqm -> {
+			if (sqm.getUpdateResponseType() instanceof MultipleInstancesResponseType) {
 				if (payloadType.isArray())
 					return true;
-				else return Iterable.class.isAssignableFrom(payloadType);
+				else
+					return Iterable.class.isAssignableFrom(payloadType);
 			}
-			if(sqm.getUpdateResponseType() instanceof OptionalResponseType) {
+			if (sqm.getUpdateResponseType() instanceof OptionalResponseType) {
 				return Optional.class.isAssignableFrom(payloadType);
-			}		
-// TODO: Add for 4.6.0 			
-//			if(sqm.getUpdateResponseType() instanceof PublisherResponseType) {
-//				return Publisher.class.isAssignableFrom(payloadType);
-//			}			
+			}
+			if (sqm.getUpdateResponseType() instanceof PublisherResponseType) {
+				return Publisher.class.isAssignableFrom(payloadType);
+			}
 			return sqm.getUpdateResponseType().getExpectedResponseType().isAssignableFrom(payloadType);
 		};
 	}
- 
+
 	@SuppressWarnings("unchecked")
 	private <U> void doEmit(SubscriptionQueryMessage<?, ?, ?> query, Sinks.Many<?> updateHandler,
 			SubscriptionQueryUpdateMessage<U> update) {

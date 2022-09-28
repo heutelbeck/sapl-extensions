@@ -42,7 +42,7 @@ import lombok.RequiredArgsConstructor;
  * QueryPolicyEnforcementPoint.
  * 
  * @author Dominic Heutelbeck
- * 
+ * @since 2.1.0
  */
 @RequiredArgsConstructor
 public class SaplHandlerEnhancer implements HandlerEnhancerDefinition {
