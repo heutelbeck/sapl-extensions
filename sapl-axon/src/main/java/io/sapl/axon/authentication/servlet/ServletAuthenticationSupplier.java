@@ -1,11 +1,10 @@
-package io.sapl.axon.authentication;
+package io.sapl.axon.authentication.servlet;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.sapl.axon.authentication.AuthnUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
@@ -17,10 +16,10 @@ import lombok.SneakyThrows;
  * created authentication data.
  * 
  * @author Dominic Heutelbeck
- *
+ * @since 2.1.0
  */
 @RequiredArgsConstructor
-public class SpringSecurityAuthenticationSupplier implements AuthenticationSupplier {
+public class ServletAuthenticationSupplier implements AuthenticationSupplier {
 
 	private final ObjectMapper mapper;
 
@@ -31,19 +30,7 @@ public class SpringSecurityAuthenticationSupplier implements AuthenticationSuppl
 	@Override
 	@SneakyThrows
 	public String get() {
-		var authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication == null)
-			return "\"anonymous\"";
-
-		JsonNode subject = mapper.valueToTree(authentication.getPrincipal());
-		if (subject.isObject()) {
-			((ObjectNode) subject).remove("credentials");
-			((ObjectNode) subject).remove("password");
-			var principal = subject.get("principal");
-			if (principal != null)
-				if (principal.isObject())
-					((ObjectNode) principal).remove("password");
-		}
-		return mapper.writeValueAsString(subject);
+		return AuthnUtil.authenticationToJsonString(SecurityContextHolder.getContext().getAuthentication(), mapper);
 	}
+
 }

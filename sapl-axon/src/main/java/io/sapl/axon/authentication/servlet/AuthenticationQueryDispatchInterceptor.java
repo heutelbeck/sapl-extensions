@@ -1,4 +1,4 @@
-package io.sapl.axon.authentication;
+package io.sapl.axon.authentication.servlet;
 
 import java.util.List;
 import java.util.Map;
@@ -21,12 +21,18 @@ import lombok.RequiredArgsConstructor;
 public class AuthenticationQueryDispatchInterceptor implements MessageDispatchInterceptor<QueryMessage<?, ?>> {
 
 	private final AuthenticationSupplier authnProvider;
+
 	/**
-	 * Adds the subject's authentication data to the "subject" field in the metadata as a JSON String. 
+	 * Adds the subject's authentication data to the "subject" field in the metadata
+	 * as a JSON String.
 	 */
 	@Override
 	public BiFunction<Integer, QueryMessage<?, ?>, QueryMessage<?, ?>> handle(
 			List<? extends QueryMessage<?, ?>> messages) {
-		return (index, query) -> query.andMetaData(Map.of("subject", authnProvider.get()));
+		return (index, query) -> {
+			if (query.getMetaData().get("subject") != null)
+				return query;
+			return query.andMetaData(Map.of("subject", authnProvider.get()));
+		};
 	}
 }

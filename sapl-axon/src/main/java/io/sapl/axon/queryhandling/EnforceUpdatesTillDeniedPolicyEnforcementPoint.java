@@ -52,6 +52,9 @@ import reactor.core.publisher.Flux;
  * updated accordingly.
  *
  * The PEP does not permit onErrorContinue() downstream.
+ * 
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
  *
  * @param <U> type of the update message payload contents
  */

@@ -4,12 +4,18 @@ import java.util.List;
 import java.util.Optional;
 
 import org.axonframework.commandhandling.CommandBus;
+import org.axonframework.extensions.reactor.commandhandling.gateway.DefaultReactorCommandGateway;
+import org.axonframework.extensions.reactor.commandhandling.gateway.ReactorCommandGateway;
+import org.axonframework.extensions.reactor.messaging.ReactorMessageDispatchInterceptor;
+import org.axonframework.extensions.reactor.queryhandling.gateway.DefaultReactorQueryGateway;
+import org.axonframework.extensions.reactor.queryhandling.gateway.ReactorQueryGateway;
 import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.axonframework.messaging.annotation.ParameterResolverFactory;
 import org.axonframework.queryhandling.QueryBus;
 import org.axonframework.queryhandling.QueryMessage;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,10 +26,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.xstream.XStream;
 
 import io.sapl.api.pdp.PolicyDecisionPoint;
-import io.sapl.axon.authentication.AuthenticationCommandDispatchInterceptor;
-import io.sapl.axon.authentication.AuthenticationQueryDispatchInterceptor;
-import io.sapl.axon.authentication.AuthenticationSupplier;
-import io.sapl.axon.authentication.SpringSecurityAuthenticationSupplier;
+import io.sapl.axon.authentication.reactive.ReactiveAuthenticationCommandDispatchInterceptor;
+import io.sapl.axon.authentication.reactive.ReactiveAuthenticationQueryDispatchInterceptor;
+import io.sapl.axon.authentication.reactive.ReactiveAuthenticationSupplier;
+import io.sapl.axon.authentication.reactive.ReactorAuthenticationSupplier;
+import io.sapl.axon.authentication.servlet.AuthenticationCommandDispatchInterceptor;
+import io.sapl.axon.authentication.servlet.AuthenticationQueryDispatchInterceptor;
+import io.sapl.axon.authentication.servlet.AuthenticationSupplier;
+import io.sapl.axon.authentication.servlet.ServletAuthenticationSupplier;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.api.CommandConstraintHandlerProvider;
 import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
@@ -46,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
  * module as a dependency will load this configuration class.
  * 
  * @author Dominic Heutelbeck
- * 
+ * @since 2.1.0
  */
 @Slf4j
 @Configuration
@@ -77,10 +87,55 @@ public class SaplAutoConfiguration {
 	 * @return An AuthenticationMetadataProvider.
 	 */
 	@Bean
-	@ConditionalOnMissingBean
 	AuthenticationSupplier authenticationMetadataProvider(ObjectMapper mapper) {
-		log.trace("Deploy Spring AuthenticationMetadataProvider");
-		return new SpringSecurityAuthenticationSupplier(mapper);
+		log.trace("Deploy Spring ServletAuthenticationSupplier");
+		return new ServletAuthenticationSupplier(mapper);
+	}
+
+	/**
+	 * 
+	 * The @see io.sapl.axon.authentication.AuthenticationMetadataProvider is
+	 * responsible for identifying the user triggering a Command or Query and to
+	 * provide matching metadata to be added by dispatch interceptors.
+	 * 
+	 * @param mapper The applications ObjectMapper.
+	 * @return An AuthenticationMetadataProvider.
+	 */
+	@Bean
+	@ConditionalOnClass(ReactorMessageDispatchInterceptor.class)
+	ReactiveAuthenticationSupplier reactiveAuthenticationMetadataProvider(ObjectMapper mapper) {
+		log.trace("Deploy Spring ReactiveAuthenticationSupplier");
+		return new ReactorAuthenticationSupplier(mapper);
+	}
+
+	/**
+	 * The default AutoConfiguration of the reactor extension does not automatically
+	 * inject interceptors.
+	 * 
+	 * @param commandBus  the CommandBus
+	 * @param interceptor the authn interceptor
+	 * @return ReactorCommandGateway with Authn interceptor
+	 */
+	@Bean
+	@ConditionalOnClass(ReactorMessageDispatchInterceptor.class)
+	ReactorCommandGateway reactiveCommandGateway(CommandBus commandBus, ReactiveAuthenticationSupplier authnSupplier) {
+		return DefaultReactorCommandGateway.builder().commandBus(commandBus)
+				.dispatchInterceptors(new ReactiveAuthenticationCommandDispatchInterceptor(authnSupplier)).build();
+	}
+
+	/**
+	 * The default AutoConfiguration of the reactor extension does not automatically
+	 * inject interceptors.
+	 * 
+	 * @param queryBus    the QueryBus
+	 * @param interceptor the authn interceptor
+	 * @return ReactorQueryGateway with Authn interceptor
+	 */
+	@Bean
+	@ConditionalOnClass(ReactorMessageDispatchInterceptor.class)
+	ReactorQueryGateway reactiveQueryGateway(QueryBus queryBus, ReactiveAuthenticationSupplier authnSupplier) {
+		return DefaultReactorQueryGateway.builder().queryBus(queryBus)
+				.dispatchInterceptors(new ReactiveAuthenticationQueryDispatchInterceptor(authnSupplier)).build();
 	}
 
 	/**

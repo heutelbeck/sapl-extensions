@@ -53,7 +53,6 @@ import lombok.extern.slf4j.Slf4j;
  * 
  * @author Dominic Heutelbeck
  * @since 2.1.0
- * 
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -277,7 +276,9 @@ public class AuthorizationSubscriptionBuilderService {
 	@SneakyThrows
 	private JsonNode constructSubjectNode(Message<?> message, Map<String, Object> annotationAttributes,
 			String payloadId) {
+		log.info("message: {}", message);
 		var subject = message.getMetaData().getOrDefault(SUBJECT, ANONYMOUS);
+		log.info("subject: {}", subject);
 
 		var spelExpression = annotationAttributes.get(SUBJECT);
 

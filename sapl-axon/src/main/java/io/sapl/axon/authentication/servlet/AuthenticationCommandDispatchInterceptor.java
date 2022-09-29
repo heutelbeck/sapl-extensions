@@ -1,4 +1,4 @@
-package io.sapl.axon.authentication;
+package io.sapl.axon.authentication.servlet;
 
 import java.util.List;
 import java.util.Map;
@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
  * This identifies the subject for authorization.
  * 
  * @author Dominic Heutelbeck
- *
+ * @since 2.1.0
  */
 @RequiredArgsConstructor
 public class AuthenticationCommandDispatchInterceptor implements MessageDispatchInterceptor<CommandMessage<?>> {
@@ -23,12 +23,17 @@ public class AuthenticationCommandDispatchInterceptor implements MessageDispatch
 	private final AuthenticationSupplier authnProvider;
 
 	/**
-	 * Adds the subject's authentication data to the "subject" field in the metadata as a JSON String. 
+	 * Adds the subject's authentication data to the "subject" field in the metadata
+	 * as a JSON String.
 	 */
 	@Override
 	public BiFunction<Integer, CommandMessage<?>, CommandMessage<?>> handle(
 			List<? extends CommandMessage<?>> messages) {
-		return (index, command) -> command.andMetaData(Map.of("subject", authnProvider.get()));
+		return (index, command) -> {
+			if (command.getMetaData().get("subject") != null)
+				return command;
+			return command.andMetaData(Map.of("subject", authnProvider.get()));
+		};
 	}
 
 }

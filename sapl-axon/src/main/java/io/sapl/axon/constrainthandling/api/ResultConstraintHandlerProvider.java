@@ -45,7 +45,6 @@ import io.sapl.spring.constraints.api.Responsible;
  * 
  * @author Dominic Heutelbeck
  * @since 2.1.0
- *
  */
 public interface ResultConstraintHandlerProvider extends Responsible, HasPriority, ResponseTypeSupport {
 

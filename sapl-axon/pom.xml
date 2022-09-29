@@ -56,6 +56,11 @@
 			<artifactId>axon-spring</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.axonframework.extensions.reactor</groupId>
+			<artifactId>axon-reactor</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
 			<groupId>org.axonframework</groupId>
 			<artifactId>axon-server-connector</artifactId>
 		</dependency>

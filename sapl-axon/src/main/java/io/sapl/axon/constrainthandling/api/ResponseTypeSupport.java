@@ -16,7 +16,6 @@ import org.reactivestreams.Publisher;
  * 
  * @author Dominic Heutelbeck
  * @since 2.1.0
- * 
  */
 public interface ResponseTypeSupport {
 
