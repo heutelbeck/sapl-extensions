@@ -14,9 +14,11 @@ import java.util.stream.Collectors;
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
 import org.axonframework.messaging.annotation.WrappedMessageHandlingMember;
+import org.axonframework.messaging.responsetypes.PublisherResponseType;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.queryhandling.QueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryMessage;
+import org.reactivestreams.Publisher;
 import org.springframework.security.access.AccessDeniedException;
 
 import io.sapl.api.pdp.AuthorizationDecision;
@@ -53,14 +55,14 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 	private static final Set<Class<?>> QUERY_ANNOTATIONS_IMPLYING_PREENFORCING = Set.of(PreHandleEnforce.class,
 			EnforceDropUpdatesWhileDenied.class, EnforceRecoverableUpdatesIfDenied.class);
 
-	private final SaplQueryUpdateEmitter emitter;
-	private final ConstraintHandlerService axonConstraintEnforcementService;
+	private final SaplQueryUpdateEmitter                  emitter;
+	private final ConstraintHandlerService                axonConstraintEnforcementService;
 	private final AuthorizationSubscriptionBuilderService subscriptionBuilder;
-	private final PolicyDecisionPoint pdp;
-	private final Set<Annotation> saplAnnotations;
-	private final MessageHandlingMember<T> delegate;
-	private final Executable handlerExecutable;
-	private final SaplAxonProperties properties;
+	private final PolicyDecisionPoint                     pdp;
+	private final Set<Annotation>                         saplAnnotations;
+	private final MessageHandlingMember<T>                delegate;
+	private final Executable                              handlerExecutable;
+	private final SaplAxonProperties                      properties;
 
 	/**
 	 * Instantiate a QueryPolicyEnforcementPoint.
@@ -78,15 +80,16 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 			ConstraintHandlerService axonConstraintEnforcementService, SaplQueryUpdateEmitter emitter,
 			AuthorizationSubscriptionBuilderService subscriptionBuilder, SaplAxonProperties properties) {
 		super(delegate);
-		this.delegate = delegate;
-		this.pdp = pdp;
+		this.delegate                         = delegate;
+		this.pdp                              = pdp;
 		this.axonConstraintEnforcementService = axonConstraintEnforcementService;
-		this.subscriptionBuilder = subscriptionBuilder;
-		this.handlerExecutable = delegate.unwrap(Executable.class).orElseThrow(() -> new IllegalStateException(
-				"No underlying method or constructor found while wrapping the CommandHandlingMember."));
-		this.saplAnnotations = saplAnnotationsOnUnderlyingExecutable();
-		this.emitter = emitter;
-		this.properties = properties;
+		this.subscriptionBuilder              = subscriptionBuilder;
+		this.handlerExecutable                = delegate.unwrap(Executable.class)
+				.orElseThrow(() -> new IllegalStateException(
+						"No underlying method or constructor found while wrapping the CommandHandlingMember."));
+		this.saplAnnotations                  = saplAnnotationsOnUnderlyingExecutable();
+		this.emitter                          = emitter;
+		this.properties                       = properties;
 	}
 
 	/**
@@ -137,16 +140,19 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 							.flatMap(enforcePreEnforceDecision(message, source, Optional.empty())));
 		}
 
-		var queryResult = preEnforcedQueryResult.orElseGet(() -> callDelegate(message, source));
+		var queryResult           = preEnforcedQueryResult.orElseGet(() -> callDelegate(message, source));
 		var postEnforceAnnotation = saplAnnotations.stream()
 				.filter(annotation -> annotation.annotationType().isAssignableFrom(PostHandleEnforce.class))
 				.findFirst();
 
-		if (postEnforceAnnotation.isEmpty()) {
-			return queryResult.toFuture();
+		if (!postEnforceAnnotation.isEmpty()) {
+			queryResult = queryResult.onErrorResume(enforcePostEnforceOnErrorResult(message, postEnforceAnnotation))
+					.flatMap(enforcePostEnforceOnSuccessfulQueryResult(message, postEnforceAnnotation));
 		}
-		return queryResult.onErrorResume(enforcePostEnforceOnErrorResult(message, postEnforceAnnotation))
-				.flatMap(enforcePostEnforceOnSuccessfulQueryResult(message, postEnforceAnnotation)).toFuture();
+		if(message.getResponseType() instanceof PublisherResponseType)
+			return queryResult.flatMapMany(r -> (Publisher<?>) r);
+			
+		return queryResult.toFuture();
 	}
 
 	private Function<? super Object, ? extends Mono<? extends Object>> enforcePostEnforceOnSuccessfulQueryResult(
@@ -329,11 +335,11 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 
 		var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(message,
 				streamingAnnotation, handlerExecutable, Optional.empty());
-		var decisions = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY);
-		var tap = new FluxOneAndManyTap<AuthorizationDecision>(decisions,
+		var decisions         = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY);
+		var tap               = new FluxOneAndManyTap<AuthorizationDecision>(decisions,
 				properties.getSubscriptionQueryDecisionCacheTTL());
-		var initialDecision = tap.one();
-		var tappedDecisions = tap.many();
+		var initialDecision   = tap.one();
+		var tappedDecisions   = tap.many();
 
 		log.debug("Set authorization mode of emitter {}", streamingAnnotation.annotationType().getSimpleName());
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(message.getIdentifier(), tappedDecisions,

@@ -12,6 +12,7 @@ import org.axonframework.queryhandling.QueryMessage;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
  * 
  * @param <I> initial result type
  */
+@Slf4j
 @RequiredArgsConstructor
 public class QueryConstraintHandlerBundle<I> {
 	/**
@@ -30,24 +32,24 @@ public class QueryConstraintHandlerBundle<I> {
 	 */
 	public static final QueryConstraintHandlerBundle<?> NOOP_BUNDLE = new QueryConstraintHandlerBundle<>();
 
-	private final BiConsumer<AuthorizationDecision, Message<?>> onDecisionHandlers;
+	private final BiConsumer<AuthorizationDecision, Message<?>>    onDecisionHandlers;
 	private final Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers;
-	private final Function<Throwable, Throwable> errorMappers;
-	private final Function<I, I> initialResultMappers;
-	private final Function<ResultMessage<?>, ResultMessage<?>> updateMappers;
-	private final Predicate<ResultMessage<?>> filterPredicates;
+	private final Function<Throwable, Throwable>                   errorMappers;
+	private final Function<I, I>                                   initialResultMappers;
+	private final Function<ResultMessage<?>, ResultMessage<?>>     updateMappers;
+	private final Predicate<ResultMessage<?>>                      filterPredicates;
 
 	/**
 	 * Constructs a bundle with all no operation functions.
 	 */
 	private QueryConstraintHandlerBundle() {
 		// @formatter:off
-		this.onDecisionHandlers = (__,___)->{};
-		this.queryMappers       = Function.identity();
-		this.errorMappers       = Function.identity();
-		this.initialResultMappers      = Function.identity();
-		this.updateMappers      = Function.identity();
-		this.filterPredicates   = __ -> true;
+		this.onDecisionHandlers   = (__,___)->{};
+		this.queryMappers         = Function.identity();
+		this.errorMappers         = Function.identity();
+		this.initialResultMappers = Function.identity();
+		this.updateMappers        = Function.identity();
+		this.filterPredicates     = __ -> true;
 		// @formatter:on
 	}
 
@@ -89,6 +91,7 @@ public class QueryConstraintHandlerBundle<I> {
 	 */
 	@SuppressWarnings("unchecked") // The handlers have been validated to support the returnType
 	public Object executePostHandlingHandlers(Object result) {
+		log.info("exepost {}", result);
 		if (result instanceof CompletableFuture) {
 			return ((CompletableFuture<?>) result).thenApply(this::executePostHandlingHandlers);
 		}

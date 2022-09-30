@@ -33,7 +33,8 @@ public class ResponseMessagePayloadFilterProvider implements ResultConstraintHan
 	private static final String               CONSTRAINT_TYPE = "filterMessagePayloadContent";
 	private static final String               TYPE            = "type";
 	private static final Set<ResponseType<?>> SUPPORTED_TYPES = Set.of(ResponseTypes.instanceOf(Object.class),
-			ResponseTypes.optionalInstanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class));
+			ResponseTypes.optionalInstanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class),
+			ResponseTypes.publisherOf(Object.class));
 
 	private final ObjectMapper objectMapper;
 

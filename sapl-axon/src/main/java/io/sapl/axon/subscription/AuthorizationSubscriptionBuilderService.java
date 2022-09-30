@@ -276,10 +276,7 @@ public class AuthorizationSubscriptionBuilderService {
 	@SneakyThrows
 	private JsonNode constructSubjectNode(Message<?> message, Map<String, Object> annotationAttributes,
 			String payloadId) {
-		log.info("message: {}", message);
-		var subject = message.getMetaData().getOrDefault(SUBJECT, ANONYMOUS);
-		log.info("subject: {}", subject);
-
+		var subject        = message.getMetaData().getOrDefault(SUBJECT, ANONYMOUS);
 		var spelExpression = annotationAttributes.get(SUBJECT);
 
 		if (expressionNotSet(spelExpression))

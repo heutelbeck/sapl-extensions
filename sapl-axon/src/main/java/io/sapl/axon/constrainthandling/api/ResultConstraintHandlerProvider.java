@@ -72,16 +72,16 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	default ResultMessage<?> getResultMessageHandler(ResultMessage<?> result, JsonNode constraint) {
 		accept(result, constraint);
-		var newMetaData = mapMetadata(result.getMetaData(), constraint);
+		var           newMetaData = mapMetadata(result.getMetaData(), constraint);
 		ResultMessage resultMessage;
 		if (result.isExceptional()) {
 			var newThrowable = mapThrowable(result.exceptionResult(), constraint);
-			var baseMessage = new GenericMessage(result.getIdentifier(), result.getPayloadType(), null, newMetaData);
+			var baseMessage  = new GenericMessage(result.getIdentifier(), result.getPayloadType(), null, newMetaData);
 			resultMessage = new GenericResultMessage(baseMessage, newThrowable);
 		} else {
-			var newPayload = mapPayload(result.getPayload(), result.getPayloadType(), constraint);
+			var newPayload     = mapPayload(result.getPayload(), result.getPayloadType(), constraint);
 			var newPayloadType = mapPayloadType(result.getPayloadType(), constraint);
-			var baseMessage = new GenericMessage(result.getIdentifier(), newPayloadType, newPayload, newMetaData);
+			var baseMessage    = new GenericMessage(result.getIdentifier(), newPayloadType, newPayload, newMetaData);
 			resultMessage = new GenericResultMessage(baseMessage);
 		}
 

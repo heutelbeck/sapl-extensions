@@ -10,6 +10,9 @@ import org.axonframework.messaging.responsetypes.ResponseTypes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 /**
  * This type of constraint handler provider will remove all content from a
  * {@code Collection} or {@code Optional} not satisfying the predicate indicated
@@ -17,8 +20,8 @@ import com.fasterxml.jackson.databind.JsonNode;
  * {@code CollectionAndOptionalFilterPredicateProvider#test(Object, JsonNode)}
  * method.
  * 
- *  @param <T> Payload type
- *   
+ * @param <T> Payload type
+ * 
  * @author Dominic Heutelbeck
  * @since 2.1.0
  */
@@ -36,7 +39,8 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
 	 */
 	default Set<ResponseType<?>> getSupportedResponseTypes() {
 		var type = getContainedType();
-		return Set.of(ResponseTypes.multipleInstancesOf(type), ResponseTypes.optionalInstanceOf(type));
+		return Set.of(ResponseTypes.multipleInstancesOf(type), ResponseTypes.optionalInstanceOf(type),
+				ResponseTypes.publisherOf(type));
 	}
 
 	/**
@@ -47,8 +51,35 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
 		if (payload instanceof Optional) {
 			return filterOptional((Optional<T>) payload, constraint);
 		}
+
+		if (payload instanceof Mono) {
+			return filterMono((Mono<T>) payload, constraint);
+		}
+
+		if (payload instanceof Flux) {
+			return filterFlux((Flux<T>) payload, constraint);
+		}
+
 		return filterCollection((Collection<T>) payload, constraint);
 	};
+
+	/**
+	 * @param payload the Flux payload
+	 * @param constraint the constraint
+	 * @return a Flux only containing elements where the predicate is true
+	 */
+	default Object filterFlux(Flux<T> payload, JsonNode constraint) {
+		return payload.filter(x -> test(x, constraint));
+	}
+
+	/**
+	 * @param payload the Mono payload
+	 * @param constraint the constraint
+	 * @return The original if the predicate was true for the content, else an empty Mono.
+	 */
+	default Object filterMono(Mono<T> payload, JsonNode constraint) {
+		return payload.filter(x -> test(x, constraint));
+	}
 
 	private Optional<T> filterOptional(Optional<T> payload, JsonNode constraint) {
 		return payload.filter(x -> test(x, constraint));
