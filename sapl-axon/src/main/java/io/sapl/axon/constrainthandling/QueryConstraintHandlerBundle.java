@@ -12,7 +12,6 @@ import org.axonframework.queryhandling.QueryMessage;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 
@@ -24,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
  * 
  * @param <I> initial result type
  */
-@Slf4j
 @RequiredArgsConstructor
 public class QueryConstraintHandlerBundle<I> {
 	/**
@@ -91,7 +89,6 @@ public class QueryConstraintHandlerBundle<I> {
 	 */
 	@SuppressWarnings("unchecked") // The handlers have been validated to support the returnType
 	public Object executePostHandlingHandlers(Object result) {
-		log.info("exepost {}", result);
 		if (result instanceof CompletableFuture) {
 			return ((CompletableFuture<?>) result).thenApply(this::executePostHandlingHandlers);
 		}
