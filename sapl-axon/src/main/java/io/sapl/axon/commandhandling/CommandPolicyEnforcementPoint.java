@@ -78,7 +78,8 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
 		 * The next line includes blocking IO. As far as we know, this cannot be done
 		 * asynchronously in the current version of Axon.
 		 */
-		var decision = pdp.decide(authzSubscription).blockFirst();
+		var decision = pdp.decide(authzSubscription).next().toFuture().get();
+
 		if (decision == null) {
 			log.error("PDP returned null.");
 			throw new AccessDeniedException("Access Denied");
