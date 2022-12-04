@@ -59,28 +59,28 @@ public class HttpPolicyInformationPoint {
 	}
 
 	@Attribute(docs = GET_DOCS)
-	public Flux<Val> get(@Text @JsonObject Val value, Map<String, JsonNode> variables) {
-		return executeReactiveRequest(value, GET);
+	public Flux<Val> get(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
+		return executeReactiveRequest(leftHandValue, GET);
 	}
 
 	@Attribute(docs = POST_DOCS)
-	public Flux<Val> post(@Text @JsonObject Val value, Map<String, JsonNode> variables) {
-		return executeReactiveRequest(value, POST);
+	public Flux<Val> post(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
+		return executeReactiveRequest(leftHandValue, POST);
 	}
 
 	@Attribute(docs = PUT_DOCS)
-	public Flux<Val> put(@Text @JsonObject Val value, Map<String, JsonNode> variables) {
-		return executeReactiveRequest(value, PUT);
+	public Flux<Val> put(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
+		return executeReactiveRequest(leftHandValue, PUT);
 	}
 
 	@Attribute(docs = PATCH_DOCS)
-	public Flux<Val> patch(@Text @JsonObject Val value, Map<String, JsonNode> variables) {
-		return executeReactiveRequest(value, PATCH);
+	public Flux<Val> patch(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
+		return executeReactiveRequest(leftHandValue, PATCH);
 	}
 
 	@Attribute(docs = DELETE_DOCS)
-	public Flux<Val> delete(@Text @JsonObject Val value, Map<String, JsonNode> variables) {
-		return executeReactiveRequest(value, DELETE);
+	public Flux<Val> delete(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
+		return executeReactiveRequest(leftHandValue, DELETE);
 	}
 
 	private Flux<Val> executeReactiveRequest(Val value, HttpMethod httpMethod) {
