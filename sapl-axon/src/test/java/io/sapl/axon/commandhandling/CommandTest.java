@@ -27,7 +27,7 @@ public class CommandTest extends CommandTestsuite {
 	@Configuration
 	static class EmbeddedEventstoreConfiguration {
 		@Bean
-		public EventStorageEngine storageEngine() {
+		EventStorageEngine storageEngine() {
 			return new InMemoryEventStorageEngine();
 		}
 	}
