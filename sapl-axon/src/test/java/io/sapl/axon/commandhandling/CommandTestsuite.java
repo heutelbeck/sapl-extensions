@@ -15,6 +15,8 @@ import static org.mockito.Mockito.when;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -179,6 +181,11 @@ public abstract class CommandTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
 		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
 		assertTrue(isAccessDenied().test(thrown));
+		var logger = Logger.getLogger(getClass());
+		logger.setLevel(Level.DEBUG);
+		logger.log(Level.DEBUG, "PERMIT with obligations: " + obligations);
+		logger.log(Level.DEBUG, "thrown: " + thrown);
+		logger.setLevel(Level.OFF);
 	}
 
 	@Test
