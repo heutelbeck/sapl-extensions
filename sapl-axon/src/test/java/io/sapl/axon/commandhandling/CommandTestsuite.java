@@ -180,13 +180,14 @@ public abstract class CommandTestsuite {
 		var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
 		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
-		assertTrue(isAccessDenied().test(thrown));
-		// nini!
+		
 		var logger = Logger.getLogger(getClass());
 		logger.setLevel(Level.DEBUG);
 		logger.log(Level.DEBUG, "PERMIT with obligations: " + obligations);
 		logger.log(Level.DEBUG, "thrown: " + thrown);
 		logger.setLevel(Level.OFF);
+		
+		assertTrue(isAccessDenied().test(thrown));
 	}
 
 	@Test
