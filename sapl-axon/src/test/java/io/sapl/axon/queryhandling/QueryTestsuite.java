@@ -394,15 +394,19 @@ public abstract class QueryTestsuite {
 
 		create(result.initialResult().timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 3L))))
 				.expectNext(queryPayload).verifyComplete();
-		create(result.updates().doOnNext(logValue -> {
-			var logger = Logger.getLogger(getClass());
-			logger.setLevel(Level.DEBUG);
-			logger.log(Level.DEBUG, "Non-dropped update: " + logValue);
-			logger.setLevel(Level.OFF);
-		}).take(6).timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 3L))))
-				.expectNext(queryPayload + "-0", queryPayload + "-1", queryPayload + "-2", queryPayload + "-3",
-						queryPayload + "-4", queryPayload + "-10")
-				.verifyComplete();
+		create(result.updates()
+
+				.doOnNext(logValue -> {
+					var logger = Logger.getLogger(getClass());
+					logger.setLevel(Level.DEBUG);
+					logger.log(Level.DEBUG, "Non-dropped update: " + logValue);
+					logger.setLevel(Level.OFF);
+				})
+
+				.take(6).timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 3L))))
+						.expectNext(queryPayload + "-0", queryPayload + "-1", queryPayload + "-2", queryPayload + "-3",
+								queryPayload + "-4", queryPayload + "-10")
+						.verifyComplete();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
 
 		result.close();
