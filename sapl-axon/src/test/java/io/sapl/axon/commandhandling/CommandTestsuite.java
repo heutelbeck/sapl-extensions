@@ -57,12 +57,12 @@ import reactor.core.publisher.Flux;
 @Import(ScenarioConfiguration.class)
 public abstract class CommandTestsuite {
 
-	private static final String MODIFY_ERROR     = "modify error";
-	private static final String MODIFY_RESULT    = "modify result";
-	private static final String MODIFIED_RESULT  = "this is a modified result";
+	private static final String MODIFY_ERROR = "modify error";
+	private static final String MODIFY_RESULT = "modify result";
+	private static final String MODIFIED_RESULT = "this is a modified result";
 	private static final String MODIFIED_COMMAND = "modifiedCommand";
-	private static final String MODIFY_COMMAND   = "modifyCommand";
-	private static final String ON_DECISION_DO   = "onDecisionDo";
+	private static final String MODIFY_COMMAND = "modifyCommand";
+	private static final String ON_DECISION_DO = "onDecisionDo";
 
 	private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
@@ -156,7 +156,7 @@ public abstract class CommandTestsuite {
 	@Test
 	void when_securedAggregateCreationAndFollowUpCommand_and_PermitWithObligation_then_accessGranted() {
 		var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
-		var obligations        = JSON.arrayNode();
+		var obligations = JSON.arrayNode();
 		obligations.add(JSON.textNode("something"));
 		var decisionsForModify = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForModify);
@@ -180,12 +180,17 @@ public abstract class CommandTestsuite {
 		var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
 		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
+
 		
 		var logger = Logger.getLogger(getClass());
 		logger.setLevel(Level.DEBUG);
 		logger.log(Level.DEBUG, "PERMIT with obligations: " + obligations);
-		logger.log(Level.DEBUG, "thrown: " + thrown);
+		logger.log(Level.DEBUG, "thrown: " + thrown); // sometimes thrown:
+														// org.axonframework.commandhandling.NoHandlerForCommandException:
+														// No Handler for command:
+														// io.sapl.axon.commandhandling.CommandTestsuite$CommandOne
 		logger.setLevel(Level.OFF);
+
 		
 		assertTrue(isAccessDenied().test(thrown));
 	}
@@ -202,7 +207,7 @@ public abstract class CommandTestsuite {
 	void when_securedAggregateCreationAndFollowUpCommandToEntity_and_Permit_then_accessGranted() {
 
 		var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
-		var obligations        = JSON.arrayNode();
+		var obligations = JSON.arrayNode();
 		obligations.add(JSON.textNode("somethingWithMember"));
 		var decisionsForMemberAccess = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForMemberAccess);

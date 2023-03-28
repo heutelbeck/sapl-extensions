@@ -396,6 +396,7 @@ public abstract class QueryTestsuite {
 				.expectNext(queryPayload).verifyComplete();
 		create(result.updates()
 
+				
 				.doOnNext(logValue -> {
 					var logger = Logger.getLogger(getClass());
 					logger.setLevel(Level.DEBUG);
@@ -403,6 +404,7 @@ public abstract class QueryTestsuite {
 					logger.setLevel(Level.OFF);
 				})
 
+				
 				.take(6).timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 3L))))
 						.expectNext(queryPayload + "-0", queryPayload + "-1", queryPayload + "-2", queryPayload + "-3",
 								queryPayload + "-4", queryPayload + "-10")
