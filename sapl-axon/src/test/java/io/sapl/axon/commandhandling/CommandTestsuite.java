@@ -181,7 +181,7 @@ public abstract class CommandTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
 		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
 		assertTrue(isAccessDenied().test(thrown));
-		// ni!
+		// nini!
 		var logger = Logger.getLogger(getClass());
 		logger.setLevel(Level.DEBUG);
 		logger.log(Level.DEBUG, "PERMIT with obligations: " + obligations);
