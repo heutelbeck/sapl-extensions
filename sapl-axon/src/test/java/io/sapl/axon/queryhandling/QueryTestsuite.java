@@ -372,7 +372,7 @@ public abstract class QueryTestsuite {
 	@Test
 	void when_dropHandlerSecuredSubscriptionQueryAndPermitDenyPermit_then_initialReturnAndUpdatesAreEmittedAndDroppedWhileDenied()
 			throws InterruptedException {
-		var emitIntervallMs = 100L;
+		var emitIntervallMs = 200L;
 		var queryPayload = "case4";
 		var numberOfUpdates = 14L;
 

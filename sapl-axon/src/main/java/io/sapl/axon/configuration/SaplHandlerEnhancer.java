@@ -17,6 +17,8 @@ package io.sapl.axon.configuration;
 
 import java.util.Arrays;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.axonframework.commandhandling.CommandMessageHandlingMember;
 import org.axonframework.messaging.annotation.HandlerEnhancerDefinition;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
@@ -59,6 +61,15 @@ public class SaplHandlerEnhancer implements HandlerEnhancerDefinition {
 		var interfaces = Arrays.asList(original.getClass().getInterfaces());
 
 		if (interfaces.contains(CommandMessageHandlingMember.class)) {
+			
+			
+			var logger = Logger.getLogger(getClass());
+			var prevLvl = logger.getLevel();
+			logger.setLevel(Level.DEBUG);
+			logger.log(Level.DEBUG, "Found CommandHandlingMember: " + original.signature());
+			logger.setLevel(prevLvl);
+			
+			
 			return new CommandPolicyEnforcementPoint<>(original, pdp, axonConstraintEnforcementService,
 					subscriptionBuilder);
 		}
