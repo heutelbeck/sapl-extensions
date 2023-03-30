@@ -399,9 +399,10 @@ public abstract class QueryTestsuite {
 				
 				.doOnNext(logValue -> {
 					var logger = Logger.getLogger(getClass());
+					var prevLvl = logger.getLevel();
 					logger.setLevel(Level.DEBUG);
 					logger.log(Level.DEBUG, "Non-dropped update: " + logValue);
-					logger.setLevel(Level.OFF);
+					logger.setLevel(prevLvl);
 				})
 
 				

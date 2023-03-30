@@ -183,13 +183,11 @@ public abstract class CommandTestsuite {
 
 		
 		var logger = Logger.getLogger(getClass());
+		var prevLvl = logger.getLevel();
 		logger.setLevel(Level.DEBUG);
 		logger.log(Level.DEBUG, "PERMIT with obligations: " + obligations);
-		logger.log(Level.DEBUG, "thrown: " + thrown); // sometimes thrown:
-														// org.axonframework.commandhandling.NoHandlerForCommandException:
-														// No Handler for command:
-														// io.sapl.axon.commandhandling.CommandTestsuite$CommandOne
-		logger.setLevel(Level.OFF);
+		logger.log(Level.DEBUG, "thrown: " + thrown); //sometimes NoHandlerForCommandException!
+		logger.setLevel(prevLvl);
 
 		
 		assertTrue(isAccessDenied().test(thrown));
@@ -257,6 +255,16 @@ public abstract class CommandTestsuite {
 
 		@ConstraintHandler("#constraint.textValue() == 'failConstraint'")
 		public void handleConstraint() {
+			
+			
+			var logger = Logger.getLogger(getClass());
+			var prevLvl = logger.getLevel();
+			logger.setLevel(Level.DEBUG);
+			logger.log(Level.DEBUG, "handle failing constraint: 'failConstraint'");
+			logger.log(Level.DEBUG, "should throw IllegalStateException('ERROR') -> AccessDenied, if obligation");
+			logger.setLevel(prevLvl);
+			
+			
 			throw new IllegalStateException("ERROR");
 		}
 
