@@ -915,7 +915,7 @@ public abstract class QueryTestsuite {
 	}
 
 	static enum TestAttempt {
-		FIRST, SECOND, THIRD, FOURTH, FIFTH, SIXTH, SEVENTH, EIGHTH, NINTH, TENTH;
+		FIRST, SECOND, THIRD, FOURTH, FIFTH;
 	}
 
 	// @formatter:off

@@ -187,6 +187,9 @@ public abstract class CommandTestsuite {
 		logger.setLevel(Level.DEBUG);
 		logger.log(Level.DEBUG, "PERMIT with obligations: " + obligations);
 		logger.log(Level.DEBUG, "thrown: " + thrown); //sometimes NoHandlerForCommandException!
+		logger.log(Level.DEBUG, "thrown: " + thrown.getLocalizedMessage());
+		logger.log(Level.DEBUG, "thrown: " + thrown.getMessage());
+		logger.log(Level.DEBUG, "thrown: " + thrown.getCause());
 		logger.setLevel(prevLvl);
 
 		
