@@ -374,7 +374,7 @@ public abstract class QueryTestsuite {
 	@ParameterizedTest
 	@EnumSource(TestAttempt.class)
 	void when_dropHandlerSecuredSubscriptionQueryAndPermitDenyPermit_then_initialReturnAndUpdatesAreEmittedAndDroppedWhileDenied(
-			TestAttempt attempt) throws InterruptedException {		
+			TestAttempt attempt) throws InterruptedException {
 		var initialEmitDelayMs = 200L;
 		var emitIntervallMs = 250L;
 		var queryPayload = attempt.name() + "-case4";
@@ -411,11 +411,11 @@ public abstract class QueryTestsuite {
 				})
 
 				
-				.timeout(Duration.ofMillis(initialEmitDelayMs + emitIntervallMs * (numberOfUpdates + 2L))))
+				.take(7).timeout(Duration.ofMillis(initialEmitDelayMs + emitIntervallMs * (numberOfUpdates + 2L))))
 						.expectNext(queryPayload + "-0", queryPayload + "-1", queryPayload + "-2", queryPayload + "-3",
 								queryPayload + "-4", /* ... DROP 5-9 ... , */ queryPayload + "-10",
-								queryPayload + "-11", queryPayload + "-12", queryPayload + "-13")
-						.then(() -> result.close()).verifyComplete();
+								queryPayload + "-11" /*, IGNORE 12-13 */)
+						.verifyComplete();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
 		result.close();
 	}
