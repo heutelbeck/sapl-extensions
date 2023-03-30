@@ -35,6 +35,8 @@ import org.axonframework.queryhandling.QueryHandler;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -369,11 +371,13 @@ public abstract class QueryTestsuite {
 		result.close();
 	}
 
-	@Test
-	void when_dropHandlerSecuredSubscriptionQueryAndPermitDenyPermit_then_initialReturnAndUpdatesAreEmittedAndDroppedWhileDenied()
-			throws InterruptedException {
-		var emitIntervallMs = 200L;
-		var queryPayload = "case4";
+	@ParameterizedTest
+	@EnumSource(TestAttempt.class)
+	void when_dropHandlerSecuredSubscriptionQueryAndPermitDenyPermit_then_initialReturnAndUpdatesAreEmittedAndDroppedWhileDenied(
+			TestAttempt attempt) throws InterruptedException {		
+		var initialEmitDelayMs = 200L;
+		var emitIntervallMs = 250L;
+		var queryPayload = attempt.name() + "-case4";
 		var numberOfUpdates = 14L;
 
 		// @formatter:off
@@ -381,7 +385,7 @@ public abstract class QueryTestsuite {
 				.thenReturn(Flux.concat(
 						Flux.just(AuthorizationDecision.PERMIT),
 						// next half time between 5th and 6th
-						Flux.just(AuthorizationDecision.DENY).delayElements(Duration.ofMillis(emitIntervallMs * 5L + emitIntervallMs / 2L)), 						
+						Flux.just(AuthorizationDecision.DENY).delayElements(Duration.ofMillis(initialEmitDelayMs + emitIntervallMs * 5L + emitIntervallMs / 2L)), 						
 						// next half time between 10th and 11th
 						Flux.just(AuthorizationDecision.PERMIT).delayElements(Duration.ofMillis(emitIntervallMs * 5L))
 						));
@@ -390,10 +394,11 @@ public abstract class QueryTestsuite {
 		var result = queryGateway.subscriptionQuery(DROP_QUERY, queryPayload, instanceOf(String.class),
 				instanceOf(String.class));
 
-		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
+		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates, initialEmitDelayMs);
 
-		create(result.initialResult().timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 3L))))
-				.expectNext(queryPayload).verifyComplete();
+		create(result.initialResult()
+				.timeout(Duration.ofMillis(initialEmitDelayMs + emitIntervallMs * (numberOfUpdates + 2L))))
+						.expectNext(queryPayload).verifyComplete();
 		create(result.updates()
 
 				
@@ -406,12 +411,12 @@ public abstract class QueryTestsuite {
 				})
 
 				
-				.take(6).timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 3L))))
+				.timeout(Duration.ofMillis(initialEmitDelayMs + emitIntervallMs * (numberOfUpdates + 2L))))
 						.expectNext(queryPayload + "-0", queryPayload + "-1", queryPayload + "-2", queryPayload + "-3",
-								queryPayload + "-4", queryPayload + "-10")
-						.verifyComplete();
+								queryPayload + "-4", /* ... DROP 5-9 ... , */ queryPayload + "-10",
+								queryPayload + "-11", queryPayload + "-12", queryPayload + "-13")
+						.then(() -> result.close()).verifyComplete();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-
 		result.close();
 	}
 
@@ -681,9 +686,17 @@ public abstract class QueryTestsuite {
 	}
 
 	private void emitUpdates(String queryPayload, long emitIntervallMs, long numberOfEmittedUpdates) {
-		Flux.interval(Duration.ofMillis(emitIntervallMs)).doOnNext(
-				i -> emitter.emit(query -> query.getPayload().toString().equals(queryPayload), queryPayload + "-" + i))
-				.take(Duration.ofMillis(emitIntervallMs * numberOfEmittedUpdates + emitIntervallMs / 2L)).subscribe();
+		emitUpdates(queryPayload, emitIntervallMs, numberOfEmittedUpdates, 0L);
+	}
+
+	private void emitUpdates(String queryPayload, long emitIntervallMs, long numberOfEmittedUpdates,
+			long initialEmitDelayMs) {
+		Mono.delay(Duration.ofMillis(initialEmitDelayMs))
+				.flatMapMany(__ -> Flux.interval(Duration.ofMillis(emitIntervallMs))
+						.doOnNext(i -> emitter.emit(query -> query.getPayload().toString().equals(queryPayload),
+								queryPayload + "-" + i))
+						.take(Duration.ofMillis(emitIntervallMs * numberOfEmittedUpdates + emitIntervallMs / 2L)))
+				.subscribe();
 	}
 
 	/// SUBSCRIPTION QUERIES WITH CONSTRAINTS
@@ -899,6 +912,10 @@ public abstract class QueryTestsuite {
 						List.of(new DataPoint("Ge\u2588\u2588\u2588\u2588", null)))
 				.verifyComplete();
 
+	}
+
+	static enum TestAttempt {
+		FIRST, SECOND, THIRD, FOURTH, FIFTH, SIXTH, SEVENTH, EIGHTH, NINTH, TENTH;
 	}
 
 	// @formatter:off

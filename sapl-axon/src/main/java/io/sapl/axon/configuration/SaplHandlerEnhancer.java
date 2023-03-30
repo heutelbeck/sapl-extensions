@@ -66,7 +66,7 @@ public class SaplHandlerEnhancer implements HandlerEnhancerDefinition {
 			var logger = Logger.getLogger(getClass());
 			var prevLvl = logger.getLevel();
 			logger.setLevel(Level.DEBUG);
-			logger.log(Level.DEBUG, "Found CommandHandlingMember: " + original.signature());
+			logger.log(Level.DEBUG, "Found secured CommandHandlingMember: " + original.signature());
 			logger.setLevel(prevLvl);
 			
 			
