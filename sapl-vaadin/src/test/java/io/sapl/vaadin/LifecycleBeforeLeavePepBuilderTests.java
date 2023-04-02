@@ -1,7 +1,10 @@
 package io.sapl.vaadin;
 
 import static io.sapl.api.interpreter.Val.JSON;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -13,8 +16,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.function.BiConsumer;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,11 +44,12 @@ import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.vaadin.VaadinPep.LifecycleBeforeLeavePepBuilder;
 import io.sapl.vaadin.base.SecurityHelper;
+import jakarta.servlet.http.HttpServletRequest;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class LifecycleBeforeLeavePepBuilderTests {
+class LifecycleBeforeLeavePepBuilderTests {
 
 	private static MockedStatic<SecurityHelper> securityHelperMock;
 	private static MockedStatic<Notification> notificationMockedStatic;
