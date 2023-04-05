@@ -2,6 +2,8 @@ package io.sapl.axon.commandhandling;
 
 import java.time.Duration;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.test.annotation.DirtiesContext;
@@ -38,5 +40,14 @@ public class CommandIT extends CommandTestsuite {
 			SpringApplication.run(TestApplication.class, args);
 		}
 	}
-
+	
+	@BeforeAll
+	public static void beforeAll() {
+		isIntegrationTest = true;
+	}
+	
+	@AfterAll
+	public static void afterAll() {
+		isIntegrationTest = false;
+	}
 }

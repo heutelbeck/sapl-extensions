@@ -25,8 +25,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.ResultMessage;
 import org.axonframework.messaging.responsetypes.ResponseType;
@@ -398,24 +396,14 @@ public abstract class QueryTestsuite {
 
 		create(result.initialResult()
 				.timeout(Duration.ofMillis(initialEmitDelayMs + emitIntervallMs * (numberOfUpdates + 2L))))
-						.expectNext(queryPayload).verifyComplete();
-		create(result.updates()
-
-				
-				.doOnNext(logValue -> {
-					var logger = Logger.getLogger(getClass());
-					var prevLvl = logger.getLevel();
-					logger.setLevel(Level.DEBUG);
-					logger.log(Level.DEBUG, "Non-dropped update: " + logValue);
-					logger.setLevel(prevLvl);
-				})
-
-				
-				.take(7).timeout(Duration.ofMillis(initialEmitDelayMs + emitIntervallMs * (numberOfUpdates + 2L))))
-						.expectNext(queryPayload + "-0", queryPayload + "-1", queryPayload + "-2", queryPayload + "-3",
-								queryPayload + "-4", /* ... DROP 5-9 ... , */ queryPayload + "-10",
-								queryPayload + "-11" /*, IGNORE 12-13 */)
-						.verifyComplete();
+				.expectNext(queryPayload).verifyComplete();
+		create(result.updates().take(7)
+				.timeout(Duration.ofMillis(initialEmitDelayMs + emitIntervallMs * (numberOfUpdates + 2L))))
+				.expectNext(
+						queryPayload + "-0", queryPayload + "-1", queryPayload + "-2", queryPayload + "-3", queryPayload
+								+ "-4",
+						/* ... DROP 5-9 ... , */ queryPayload + "-10", queryPayload + "-11" /* , IGNORE 12-13 */)
+				.verifyComplete();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
 		result.close();
 	}
@@ -495,9 +483,9 @@ public abstract class QueryTestsuite {
 				.expectNext(queryPayload).verifyComplete();
 		create(result.updates().onErrorContinue((t, o) -> accessDeniedHandler.run()).take(6)
 				.timeout(Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 3L))))
-						.expectNext(queryPayload + "-0", queryPayload + "-1", queryPayload + "-2", queryPayload + "-3",
-								queryPayload + "-4", queryPayload + "-10")
-						.verifyComplete();
+				.expectNext(queryPayload + "-0", queryPayload + "-1", queryPayload + "-2", queryPayload + "-3",
+						queryPayload + "-4", queryPayload + "-10")
+				.verifyComplete();
 
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
 		verify(accessDeniedHandler, times(1)).run();
@@ -856,9 +844,8 @@ public abstract class QueryTestsuite {
 
 		create(result.updates().onErrorContinue(accessDeniedHandlerOnError)
 				.timeout(Duration.ofMillis(emitIntervallMs * 2 * numberOfUpdates)).take(7))
-						.expectNext("CASEC4-0", "CASEC4-2", "CASEC4-4", "CASEC4-8", "CASEC4-9", "CASEC4-10",
-								"CASEC4-11")
-						.verifyComplete();
+				.expectNext("CASEC4-0", "CASEC4-2", "CASEC4-4", "CASEC4-8", "CASEC4-9", "CASEC4-10", "CASEC4-11")
+				.verifyComplete();
 		verify(accessDeniedHandler, times(0)).run();
 		verify(accessDeniedHandlerOnError, times(1)).accept(any(), any());
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
