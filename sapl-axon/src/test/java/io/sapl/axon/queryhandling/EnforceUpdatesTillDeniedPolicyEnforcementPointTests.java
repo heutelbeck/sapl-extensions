@@ -20,7 +20,6 @@ import org.axonframework.queryhandling.GenericSubscriptionQueryMessage;
 import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -35,7 +34,6 @@ import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.StandardException;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -61,6 +59,8 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 	@StandardException
 	private static class TestAccessDeniedException extends AccessDeniedException {
+		
+		private static final long serialVersionUID = -5386943564236100249L;
 	}
 
 	private static ConstraintHandlerService constraintHandlerService;
@@ -77,15 +77,6 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 		when(constraintHandlerService.deserializeResource(any(JsonNode.class), any(ResponseType.class)))
 				.thenCallRealMethod();
 		defaultResource = mapper.valueToTree(new TestUpdateResponseType());
-	}
-	
-	//private Logger logger = Logger.getLogger(this.getClass().getName());
-	
-	@BeforeEach
-	void beforeEach() {
-		Hooks.onErrorDropped(error -> {
-            //logger.log(Level.WARNING, "Exception happened:", error);
-        });
 	}
 
 	@Test

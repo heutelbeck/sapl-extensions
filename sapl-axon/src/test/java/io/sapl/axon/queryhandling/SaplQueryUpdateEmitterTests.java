@@ -85,6 +85,9 @@ public class SaplQueryUpdateEmitterTests {
 	}
 
 	private static class FlaggedSubscriptionQueryMessage<Q, I, U> extends GenericSubscriptionQueryMessage<Q, I, U> {
+
+		private static final long serialVersionUID = -4415866991004251226L;
+
 		public FlaggedSubscriptionQueryMessage(Q payload, ResponseType<I> responseType,
 				ResponseType<U> updateResponseType) {
 			super(payload, responseType, updateResponseType);
@@ -222,7 +225,7 @@ public class SaplQueryUpdateEmitterTests {
 		assertThrows(IllegalArgumentException.class,
 				() -> emitter.authorizeUpdatesForSubscriptionQueryWithId(DEFAULT_MESSAGE_IDENTIFIER, decisions, clazz));
 	}
-	
+
 	@Test
 	void when_authorizeUpdatesForSubscriptionQueryWithId_with_nonExistingMessageIdentifier_and_noDecision_and_EnforceDropUpdatesWhileDenied_then_noEvent() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
@@ -235,7 +238,7 @@ public class SaplQueryUpdateEmitterTests {
 
 		create(registration.getUpdates()).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_authorizeUpdatesForSubscriptionQueryWithId_with_nonExistingMessageIdentifier_and_noDecision_and_EnforceRecoverableUpdatesIfDenied_then_noEvent() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
@@ -317,7 +320,8 @@ public class SaplQueryUpdateEmitterTests {
 	@Test
 	void when_emit_with_permit_and_closedFilter_then_noEvent() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> false;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
@@ -326,52 +330,52 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		
+
 		emitter.emit(filter, update);
-		
-		create(registration.getUpdates())
-				.verifyTimeout(DEFAULT_TIMEOUT);
+
+		create(registration.getUpdates()).verifyTimeout(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_emitMultipleInstancesAsList_with_permit_and_openFilter_then_update() {
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.multipleInstancesOf(FlaggedUpdateResponseType.class));
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
-		var update = GenericSubscriptionQueryUpdateMessage
-				.<FlaggedUpdateResponseType>asUpdateMessage(List.of(DEFAULT_UPDATE_RESPONSE_TYPE, DEFAULT_UPDATE_RESPONSE_TYPE));
+		var update = GenericSubscriptionQueryUpdateMessage.<FlaggedUpdateResponseType>asUpdateMessage(
+				List.of(DEFAULT_UPDATE_RESPONSE_TYPE, DEFAULT_UPDATE_RESPONSE_TYPE));
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
 		emitter.emit(alwaysTrue(update), update);
-		
-		create(registration.getUpdates())
-				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
+
+		create(registration.getUpdates()).expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
 				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_emitMultipleInstancesAsArray_with_permit_and_openFilter_then_update() {
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.multipleInstancesOf(FlaggedUpdateResponseType.class));
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
-		var update = GenericSubscriptionQueryUpdateMessage
-				.<FlaggedUpdateResponseType>asUpdateMessage(new FlaggedUpdateResponseType[] { DEFAULT_UPDATE_RESPONSE_TYPE, DEFAULT_UPDATE_RESPONSE_TYPE });
+		var update = GenericSubscriptionQueryUpdateMessage.<FlaggedUpdateResponseType>asUpdateMessage(
+				new FlaggedUpdateResponseType[] { DEFAULT_UPDATE_RESPONSE_TYPE, DEFAULT_UPDATE_RESPONSE_TYPE });
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
 		emitter.emit(alwaysTrue(update), update);
-		
-		create(registration.getUpdates())
-				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
+
+		create(registration.getUpdates()).expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
 				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_emitOptionalInstance_with_permit_and_openFilter_then_update() {
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.optionalInstanceOf(FlaggedUpdateResponseType.class));
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
@@ -381,16 +385,16 @@ public class SaplQueryUpdateEmitterTests {
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
 		emitter.emit(alwaysTrue(update), update);
-		
-		create(registration.getUpdates())
-				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
+
+		create(registration.getUpdates()).expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
 				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_emit_with_preHandleEnforce_deny_then_accessDenied() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		var decisions = Flux.just(AuthorizationDecision.DENY);
 		var annotation = PreHandleEnforce.class;
@@ -399,18 +403,17 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		
+
 		emitter.emit(filter, update);
-		
-		create(registration.getUpdates())
-				.expectError(AccessDeniedException.class)
-				.verify(DEFAULT_TIMEOUT);
+
+		create(registration.getUpdates()).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_emit_with_preHandleEnforce_indeterminate_then_accessDenied() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		var decisions = Flux.just(AuthorizationDecision.INDETERMINATE);
 		var annotation = PreHandleEnforce.class;
@@ -419,18 +422,17 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		
+
 		emitter.emit(filter, update);
-		
-		create(registration.getUpdates())
-				.expectError(AccessDeniedException.class)
-				.verify(DEFAULT_TIMEOUT);
+
+		create(registration.getUpdates()).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_emit_with_preHandleEnforce_notApplicable_then_accessDenied() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		var decisions = Flux.just(AuthorizationDecision.NOT_APPLICABLE);
 		var annotation = PreHandleEnforce.class;
@@ -439,18 +441,17 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		
+
 		emitter.emit(filter, update);
-		
-		create(registration.getUpdates())
-				.expectError(AccessDeniedException.class)
-				.verify(DEFAULT_TIMEOUT);
+
+		create(registration.getUpdates()).expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_emit_with_preHandleEnforce_permit_then_update() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
@@ -459,36 +460,38 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		
+
 		emitter.emit(filter, update);
-		
-		create(registration.getUpdates())
-				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
+
+		create(registration.getUpdates()).expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
 				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_emit_with_immediateDeny_then_accessDenied() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		var update = GenericSubscriptionQueryUpdateMessage
 				.<FlaggedUpdateResponseType>asUpdateMessage(DEFAULT_UPDATE_RESPONSE_TYPE);
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.immediatelyDenySubscriptionWithId(query.getIdentifier());
-		
+
 		emitter.emit(filter, update);
-		
+
 		create(registration.getUpdates())
-				.expectNextMatches(matchesIgnoringIdentifier(Object.class, GenericSubscriptionQueryUpdateMessage.asUpdateMessage(FlaggedUpdateResponseType.class, new AccessDeniedException("Access Denied!"))))
+				.expectNextMatches(matchesIgnoringIdentifier(Object.class, GenericSubscriptionQueryUpdateMessage
+						.asUpdateMessage(FlaggedUpdateResponseType.class, new AccessDeniedException("Access Denied!"))))
 				.verifyComplete();
 	}
-	
+
 	@Test
 	void when_multipleEmit_with_preHandleEnforce_deny_then_accessDenied() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		Many<AuthorizationDecision> decisionSink = Sinks.many().unicast().onBackpressureBuffer();
 		var annotation = PreHandleEnforce.class;
@@ -497,21 +500,20 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisionSink.asFlux(), annotation);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.emit(filter, update))
+
+		create(registration.getUpdates()).then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.DENY))
 				.then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.DENY))
-				.then(() -> emitter.emit(filter, update))
-				.expectError(AccessDeniedException.class)
+				.then(() -> emitter.emit(filter, update)).expectError(AccessDeniedException.class)
 				.verify(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_multipleEmit_with_preHandleEnforce_permitThenDeny_then_updateTwiceThenAccessDenied() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		Many<AuthorizationDecision> decisionSink = Sinks.many().unicast().onBackpressureBuffer();
 		var annotation = PreHandleEnforce.class;
@@ -520,23 +522,22 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisionSink.asFlux(), annotation);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.emit(filter, update))
+
+		create(registration.getUpdates()).then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.PERMIT))
 				.then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.DENY))
 				.then(() -> emitter.emit(filter, update))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
-				.expectError(AccessDeniedException.class)
-				.verify(DEFAULT_TIMEOUT);
+				.expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_multipleEmit_with_preHandleEnforce_denyThenPermit_then_accessDenied() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		Many<AuthorizationDecision> decisionSink = Sinks.many().unicast().onBackpressureBuffer();
 		var annotation = PreHandleEnforce.class;
@@ -545,21 +546,20 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisionSink.asFlux(), annotation);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.emit(filter, update))
+
+		create(registration.getUpdates()).then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.DENY))
 				.then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.PERMIT))
-				.then(() -> emitter.emit(filter, update))
-				.expectError(AccessDeniedException.class)
+				.then(() -> emitter.emit(filter, update)).expectError(AccessDeniedException.class)
 				.verify(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_multipleEmit_with_preHandleEnforce_permit_then_updateAll() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		Many<AuthorizationDecision> decisionSink = Sinks.many().unicast().onBackpressureBuffer();
 		var annotation = PreHandleEnforce.class;
@@ -568,23 +568,22 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisionSink.asFlux(), annotation);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.emit(filter, update))
+
+		create(registration.getUpdates()).then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.PERMIT))
 				.then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.PERMIT))
 				.then(() -> emitter.emit(filter, update))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
-				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
-				.verifyTimeout(DEFAULT_TIMEOUT);
+				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update)).verifyTimeout(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_multipleEmit_with_enforceDropUpdatesWhileDenied_deny_then_noEvent() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		Many<AuthorizationDecision> decisionSink = Sinks.many().unicast().onBackpressureBuffer();
 		var annotation = EnforceDropUpdatesWhileDenied.class;
@@ -593,20 +592,19 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisionSink.asFlux(), annotation);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.emit(filter, update))
+
+		create(registration.getUpdates()).then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.DENY))
 				.then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.DENY))
-				.then(() -> emitter.emit(filter, update))
-				.verifyTimeout(DEFAULT_TIMEOUT);
+				.then(() -> emitter.emit(filter, update)).verifyTimeout(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_multipleEmit_with_enforceDropUpdatesWhileDenied_permitThenDeny_then_updateTwice() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		Many<AuthorizationDecision> decisionSink = Sinks.many().unicast().onBackpressureBuffer();
 		var annotation = EnforceDropUpdatesWhileDenied.class;
@@ -615,22 +613,21 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisionSink.asFlux(), annotation);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.emit(filter, update))
+
+		create(registration.getUpdates()).then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.PERMIT))
 				.then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.DENY))
 				.then(() -> emitter.emit(filter, update))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
-				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
-				.verifyTimeout(DEFAULT_TIMEOUT);
+				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update)).verifyTimeout(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_multipleEmit_with_enforceDropUpdatesWhileDenied_permit_then_updateAll() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		Many<AuthorizationDecision> decisionSink = Sinks.many().unicast().onBackpressureBuffer();
 		var annotation = EnforceDropUpdatesWhileDenied.class;
@@ -639,23 +636,22 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisionSink.asFlux(), annotation);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.emit(filter, update))
+
+		create(registration.getUpdates()).then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.PERMIT))
 				.then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.PERMIT))
 				.then(() -> emitter.emit(filter, update))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
-				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
-				.verifyTimeout(DEFAULT_TIMEOUT);
+				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update)).verifyTimeout(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_multipleEmit_with_enforceRecoverableUpdatesIfDenied_deny_then_accessDenied() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		Many<AuthorizationDecision> decisionSink = Sinks.many().unicast().onBackpressureBuffer();
 		var annotation = EnforceRecoverableUpdatesIfDenied.class;
@@ -664,21 +660,20 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisionSink.asFlux(), annotation);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.emit(filter, update))
+
+		create(registration.getUpdates()).then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.DENY))
 				.then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.DENY))
-				.then(() -> emitter.emit(filter, update))
-				.expectError(AccessDeniedException.class)
+				.then(() -> emitter.emit(filter, update)).expectError(AccessDeniedException.class)
 				.verify(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_multipleEmit_with_enforceRecoverableUpdatesIfDenied_permitThenDeny_then_updateTwiceThenAccessDenied() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		Many<AuthorizationDecision> decisionSink = Sinks.many().unicast().onBackpressureBuffer();
 		var annotation = EnforceRecoverableUpdatesIfDenied.class;
@@ -687,23 +682,22 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisionSink.asFlux(), annotation);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.emit(filter, update))
+
+		create(registration.getUpdates()).then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.PERMIT))
 				.then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.DENY))
 				.then(() -> emitter.emit(filter, update))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
-				.expectError(AccessDeniedException.class)
-				.verify(DEFAULT_TIMEOUT);
+				.expectError(AccessDeniedException.class).verify(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_multipleEmit_with_enforceRecoverableUpdatesIfDenied_denyThenPermit_then_accessDenied() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		Many<AuthorizationDecision> decisionSink = Sinks.many().unicast().onBackpressureBuffer();
 		var annotation = EnforceRecoverableUpdatesIfDenied.class;
@@ -712,21 +706,20 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisionSink.asFlux(), annotation);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.emit(filter, update))
+
+		create(registration.getUpdates()).then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.DENY))
 				.then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.PERMIT))
-				.then(() -> emitter.emit(filter, update))
-				.expectError(AccessDeniedException.class)
+				.then(() -> emitter.emit(filter, update)).expectError(AccessDeniedException.class)
 				.verify(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_multipleEmit_with_enforceRecoverableUpdatesIfDenied_permit_then_updateAll() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		Many<AuthorizationDecision> decisionSink = Sinks.many().unicast().onBackpressureBuffer();
 		var annotation = EnforceRecoverableUpdatesIfDenied.class;
@@ -735,17 +728,15 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisionSink.asFlux(), annotation);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.emit(filter, update))
+
+		create(registration.getUpdates()).then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.PERMIT))
 				.then(() -> emitter.emit(filter, update))
 				.then(() -> decisionSink.tryEmitNext(AuthorizationDecision.PERMIT))
 				.then(() -> emitter.emit(filter, update))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
-				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
-				.verifyTimeout(DEFAULT_TIMEOUT);
+				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update)).verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
@@ -754,7 +745,7 @@ public class SaplQueryUpdateEmitterTests {
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		var queryB = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
-		
+
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
 
@@ -769,11 +760,9 @@ public class SaplQueryUpdateEmitterTests {
 				.<FlaggedUpdateResponseType>asUpdateMessage(DEFAULT_UPDATE_RESPONSE_TYPE);
 
 		emitter.emit(filter, update);
-		
-		create(registrationA.getUpdates())
-				.verifyTimeout(DEFAULT_TIMEOUT);
-		create(registrationB.getUpdates())
-				.verifyTimeout(DEFAULT_TIMEOUT);
+
+		create(registrationA.getUpdates()).verifyTimeout(DEFAULT_TIMEOUT);
+		create(registrationB.getUpdates()).verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
@@ -782,7 +771,7 @@ public class SaplQueryUpdateEmitterTests {
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		var queryB = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
-		
+
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
 
@@ -795,14 +784,12 @@ public class SaplQueryUpdateEmitterTests {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
 		var update = GenericSubscriptionQueryUpdateMessage
 				.<FlaggedUpdateResponseType>asUpdateMessage(DEFAULT_UPDATE_RESPONSE_TYPE);
-		
+
 		emitter.emit(filter, update);
-		
-		create(registrationA.getUpdates())
-				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
+
+		create(registrationA.getUpdates()).expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
 				.verifyTimeout(DEFAULT_TIMEOUT);
-		create(registrationB.getUpdates())
-				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
+		create(registrationB.getUpdates()).expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
 				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
@@ -812,7 +799,7 @@ public class SaplQueryUpdateEmitterTests {
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		var queryB = new FlaggedSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
-		
+
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
 
@@ -826,119 +813,110 @@ public class SaplQueryUpdateEmitterTests {
 				.isAssignableFrom(subscriptionQueryMessage.getClass());
 		var update = GenericSubscriptionQueryUpdateMessage
 				.<FlaggedUpdateResponseType>asUpdateMessage(DEFAULT_UPDATE_RESPONSE_TYPE);
-		
+
 		emitter.emit(filter, update);
-		
-		create(registrationA.getUpdates())
-				.verifyTimeout(DEFAULT_TIMEOUT);
-		create(registrationB.getUpdates())
-				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
+
+		create(registrationA.getUpdates()).verifyTimeout(DEFAULT_TIMEOUT);
+		create(registrationB.getUpdates()).expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
 				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_emit_with_permit_and_openFilter_and_dispatchInterceptor_then_interceptUpdate() {
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> filter = subscriptionQueryMessage -> true;
-		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
+		var query = new GenericSubscriptionQueryMessage<>(new Object(),
+				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
 		var update = GenericSubscriptionQueryUpdateMessage
 				.<FlaggedUpdateResponseType>asUpdateMessage(DEFAULT_UPDATE_RESPONSE_TYPE);
-		MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>> interceptor = list -> (integer, updateMessage) -> {
+		MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>> interceptor = list -> (integer,
+				updateMessage) -> {
 			var newPayload = new FlaggedUpdateResponseType();
 			newPayload.setSomeInt(1);
 			return GenericSubscriptionQueryUpdateMessage.<FlaggedUpdateResponseType>asUpdateMessage(newPayload);
 		};
-		
+
 		emitter.registerDispatchInterceptor(interceptor);
 
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		
+
 		emitter.emit(filter, update);
-		
+
 		create(registration.getUpdates())
-				.expectNextMatches(next -> ((FlaggedUpdateResponseType)next.getPayload()).getSomeInt() == 1)
+				.expectNextMatches(next -> ((FlaggedUpdateResponseType) next.getPayload()).getSomeInt() == 1)
 				.verifyTimeout(DEFAULT_TIMEOUT);
 	}
-	
+
 	@Test
 	void when_complete_then_complete() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
-		
+
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
-		
+
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		
+
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> true;
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.complete(filter))
-				.verifyComplete();
+
+		create(registration.getUpdates()).then(() -> emitter.complete(filter)).verifyComplete();
 	}
-	
+
 	@Test
 	void when_complete_and_unauthorized_then_noEvent() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
-		
+
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
-		
+
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> true;
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.complete(filter))
-				.verifyTimeout(DEFAULT_TIMEOUT);
+
+		create(registration.getUpdates()).then(() -> emitter.complete(filter)).verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
 	void when_completeThenEmit_then_complete() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
-		
+
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
-		
+
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		
+
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> completionFilter = subscriptionQueryMessage -> true;
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> emissionFilter = subscriptionQueryMessage -> true;
 		var update = GenericSubscriptionQueryUpdateMessage
 				.<FlaggedUpdateResponseType>asUpdateMessage(DEFAULT_UPDATE_RESPONSE_TYPE);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.complete(completionFilter))
-				.thenAwait(DEFAULT_TIMESTEP)
-				.then(() -> emitter.emit(emissionFilter, update))
-				.verifyComplete();
+
+		create(registration.getUpdates()).then(() -> emitter.complete(completionFilter)).thenAwait(DEFAULT_TIMESTEP)
+				.then(() -> emitter.emit(emissionFilter, update)).verifyComplete();
 	}
-	
+
 	@Test
 	void when_emitThenComplete_then_updateThenComplete() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
-		
+
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
-		
+
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		
+
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> completionFilter = subscriptionQueryMessage -> true;
 		Predicate<SubscriptionQueryMessage<?, ?, FlaggedUpdateResponseType>> emissionFilter = subscriptionQueryMessage -> true;
 		var update = GenericSubscriptionQueryUpdateMessage
 				.<FlaggedUpdateResponseType>asUpdateMessage(DEFAULT_UPDATE_RESPONSE_TYPE);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.emit(emissionFilter, update))
+
+		create(registration.getUpdates()).then(() -> emitter.emit(emissionFilter, update))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
-				.then(() -> emitter.complete(completionFilter))
-				.verifyComplete();
+				.then(() -> emitter.complete(completionFilter)).verifyComplete();
 	}
 
 	@Test
@@ -947,25 +925,21 @@ public class SaplQueryUpdateEmitterTests {
 				ResponseTypes.instanceOf(Object.class));
 		var queryB = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.instanceOf(Object.class));
-		
+
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
 
 		var registrationA = emitter.registerUpdateHandler(queryA, DEFAULT_UPDATE_BUFFER_SIZE);
 		var registrationB = emitter.registerUpdateHandler(queryB, DEFAULT_UPDATE_BUFFER_SIZE);
-		
+
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(queryA.getIdentifier(), decisions, annotation);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(queryB.getIdentifier(), decisions, annotation);
 
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> false;
-		
-		create(registrationA.getUpdates())
-				.then(() -> {
-					create(registrationB.getUpdates())
-							.then(() -> emitter.complete(filter))
-							.verifyTimeout(DEFAULT_TIMEOUT);
-				})
-				.verifyTimeout(DEFAULT_TIMEOUT);
+
+		create(registrationA.getUpdates()).then(() -> {
+			create(registrationB.getUpdates()).then(() -> emitter.complete(filter)).verifyTimeout(DEFAULT_TIMEOUT);
+		}).verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
@@ -980,19 +954,15 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registrationA = emitter.registerUpdateHandler(queryA, DEFAULT_UPDATE_BUFFER_SIZE);
 		var registrationB = emitter.registerUpdateHandler(queryB, DEFAULT_UPDATE_BUFFER_SIZE);
-		
+
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(queryA.getIdentifier(), decisions, annotation);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(queryB.getIdentifier(), decisions, annotation);
 
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> true;
-		
-		create(registrationA.getUpdates())
-				.then(() -> {
-					create(registrationB.getUpdates())
-							.then(() -> emitter.complete(filter))
-							.verifyComplete();
-				})
-				.verifyComplete();
+
+		create(registrationA.getUpdates()).then(() -> {
+			create(registrationB.getUpdates()).then(() -> emitter.complete(filter)).verifyComplete();
+		}).verifyComplete();
 	}
 
 	@Test
@@ -1007,55 +977,49 @@ public class SaplQueryUpdateEmitterTests {
 
 		var registrationA = emitter.registerUpdateHandler(queryA, DEFAULT_UPDATE_BUFFER_SIZE);
 		var registrationB = emitter.registerUpdateHandler(queryB, DEFAULT_UPDATE_BUFFER_SIZE);
-		
+
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(queryA.getIdentifier(), decisions, annotation);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(queryB.getIdentifier(), decisions, annotation);
 
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> FlaggedSubscriptionQueryMessage.class
 				.isAssignableFrom(subscriptionQueryMessage.getClass());
-		
-		create(registrationA.getUpdates())
-				.then(() -> {
-					create(registrationB.getUpdates())
-							.then(() -> emitter.complete(filter))
-							.verifyComplete();
-				})
-				.verifyTimeout(DEFAULT_TIMEOUT);
+
+		create(registrationA.getUpdates()).then(() -> {
+			create(registrationB.getUpdates()).then(() -> emitter.complete(filter)).verifyComplete();
+		}).verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
 	void when_completeExceptionally_then_error() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
-		
+
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
-		
+
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
-		
+
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> true;
 		var cause = new Throwable(DEFAULT_CAUSE);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.completeExceptionally(filter, cause))
+
+		create(registration.getUpdates()).then(() -> emitter.completeExceptionally(filter, cause))
 				.verifyErrorMessage(DEFAULT_CAUSE);
 	}
-	
+
 	@Test
 	@Disabled
+	// io.sapl.axon.queryhandling.SaplQueryUpdateEmitter: 376
 	void when_completeExceptionally_and_unauthorized_then_complete() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));
-		
+
 		var registration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
-		
+
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> true;
 		var cause = new Throwable(DEFAULT_CAUSE);
-		
-		create(registration.getUpdates())
-				.then(() -> emitter.completeExceptionally(filter, cause))
-				.verifyComplete();
+
+		create(registration.getUpdates()).then(() -> emitter.completeExceptionally(filter, cause)).verifyComplete();
 	}
 
 	@Test
@@ -1064,26 +1028,23 @@ public class SaplQueryUpdateEmitterTests {
 				ResponseTypes.instanceOf(Object.class));
 		var queryB = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.instanceOf(Object.class));
-		
+
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
 
 		var registrationA = emitter.registerUpdateHandler(queryA, DEFAULT_UPDATE_BUFFER_SIZE);
 		var registrationB = emitter.registerUpdateHandler(queryB, DEFAULT_UPDATE_BUFFER_SIZE);
-		
+
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(queryA.getIdentifier(), decisions, annotation);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(queryB.getIdentifier(), decisions, annotation);
 
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> false;
 		var cause = new Throwable(DEFAULT_CAUSE);
-		
-		create(registrationA.getUpdates())
-				.then(() -> {
-					create(registrationB.getUpdates())
-							.then(() -> emitter.completeExceptionally(filter, cause))
-							.verifyTimeout(DEFAULT_TIMEOUT);
-				})
-				.verifyTimeout(DEFAULT_TIMEOUT);
+
+		create(registrationA.getUpdates()).then(() -> {
+			create(registrationB.getUpdates()).then(() -> emitter.completeExceptionally(filter, cause))
+					.verifyTimeout(DEFAULT_TIMEOUT);
+		}).verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
@@ -1092,26 +1053,23 @@ public class SaplQueryUpdateEmitterTests {
 				ResponseTypes.instanceOf(Object.class));
 		var queryB = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.instanceOf(Object.class));
-		
+
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
 
 		var registrationA = emitter.registerUpdateHandler(queryA, DEFAULT_UPDATE_BUFFER_SIZE);
 		var registrationB = emitter.registerUpdateHandler(queryB, DEFAULT_UPDATE_BUFFER_SIZE);
-		
+
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(queryA.getIdentifier(), decisions, annotation);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(queryB.getIdentifier(), decisions, annotation);
 
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> true;
 		var cause = new Throwable(DEFAULT_CAUSE);
-		
-		create(registrationA.getUpdates())
-				.then(() -> {
-					create(registrationB.getUpdates())
-							.then(() -> emitter.completeExceptionally(filter, cause))
-							.verifyErrorMessage(DEFAULT_CAUSE);
-				})
-				.verifyErrorMessage(DEFAULT_CAUSE);
+
+		create(registrationA.getUpdates()).then(() -> {
+			create(registrationB.getUpdates()).then(() -> emitter.completeExceptionally(filter, cause))
+					.verifyErrorMessage(DEFAULT_CAUSE);
+		}).verifyErrorMessage(DEFAULT_CAUSE);
 	}
 
 	@Test
@@ -1120,38 +1078,39 @@ public class SaplQueryUpdateEmitterTests {
 				ResponseTypes.multipleInstancesOf(Object.class));
 		var queryB = new FlaggedSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.multipleInstancesOf(Object.class));
-		
+
 		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
 
 		var registrationA = emitter.registerUpdateHandler(queryA, DEFAULT_UPDATE_BUFFER_SIZE);
 		var registrationB = emitter.registerUpdateHandler(queryB, DEFAULT_UPDATE_BUFFER_SIZE);
-		
+
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(queryA.getIdentifier(), decisions, annotation);
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(queryB.getIdentifier(), decisions, annotation);
 
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> FlaggedSubscriptionQueryMessage.class
 				.isAssignableFrom(subscriptionQueryMessage.getClass());
 		var cause = new Throwable(DEFAULT_CAUSE);
-		
-		create(registrationA.getUpdates())
-				.then(() -> {
-					create(registrationB.getUpdates())
-							.then(() -> emitter.completeExceptionally(filter, cause))
-							.verifyErrorMessage(DEFAULT_CAUSE);
-				})
-				.verifyTimeout(DEFAULT_TIMEOUT);
+
+		create(registrationA.getUpdates()).then(() -> {
+			create(registrationB.getUpdates()).then(() -> emitter.completeExceptionally(filter, cause))
+					.verifyErrorMessage(DEFAULT_CAUSE);
+		}).verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
 	@Test
 	@SuppressWarnings("rawtypes")
 	void when_dispatchInterceptorRegistered_then_contains() {
-		MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>> interceptor = list -> (integer, updateMessage) -> GenericSubscriptionQueryUpdateMessage.asUpdateMessage(5);
-		assertFalse(((List)ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FILED_NAME)).contains(interceptor));
+		MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>> interceptor = list -> (integer,
+				updateMessage) -> GenericSubscriptionQueryUpdateMessage.asUpdateMessage(5);
+		assertFalse(
+				((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FILED_NAME)).contains(interceptor));
 		var registration = emitter.registerDispatchInterceptor(interceptor);
-		assertTrue(((List)ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FILED_NAME)).contains(interceptor));
+		assertTrue(
+				((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FILED_NAME)).contains(interceptor));
 		registration.cancel();
-		assertFalse(((List)ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FILED_NAME)).contains(interceptor));
+		assertFalse(
+				((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FILED_NAME)).contains(interceptor));
 	}
 
 	@Test
@@ -1177,162 +1136,127 @@ public class SaplQueryUpdateEmitterTests {
 		registration.getRegistration().cancel();
 		assertFalse(emitter.activeSubscriptions().contains(subscriptionQueryMessage));
 	}
-	
-	@Test
-    void differentUpdateAreDisambiguatedAndWrongTypesAreFilteredBasedOnQueryTypes() {
-        SubscriptionQueryMessage<String, List<String>, Integer> query = new GenericSubscriptionQueryMessage<>(
-                "some-payload",
-                "chatMessages",
-                ResponseTypes.multipleInstancesOf(String.class),
-                ResponseTypes.instanceOf(Integer.class)
-        );
 
-        UpdateHandlerRegistration<Object> result = emitter.registerUpdateHandler(
-        		query,
-                1024
-        );
-        
-        var decisions = Flux.just(AuthorizationDecision.PERMIT);
+	@Test
+	void differentUpdateAreDisambiguatedAndWrongTypesAreFilteredBasedOnQueryTypes() {
+		SubscriptionQueryMessage<String, List<String>, Integer> query = new GenericSubscriptionQueryMessage<>(
+				"some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
+				ResponseTypes.instanceOf(Integer.class));
+
+		UpdateHandlerRegistration<Object> result = emitter.registerUpdateHandler(query, 1024);
+
+		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
-		
+
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
 
-        result.getUpdates().subscribe();
-        emitter.emit(any -> true, "some-awesome-text");
-        emitter.emit(any -> true, 1234);
-        result.complete();
+		result.getUpdates().subscribe();
+		emitter.emit(any -> true, "some-awesome-text");
+		emitter.emit(any -> true, 1234);
+		result.complete();
 
-        create(result.getUpdates().map(Message::getPayload))
-                .expectNext(1234)
-                .verifyComplete();
-    }
-	
+		create(result.getUpdates().map(Message::getPayload)).expectNext(1234).verifyComplete();
+	}
+
 	@Test
-    void updateResponseTypeFilteringWorksForMultipleInstanceOfWithArrayAndList() {
-        SubscriptionQueryMessage<String, List<String>, List<String>> query = new GenericSubscriptionQueryMessage<>(
-                "some-payload",
-                "chatMessages",
-                ResponseTypes.multipleInstancesOf(String.class),
-                ResponseTypes.multipleInstancesOf(String.class)
-        );
+	void updateResponseTypeFilteringWorksForMultipleInstanceOfWithArrayAndList() {
+		SubscriptionQueryMessage<String, List<String>, List<String>> query = new GenericSubscriptionQueryMessage<>(
+				"some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
+				ResponseTypes.multipleInstancesOf(String.class));
 
-        UpdateHandlerRegistration<Object> result = emitter.registerUpdateHandler(
-        		query,
-                1024
-        );
-        
-        var decisions = Flux.just(AuthorizationDecision.PERMIT);
+		UpdateHandlerRegistration<Object> result = emitter.registerUpdateHandler(query, 1024);
+
+		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
-		
+
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
 
-        result.getUpdates().subscribe();
-        emitter.emit(any -> true, "some-awesome-text");
-        emitter.emit(any -> true, 1234);
-        emitter.emit(any -> true, Optional.of("optional-payload"));
-        emitter.emit(any -> true, Optional.empty());
-        emitter.emit(any -> true, new String[] { "array-item-1", "array-item-2" });
-        emitter.emit(any -> true, Arrays.asList("list-item-1", "list-item-2"));
-        emitter.emit(any -> true, Flux.just("flux-item-1", "flux-item-2"));
-        emitter.emit(any -> true, Mono.just("mono-item"));
-        result.complete();
+		result.getUpdates().subscribe();
+		emitter.emit(any -> true, "some-awesome-text");
+		emitter.emit(any -> true, 1234);
+		emitter.emit(any -> true, Optional.of("optional-payload"));
+		emitter.emit(any -> true, Optional.empty());
+		emitter.emit(any -> true, new String[] { "array-item-1", "array-item-2" });
+		emitter.emit(any -> true, Arrays.asList("list-item-1", "list-item-2"));
+		emitter.emit(any -> true, Flux.just("flux-item-1", "flux-item-2"));
+		emitter.emit(any -> true, Mono.just("mono-item"));
+		result.complete();
 
-        create(result.getUpdates().map(Message::getPayload))
-    			.expectNextMatches(actual -> equalTo(new String[] { "array-item-1", "array-item-2" }).matches(actual) )
-    			.expectNextMatches(actual -> equalTo(Arrays.asList("list-item-1", "list-item-2")).matches(actual) )
-                .verifyComplete();
-    }
-	
+		create(result.getUpdates().map(Message::getPayload))
+				.expectNextMatches(actual -> equalTo(new String[] { "array-item-1", "array-item-2" }).matches(actual))
+				.expectNextMatches(actual -> equalTo(Arrays.asList("list-item-1", "list-item-2")).matches(actual))
+				.verifyComplete();
+	}
+
 	@Test
-    void updateResponseTypeFilteringWorksForOptionaInstanceOf() {
-        SubscriptionQueryMessage<String, List<String>, Optional<String>> query = new GenericSubscriptionQueryMessage<>(
-                "some-payload",
-                "chatMessages",
-                ResponseTypes.multipleInstancesOf(String.class),
-                ResponseTypes.optionalInstanceOf(String.class)
-        );
+	void updateResponseTypeFilteringWorksForOptionaInstanceOf() {
+		SubscriptionQueryMessage<String, List<String>, Optional<String>> query = new GenericSubscriptionQueryMessage<>(
+				"some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
+				ResponseTypes.optionalInstanceOf(String.class));
 
-        UpdateHandlerRegistration<Object> result = emitter.registerUpdateHandler(
-        		query,
-                1024
-        );
-        
-        var decisions = Flux.just(AuthorizationDecision.PERMIT);
+		UpdateHandlerRegistration<Object> result = emitter.registerUpdateHandler(query, 1024);
+
+		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
-		
+
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
 
-        result.getUpdates().subscribe();
-        emitter.emit(any -> true, "some-awesome-text");
-        emitter.emit(any -> true, 1234);
-        emitter.emit(any -> true, Optional.of("optional-payload"));
-        emitter.emit(any -> true, Optional.empty());
-        emitter.emit(any -> true, new String[] { "array-item-1", "array-item-2" });
-        emitter.emit(any -> true, Arrays.asList("list-item-1", "list-item-2"));
-        emitter.emit(any -> true, Flux.just("flux-item-1", "flux-item-2"));
-        emitter.emit(any -> true, Mono.just("mono-item"));
-        result.complete();
+		result.getUpdates().subscribe();
+		emitter.emit(any -> true, "some-awesome-text");
+		emitter.emit(any -> true, 1234);
+		emitter.emit(any -> true, Optional.of("optional-payload"));
+		emitter.emit(any -> true, Optional.empty());
+		emitter.emit(any -> true, new String[] { "array-item-1", "array-item-2" });
+		emitter.emit(any -> true, Arrays.asList("list-item-1", "list-item-2"));
+		emitter.emit(any -> true, Flux.just("flux-item-1", "flux-item-2"));
+		emitter.emit(any -> true, Mono.just("mono-item"));
+		result.complete();
 
-        create(result.getUpdates().map(Message::getPayload))
-    			.expectNext(Optional.of("optional-payload"), Optional.empty() )
-                .verifyComplete();
-    }
-	
+		create(result.getUpdates().map(Message::getPayload))
+				.expectNext(Optional.of("optional-payload"), Optional.empty()).verifyComplete();
+	}
+
 	@Test
-    void multipleInstanceUpdatesAreDelivered() {
-        SubscriptionQueryMessage<String, List<String>, List<String>> query = new GenericSubscriptionQueryMessage<>(
-                "some-payload",
-                "chatMessages",
-                ResponseTypes.multipleInstancesOf(String.class),
-                ResponseTypes.multipleInstancesOf(String.class)
-        );
+	void multipleInstanceUpdatesAreDelivered() {
+		SubscriptionQueryMessage<String, List<String>, List<String>> query = new GenericSubscriptionQueryMessage<>(
+				"some-payload", "chatMessages", ResponseTypes.multipleInstancesOf(String.class),
+				ResponseTypes.multipleInstancesOf(String.class));
 
-        UpdateHandlerRegistration<Object> result = emitter.registerUpdateHandler(
-        		query,
-                1024
-        );
-        
-        var decisions = Flux.just(AuthorizationDecision.PERMIT);
+		UpdateHandlerRegistration<Object> result = emitter.registerUpdateHandler(query, 1024);
+
+		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
-		
+
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
 
-        result.getUpdates().subscribe();
-        emitter.emit(any -> true, Arrays.asList("text1","text2"));
-        emitter.emit(any -> true, Arrays.asList("text3","text4"));
-        result.complete();
+		result.getUpdates().subscribe();
+		emitter.emit(any -> true, Arrays.asList("text1", "text2"));
+		emitter.emit(any -> true, Arrays.asList("text3", "text4"));
+		result.complete();
 
-        create(result.getUpdates().map(Message::getPayload))
-                .expectNext(Arrays.asList("text1","text2"), Arrays.asList("text3","text4"))
-                .verifyComplete();
-    }
-	
+		create(result.getUpdates().map(Message::getPayload))
+				.expectNext(Arrays.asList("text1", "text2"), Arrays.asList("text3", "text4")).verifyComplete();
+	}
+
 	@Test
-    void optionalUpdatesAreDelivered() {
-        SubscriptionQueryMessage<String, Optional<String>, Optional<String>> query = new GenericSubscriptionQueryMessage<>(
-                "some-payload",
-                "chatMessages",
-                ResponseTypes.optionalInstanceOf(String.class),
-                ResponseTypes.optionalInstanceOf(String.class)
-        );
+	void optionalUpdatesAreDelivered() {
+		SubscriptionQueryMessage<String, Optional<String>, Optional<String>> query = new GenericSubscriptionQueryMessage<>(
+				"some-payload", "chatMessages", ResponseTypes.optionalInstanceOf(String.class),
+				ResponseTypes.optionalInstanceOf(String.class));
 
-        UpdateHandlerRegistration<Object> result = emitter.registerUpdateHandler(
-        		query,
-                1024
-        );
-        
-        var decisions = Flux.just(AuthorizationDecision.PERMIT);
+		UpdateHandlerRegistration<Object> result = emitter.registerUpdateHandler(query, 1024);
+
+		var decisions = Flux.just(AuthorizationDecision.PERMIT);
 		var annotation = PreHandleEnforce.class;
-		
+
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(query.getIdentifier(), decisions, annotation);
 
-        result.getUpdates().subscribe();
-        emitter.emit(any -> true, Optional.of("text1"));
-        emitter.emit(any -> true, Optional.of("text2"));
-        result.complete();
+		result.getUpdates().subscribe();
+		emitter.emit(any -> true, Optional.of("text1"));
+		emitter.emit(any -> true, Optional.of("text2"));
+		result.complete();
 
-        create(result.getUpdates().map(Message::getPayload))
-                .expectNext(Optional.of("text1"),Optional.of("text2"))
-                .verifyComplete();
-    }
+		create(result.getUpdates().map(Message::getPayload)).expectNext(Optional.of("text1"), Optional.of("text2"))
+				.verifyComplete();
+	}
 }
