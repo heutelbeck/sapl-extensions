@@ -147,7 +147,7 @@ public abstract class QueryTestsuite {
 
 	@Test
 	void when_unsecuredQuery_then_resultReturnsAndPdpNotCalled() {
-		var result = Mono.fromFuture(queryGateway.query(UNSECURED_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(UNSECURED_QUERY, QUERY, instanceOf(String.class)));
 		create(result).expectNext(QUERY).verifyComplete();
 		verifyNoInteractions(pdp);
 	}
@@ -157,7 +157,7 @@ public abstract class QueryTestsuite {
 	void when_preHandlerSecuredQueryAndPermit_then_resultReturnsAndPdpIsCalledWithSubscription() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-		var result = Mono.fromFuture(queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectNext(QUERY).verifyComplete();
 
@@ -172,7 +172,7 @@ public abstract class QueryTestsuite {
 	void when_dropSecuredQueryAndPermit_then_resultReturnsAndPdpIsCalledWithSubscription() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-		var result = Mono.fromFuture(queryGateway.query(DROP_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(DROP_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectNext(QUERY).verifyComplete();
 
@@ -187,7 +187,7 @@ public abstract class QueryTestsuite {
 	void when_recoverableSecuredQueryAndPermit_then_resultReturnsAndPdpIsCalledWithSubscription() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-		var result = Mono.fromFuture(queryGateway.query(RECOVERABLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(RECOVERABLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectNext(QUERY).verifyComplete();
 
@@ -202,7 +202,7 @@ public abstract class QueryTestsuite {
 	void when_preHandlerSecuredQueryAndDeny_then_accessDenied() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 
-		var result = Mono.fromFuture(queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectErrorMatches(isAccessDenied()).verify();
 	}
@@ -211,7 +211,7 @@ public abstract class QueryTestsuite {
 	void when_dropSecuredHandlerAndDeny_then_accessDenied() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 
-		var result = Mono.fromFuture(queryGateway.query(DROP_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(DROP_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectErrorMatches(isAccessDenied()).verify();
 	}
@@ -220,7 +220,7 @@ public abstract class QueryTestsuite {
 	void when_recoverableSecuredQueryAndDeny_then_accessDenied() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 
-		var result = Mono.fromFuture(queryGateway.query(RECOVERABLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(RECOVERABLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectErrorMatches(isAccessDenied()).verify();
 	}
@@ -230,7 +230,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withResource(JSON.textNode(I_WAS_REPLACED))));
 
-		var result = Mono.fromFuture(queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectNext(I_WAS_REPLACED).verifyComplete();
 
@@ -246,7 +246,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
 		var result = Mono
-				.fromFuture(queryGateway.query(POST_HANDLE_NO_RESOURCE_QUERY, QUERY, instanceOf(String.class)));
+				.fromFuture(() -> queryGateway.query(POST_HANDLE_NO_RESOURCE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectNext(QUERY).verifyComplete();
 
@@ -262,8 +262,8 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withResource(JSON.textNode(I_WAS_REPLACED))));
 
-		var result = Mono
-				.fromFuture(queryGateway.query(BAD_RESOURCE_SERIALIZATION_QUERY, QUERY, instanceOf(Integer.class)));
+		var result = Mono.fromFuture(
+				() -> queryGateway.query(BAD_RESOURCE_SERIALIZATION_QUERY, QUERY, instanceOf(Integer.class)));
 
 		create(result).expectErrorMatches(isAccessDenied()).verify();
 
@@ -278,26 +278,26 @@ public abstract class QueryTestsuite {
 	void when_postHandlerSecuredQueryAndDeny_then_accessDenied() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 
-		var result = Mono.fromFuture(queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectErrorMatches(isAccessDenied()).verify();
 	}
 
 	@Test
 	void when_handlerIsAnnotatedWithAnIllegalCombinationOfSaplAnnotations_then_accessDenied_case1() {
-		var result = Mono.fromFuture(queryGateway.query(BAD_ANNOTATIONS1, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(BAD_ANNOTATIONS1, QUERY, instanceOf(String.class)));
 		create(result).expectErrorMatches(isAccessDenied()).verify();
 	}
 
 	@Test
 	void when_handlerIsAnnotatedWithAnIllegalCombinationOfSaplAnnotations_then_accessDenied_case2() {
-		var result = Mono.fromFuture(queryGateway.query(BAD_ANNOTATIONS2, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(BAD_ANNOTATIONS2, QUERY, instanceOf(String.class)));
 		create(result).expectErrorMatches(isAccessDenied()).verify();
 	}
 
 	@Test
 	void when_handlerIsAnnotatedWithAnIllegalCombinationOfSaplAnnotations_then_accessDenied_case3() {
-		var result = Mono.fromFuture(queryGateway.query(BAD_ANNOTATIONS3, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(BAD_ANNOTATIONS3, QUERY, instanceOf(String.class)));
 		create(result).expectErrorMatches(isAccessDenied()).verify();
 	}
 
@@ -502,7 +502,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withAdvice(constraints)));
 
-		var result = Mono.fromFuture(queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectNext(QUERY).verifyComplete();
 
@@ -516,7 +516,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
-		var result = Mono.fromFuture(queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectErrorMatches(isAccessDenied()).verify();
 
@@ -530,7 +530,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
-		var result = Mono.fromFuture(queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectNext(QUERY).verifyComplete();
 
@@ -545,7 +545,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
-		var result = Mono.fromFuture(queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectNext(MODIFIED_QUERY).verifyComplete();
 
@@ -560,7 +560,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
-		var result = Mono.fromFuture(queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectNext(QUERY.toUpperCase()).verifyComplete();
 
@@ -575,7 +575,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
-		var result = Mono.fromFuture(queryGateway.query(FAILING_PRE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(FAILING_PRE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectErrorMatches(isCausedBy(IllegalArgumentException.class)).verify();
 
@@ -592,7 +592,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withAdvice(advice)));
 
-		var result = Mono.fromFuture(queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectNext(QUERY).verifyComplete();
 
@@ -606,7 +606,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
-		var result = Mono.fromFuture(queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectErrorMatches(isAccessDenied()).verify();
 
@@ -620,7 +620,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
-		var result = Mono.fromFuture(queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectNext(QUERY).verifyComplete();
 
@@ -635,7 +635,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
-		var result = Mono.fromFuture(queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectErrorMatches(isAccessDenied()).verify();
 
@@ -650,7 +650,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
-		var result = Mono.fromFuture(queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectNext(QUERY.toUpperCase()).verifyComplete();
 
@@ -665,7 +665,7 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
-		var result = Mono.fromFuture(queryGateway.query(FAILING_POST_QUERY, QUERY, instanceOf(String.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(FAILING_POST_QUERY, QUERY, instanceOf(String.class)));
 
 		create(result).expectErrorMatches(isCausedBy(IllegalArgumentException.class)).verify();
 
@@ -873,8 +873,8 @@ public abstract class QueryTestsuite {
 
 		// Normal Query
 
-		var result = Mono.fromFuture(
-				queryGateway.query(LIST_RESPONSE_QUERY, QUERY, ResponseTypes.multipleInstancesOf(DataPoint.class)));
+		var result = Mono.fromFuture(() -> queryGateway.query(LIST_RESPONSE_QUERY, QUERY,
+				ResponseTypes.multipleInstancesOf(DataPoint.class)));
 		StepVerifier.create(result)
 				.expectNext(List.of(new DataPoint("Al\u2588\u2588", null), new DataPoint("Al\u2588\u2588\u2588", null)))
 				.verifyComplete();

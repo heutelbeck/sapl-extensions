@@ -55,14 +55,14 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 	private static final Set<Class<?>> QUERY_ANNOTATIONS_IMPLYING_PREENFORCING = Set.of(PreHandleEnforce.class,
 			EnforceDropUpdatesWhileDenied.class, EnforceRecoverableUpdatesIfDenied.class);
 
-	private final SaplQueryUpdateEmitter                  emitter;
-	private final ConstraintHandlerService                axonConstraintEnforcementService;
+	private final SaplQueryUpdateEmitter emitter;
+	private final ConstraintHandlerService axonConstraintEnforcementService;
 	private final AuthorizationSubscriptionBuilderService subscriptionBuilder;
-	private final PolicyDecisionPoint                     pdp;
-	private final Set<Annotation>                         saplAnnotations;
-	private final MessageHandlingMember<T>                delegate;
-	private final Executable                              handlerExecutable;
-	private final SaplAxonProperties                      properties;
+	private final PolicyDecisionPoint pdp;
+	private final Set<Annotation> saplAnnotations;
+	private final MessageHandlingMember<T> delegate;
+	private final Executable handlerExecutable;
+	private final SaplAxonProperties properties;
 
 	/**
 	 * Instantiate a QueryPolicyEnforcementPoint.
@@ -80,16 +80,15 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 			ConstraintHandlerService axonConstraintEnforcementService, SaplQueryUpdateEmitter emitter,
 			AuthorizationSubscriptionBuilderService subscriptionBuilder, SaplAxonProperties properties) {
 		super(delegate);
-		this.delegate                         = delegate;
-		this.pdp                              = pdp;
+		this.delegate = delegate;
+		this.pdp = pdp;
 		this.axonConstraintEnforcementService = axonConstraintEnforcementService;
-		this.subscriptionBuilder              = subscriptionBuilder;
-		this.handlerExecutable                = delegate.unwrap(Executable.class)
-				.orElseThrow(() -> new IllegalStateException(
-						"No underlying method or constructor found while wrapping the CommandHandlingMember."));
-		this.saplAnnotations                  = saplAnnotationsOnUnderlyingExecutable();
-		this.emitter                          = emitter;
-		this.properties                       = properties;
+		this.subscriptionBuilder = subscriptionBuilder;
+		this.handlerExecutable = delegate.unwrap(Executable.class).orElseThrow(() -> new IllegalStateException(
+				"No underlying method or constructor found while wrapping the CommandHandlingMember."));
+		this.saplAnnotations = saplAnnotationsOnUnderlyingExecutable();
+		this.emitter = emitter;
+		this.properties = properties;
 	}
 
 	/**
@@ -140,7 +139,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 							.flatMap(enforcePreEnforceDecision(message, source, Optional.empty())));
 		}
 
-		var queryResult           = preEnforcedQueryResult.orElseGet(() -> callDelegate(message, source));
+		var queryResult = preEnforcedQueryResult.orElseGet(() -> callDelegate(message, source));
 		var postEnforceAnnotation = saplAnnotations.stream()
 				.filter(annotation -> annotation.annotationType().isAssignableFrom(PostHandleEnforce.class))
 				.findFirst();
@@ -149,9 +148,9 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 			queryResult = queryResult.onErrorResume(enforcePostEnforceOnErrorResult(message, postEnforceAnnotation))
 					.flatMap(enforcePostEnforceOnSuccessfulQueryResult(message, postEnforceAnnotation));
 		}
-		if(message.getResponseType() instanceof PublisherResponseType)
+		if (message.getResponseType() instanceof PublisherResponseType)
 			return queryResult.flatMapMany(r -> (Publisher<?>) r);
-			
+
 		return queryResult.toFuture();
 	}
 
@@ -305,11 +304,15 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 			return Mono.error(e);
 		}
 
-		if (result instanceof CompletableFuture) {
-			return Mono.fromFuture(((CompletableFuture<?>) result));
+		if (result == null)
+			return Mono.empty();
+
+		if (CompletableFuture.class.isAssignableFrom(result.getClass())) {
+			final var futureResult = (CompletableFuture<?>) result;
+			return Mono.fromFuture(() -> futureResult);
 		}
 
-		return result != null ? Mono.just(result) : Mono.empty();
+		return Mono.just(result);
 	}
 
 	private Object handleSubscriptionQuery(QueryMessage<?, ?> message, T source, Optional<ResponseType<?>> updateType)
@@ -335,11 +338,11 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 
 		var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(message,
 				streamingAnnotation, handlerExecutable, Optional.empty());
-		var decisions         = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY);
-		var tap               = new FluxOneAndManyTap<AuthorizationDecision>(decisions,
+		var decisions = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY);
+		var tap = new FluxOneAndManyTap<AuthorizationDecision>(decisions,
 				properties.getSubscriptionQueryDecisionCacheTTL());
-		var initialDecision   = tap.one();
-		var tappedDecisions   = tap.many();
+		var initialDecision = tap.one();
+		var tappedDecisions = tap.many();
 
 		log.debug("Set authorization mode of emitter {}", streamingAnnotation.annotationType().getSimpleName());
 		emitter.authorizeUpdatesForSubscriptionQueryWithId(message.getIdentifier(), tappedDecisions,
