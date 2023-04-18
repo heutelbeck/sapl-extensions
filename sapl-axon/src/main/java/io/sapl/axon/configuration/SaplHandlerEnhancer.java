@@ -17,8 +17,6 @@ package io.sapl.axon.configuration;
 
 import java.util.Arrays;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.axonframework.commandhandling.CommandMessageHandlingMember;
 import org.axonframework.messaging.annotation.HandlerEnhancerDefinition;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
@@ -49,11 +47,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SaplHandlerEnhancer implements HandlerEnhancerDefinition {
 
-	private final PolicyDecisionPoint                     pdp;
-	private final ConstraintHandlerService                axonConstraintEnforcementService;
-	private final SaplQueryUpdateEmitter                  emitter;
+	private final PolicyDecisionPoint pdp;
+	private final ConstraintHandlerService axonConstraintEnforcementService;
+	private final SaplQueryUpdateEmitter emitter;
 	private final AuthorizationSubscriptionBuilderService subscriptionBuilder;
-	private final SaplAxonProperties                      properties;
+	private final SaplAxonProperties properties;
 
 	@Override
 	public <T> MessageHandlingMember<T> wrapHandler(MessageHandlingMember<T> original) {
@@ -61,15 +59,6 @@ public class SaplHandlerEnhancer implements HandlerEnhancerDefinition {
 		var interfaces = Arrays.asList(original.getClass().getInterfaces());
 
 		if (interfaces.contains(CommandMessageHandlingMember.class)) {
-			
-			
-			var logger = Logger.getLogger(getClass());
-			var prevLvl = logger.getLevel();
-			logger.setLevel(Level.DEBUG);
-			logger.log(Level.DEBUG, "Found secured CommandHandlingMember: " + original.signature());
-			logger.setLevel(prevLvl);
-			
-			
 			return new CommandPolicyEnforcementPoint<>(original, pdp, axonConstraintEnforcementService,
 					subscriptionBuilder);
 		}

@@ -12,11 +12,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -52,7 +51,9 @@ import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+@Slf4j
 @SpringBootTest
 @Import(ScenarioConfiguration.class)
 public abstract class CommandTestsuite {
@@ -65,6 +66,10 @@ public abstract class CommandTestsuite {
 	private static final String ON_DECISION_DO = "onDecisionDo";
 
 	private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
+
+	private static final long COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS = 500L;
+	protected static boolean isIntegrationTest = false;
+	private static boolean waitedForCommandHandlerRegistration = false;
 
 	@MockBean
 	PolicyDecisionPoint pdp;
@@ -92,12 +97,14 @@ public abstract class CommandTestsuite {
 
 	@Test
 	void when_securedCommandHandler_and_Permit_then_accessGranted() {
+		waitForCommandHandlerRegistration();
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 		assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is("OK (foo)"));
 	}
 
 	@Test
 	void when_securedCommandHandler_and_Deny_then_accessDenied() {
+		waitForCommandHandlerRegistration();
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
 		assertTrue(isAccessDenied().test(thrown));
@@ -105,6 +112,7 @@ public abstract class CommandTestsuite {
 
 	@Test
 	void when_securedCommandHandler_and_PermitWithUnknownObligation_then_accessDenied() {
+		waitForCommandHandlerRegistration();
 		var obligations = JSON.arrayNode();
 		obligations.add(JSON.textNode("unknown"));
 		when(pdp.decide(any(AuthorizationSubscription.class)))
@@ -115,6 +123,7 @@ public abstract class CommandTestsuite {
 
 	@Test
 	void when_securedCommandHandler_and_PermitWithObligations_then_accessGrantedAndObligationsMet() {
+		waitForCommandHandlerRegistration();
 		var obligations = JSON.arrayNode();
 		obligations.add(JSON.textNode(MODIFY_RESULT));
 		obligations.add(JSON.textNode(ON_DECISION_DO));
@@ -129,6 +138,7 @@ public abstract class CommandTestsuite {
 
 	@Test
 	void when_securedCommandHandler_and_PermitWithErrorMapObligations_then_accessGrantedAndChangedError() {
+		waitForCommandHandlerRegistration();
 		var obligations = JSON.arrayNode();
 		obligations.add(JSON.textNode(MODIFY_ERROR));
 		when(pdp.decide(any(AuthorizationSubscription.class)))
@@ -141,12 +151,14 @@ public abstract class CommandTestsuite {
 
 	@Test
 	void when_securedAggregateCreationCommand_and_Permit_then_accessGranted() {
+		waitForCommandHandlerRegistration();
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 		assertThat(commandGateway.sendAndWait(new CreateAggregate("id2")), is("id2"));
 	}
 
 	@Test
 	void when_securedAggregateCreationAndFollowUpCommand_and_Permit_then_accessGranted() {
+		waitForCommandHandlerRegistration();
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 		assertThat(commandGateway.sendAndWait(new CreateAggregate("id1")), is("id1"));
 		assertThat(commandGateway.sendAndWait(new ModifyAggregate("id1")), is(nullValue()));
@@ -155,6 +167,7 @@ public abstract class CommandTestsuite {
 	@SuppressWarnings("unchecked")
 	@Test
 	void when_securedAggregateCreationAndFollowUpCommand_and_PermitWithObligation_then_accessGranted() {
+		waitForCommandHandlerRegistration();
 		var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
 		var obligations = JSON.arrayNode();
 		obligations.add(JSON.textNode("something"));
@@ -166,6 +179,7 @@ public abstract class CommandTestsuite {
 
 	@Test
 	void when_securedCommandHandler_and_PermitWithObligation_then_accessGranted() {
+		waitForCommandHandlerRegistration();
 		var obligations = JSON.arrayNode();
 		obligations.add(JSON.textNode("serviceConstraint"));
 		var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
@@ -175,29 +189,18 @@ public abstract class CommandTestsuite {
 
 	@Test
 	void when_securedCommandHandler_and_PermitWithObligationFailing_then_accessDenied() {
+		waitForCommandHandlerRegistration();
 		var obligations = JSON.arrayNode();
 		obligations.add(JSON.textNode("failConstraint"));
 		var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
 		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
-
-		
-		var logger = Logger.getLogger(getClass());
-		var prevLvl = logger.getLevel();
-		logger.setLevel(Level.DEBUG);
-		logger.log(Level.DEBUG, "PERMIT with obligations: " + obligations);
-		logger.log(Level.DEBUG, "thrown: " + thrown); //sometimes NoHandlerForCommandException!
-		logger.log(Level.DEBUG, "thrown: " + thrown.getLocalizedMessage());
-		logger.log(Level.DEBUG, "thrown: " + thrown.getMessage());
-		logger.log(Level.DEBUG, "thrown: " + thrown.getCause());
-		logger.setLevel(prevLvl);
-
-		
 		assertTrue(isAccessDenied().test(thrown));
 	}
 
 	@Test
 	void when_securedAggregateCreationCommand_and_Deny_then_accessDenies() {
+		waitForCommandHandlerRegistration();
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CreateAggregate("id3")));
 		assertTrue(isAccessDenied().test(thrown));
@@ -206,7 +209,7 @@ public abstract class CommandTestsuite {
 	@SuppressWarnings("unchecked")
 	@Test
 	void when_securedAggregateCreationAndFollowUpCommandToEntity_and_Permit_then_accessGranted() {
-
+		waitForCommandHandlerRegistration();
 		var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
 		var obligations = JSON.arrayNode();
 		obligations.add(JSON.textNode("somethingWithMember"));
@@ -215,6 +218,17 @@ public abstract class CommandTestsuite {
 		assertThat(commandGateway.sendAndWait(new CreateAggregate("id7")), is("id7"));
 		assertThat(commandGateway.sendAndWait(new UpdateMember("id7", "A")), is(nullValue()));
 		assertThat(commandGateway.sendAndWait(new UpdateMember("id7", "B")), is(nullValue()));
+	}
+
+	static void waitForCommandHandlerRegistration() {
+		if (!isIntegrationTest || waitedForCommandHandlerRegistration)
+			return;
+		log.info("Waiting for " + COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS / 1000f
+				+ "s for Axon Server to register command handlers.");
+		Mono.delay(Duration.ofMillis(COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS)).block();
+		log.info("Waited for " + COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS / 1000f
+				+ "s for Axon Server to register command handlers.");
+		waitedForCommandHandlerRegistration = true;
 	}
 
 	@Value
@@ -258,16 +272,6 @@ public abstract class CommandTestsuite {
 
 		@ConstraintHandler("#constraint.textValue() == 'failConstraint'")
 		public void handleConstraint() {
-			
-			
-			var logger = Logger.getLogger(getClass());
-			var prevLvl = logger.getLevel();
-			logger.setLevel(Level.DEBUG);
-			logger.log(Level.DEBUG, "handle failing constraint: 'failConstraint'");
-			logger.log(Level.DEBUG, "should throw IllegalStateException('ERROR') -> AccessDenied, if obligation");
-			logger.setLevel(prevLvl);
-			
-			
 			throw new IllegalStateException("ERROR");
 		}
 
