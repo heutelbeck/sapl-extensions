@@ -657,8 +657,6 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE),
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE));
 
-		decisions = decisions.doOnNext(t -> System.out.println("D " + t));
-		resourceAccessPoint = resourceAccessPoint.doOnNext(t -> System.out.println("E " + t));
 		var enforcedUpdateMessageFlux = of(query, decisions, resourceAccessPoint, constraintHandlerService,
 				resultResponseType, updateResponseType);
 		StepVerifier.create(enforcedUpdateMessageFlux)

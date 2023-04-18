@@ -36,7 +36,6 @@ import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.UpdateHandlerRegistration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -481,7 +480,7 @@ public class SaplQueryUpdateEmitterTests {
 
 		emitter.emit(filter, update);
 
-		create(registration.getUpdates())
+		create(registration.getUpdates().timeout(DEFAULT_TIMEOUT))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, GenericSubscriptionQueryUpdateMessage
 						.asUpdateMessage(FlaggedUpdateResponseType.class, new AccessDeniedException("Access Denied!"))))
 				.verifyComplete();
@@ -863,7 +862,8 @@ public class SaplQueryUpdateEmitterTests {
 
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> true;
 
-		create(registration.getUpdates()).then(() -> emitter.complete(filter)).verifyComplete();
+		create(registration.getUpdates().timeout(DEFAULT_TIMEOUT)).then(() -> emitter.complete(filter))
+				.verifyComplete();
 	}
 
 	@Test
@@ -894,8 +894,8 @@ public class SaplQueryUpdateEmitterTests {
 		var update = GenericSubscriptionQueryUpdateMessage
 				.<FlaggedUpdateResponseType>asUpdateMessage(DEFAULT_UPDATE_RESPONSE_TYPE);
 
-		create(registration.getUpdates()).then(() -> emitter.complete(completionFilter)).thenAwait(DEFAULT_TIMESTEP)
-				.then(() -> emitter.emit(emissionFilter, update)).verifyComplete();
+		create(registration.getUpdates().timeout(DEFAULT_TIMEOUT)).then(() -> emitter.complete(completionFilter))
+				.thenAwait(DEFAULT_TIMESTEP).then(() -> emitter.emit(emissionFilter, update)).verifyComplete();
 	}
 
 	@Test
@@ -914,7 +914,7 @@ public class SaplQueryUpdateEmitterTests {
 		var update = GenericSubscriptionQueryUpdateMessage
 				.<FlaggedUpdateResponseType>asUpdateMessage(DEFAULT_UPDATE_RESPONSE_TYPE);
 
-		create(registration.getUpdates()).then(() -> emitter.emit(emissionFilter, update))
+		create(registration.getUpdates().timeout(DEFAULT_TIMEOUT)).then(() -> emitter.emit(emissionFilter, update))
 				.expectNextMatches(matchesIgnoringIdentifier(Object.class, update))
 				.then(() -> emitter.complete(completionFilter)).verifyComplete();
 	}
@@ -960,8 +960,9 @@ public class SaplQueryUpdateEmitterTests {
 
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> true;
 
-		create(registrationA.getUpdates()).then(() -> {
-			create(registrationB.getUpdates()).then(() -> emitter.complete(filter)).verifyComplete();
+		create(registrationA.getUpdates().timeout(DEFAULT_TIMEOUT)).then(() -> {
+			create(registrationB.getUpdates().timeout(DEFAULT_TIMEOUT)).then(() -> emitter.complete(filter))
+					.verifyComplete();
 		}).verifyComplete();
 	}
 
@@ -985,7 +986,8 @@ public class SaplQueryUpdateEmitterTests {
 				.isAssignableFrom(subscriptionQueryMessage.getClass());
 
 		create(registrationA.getUpdates()).then(() -> {
-			create(registrationB.getUpdates()).then(() -> emitter.complete(filter)).verifyComplete();
+			create(registrationB.getUpdates().timeout(DEFAULT_TIMEOUT)).then(() -> emitter.complete(filter))
+					.verifyComplete();
 		}).verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
@@ -1003,12 +1005,11 @@ public class SaplQueryUpdateEmitterTests {
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> true;
 		var cause = new Throwable(DEFAULT_CAUSE);
 
-		create(registration.getUpdates()).then(() -> emitter.completeExceptionally(filter, cause))
-				.verifyErrorMessage(DEFAULT_CAUSE);
+		create(registration.getUpdates().timeout(DEFAULT_TIMEOUT))
+				.then(() -> emitter.completeExceptionally(filter, cause)).verifyErrorMessage(DEFAULT_CAUSE);
 	}
 
 	@Test
-	@Disabled
 	// io.sapl.axon.queryhandling.SaplQueryUpdateEmitter: 376
 	void when_completeExceptionally_and_unauthorized_then_complete() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
@@ -1019,7 +1020,8 @@ public class SaplQueryUpdateEmitterTests {
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> true;
 		var cause = new Throwable(DEFAULT_CAUSE);
 
-		create(registration.getUpdates()).then(() -> emitter.completeExceptionally(filter, cause)).verifyComplete();
+		create(registration.getUpdates().timeout(DEFAULT_TIMEOUT))
+				.then(() -> emitter.completeExceptionally(filter, cause)).verifyComplete();
 	}
 
 	@Test
@@ -1066,9 +1068,9 @@ public class SaplQueryUpdateEmitterTests {
 		Predicate<SubscriptionQueryMessage<?, ?, ?>> filter = subscriptionQueryMessage -> true;
 		var cause = new Throwable(DEFAULT_CAUSE);
 
-		create(registrationA.getUpdates()).then(() -> {
-			create(registrationB.getUpdates()).then(() -> emitter.completeExceptionally(filter, cause))
-					.verifyErrorMessage(DEFAULT_CAUSE);
+		create(registrationA.getUpdates().timeout(DEFAULT_TIMEOUT)).then(() -> {
+			create(registrationB.getUpdates().timeout(DEFAULT_TIMEOUT))
+					.then(() -> emitter.completeExceptionally(filter, cause)).verifyErrorMessage(DEFAULT_CAUSE);
 		}).verifyErrorMessage(DEFAULT_CAUSE);
 	}
 
@@ -1093,8 +1095,8 @@ public class SaplQueryUpdateEmitterTests {
 		var cause = new Throwable(DEFAULT_CAUSE);
 
 		create(registrationA.getUpdates()).then(() -> {
-			create(registrationB.getUpdates()).then(() -> emitter.completeExceptionally(filter, cause))
-					.verifyErrorMessage(DEFAULT_CAUSE);
+			create(registrationB.getUpdates().timeout(DEFAULT_TIMEOUT))
+					.then(() -> emitter.completeExceptionally(filter, cause)).verifyErrorMessage(DEFAULT_CAUSE);
 		}).verifyTimeout(DEFAULT_TIMEOUT);
 	}
 
@@ -1155,7 +1157,7 @@ public class SaplQueryUpdateEmitterTests {
 		emitter.emit(any -> true, 1234);
 		result.complete();
 
-		create(result.getUpdates().map(Message::getPayload)).expectNext(1234).verifyComplete();
+		create(result.getUpdates().map(Message::getPayload).timeout(DEFAULT_TIMEOUT)).expectNext(1234).verifyComplete();
 	}
 
 	@Test
@@ -1182,7 +1184,7 @@ public class SaplQueryUpdateEmitterTests {
 		emitter.emit(any -> true, Mono.just("mono-item"));
 		result.complete();
 
-		create(result.getUpdates().map(Message::getPayload))
+		create(result.getUpdates().map(Message::getPayload).timeout(DEFAULT_TIMEOUT))
 				.expectNextMatches(actual -> equalTo(new String[] { "array-item-1", "array-item-2" }).matches(actual))
 				.expectNextMatches(actual -> equalTo(Arrays.asList("list-item-1", "list-item-2")).matches(actual))
 				.verifyComplete();
@@ -1212,7 +1214,7 @@ public class SaplQueryUpdateEmitterTests {
 		emitter.emit(any -> true, Mono.just("mono-item"));
 		result.complete();
 
-		create(result.getUpdates().map(Message::getPayload))
+		create(result.getUpdates().map(Message::getPayload).timeout(DEFAULT_TIMEOUT))
 				.expectNext(Optional.of("optional-payload"), Optional.empty()).verifyComplete();
 	}
 
@@ -1234,7 +1236,7 @@ public class SaplQueryUpdateEmitterTests {
 		emitter.emit(any -> true, Arrays.asList("text3", "text4"));
 		result.complete();
 
-		create(result.getUpdates().map(Message::getPayload))
+		create(result.getUpdates().map(Message::getPayload).timeout(DEFAULT_TIMEOUT))
 				.expectNext(Arrays.asList("text1", "text2"), Arrays.asList("text3", "text4")).verifyComplete();
 	}
 
@@ -1256,7 +1258,7 @@ public class SaplQueryUpdateEmitterTests {
 		emitter.emit(any -> true, Optional.of("text2"));
 		result.complete();
 
-		create(result.getUpdates().map(Message::getPayload)).expectNext(Optional.of("text1"), Optional.of("text2"))
-				.verifyComplete();
+		create(result.getUpdates().map(Message::getPayload).timeout(DEFAULT_TIMEOUT))
+				.expectNext(Optional.of("text1"), Optional.of("text2")).verifyComplete();
 	}
 }

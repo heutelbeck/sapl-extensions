@@ -58,9 +58,9 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
 	private static final String QUERY_UPDATE_TASKS_RESOURCE_KEY = "/update-tasks";
 
-	private final MessageMonitor<? super SubscriptionQueryUpdateMessage<?>>                   updateMessageMonitor;
-	private final ConstraintHandlerService                                                    constraintHandlerService;
-	private final ConcurrentMap<SubscriptionQueryMessage<?, ?, ?>, QueryData<?>>              activeQueries        = new ConcurrentHashMap<>();
+	private final MessageMonitor<? super SubscriptionQueryUpdateMessage<?>> updateMessageMonitor;
+	private final ConstraintHandlerService constraintHandlerService;
+	private final ConcurrentMap<SubscriptionQueryMessage<?, ?, ?>, QueryData<?>> activeQueries = new ConcurrentHashMap<>();
 	private final List<MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>>> dispatchInterceptors = new CopyOnWriteArrayList<>();
 
 	/**
@@ -72,7 +72,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	public SaplQueryUpdateEmitter(
 			Optional<MessageMonitor<? super SubscriptionQueryUpdateMessage<?>>> updateMessageMonitor,
 			ConstraintHandlerService constraintHandlerService) {
-		this.updateMessageMonitor     = updateMessageMonitor.orElseGet(() -> NoOpMessageMonitor.INSTANCE);
+		this.updateMessageMonitor = updateMessageMonitor.orElseGet(() -> NoOpMessageMonitor.INSTANCE);
 		this.constraintHandlerService = constraintHandlerService;
 	}
 
@@ -92,14 +92,14 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
 	@Value
 	private static class QueryEnforcementConfiguration {
-		QueryAuthorizationMode      mode;
+		QueryAuthorizationMode mode;
 		Flux<AuthorizationDecision> decisions;
 	}
 
 	@Value
 	private static class QueryData<U> {
-		QueryAuthorizationMode                        mode;
-		Sinks.One<QueryEnforcementConfiguration>      enforcementConfigurationSink;
+		QueryAuthorizationMode mode;
+		Sinks.One<QueryEnforcementConfiguration> enforcementConfigurationSink;
 		Sinks.Many<SubscriptionQueryUpdateMessage<U>> updateSink;
 
 		public QueryData<U> withMode(QueryAuthorizationMode newMode) {
@@ -177,11 +177,11 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		Many<SubscriptionQueryUpdateMessage<U>> updateSink = Sinks.many().replay()
 				.<SubscriptionQueryUpdateMessage<U>>limit(updateBufferSize);
 
-		Runnable     removeHandler = () -> activeQueries.remove(query);
-		Registration registration  = () -> {
-										removeHandler.run();
-										return true;
-									};
+		Runnable removeHandler = () -> activeQueries.remove(query);
+		Registration registration = () -> {
+			removeHandler.run();
+			return true;
+		};
 
 		activeQueries.put(query,
 				new QueryData<U>(QueryAuthorizationMode.UNDEFINED, enforcementConfigurationSink, updateSink));
