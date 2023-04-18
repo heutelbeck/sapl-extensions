@@ -22,6 +22,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -53,6 +55,7 @@ class FieldValidationConstraintHandlerProviderTests {
 	private Binder<TestData> binder;
 	private TestForm form;
 	private final JsonNodeFactory JSON = JsonNodeFactory.instance;
+	private final ObjectMapper MAPPER = new ObjectMapper();
 	private final UI ui = mock(UI.class);
 
 	@BeforeAll
@@ -301,21 +304,25 @@ class FieldValidationConstraintHandlerProviderTests {
 	}
 
 	@Test
-	void when_constraintHasDateTimeFormat_then_constraintIsApplied() {
+	void when_constraintHasDateTimeFormat_then_constraintIsApplied() throws JsonMappingException, JsonProcessingException {
 		// GIVEN
 		var sut = new FieldValidationConstraintHandlerProvider(binder, form);
 		sut.bindField(form.dateTimeField);
 		binder.bindInstanceFields(form);
 
 		// constraint
-		ObjectNode constraint = JSON.objectNode();
-		constraint.put("type", "saplVaadin");
-		constraint.put("id", "validation");
-		constraint.set("fields", JSON.objectNode().set("dateTimeField",
-				JSON.objectNode()
-						.put("type", "string")
-						.put("format", "date-time"))
-		);
+		var constraint = MAPPER.readTree("""
+				{
+				  "type"   : "saplVaadin",
+				  "id"     : "validation",
+				  "fields" : {
+				    "dateTimeField" : {
+				      "type"  : "string",
+				      "format": "date-time"
+				    }
+				  }
+				}
+				""");
 
 		// WHEN+THEN
 		sut.getHandler(constraint).accept(ui);
