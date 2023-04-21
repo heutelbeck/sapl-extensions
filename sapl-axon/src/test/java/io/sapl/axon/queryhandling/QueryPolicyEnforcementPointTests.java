@@ -61,12 +61,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import reactor.core.publisher.Flux;
 
-public class QueryPolicyEnforcementPointTests {
+class QueryPolicyEnforcementPointTests {
 
-	private static final String MAPPER_FILED_NAME = "mapper";
-	private static final AccessDeniedException ACCESS_DENIED = new AccessDeniedException("Access denied");
-	private static final TestQueryPayload DEFAULT_PAYLOAD = new TestQueryPayload();
-	private static final TestResponseType DEFAULT_RESPONSE = new TestResponseType();
+	private static final String                MAPPER_FILED_NAME = "mapper";
+	private static final AccessDeniedException ACCESS_DENIED     = new AccessDeniedException("Access denied");
+	private static final TestQueryPayload      DEFAULT_PAYLOAD   = new TestQueryPayload();
+	private static final TestResponseType      DEFAULT_RESPONSE  = new TestResponseType();
 
 	@SuppressWarnings("rawtypes")
 	private static final QueryMessage DEFAULT_QUERY_MESSAGE = new GenericQueryMessage<TestQueryPayload, TestResponseType>(
@@ -140,21 +140,21 @@ public class QueryPolicyEnforcementPointTests {
 		}
 	}
 
-	private ObjectMapper mapper;
+	private ObjectMapper             mapper;
 	private ParameterResolverFactory factory;
 
-	private MessageHandlingMember<HandlingObject> delegate;
-	private PolicyDecisionPoint pdp;
-	private ConstraintHandlerService axonConstraintEnforcementService;
-	private SaplQueryUpdateEmitter emitter;
+	private MessageHandlingMember<HandlingObject>   delegate;
+	private PolicyDecisionPoint                     pdp;
+	private ConstraintHandlerService                axonConstraintEnforcementService;
+	private SaplQueryUpdateEmitter                  emitter;
 	private AuthorizationSubscriptionBuilderService subscriptionBuilder;
-	private SaplAxonProperties properties;
+	private SaplAxonProperties                      properties;
 
 	private QueryPolicyEnforcementPoint<HandlingObject> queryPEP;
 
 	@SuppressWarnings("rawtypes")
 	private QueryConstraintHandlerBundle queryConstraintHandlerBundle;
-	private HandlingObject handlingInstance;
+	private HandlingObject               handlingInstance;
 
 	@BeforeEach
 	@SuppressWarnings("unchecked")
@@ -163,15 +163,15 @@ public class QueryPolicyEnforcementPointTests {
 		var executable = HandlingObject.class.getDeclaredMethod("handle1", TestQueryPayload.class);
 		factory = new DefaultParameterResolverFactory();
 
-		delegate = spy(
+		delegate                         = spy(
 				new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
-		pdp = mock(PolicyDecisionPoint.class);
+		pdp                              = mock(PolicyDecisionPoint.class);
 		axonConstraintEnforcementService = mock(ConstraintHandlerService.class);
-		emitter = mock(SaplQueryUpdateEmitter.class);
-		subscriptionBuilder = mock(AuthorizationSubscriptionBuilderService.class);
-		properties = mock(SaplAxonProperties.class);
-		queryConstraintHandlerBundle = mock(QueryConstraintHandlerBundle.class);
-		handlingInstance = spy(new HandlingObject(DEFAULT_RESPONSE));
+		emitter                          = mock(SaplQueryUpdateEmitter.class);
+		subscriptionBuilder              = mock(AuthorizationSubscriptionBuilderService.class);
+		properties                       = mock(SaplAxonProperties.class);
+		queryConstraintHandlerBundle     = mock(QueryConstraintHandlerBundle.class);
+		handlingInstance                 = spy(new HandlingObject(DEFAULT_RESPONSE));
 
 		setField(axonConstraintEnforcementService, MAPPER_FILED_NAME, mapper);
 		when(axonConstraintEnforcementService.deserializeResource(any(JsonNode.class), any(ResponseType.class)))
@@ -296,7 +296,7 @@ public class QueryPolicyEnforcementPointTests {
 	@SuppressWarnings("unchecked")
 	void when_handle_with_preEnforce_and_executePreHandlingHandlersMapQuery_then_callHandlerWithManipulatedQuery()
 			throws NoSuchMethodException, SecurityException {
-		var specialPayload = new TestQueryPayload("some special text");
+		var          specialPayload      = new TestQueryPayload("some special text");
 		@SuppressWarnings("rawtypes")
 		QueryMessage specialQueryMessage = new GenericQueryMessage<>(specialPayload,
 				ResponseTypes.instanceOf(TestResponseType.class));
@@ -309,7 +309,7 @@ public class QueryPolicyEnforcementPointTests {
 		var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
 		assertNotNull(response);
 		assertInstanceOf(CompletableFuture.class, response);
-		var future = (CompletableFuture<?>) response;
+		var future          = (CompletableFuture<?>) response;
 		var completedResult = assertDoesNotThrow(() -> future.get());
 		assertEquals(DEFAULT_RESPONSE, completedResult);
 		verify(handlingInstance, times(1)).handle1(eq(specialPayload));
@@ -383,7 +383,7 @@ public class QueryPolicyEnforcementPointTests {
 		var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
 		assertNotNull(response);
 		assertInstanceOf(CompletableFuture.class, response);
-		var future = (CompletableFuture<?>) response;
+		var future          = (CompletableFuture<?>) response;
 		var completedResult = assertDoesNotThrow(() -> future.get());
 		assertEquals(DEFAULT_RESPONSE, completedResult);
 	}
@@ -399,7 +399,7 @@ public class QueryPolicyEnforcementPointTests {
 		var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
 		assertNotNull(response);
 		assertInstanceOf(CompletableFuture.class, response);
-		var future = (CompletableFuture<?>) response;
+		var future          = (CompletableFuture<?>) response;
 		var completedResult = assertDoesNotThrow(() -> future.get());
 		assertEquals(resource, completedResult);
 	}
@@ -433,7 +433,7 @@ public class QueryPolicyEnforcementPointTests {
 		var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
 		assertNotNull(response);
 		assertInstanceOf(CompletableFuture.class, response);
-		var future = (CompletableFuture<?>) response;
+		var future          = (CompletableFuture<?>) response;
 		var completedResult = assertDoesNotThrow(() -> future.get());
 		assertEquals(DEFAULT_RESPONSE, completedResult);
 	}
@@ -452,7 +452,7 @@ public class QueryPolicyEnforcementPointTests {
 		var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
 		assertNotNull(response);
 		assertInstanceOf(CompletableFuture.class, response);
-		var future = (CompletableFuture<?>) response;
+		var future          = (CompletableFuture<?>) response;
 		var completedResult = assertDoesNotThrow(() -> future.get());
 		assertEquals(DEFAULT_RESPONSE, completedResult);
 	}
@@ -643,7 +643,7 @@ public class QueryPolicyEnforcementPointTests {
 				subscriptionBuilder, properties);
 
 		var resourceResponse = new TestResponseType("ResourceText");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withResource(asTree(resourceResponse));
+		var decision         = new AuthorizationDecision(Decision.PERMIT).withResource(asTree(resourceResponse));
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(decision));
 		when(queryConstraintHandlerBundle.executePostHandlingHandlers(eq(resourceResponse)))
 				.thenReturn(resourceResponse);
@@ -669,7 +669,7 @@ public class QueryPolicyEnforcementPointTests {
 				subscriptionBuilder, properties);
 
 		var resourceResponse = new TestResponseType("ResourceText");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withResource(asTree(resourceResponse));
+		var decision         = new AuthorizationDecision(Decision.PERMIT).withResource(asTree(resourceResponse));
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(decision));
 		when(axonConstraintEnforcementService.deserializeResource(any(JsonNode.class), any(ResponseType.class)))
 				.thenThrow(ACCESS_DENIED);
@@ -787,7 +787,7 @@ public class QueryPolicyEnforcementPointTests {
 				() -> queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance));
 		verify(emitter, times(0)).authorizeUpdatesForSubscriptionQueryWithId(any(String.class));
 	}
-	
+
 	@Test
 	void when_handleSubscriptionQuery_with_enforceDropUpdatesWhileDenied_then_preEnforceInitialResult()
 			throws NoSuchMethodException, SecurityException {
@@ -803,11 +803,11 @@ public class QueryPolicyEnforcementPointTests {
 		var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance));
 		assertNotNull(response);
 		assertInstanceOf(CompletableFuture.class, response);
-		var future = (CompletableFuture<?>) response;
+		var future          = (CompletableFuture<?>) response;
 		var completedResult = assertDoesNotThrow(() -> future.get());
 		assertEquals(DEFAULT_RESPONSE, completedResult);
 	}
-	
+
 	@Test
 	void when_handleSubscriptionQuery_with_enforceRecoverableUpdatesIfDenied_then_preEnforceInitialResult()
 			throws NoSuchMethodException, SecurityException {
@@ -823,7 +823,7 @@ public class QueryPolicyEnforcementPointTests {
 		var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance));
 		assertNotNull(response);
 		assertInstanceOf(CompletableFuture.class, response);
-		var future = (CompletableFuture<?>) response;
+		var future          = (CompletableFuture<?>) response;
 		var completedResult = assertDoesNotThrow(() -> future.get());
 		assertEquals(DEFAULT_RESPONSE, completedResult);
 	}

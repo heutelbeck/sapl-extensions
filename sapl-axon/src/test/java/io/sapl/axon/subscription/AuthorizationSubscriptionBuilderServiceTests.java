@@ -62,7 +62,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		Object targetAggregateIdentifier;
 		Object someOtherField = "someOtherValue";
 	}
-	
+
 	@Value
 	private static class NonAnnotatedTestCommand {
 		Object nonAnnotatedTargetAggregateIdentifier;
@@ -137,7 +137,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		@PreHandleEnforce(environment = "'testEnvironment'")
 		public void handle9(TestCommand cmd) {
 		}
-		
+
 		@CommandHandler
 		@PreHandleEnforce
 		public void handle10(NonAnnotatedTestCommand cmd) {
@@ -189,7 +189,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		@PreHandleEnforce(environment = "'testEnvironment'")
 		public void handle9(TestCommand cmd) {
 		}
-		
+
 		@CommandHandler
 		@PreHandleEnforce
 		public void handle10(NonAnnotatedTestCommand cmd) {
@@ -250,13 +250,13 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		public TestQueryResult handle9(TestQuery query) {
 			return new TestQueryResult(query.getTargetDocumentIdentifier());
 		}
-		
+
 		@QueryHandler
 		@PreHandleEnforce
 		public TestQueryResult handle10(NonEnclosedTestQuery query) {
 			return new TestQueryResult(query.getTargetDocumentIdentifier());
 		}
-		
+
 		@QueryHandler
 		@PreHandleEnforce(environment = "malformed")
 		public TestQueryResult handle11(TestQuery query) {
@@ -487,7 +487,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		assertNull(subscription1.getEnvironment());
 		assertNull(subscription2.getEnvironment());
 	}
-	
+
 	@Test
 	void when_constructAuthorizationSubscriptionForCommand_with_providedAggregateType_then_subscriptionWithProvidedAggregateType()
 			throws NoSuchMethodException, SecurityException {
@@ -495,10 +495,10 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var command = new GenericCommandMessage<>(payload).withMetaData(Map.of(AGGREGATE_TYPE, TEST_AGGREGATE_TYPE));
 
 		var handlerObject1 = new TestAggregate(TEST_AGGREGATE_IDENTIFIER);
-		var annotation1 = TestAggregate.class.getDeclaredMethod("handle1", TestCommand.class)
+		var annotation1    = TestAggregate.class.getDeclaredMethod("handle1", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 		var handlerObject2 = new TestCommandHandlingObject();
-		var annotation2 = TestCommandHandlingObject.class.getDeclaredMethod("handle1", TestCommand.class)
+		var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle1", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 
 		var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
@@ -519,7 +519,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		assertNull(subscription1.getEnvironment());
 		assertNull(subscription2.getEnvironment());
 	}
-	
+
 	@Test
 	void when_constructAuthorizationSubscriptionForCommand_with_commandWithoutTargetIdentifier_then_noIdentifierInResource()
 			throws NoSuchMethodException, SecurityException {
@@ -530,7 +530,8 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		var annotation1    = TestAggregate.class.getDeclaredMethod("handle10", NonAnnotatedTestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 		var handlerObject2 = new TestCommandHandlingObject();
-		var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle10", NonAnnotatedTestCommand.class)
+		var annotation2    = TestCommandHandlingObject.class
+				.getDeclaredMethod("handle10", NonAnnotatedTestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 
 		var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
@@ -606,15 +607,15 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	@Test
 	void when_constructAuthorizationSubscriptionForCommand_with_metaData_then_subscriptionWithMetaData()
 			throws NoSuchMethodException, SecurityException {
-		var payload = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
+		var payload  = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
 		var metaData = Map.of("metaDataKey1", "metaDataValue1", "metaDataKey2", "metaDataValue2");
-		var command = new GenericCommandMessage<>(payload).andMetaData(metaData);
+		var command  = new GenericCommandMessage<>(payload).andMetaData(metaData);
 
 		var handlerObject1 = new TestAggregate(TEST_AGGREGATE_IDENTIFIER);
-		var annotation1 = TestAggregate.class.getDeclaredMethod("handle1", TestCommand.class)
+		var annotation1    = TestAggregate.class.getDeclaredMethod("handle1", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 		var handlerObject2 = new TestCommandHandlingObject();
-		var annotation2 = TestCommandHandlingObject.class.getDeclaredMethod("handle1", TestCommand.class)
+		var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle1", TestCommand.class)
 				.getAnnotation(PreHandleEnforce.class);
 
 		var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
@@ -642,11 +643,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	void when_constructAuthorizationSubscriptionForQuery_with_emptyAnnotation_then_anonymousSubscription()
 			throws NoSuchMethodException, SecurityException {
 		var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
-		var query = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
+		var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
 		var handlerMethod = TestProjection.class.getDeclaredMethod("handle1", TestQuery.class);
-		var annotation = handlerMethod.getAnnotation(PreHandleEnforce.class);
-		var queryResult = Optional.empty();
+		var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
+		var queryResult   = Optional.empty();
 
 		var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
 				queryResult);
@@ -664,11 +665,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	void when_constructAuthorizationSubscriptionForQuery_with_malformedSubject_then_exception()
 			throws NoSuchMethodException, SecurityException {
 		var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
-		var query = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
+		var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
 		var handlerMethod = TestProjection.class.getDeclaredMethod("handle2", TestQuery.class);
-		var annotation = handlerMethod.getAnnotation(PreHandleEnforce.class);
-		var queryResult = Optional.empty();
+		var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
+		var queryResult   = Optional.empty();
 
 		assertThrows(SpelEvaluationException.class, () -> service.constructAuthorizationSubscriptionForQuery(query,
 				annotation, handlerMethod, queryResult));
@@ -678,11 +679,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	void when_constructAuthorizationSubscriptionForQuery_with_subject_then_subscriptionWithSubject()
 			throws NoSuchMethodException, SecurityException {
 		var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
-		var query = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
+		var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
 		var handlerMethod = TestProjection.class.getDeclaredMethod("handle3", TestQuery.class);
-		var annotation = handlerMethod.getAnnotation(PreHandleEnforce.class);
-		var queryResult = Optional.empty();
+		var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
+		var queryResult   = Optional.empty();
 
 		var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
 				queryResult);
@@ -700,11 +701,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	void when_constructAuthorizationSubscriptionForQuery_with_malformedAction_then_exception()
 			throws NoSuchMethodException, SecurityException {
 		var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
-		var query = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
+		var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
 		var handlerMethod = TestProjection.class.getDeclaredMethod("handle4", TestQuery.class);
-		var annotation = handlerMethod.getAnnotation(PreHandleEnforce.class);
-		var queryResult = Optional.empty();
+		var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
+		var queryResult   = Optional.empty();
 
 		assertThrows(SpelEvaluationException.class, () -> service.constructAuthorizationSubscriptionForQuery(query,
 				annotation, handlerMethod, queryResult));
@@ -714,11 +715,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	void when_constructAuthorizationSubscriptionForQuery_with_action_then_subscriptionWithAction()
 			throws NoSuchMethodException, SecurityException {
 		var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
-		var query = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
+		var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
 		var handlerMethod = TestProjection.class.getDeclaredMethod("handle5", TestQuery.class);
-		var annotation = handlerMethod.getAnnotation(PreHandleEnforce.class);
-		var queryResult = Optional.empty();
+		var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
+		var queryResult   = Optional.empty();
 
 		var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
 				queryResult);
@@ -733,11 +734,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	void when_constructAuthorizationSubscriptionForQuery_with_malformedResource_then_exception()
 			throws NoSuchMethodException, SecurityException {
 		var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
-		var query = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
+		var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
 		var handlerMethod = TestProjection.class.getDeclaredMethod("handle6", TestQuery.class);
-		var annotation = handlerMethod.getAnnotation(PreHandleEnforce.class);
-		var queryResult = Optional.empty();
+		var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
+		var queryResult   = Optional.empty();
 
 		assertThrows(SpelEvaluationException.class, () -> service.constructAuthorizationSubscriptionForQuery(query,
 				annotation, handlerMethod, queryResult));
@@ -747,11 +748,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	void when_constructAuthorizationSubscriptionForQuery_with_resource_then_subscriptionWithResource()
 			throws NoSuchMethodException, SecurityException {
 		var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
-		var query = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
+		var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
 		var handlerMethod = TestProjection.class.getDeclaredMethod("handle7", TestQuery.class);
-		var annotation = handlerMethod.getAnnotation(PreHandleEnforce.class);
-		var queryResult = Optional.empty();
+		var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
+		var queryResult   = Optional.empty();
 
 		var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
 				queryResult);
@@ -769,11 +770,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	void when_constructAuthorizationSubscriptionForQuery_with_postEnforce_and_resource_then_postEnforceSubscriptionWithResource()
 			throws NoSuchMethodException, SecurityException {
 		var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
-		var query = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
+		var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
 		var handlerMethod = TestProjection.class.getDeclaredMethod("handle8", TestQuery.class);
-		var annotation = handlerMethod.getAnnotation(PostHandleEnforce.class);
-		var queryResult = Optional.of(new TestQueryResult(TEST_DOCUMENT_IDENTIFIER));
+		var annotation    = handlerMethod.getAnnotation(PostHandleEnforce.class);
+		var queryResult   = Optional.of(new TestQueryResult(TEST_DOCUMENT_IDENTIFIER));
 
 		var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
 				queryResult);
@@ -791,11 +792,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	void when_constructAuthorizationSubscriptionForQuery_with_postEnforce_then_postEnforceSubscription()
 			throws NoSuchMethodException, SecurityException {
 		var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
-		var query = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
+		var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
 		var handlerMethod = TestProjection.class.getDeclaredMethod("handle9", TestQuery.class);
-		var annotation = handlerMethod.getAnnotation(PostHandleEnforce.class);
-		var queryResult = Optional.of(new TestQueryResult(TEST_DOCUMENT_IDENTIFIER));
+		var annotation    = handlerMethod.getAnnotation(PostHandleEnforce.class);
+		var queryResult   = Optional.of(new TestQueryResult(TEST_DOCUMENT_IDENTIFIER));
 
 		var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
 				queryResult);
@@ -813,13 +814,13 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	void when_constructAuthorizationSubscriptionForQuery_with_subscriptionQuery_then_subscriptionWithUpdateType()
 			throws NoSuchMethodException, SecurityException {
 		var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
-		var query = new GenericSubscriptionQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class),
+		var query   = new GenericSubscriptionQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class),
 				ResponseTypes.instanceOf(TestQueryUpdate.class));
 		query = query.andMetaData(Map.of(UPDATE_RESPONSE_TYPE, query.getUpdateResponseType()));
 
 		var handlerMethod = TestProjection.class.getDeclaredMethod("handle1", TestQuery.class);
-		var annotation = handlerMethod.getAnnotation(PreHandleEnforce.class);
-		var queryResult = Optional.empty();
+		var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
+		var queryResult   = Optional.empty();
 
 		var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
 				queryResult);
@@ -832,16 +833,16 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		assertEquals(projectionInfoWithUpdateType("handle1"), subscription.getResource());
 		assertNull(subscription.getEnvironment());
 	}
-	
+
 	@Test
 	void when_constructAuthorizationSubscriptionForQuery_with_nonEnclosedPayload_then_subscriptionWithoutClassName()
 			throws NoSuchMethodException, SecurityException {
 		var payload = new NonEnclosedTestQuery(TEST_DOCUMENT_IDENTIFIER);
-		var query = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
+		var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
 		var handlerMethod = TestProjection.class.getDeclaredMethod("handle10", NonEnclosedTestQuery.class);
-		var annotation = handlerMethod.getAnnotation(PreHandleEnforce.class);
-		var queryResult = Optional.empty();
+		var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
+		var queryResult   = Optional.empty();
 
 		var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
 				queryResult);
@@ -854,16 +855,16 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		assertEquals(projectionInfoOnNonEnclosedPayload("handle10"), subscription.getResource());
 		assertNull(subscription.getEnvironment());
 	}
-	
+
 	@Test
 	void when_constructAuthorizationSubscriptionForQuery_with_malformedEnvironment_then_exception()
 			throws NoSuchMethodException, SecurityException {
 		var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
-		var query = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
+		var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
 		var handlerMethod = TestProjection.class.getDeclaredMethod("handle11", TestQuery.class);
-		var annotation = handlerMethod.getAnnotation(PreHandleEnforce.class);
-		var queryResult = Optional.empty();
+		var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
+		var queryResult   = Optional.empty();
 
 		assertThrows(SpelEvaluationException.class, () -> service.constructAuthorizationSubscriptionForQuery(query,
 				annotation, handlerMethod, queryResult));
@@ -873,11 +874,11 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 	void when_constructAuthorizationSubscriptionForQuery_with_environment_then_subscriptionWithSubject()
 			throws NoSuchMethodException, SecurityException {
 		var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
-		var query = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
+		var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
 		var handlerMethod = TestProjection.class.getDeclaredMethod("handle12", TestQuery.class);
-		var annotation = handlerMethod.getAnnotation(PreHandleEnforce.class);
-		var queryResult = Optional.empty();
+		var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
+		var queryResult   = Optional.empty();
 
 		var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
 				queryResult);
@@ -897,14 +898,14 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		node.put(AGGREGATE_IDENTIFIER, TEST_AGGREGATE_IDENTIFIER);
 		return node;
 	}
-	
+
 	private static JsonNode aggregateInfo(String aggregateType) {
 		var node = JsonNodeFactory.instance.objectNode();
 		node.put(AGGREGATE_TYPE, aggregateType);
 		node.put(AGGREGATE_IDENTIFIER, TEST_AGGREGATE_IDENTIFIER);
 		return node;
 	}
-	
+
 	private static JsonNode aggregateInfoWithoutIdentifier() {
 		var node = JsonNodeFactory.instance.objectNode();
 		node.put(AGGREGATE_TYPE, TestAggregate.class.getSimpleName());
@@ -916,14 +917,14 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		node.put(AGGREGATE_IDENTIFIER, TEST_AGGREGATE_IDENTIFIER);
 		return node;
 	}
-	
+
 	private static JsonNode handlerInfo(String aggregateType) {
 		var node = JsonNodeFactory.instance.objectNode();
 		node.put(AGGREGATE_TYPE, aggregateType);
 		node.put(AGGREGATE_IDENTIFIER, TEST_AGGREGATE_IDENTIFIER);
 		return node;
 	}
-	
+
 	private static JsonNode handlerInfoWithoutIdentifier() {
 		var node = JsonNodeFactory.instance.objectNode();
 		return node;
@@ -960,7 +961,7 @@ public class AuthorizationSubscriptionBuilderServiceTests {
 		node.put(CLASS_NAME, AuthorizationSubscriptionBuilderServiceTests.class.getSimpleName());
 		return node;
 	}
-	
+
 	private static JsonNode projectionInfoOnNonEnclosedPayload(String methodName) {
 		var node = JsonNodeFactory.instance.objectNode();
 		node.put(PROJECTION_CLASS, TestProjection.class.getSimpleName());

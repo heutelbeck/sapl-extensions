@@ -18,14 +18,14 @@ import org.junit.jupiter.api.Test;
 public class DefaultResponseTypeSupportTests {
 
 	private ResponseTypeSupport responseTypeSupport;
-	
+
 	@BeforeEach
 	void beforeEach() {
 		responseTypeSupport = mock(ResponseTypeSupport.class);
 		when(responseTypeSupport.supports(any(Class.class))).thenCallRealMethod();
 		when(responseTypeSupport.supports(any(ResponseType.class))).thenCallRealMethod();
 	}
-	
+
 	@Test
 	void when_noSupportedType_then_alwasyFalse() {
 		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of());
@@ -33,7 +33,7 @@ public class DefaultResponseTypeSupportTests {
 		assertFalse(responseTypeSupport.supports(Object.class));
 		assertFalse(responseTypeSupport.supports(ResponseTypes.instanceOf(Object.class)));
 	}
-	
+
 	@Test
 	void when_instanceSupportedType_then_true() {
 		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.instanceOf(String.class)));
@@ -41,7 +41,7 @@ public class DefaultResponseTypeSupportTests {
 		assertTrue(responseTypeSupport.supports(String.class));
 		assertTrue(responseTypeSupport.supports(ResponseTypes.instanceOf(String.class)));
 	}
-	
+
 	@Test
 	void when_subClassOfInstanceSupportedType_then_false() {
 		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.instanceOf(String.class)));
@@ -49,7 +49,7 @@ public class DefaultResponseTypeSupportTests {
 		assertFalse(responseTypeSupport.supports(Object.class));
 		assertFalse(responseTypeSupport.supports(ResponseTypes.instanceOf(Object.class)));
 	}
-	
+
 	@Test
 	void when_superClassOfInstanceSupportedType_then_true() {
 		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.instanceOf(Object.class)));
@@ -57,7 +57,7 @@ public class DefaultResponseTypeSupportTests {
 		assertTrue(responseTypeSupport.supports(String.class));
 		assertTrue(responseTypeSupport.supports(ResponseTypes.instanceOf(String.class)));
 	}
-	
+
 	@Test
 	void when_multipleInstancesResponseType_then_true() {
 		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.multipleInstancesOf(String.class)));
@@ -66,7 +66,7 @@ public class DefaultResponseTypeSupportTests {
 		assertTrue(responseTypeSupport.supports(List.class));
 		assertTrue(responseTypeSupport.supports(ResponseTypes.multipleInstancesOf(String.class)));
 	}
-	
+
 	@Test
 	void when_optionalResponseType_then_true() {
 		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.optionalInstanceOf(String.class)));
@@ -74,7 +74,7 @@ public class DefaultResponseTypeSupportTests {
 		assertTrue(responseTypeSupport.supports(Optional.class));
 		assertTrue(responseTypeSupport.supports(ResponseTypes.optionalInstanceOf(String.class)));
 	}
-	
+
 	@Test
 	void when_differingResponseTypes_and_instanceResponseType_then_false() {
 		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.instanceOf(String.class)));
@@ -85,7 +85,7 @@ public class DefaultResponseTypeSupportTests {
 		assertFalse(responseTypeSupport.supports(Optional.class));
 		assertFalse(responseTypeSupport.supports(ResponseTypes.optionalInstanceOf(String.class)));
 	}
-	
+
 	@Test
 	void when_differingResponseTypes_and_multipleInstancesResponseType_then_false() {
 		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.multipleInstancesOf(String.class)));
@@ -95,7 +95,7 @@ public class DefaultResponseTypeSupportTests {
 		assertFalse(responseTypeSupport.supports(Optional.class));
 		assertFalse(responseTypeSupport.supports(ResponseTypes.optionalInstanceOf(String.class)));
 	}
-	
+
 	@Test
 	void when_differingResponseTypes_and_optionalResponseType_then_false() {
 		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.optionalInstanceOf(String.class)));

@@ -37,13 +37,15 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
+class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
-	private static final String MAPPER_FILED_NAME = "mapper";
-	private static final String ERROR_MAPPERS_FILED_NAME = "errorMappers";
-	private static final Duration DEFAULT_TIMEOUT = Duration.ofMillis(500);
-	private static final Duration DEFAULT_TIMESTEP = Duration.ofMillis(20);
-	private static final SubscriptionQueryUpdateMessage<TestUpdateResponseType> DEFAULT_UPDATE_MESSAGE = new GenericSubscriptionQueryUpdateMessage<TestUpdateResponseType>(
+	private static final String                                                 MAPPER_FILED_NAME        = "mapper";
+	private static final String                                                 ERROR_MAPPERS_FILED_NAME = "errorMappers";
+	private static final Duration                                               DEFAULT_TIMEOUT          = Duration
+			.ofMillis(500);
+	private static final Duration                                               DEFAULT_TIMESTEP         = Duration
+			.ofMillis(20);
+	private static final SubscriptionQueryUpdateMessage<TestUpdateResponseType> DEFAULT_UPDATE_MESSAGE   = new GenericSubscriptionQueryUpdateMessage<TestUpdateResponseType>(
 			new TestUpdateResponseType());
 
 	private static class TestQueryPayload {
@@ -59,12 +61,12 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 	@StandardException
 	private static class TestAccessDeniedException extends AccessDeniedException {
-		
+
 		private static final long serialVersionUID = -5386943564236100249L;
 	}
 
 	private static ConstraintHandlerService constraintHandlerService;
-	private static JsonNode defaultResource;
+	private static JsonNode                 defaultResource;
 
 	@BeforeAll
 	@SuppressWarnings("unchecked")
@@ -83,10 +85,10 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_empty_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
 
-		Flux<AuthorizationDecision> decisions = Flux.just();
+		Flux<AuthorizationDecision>                                  decisions         = Flux.just();
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
@@ -99,10 +101,10 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_subscribedTwice_then_illegalState() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
 
-		Flux<AuthorizationDecision> decisions = Flux.just();
+		Flux<AuthorizationDecision>                                  decisions         = Flux.just();
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
@@ -117,10 +119,11 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_decisionError_and_noUpdate_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
 
-		Flux<AuthorizationDecision> decisions = Flux.error(new TestAccessDeniedException());
+		Flux<AuthorizationDecision>                                  decisions         = Flux
+				.error(new TestAccessDeniedException());
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
 		var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
@@ -133,10 +136,11 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_decisionError_and_singleUpdate_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
 
-		Flux<AuthorizationDecision> decisions = Flux.error(new TestAccessDeniedException());
+		Flux<AuthorizationDecision>                                  decisions         = Flux
+				.error(new TestAccessDeniedException());
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
 
@@ -150,10 +154,10 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_noDecision_and_updateError_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
 
-		Flux<AuthorizationDecision> decisions = Flux.just();
+		Flux<AuthorizationDecision>                                  decisions         = Flux.just();
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
 				.error(new TestAccessDeniedException());
 
@@ -167,10 +171,11 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_singleDecision_and_updateError_then_accessDenied() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
 
-		Flux<AuthorizationDecision> decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT));
+		Flux<AuthorizationDecision>                                  decisions         = Flux
+				.just(new AuthorizationDecision(Decision.PERMIT));
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
 				.error(new TestAccessDeniedException());
 
@@ -184,9 +189,9 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_singleDeny_and_noUpdate_then_accessDenied() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.DENY));
+		var decisions          = Flux.just(new AuthorizationDecision(Decision.DENY));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
@@ -199,9 +204,9 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_singleIndeterminate_and_noUpdate_then_accessDenied() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.INDETERMINATE));
+		var decisions          = Flux.just(new AuthorizationDecision(Decision.INDETERMINATE));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
@@ -214,9 +219,9 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_singleNotApplicable_and_noUpdate_then_accessDenied() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.NOT_APPLICABLE));
+		var decisions          = Flux.just(new AuthorizationDecision(Decision.NOT_APPLICABLE));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
@@ -229,9 +234,9 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_singlePermit_and_noUpdate_then_complete() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT));
+		var decisions          = Flux.just(new AuthorizationDecision(Decision.PERMIT));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
@@ -244,10 +249,10 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_noDecision_and_singleUpdate_then_noEvent() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
 
-		Flux<AuthorizationDecision> decisions = Flux.just();
+		Flux<AuthorizationDecision>                                  decisions         = Flux.just();
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
 
@@ -261,9 +266,9 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_singleDeny_and_singleUpdate_then_accessDenied() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.DENY));
+		var decisions          = Flux.just(new AuthorizationDecision(Decision.DENY));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
@@ -277,9 +282,9 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_singleIndeterminate_and_singleUpdate_then_accessDenied() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.INDETERMINATE));
+		var decisions          = Flux.just(new AuthorizationDecision(Decision.INDETERMINATE));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
@@ -293,9 +298,9 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_singleNotApplicable_and_singleUpdate_then_accessDenied() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.NOT_APPLICABLE));
+		var decisions          = Flux.just(new AuthorizationDecision(Decision.NOT_APPLICABLE));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
@@ -309,9 +314,9 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_singlePermit_and_singleUpdate_then_permit() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT));
+		var decisions          = Flux.just(new AuthorizationDecision(Decision.PERMIT));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
@@ -325,9 +330,9 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_singleDeny_and_singleUpdate_and_ressource_then_accessDenied() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.DENY, Optional.of(defaultResource),
+		var decisions          = Flux.just(new AuthorizationDecision(Decision.DENY, Optional.of(defaultResource),
 				Optional.empty(), Optional.empty()));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
@@ -342,10 +347,11 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_singleIndeterminate_and_singleUpdate_and_ressource_then_accessDenied() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.INDETERMINATE, Optional.of(defaultResource),
-				Optional.empty(), Optional.empty()));
+		var decisions          = Flux
+				.just(new AuthorizationDecision(Decision.INDETERMINATE, Optional.of(defaultResource),
+						Optional.empty(), Optional.empty()));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
@@ -359,10 +365,11 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_singleNotApplicable_and_singleUpdate_and_ressource_then_accessDenied() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.NOT_APPLICABLE, Optional.of(defaultResource),
-				Optional.empty(), Optional.empty()));
+		var decisions          = Flux
+				.just(new AuthorizationDecision(Decision.NOT_APPLICABLE, Optional.of(defaultResource),
+						Optional.empty(), Optional.empty()));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
@@ -376,9 +383,9 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_singlePermit_and_singleUpdate_and_ressource_then_permit() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT, Optional.of(defaultResource),
+		var decisions          = Flux.just(new AuthorizationDecision(Decision.PERMIT, Optional.of(defaultResource),
 				Optional.empty(), Optional.empty()));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
@@ -394,9 +401,10 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_permitThenDeny_and_singleUpdate_then_permit() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT), new AuthorizationDecision(Decision.DENY));
+		var decisions          = Flux.just(new AuthorizationDecision(Decision.PERMIT),
+				new AuthorizationDecision(Decision.DENY));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
@@ -411,9 +419,10 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_denyThenPermit_and_singleUpdate_then_accessDenied() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.DENY), new AuthorizationDecision(Decision.PERMIT));
+		var decisions          = Flux.just(new AuthorizationDecision(Decision.DENY),
+				new AuthorizationDecision(Decision.PERMIT));
 
 		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
@@ -427,9 +436,9 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	void when_pep_multiplePermit_and_multipleUpdates_then_permitAll() {
 		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
 		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.concat(
+		var decisions          = Flux.concat(
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(new AuthorizationDecision(Decision.PERMIT)),
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(1)).thenReturn(new AuthorizationDecision(Decision.PERMIT)));
 
@@ -446,14 +455,17 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 	@Test
 	void when_pep_permitThenDeny_and_multipleUpdates_then_permitThenAccessDenied() {
-		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
-		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var                                                          resultResponseType = ResponseTypes
+				.instanceOf(TestInitialResponse.class);
+		var                                                          updateResponseType = ResponseTypes
+				.multipleInstancesOf(TestUpdateResponseType.class);
+		var                                                          query              = new GenericSubscriptionQueryMessage<>(
+				new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.concat(
+		var                                                          decisions          = Flux.concat(
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(new AuthorizationDecision(Decision.PERMIT)),
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(1)).thenReturn(new AuthorizationDecision(Decision.DENY)));
-		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.concat(
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux  = Flux.concat(
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(DEFAULT_UPDATE_MESSAGE),
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE));
 
@@ -466,14 +478,17 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 	@Test
 	void when_pep_denyThenPermit_and_multipleUpdates_then_accessDenied() {
-		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
-		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var                                                          resultResponseType = ResponseTypes
+				.instanceOf(TestInitialResponse.class);
+		var                                                          updateResponseType = ResponseTypes
+				.multipleInstancesOf(TestUpdateResponseType.class);
+		var                                                          query              = new GenericSubscriptionQueryMessage<>(
+				new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.concat(
+		var                                                          decisions          = Flux.concat(
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(new AuthorizationDecision(Decision.DENY)),
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(1)).thenReturn(new AuthorizationDecision(Decision.PERMIT)));
-		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.concat(
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux  = Flux.concat(
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(DEFAULT_UPDATE_MESSAGE),
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE));
 
@@ -484,15 +499,18 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 	@Test
 	void when_pep_permitThenDenyThenPermit_and_multipleUpdates_then_permitThenAccessDenied() {
-		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
-		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var                                                          resultResponseType = ResponseTypes
+				.instanceOf(TestInitialResponse.class);
+		var                                                          updateResponseType = ResponseTypes
+				.multipleInstancesOf(TestUpdateResponseType.class);
+		var                                                          query              = new GenericSubscriptionQueryMessage<>(
+				new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.concat(
+		var                                                          decisions          = Flux.concat(
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(new AuthorizationDecision(Decision.PERMIT)),
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(1)).thenReturn(new AuthorizationDecision(Decision.DENY)),
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(new AuthorizationDecision(Decision.PERMIT)));
-		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.concat(
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux  = Flux.concat(
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(DEFAULT_UPDATE_MESSAGE),
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE),
 				Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE));
@@ -507,12 +525,16 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	void when_pep_accessDeniedOnBuildQueryPreHandlerBundle_then_accessDenied() {
-		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
-		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var                                                          resultResponseType = ResponseTypes
+				.instanceOf(TestInitialResponse.class);
+		var                                                          updateResponseType = ResponseTypes
+				.multipleInstancesOf(TestUpdateResponseType.class);
+		var                                                          query              = new GenericSubscriptionQueryMessage<>(
+				new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT));
-		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
+		var                                                          decisions          = Flux
+				.just(new AuthorizationDecision(Decision.PERMIT));
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux  = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
 
 		var constraintHandlerService = mock(ConstraintHandlerService.class);
@@ -527,12 +549,16 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	void when_pep_accessDeniedOnExecuteOnDecisionHandlers_then_accessDenied() {
-		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
-		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var                                                          resultResponseType = ResponseTypes
+				.instanceOf(TestInitialResponse.class);
+		var                                                          updateResponseType = ResponseTypes
+				.multipleInstancesOf(TestUpdateResponseType.class);
+		var                                                          query              = new GenericSubscriptionQueryMessage<>(
+				new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT));
-		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
+		var                                                          decisions          = Flux
+				.just(new AuthorizationDecision(Decision.PERMIT));
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux  = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
 
 		var queryConstraintHandlerBundle = mock(QueryConstraintHandlerBundle.class);
@@ -553,13 +579,17 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	void when_pep_accessDeniedOnDeserializeResource_then_accessDenied() {
-		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
-		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var                                                          resultResponseType = ResponseTypes
+				.instanceOf(TestInitialResponse.class);
+		var                                                          updateResponseType = ResponseTypes
+				.multipleInstancesOf(TestUpdateResponseType.class);
+		var                                                          query              = new GenericSubscriptionQueryMessage<>(
+				new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT, Optional.of(defaultResource),
-				Optional.empty(), Optional.empty()));
-		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
+		var                                                          decisions          = Flux
+				.just(new AuthorizationDecision(Decision.PERMIT, Optional.of(defaultResource),
+						Optional.empty(), Optional.empty()));
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux  = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
 
 		var constraintHandlerService = mock(ConstraintHandlerService.class);
@@ -576,12 +606,16 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	void when_pep_exceptionAtExecuteOnNextHandlers_then_exception() {
-		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
-		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var                                                          resultResponseType = ResponseTypes
+				.instanceOf(TestInitialResponse.class);
+		var                                                          updateResponseType = ResponseTypes
+				.multipleInstancesOf(TestUpdateResponseType.class);
+		var                                                          query              = new GenericSubscriptionQueryMessage<>(
+				new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		var decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT));
-		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
+		var                                                          decisions          = Flux
+				.just(new AuthorizationDecision(Decision.PERMIT));
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux  = Flux
 				.just(DEFAULT_UPDATE_MESSAGE);
 
 		var queryConstraintHandlerBundle = mock(QueryConstraintHandlerBundle.class);
@@ -602,12 +636,16 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	void when_pep_exceptionAtExecuteOnErrorHandlers_then_exception() {
-		var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
-		var updateResponseType = ResponseTypes.multipleInstancesOf(TestUpdateResponseType.class);
-		var query = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+		var                                                          resultResponseType = ResponseTypes
+				.instanceOf(TestInitialResponse.class);
+		var                                                          updateResponseType = ResponseTypes
+				.multipleInstancesOf(TestUpdateResponseType.class);
+		var                                                          query              = new GenericSubscriptionQueryMessage<>(
+				new TestQueryPayload(), resultResponseType,
 				updateResponseType);
-		Flux<AuthorizationDecision> decisions = Flux.just(new AuthorizationDecision(Decision.PERMIT));
-		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
+		Flux<AuthorizationDecision>                                  decisions          = Flux
+				.just(new AuthorizationDecision(Decision.PERMIT));
+		Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux  = Flux
 				.error(new TestAccessDeniedException());
 
 		var queryConstraintHandlerBundle = mock(QueryConstraintHandlerBundle.class);

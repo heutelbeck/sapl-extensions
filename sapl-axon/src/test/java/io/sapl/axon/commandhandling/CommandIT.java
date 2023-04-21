@@ -40,12 +40,12 @@ public class CommandIT extends CommandTestsuite {
 			SpringApplication.run(TestApplication.class, args);
 		}
 	}
-	
+
 	@BeforeAll
 	public static void beforeAll() {
 		isIntegrationTest = true;
 	}
-	
+
 	@AfterAll
 	public static void afterAll() {
 		isIntegrationTest = false;

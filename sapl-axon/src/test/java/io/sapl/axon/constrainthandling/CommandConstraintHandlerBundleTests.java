@@ -16,26 +16,27 @@ public class CommandConstraintHandlerBundleTests {
 
 	@Test
 	void testAllInvokations() {
-		var onDecisionCounter = new AtomicInteger();
+		var onDecisionCounter      = new AtomicInteger();
 		var handlerOnObjectCounter = new AtomicInteger();
-		var decision = new AuthorizationDecision();
-		var message = new GenericCommandMessage<>("message payload");
-		var exception = new Exception("another exception message");
-		var result = "some result";
+		var decision               = new AuthorizationDecision();
+		var message                = new GenericCommandMessage<>("message payload");
+		var exception              = new Exception("another exception message");
+		var result                 = "some result";
 
-		BiConsumer<AuthorizationDecision, Message<?>> onDecision = (decisionInternal, messageInternal) -> {
-			assertEquals(decision, decisionInternal);
-			assertEquals(message, messageInternal);
-			onDecisionCounter.getAndIncrement();
-		};
-		Function<Throwable, Throwable> errorMapper = __ -> new Exception("some spectial message");
-		Function<CommandMessage<?>, CommandMessage<?>> commandMapper = __ -> new GenericCommandMessage<>(
+		BiConsumer<AuthorizationDecision, Message<?>>  onDecision       = (decisionInternal, messageInternal) -> {
+																			assertEquals(decision, decisionInternal);
+																			assertEquals(message, messageInternal);
+																			onDecisionCounter.getAndIncrement();
+																		};
+		Function<Throwable, Throwable>                 errorMapper      = __ -> new Exception("some spectial message");
+		Function<CommandMessage<?>, CommandMessage<?>> commandMapper    = __ -> new GenericCommandMessage<>(
 				"special payload");
-		Function<String, String> resultMapper = __ -> "special result";
-		Runnable handlersOnObject = () -> {
-			handlerOnObjectCounter.getAndIncrement();
-		};
-		var bundle = new CommandConstraintHandlerBundle<>(onDecision, errorMapper, commandMapper, resultMapper,
+		Function<String, String>                       resultMapper     = __ -> "special result";
+		Runnable                                       handlersOnObject = () -> {
+																			handlerOnObjectCounter.getAndIncrement();
+																		};
+		var                                            bundle           = new CommandConstraintHandlerBundle<>(
+				onDecision, errorMapper, commandMapper, resultMapper,
 				handlersOnObject);
 
 		bundle.executeOnDecisionHandlers(decision, message);
@@ -59,17 +60,18 @@ public class CommandConstraintHandlerBundleTests {
 
 	@Test
 	void when_mappedErrorIsThrowable_convertToRuntimeException() {
-		BiConsumer<AuthorizationDecision, Message<?>> onDecision = (__, ___) -> {
-		};
-		Function<Throwable, Throwable> errorMapper = __ -> new Throwable("some spectial message");
-		Function<CommandMessage<?>, CommandMessage<?>> commandMapper = __ -> null;
-		Function<String, String> resultMapper = __ -> null;
-		Runnable handlersOnObject = () -> {
-		};
-		var bundle = new CommandConstraintHandlerBundle<>(onDecision, errorMapper, commandMapper, resultMapper,
+		BiConsumer<AuthorizationDecision, Message<?>>  onDecision       = (__, ___) -> {
+																		};
+		Function<Throwable, Throwable>                 errorMapper      = __ -> new Throwable("some spectial message");
+		Function<CommandMessage<?>, CommandMessage<?>> commandMapper    = __ -> null;
+		Function<String, String>                       resultMapper     = __ -> null;
+		Runnable                                       handlersOnObject = () -> {
+																		};
+		var                                            bundle           = new CommandConstraintHandlerBundle<>(
+				onDecision, errorMapper, commandMapper, resultMapper,
 				handlersOnObject);
 
-		var exception = new Exception("another exception message");
+		var exception       = new Exception("another exception message");
 		var mappedException = bundle.executeOnErrorHandlers(exception);
 		assertEquals(RuntimeException.class, mappedException.getClass());
 		assertEquals("Error: another exception message", mappedException.getLocalizedMessage());

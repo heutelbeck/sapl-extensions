@@ -26,25 +26,29 @@ public class QueryConstraintHandlerBundleTests {
 	@Test
 	void testAllInvokations() {
 		var onDecisionCounter = new AtomicInteger();
-		var decision = new AuthorizationDecision();
-		var message = new GenericQueryMessage<>("message payload", ResponseTypes.instanceOf(String.class));
-		var exception = new Exception("another exception message");
-		var result = "some result";
-		var filterBehaviour = new AtomicBoolean();
+		var decision          = new AuthorizationDecision();
+		var message           = new GenericQueryMessage<>("message payload", ResponseTypes.instanceOf(String.class));
+		var exception         = new Exception("another exception message");
+		var result            = "some result";
+		var filterBehaviour   = new AtomicBoolean();
 
-		BiConsumer<AuthorizationDecision, Message<?>> onDecision = (decisionInternal, messageInternal) -> {
-			assertEquals(decision, decisionInternal);
-			assertEquals(message, messageInternal);
-			onDecisionCounter.getAndIncrement();
-		};
-		Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers = __ -> new GenericQueryMessage<>(
+		BiConsumer<AuthorizationDecision, Message<?>>    onDecision           = (decisionInternal, messageInternal) -> {
+																					assertEquals(decision,
+																							decisionInternal);
+																					assertEquals(message,
+																							messageInternal);
+																					onDecisionCounter.getAndIncrement();
+																				};
+		Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers         = __ -> new GenericQueryMessage<>(
 				"special payload", ResponseTypes.instanceOf(String.class));
-		Function<Throwable, Throwable> errorMapper = __ -> new Exception("some spectial message");
-		Function<String, String> initialResultMappers = __ -> "spectial initial result";
-		Function<ResultMessage<?>, ResultMessage<?>> updateMappers = __ -> new GenericResultMessage<>(
+		Function<Throwable, Throwable>                   errorMapper          = __ -> new Exception(
+				"some spectial message");
+		Function<String, String>                         initialResultMappers = __ -> "spectial initial result";
+		Function<ResultMessage<?>, ResultMessage<?>>     updateMappers        = __ -> new GenericResultMessage<>(
 				"special update result");
-		Predicate<ResultMessage<?>> filterPredicates = __ -> filterBehaviour.get();
-		var bundle = new QueryConstraintHandlerBundle<>(onDecision, queryMappers, errorMapper, initialResultMappers,
+		Predicate<ResultMessage<?>>                      filterPredicates     = __ -> filterBehaviour.get();
+		var                                              bundle               = new QueryConstraintHandlerBundle<>(
+				onDecision, queryMappers, errorMapper, initialResultMappers,
 				updateMappers, filterPredicates);
 
 		bundle.executeOnDecisionHandlers(decision, message);
@@ -77,14 +81,15 @@ public class QueryConstraintHandlerBundleTests {
 
 	@Test
 	void whenresultIsCompletableFurute_then_returnMappedCompletableFuture() {
-		BiConsumer<AuthorizationDecision, Message<?>> onDecision = (decisionInternal, messageInternal) -> {
-		};
-		Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers = __ -> null;
-		Function<Throwable, Throwable> errorMapper = __ -> null;
-		Function<String, String> initialResultMappers = __ -> "spectial initial result";
-		Function<ResultMessage<?>, ResultMessage<?>> updateMappers = __ -> null;
-		Predicate<ResultMessage<?>> filterPredicates = __ -> false;
-		var bundle = new QueryConstraintHandlerBundle<>(onDecision, queryMappers, errorMapper, initialResultMappers,
+		BiConsumer<AuthorizationDecision, Message<?>>    onDecision           = (decisionInternal, messageInternal) -> {
+																				};
+		Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers         = __ -> null;
+		Function<Throwable, Throwable>                   errorMapper          = __ -> null;
+		Function<String, String>                         initialResultMappers = __ -> "spectial initial result";
+		Function<ResultMessage<?>, ResultMessage<?>>     updateMappers        = __ -> null;
+		Predicate<ResultMessage<?>>                      filterPredicates     = __ -> false;
+		var                                              bundle               = new QueryConstraintHandlerBundle<>(
+				onDecision, queryMappers, errorMapper, initialResultMappers,
 				updateMappers, filterPredicates);
 
 		var result = new CompletableFuture<String>();

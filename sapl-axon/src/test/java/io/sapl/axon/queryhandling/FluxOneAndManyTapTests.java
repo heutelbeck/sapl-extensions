@@ -20,7 +20,7 @@ import reactor.core.publisher.SignalType;
 import reactor.test.StepVerifier;
 
 @SuppressWarnings("unchecked")
-public class FluxOneAndManyTapTests {
+class FluxOneAndManyTapTests {
 
 	Consumer<Subscription>      onSubscribe;
 	Consumer<SignalType>        doFinally;

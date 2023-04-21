@@ -17,7 +17,7 @@
 	<description>SAPL Axon Policy Enforcement Points</description>
 
 	<properties>
-		<version.axon>4.7.2</version.axon>
+		<version.axon>4.7.3</version.axon>
 		<version.testcontainers>1.17.3</version.testcontainers>
 	</properties>
 
@@ -30,13 +30,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			<dependency>
-				<groupId>org.axonframework</groupId>
-				<artifactId>axon-bom</artifactId>
-				<version>${version.axon}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
+
 			<dependency>
 				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers-bom</artifactId>
@@ -52,19 +46,23 @@
 		<dependency>
 			<groupId>org.axonframework</groupId>
 			<artifactId>axon-messaging</artifactId>
+			<version>${version.axon}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.axonframework</groupId>
 			<artifactId>axon-spring</artifactId>
+			<version>${version.axon}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.axonframework.extensions.reactor</groupId>
 			<artifactId>axon-reactor</artifactId>
+			<version>4.7.0</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.axonframework</groupId>
 			<artifactId>axon-server-connector</artifactId>
+			<version>${version.axon}</version>
 		</dependency>
 
 		<!-- Spring -->
@@ -100,6 +98,7 @@
 		<dependency>
 			<groupId>org.axonframework</groupId>
 			<artifactId>axon-spring-boot-starter</artifactId>
+			<version>${version.axon}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -161,7 +160,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>3.0.0-M7</version>
 				<executions>
 					<execution>
 						<goals>

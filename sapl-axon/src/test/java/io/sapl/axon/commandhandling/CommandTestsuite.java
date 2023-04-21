@@ -58,18 +58,18 @@ import reactor.core.publisher.Mono;
 @Import(ScenarioConfiguration.class)
 public abstract class CommandTestsuite {
 
-	private static final String MODIFY_ERROR = "modify error";
-	private static final String MODIFY_RESULT = "modify result";
-	private static final String MODIFIED_RESULT = "this is a modified result";
+	private static final String MODIFY_ERROR     = "modify error";
+	private static final String MODIFY_RESULT    = "modify result";
+	private static final String MODIFIED_RESULT  = "this is a modified result";
 	private static final String MODIFIED_COMMAND = "modifiedCommand";
-	private static final String MODIFY_COMMAND = "modifyCommand";
-	private static final String ON_DECISION_DO = "onDecisionDo";
+	private static final String MODIFY_COMMAND   = "modifyCommand";
+	private static final String ON_DECISION_DO   = "onDecisionDo";
 
 	private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
 	private static final long COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS = 500L;
-	protected static boolean isIntegrationTest = false;
-	private static boolean waitedForCommandHandlerRegistration = false;
+	protected static boolean  isIntegrationTest                         = false;
+	private static boolean    waitedForCommandHandlerRegistration       = false;
 
 	@MockBean
 	PolicyDecisionPoint pdp;
@@ -169,7 +169,7 @@ public abstract class CommandTestsuite {
 	void when_securedAggregateCreationAndFollowUpCommand_and_PermitWithObligation_then_accessGranted() {
 		waitForCommandHandlerRegistration();
 		var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
-		var obligations = JSON.arrayNode();
+		var obligations        = JSON.arrayNode();
 		obligations.add(JSON.textNode("something"));
 		var decisionsForModify = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForModify);
@@ -211,7 +211,7 @@ public abstract class CommandTestsuite {
 	void when_securedAggregateCreationAndFollowUpCommandToEntity_and_Permit_then_accessGranted() {
 		waitForCommandHandlerRegistration();
 		var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
-		var obligations = JSON.arrayNode();
+		var obligations        = JSON.arrayNode();
 		obligations.add(JSON.textNode("somethingWithMember"));
 		var decisionsForMemberAccess = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForMemberAccess);
