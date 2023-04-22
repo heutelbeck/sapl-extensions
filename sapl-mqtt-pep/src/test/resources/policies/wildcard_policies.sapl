@@ -1,0 +1,29 @@
+set "wildcard_policy_set"
+first-applicable
+
+policy "wildcard_subscription_policy"
+permit
+  subject.clientId == "WILDCARD_MQTT_CLIENT_SUBSCRIBE"
+where
+  action.type == "mqtt.subscribe";
+  resource.topic in ["first/#", "first/+/third"];
+
+policy "wildcard_publish_policy"
+permit
+  subject.clientId == "WILDCARD_MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+
+policy "wildcard_deny_subscription_policy"
+deny
+  subject.clientId == "WILDCARD_MQTT_CLIENT_SUBSCRIBE"
+where
+  action.type == "mqtt.subscribe";
+  resource.topic in ["first/second", "first/second/third", ""];
+
+policy "wildcard_deny_subscription_on_multilevel"
+deny
+  subject.clientId == "WILDCARD_MQTT_CLIENT_SUBSCRIBE"
+where
+  action.type == "mqtt.subscribe";
+  resource.topic =~ "first/second/third/.*";

@@ -74,7 +74,10 @@
 		<module>sapl-geo</module>
 		<module>sapl-ethereum</module>
 		<module>sapl-axon</module>
-		<module>sapl-vaadin</module>		
+		<module>sapl-vaadin</module>
+		<module>sapl-mqtt-pip</module>
+		<module>sapl-mqtt-pep</module>
+		<module>sapl-mqtt-functions</module>
 	</modules>
 
 	<distributionManagement>

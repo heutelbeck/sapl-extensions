@@ -1,0 +1,32 @@
+set "connection_policy_set"
+first-applicable
+
+policy "allow_connection_policy"
+permit
+  subject.clientId in ["MQTT_CLIENT_SUBSCRIBE", "MQTT_CLIENT_PUBLISH", "SECOND_MQTT_CLIENT_PUBLISH",
+  "WILDCARD_MQTT_CLIENT_PUBLISH", "WILDCARD_MQTT_CLIENT_SUBSCRIBE", "CONSTRAINT_MQTT_CLIENT_PUBLISH",
+  "CONSTRAINT_MQTT_CLIENT_SUBSCRIBE", "SECOND_MQTT_CLIENT_SUBSCRIBE"]
+where
+  action.type == "mqtt.connect";
+  subject.userName == "anonymous";
+
+policy "deny_connection_policy"
+deny
+  subject.clientId == "MQTT_CLIENT_CONNECT"
+where
+  action.type == "mqtt.connect";
+
+policy "deny_connection_policy_illegal_user"
+deny
+  subject.clientId in ["MQTT_CLIENT_SUBSCRIBE", "MQTT_CLIENT_PUBLISH"]
+where
+  action.type == "mqtt.connect";
+  subject.userName == "illegalUserName";
+
+policy "connection_toggle_policy"
+permit
+  subject.clientId in ["MQTT_CLIENT_SUBSCRIBE", "MQTT_CLIENT_PUBLISH"]
+where
+  action.type == "mqtt.connect";
+  subject.userName == "toggle";
+  <time.toggle(1000, 5000)>;
