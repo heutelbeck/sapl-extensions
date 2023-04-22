@@ -862,7 +862,7 @@ public class MqttPep {
         boolean isResubscribeMqttSubscriptionEnabled = DEFAULT_IS_RESUBSCRIBE_MQTT_SUBSCRIPTION_ENABLED;
         ConstraintDetails constraintDetails =
                 getConstraintDetailsFromCache(mqttClientState, mqttSaplId.getSaplSubscriptionId());
-        if (constraintDetails.getIsResubscribeMqttSubscriptionEnabled() != null) {
+        if (constraintDetails != null && constraintDetails.getIsResubscribeMqttSubscriptionEnabled() != null) {
             isResubscribeMqttSubscriptionEnabled = constraintDetails.getIsResubscribeMqttSubscriptionEnabled();
         }
         boolean isMqttSubscriptionExisting = isMqttSubscriptionExisting(mqttSaplId);
