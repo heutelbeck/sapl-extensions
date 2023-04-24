@@ -44,7 +44,7 @@ class WildcardSubscriptionEnforcementTest extends SaplMqttPepTest {
     @BeforeAll
     public static void beforeAll() throws InitializationException {
         // set logging level
-        rootLogger.setLevel(Level.DEBUG);
+        rootLogger.setLevel(Level.OFF);
 
         embeddedHiveMq = startEmbeddedHiveMqBroker();
         mqttClientPublish = startMqttClient("WILDCARD_MQTT_CLIENT_PUBLISH");

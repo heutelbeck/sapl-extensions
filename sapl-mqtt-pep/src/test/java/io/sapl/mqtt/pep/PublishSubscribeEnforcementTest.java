@@ -49,7 +49,7 @@ class PublishSubscribeEnforcementTest extends SaplMqttPepTest {
     @BeforeAll
     public static void beforeAll() throws InitializationException {
         // set logging level
-        rootLogger.setLevel(Level.DEBUG);
+        rootLogger.setLevel(Level.OFF);
     }
 
     @AfterEach

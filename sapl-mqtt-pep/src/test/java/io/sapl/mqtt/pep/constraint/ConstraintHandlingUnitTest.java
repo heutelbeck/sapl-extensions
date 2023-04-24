@@ -75,7 +75,7 @@ class ConstraintHandlingUnitTest extends SaplMqttPepTest {
     @BeforeAll
     public static void beforeAll() {
         // set logging level
-        rootLogger.setLevel(Level.DEBUG);
+        rootLogger.setLevel(Level.OFF);
     }
 
     @AfterEach

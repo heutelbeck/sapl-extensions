@@ -10,12 +10,24 @@ import javax.xml.bind.DataBindingException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
 
 class ExtensionConfigTest {
+
+    protected static final Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+
+    @BeforeAll
+    static void beforeAll() {
+        // set logging level
+        rootLogger.setLevel(Level.OFF);
+    }
 
     @Test
     void when_configFileIsIncorrectlySpecified_then_usingDefaultValues() {

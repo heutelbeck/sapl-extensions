@@ -53,7 +53,7 @@ class PdpInitUtilityTest {
 
     @BeforeAll
     public static void beforeAll() {
-        rootLogger.setLevel(Level.DEBUG);
+        rootLogger.setLevel(Level.OFF);
     }
 
     @Test

@@ -15,9 +15,21 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 class ExtensionConfigValidationTest {
+
+    protected static final Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+
+    @BeforeAll
+    static void beforeAll() {
+        // set logging level
+        rootLogger.setLevel(Level.OFF);
+    }
 
     @Test
     void when_noValidBaseUrlSpecified_then_usingDefaultUrl() {

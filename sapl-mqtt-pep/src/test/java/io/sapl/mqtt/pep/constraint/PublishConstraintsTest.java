@@ -47,6 +47,9 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -58,8 +61,17 @@ import com.hivemq.extension.sdk.api.packets.publish.ModifiablePublishPacket;
 import com.hivemq.extension.sdk.api.packets.publish.PayloadFormatIndicator;
 
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
+import org.slf4j.LoggerFactory;
 
 class PublishConstraintsTest {
+
+    protected static final Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+
+    @BeforeAll
+    static void beforeAll() {
+        // set logging level
+        rootLogger.setLevel(Level.OFF);
+    }
 
     @Test
     void when_specifiedConstraintTypeIsNotTextual_then_signalConstraintCouldNotBeHandled() {
