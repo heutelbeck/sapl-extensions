@@ -3,6 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.sapl</groupId>
   <artifactId>sapl-mqtt-pep</artifactId>
+  <name>SAPL-MQTT-PEP</name>
   <version>2.1.0-SNAPSHOT</version>
   <description>A Hivemq extension that adds sapl pep functionality to the broker.</description>
   <build>
