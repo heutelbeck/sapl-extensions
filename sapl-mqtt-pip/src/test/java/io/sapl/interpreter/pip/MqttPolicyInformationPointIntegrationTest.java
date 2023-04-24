@@ -68,7 +68,7 @@ class MqttPolicyInformationPointIntegrationTest {
 
     @BeforeAll
     static void setUp() throws InitializationException {
-        logger.setLevel(Level.DEBUG);
+        logger.setLevel(Level.OFF);
 
         embeddedHiveMqBroker = startEmbeddedHiveMqBroker();
         hiveMqClient = startMqttClient();

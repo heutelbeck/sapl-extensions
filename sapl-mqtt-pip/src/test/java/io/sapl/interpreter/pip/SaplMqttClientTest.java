@@ -75,7 +75,7 @@ abstract class SaplMqttClientTest {
 
     @BeforeAll
     static void beforeAll() {
-        logger.setLevel(Level.DEBUG);
+        logger.setLevel(Level.OFF);
     }
 
     protected static EmbeddedHiveMQ startEmbeddedHiveMqBroker() {
