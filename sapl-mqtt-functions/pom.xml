@@ -72,7 +72,6 @@
         <dependency>
             <groupId>io.sapl</groupId>
             <artifactId>sapl-pdp-embedded</artifactId>
-            <version>${sapl.version}</version>
         </dependency>
         <!-- A logging library for printing messages to the console -->
         <dependency>

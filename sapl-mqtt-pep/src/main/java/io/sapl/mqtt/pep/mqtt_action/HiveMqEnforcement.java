@@ -16,19 +16,20 @@
 
 package io.sapl.mqtt.pep.mqtt_action;
 
+import static io.sapl.api.pdp.Decision.PERMIT;
+import static io.sapl.mqtt.pep.MqttPep.NOT_AUTHORIZED_NOTICE;
+
 import com.hivemq.extension.sdk.api.auth.parameter.SimpleAuthOutput;
 import com.hivemq.extension.sdk.api.auth.parameter.SubscriptionAuthorizerOutput;
 import com.hivemq.extension.sdk.api.interceptor.publish.parameter.PublishInboundOutput;
 import com.hivemq.extension.sdk.api.packets.connect.ConnackReasonCode;
 import com.hivemq.extension.sdk.api.packets.publish.AckReasonCode;
 import com.hivemq.extension.sdk.api.packets.subscribe.SubackReasonCode;
+
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.mqtt.pep.details.MqttSaplId;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-
-import static io.sapl.api.pdp.Decision.PERMIT;
-import static io.sapl.mqtt.pep.MqttPep.NOT_AUTHORIZED_NOTICE;
 
 /**
  * This utility class provides functions to enforce authorization decisions via the HiveMq broker.

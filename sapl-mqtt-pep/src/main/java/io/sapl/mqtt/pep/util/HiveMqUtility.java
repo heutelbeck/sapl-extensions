@@ -16,6 +16,9 @@
 
 package io.sapl.mqtt.pep.util;
 
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.hivemq.extension.sdk.api.auth.parameter.SimpleAuthInput;
 import com.hivemq.extension.sdk.api.auth.parameter.SubscriptionAuthorizerInput;
 import com.hivemq.extension.sdk.api.interceptor.unsuback.parameter.UnsubackOutboundInput;
@@ -23,11 +26,9 @@ import com.hivemq.extension.sdk.api.packets.unsuback.UnsubackReasonCode;
 import com.hivemq.extension.sdk.api.services.Services;
 import com.hivemq.extension.sdk.api.services.builder.Builders;
 import com.hivemq.extension.sdk.api.services.subscription.TopicSubscription;
+
 import io.sapl.mqtt.pep.details.MqttSaplId;
 import lombok.experimental.UtilityClass;
-
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This utility class provides functions for HiveMq broker specific interactions or objects.

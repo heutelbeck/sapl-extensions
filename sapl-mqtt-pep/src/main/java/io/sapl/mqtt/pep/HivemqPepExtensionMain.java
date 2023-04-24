@@ -16,23 +16,24 @@
 
 package io.sapl.mqtt.pep;
 
-import com.hivemq.extension.sdk.api.ExtensionMain;
-import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.parameter.ExtensionStartInput;
-import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
-import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
-import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
-import io.sapl.api.pdp.PolicyDecisionPoint;
-import io.sapl.mqtt.pep.cache.MqttClientState;
-import lombok.extern.slf4j.Slf4j;
+import static io.sapl.mqtt.pep.extension.ConfigInitUtility.getSaplMqttExtensionConfig;
+import static io.sapl.mqtt.pep.extension.PdpInitUtility.buildPdp;
 
 import java.io.File;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static io.sapl.mqtt.pep.extension.ConfigInitUtility.getSaplMqttExtensionConfig;
-import static io.sapl.mqtt.pep.extension.PdpInitUtility.buildPdp;
+import com.hivemq.extension.sdk.api.ExtensionMain;
+import com.hivemq.extension.sdk.api.annotations.NotNull;
+import com.hivemq.extension.sdk.api.parameter.ExtensionStartInput;
+import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
+import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
+import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
+
+import io.sapl.api.pdp.PolicyDecisionPoint;
+import io.sapl.mqtt.pep.cache.MqttClientState;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This HiveMq broker extension starts a PEP to enforce mqtt actions.
@@ -48,7 +49,6 @@ public class HivemqPepExtensionMain implements ExtensionMain {
     /**
      * Initialize the HiveMq extension for startup and enforcement.
      */
-    @SuppressWarnings("unused") // needed for packaged sapl mqtt pep extension
     public HivemqPepExtensionMain() {
         this(null);
     }

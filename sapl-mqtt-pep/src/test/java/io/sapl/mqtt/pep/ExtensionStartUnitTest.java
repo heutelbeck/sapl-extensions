@@ -1,7 +1,22 @@
 package io.sapl.mqtt.pep;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.slf4j.LoggerFactory;
+
 import com.hivemq.extension.sdk.api.client.parameter.ClientInformation;
 import com.hivemq.extension.sdk.api.client.parameter.ServerInformation;
 import com.hivemq.extension.sdk.api.events.EventRegistry;
@@ -24,6 +39,9 @@ import com.hivemq.extension.sdk.api.services.subscription.SubscriptionsForClient
 import com.hivemq.extension.sdk.api.services.subscription.TopicSubscription;
 import com.hivemq.extensions.services.subscription.TopicSubscriptionImpl;
 import com.hivemq.mqtt.message.subscribe.Topic;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import io.sapl.api.pdp.MultiAuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.mqtt.pep.cache.MqttClientState;
@@ -31,18 +49,7 @@ import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 import io.sapl.mqtt.pep.details.MqttSaplId;
 import io.sapl.mqtt.pep.util.DecisionFluxUtility;
 import io.sapl.mqtt.pep.util.HiveMqUtility;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class ExtensionStartUnitTest {
 

@@ -16,16 +16,22 @@
 
 package io.sapl.mqtt.pep;
 
-import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
-import com.hivemq.extension.sdk.api.parameter.ExtensionStartInput;
-import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
-import io.sapl.mqtt.pep.extension.ConfigInitUtility;
-import io.sapl.mqtt.pep.extension.PdpInitUtility;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import static org.mockito.Mockito.*;
+import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
+import com.hivemq.extension.sdk.api.parameter.ExtensionStartInput;
+import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
+
+import io.sapl.mqtt.pep.extension.ConfigInitUtility;
+import io.sapl.mqtt.pep.extension.PdpInitUtility;
 
 class HivemqPepExtensionMainTest {
 

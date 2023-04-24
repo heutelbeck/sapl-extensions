@@ -16,7 +16,13 @@
 
 package io.sapl.mqtt.pep;
 
-import ch.qos.logback.classic.Logger;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.LoggerFactory;
+
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
@@ -26,15 +32,11 @@ import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 import com.hivemq.embedded.EmbeddedExtension;
 import com.hivemq.embedded.EmbeddedHiveMQ;
+
+import ch.qos.logback.classic.Logger;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.cache.MqttClientState;
-import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class SaplMqttPepTest {
     protected static final Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);

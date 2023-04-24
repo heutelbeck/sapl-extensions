@@ -75,20 +75,14 @@
         <dependency>
             <groupId>io.sapl</groupId>
             <artifactId>sapl-pdp-api</artifactId>
-            <version>${sapl.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.sapl</groupId>
             <artifactId>sapl-pdp-embedded</artifactId>
-            <version>${sapl.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.sapl</groupId>
             <artifactId>sapl-pdp-remote</artifactId>
-            <version>${sapl.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>

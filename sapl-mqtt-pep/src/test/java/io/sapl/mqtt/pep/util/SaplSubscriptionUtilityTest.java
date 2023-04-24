@@ -16,6 +16,19 @@
 
 package io.sapl.mqtt.pep.util;
 
+import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_LAST_WILL_LAST_WILL_PAYLOAD;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
 import com.hivemq.extension.sdk.api.auth.parameter.SimpleAuthInput;
 import com.hivemq.extension.sdk.api.client.parameter.ConnectionInformation;
 import com.hivemq.extension.sdk.api.client.parameter.ServerInformation;
@@ -28,19 +41,10 @@ import com.hivemq.extension.sdk.api.services.Services;
 import com.hivemq.extension.sdk.api.services.admin.AdminService;
 import com.hivemq.extension.sdk.api.services.admin.LicenseEdition;
 import com.hivemq.extension.sdk.api.services.admin.LicenseInformation;
+
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.mqtt.pep.cache.MqttClientState;
 import lombok.NonNull;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-
-import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_LAST_WILL_LAST_WILL_PAYLOAD;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
 
 class SaplSubscriptionUtilityTest {
 

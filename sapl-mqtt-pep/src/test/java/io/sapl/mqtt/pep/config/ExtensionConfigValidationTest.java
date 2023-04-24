@@ -1,13 +1,21 @@
 package io.sapl.mqtt.pep.config;
 
-import org.junit.jupiter.api.Test;
-
-import java.io.File;
-
-import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.*;
+import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_CONNECTION_ENFORCEMENT_TIMEOUT_MILLIS;
+import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_PDP_IMPLEMENTATION;
+import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_PUBLISH_ENFORCEMENT_TIMEOUT_MILLIS;
+import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP_BACK_OFF_FACTOR;
+import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP_BASE_URL;
+import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP_CLIENT_SECRET;
+import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP_FIRST_BACK_OFF_MILLIS;
+import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP_MAX_BACK_OFF_MILLIS;
+import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_SUBSCRIPTION_ENFORCEMENT_TIMEOUT_MILLIS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.io.File;
+
+import org.junit.jupiter.api.Test;
 
 class ExtensionConfigValidationTest {
 

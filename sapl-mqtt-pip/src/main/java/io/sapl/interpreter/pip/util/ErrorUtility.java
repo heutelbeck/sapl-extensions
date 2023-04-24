@@ -16,6 +16,11 @@
 
 package io.sapl.interpreter.pip.util;
 
+import static io.sapl.interpreter.pip.util.ConfigUtility.getConfigValueOrDefault;
+
+import java.time.Duration;
+import java.util.NoSuchElementException;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.hivemq.client.internal.mqtt.exceptions.MqttClientStateExceptions;
 import com.hivemq.client.mqtt.exceptions.ConnectionClosedException;
@@ -24,17 +29,13 @@ import com.hivemq.client.mqtt.exceptions.MqttClientStateException;
 import com.hivemq.client.mqtt.exceptions.MqttSessionExpiredException;
 import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5DisconnectException;
 import com.hivemq.client.mqtt.mqtt5.message.Mqtt5MessageType;
+
 import io.sapl.api.interpreter.Val;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Sinks;
 import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
-
-import java.time.Duration;
-import java.util.NoSuchElementException;
-
-import static io.sapl.interpreter.pip.util.ConfigUtility.getConfigValueOrDefault;
 
 /**
  * This utility class provides functions for error handling including retry specifics for the mqtt message flux.

@@ -16,24 +16,32 @@
 
 package io.sapl.mqtt.pep.util;
 
-import io.sapl.api.pdp.AuthorizationDecision;
-import io.sapl.api.pdp.Decision;
-import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
-import io.sapl.mqtt.pep.cache.MqttClientState;
-import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
-import org.junit.jupiter.api.Test;
-import reactor.core.Disposable;
-import reactor.core.Disposables;
-import reactor.core.publisher.Flux;
-import reactor.core.scheduler.Schedulers;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
+
+import io.sapl.api.pdp.AuthorizationDecision;
+import io.sapl.api.pdp.Decision;
+import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
+import io.sapl.mqtt.pep.cache.MqttClientState;
+import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
+import reactor.core.Disposable;
+import reactor.core.Disposables;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 class DecisionFluxUtilityTest {
 

@@ -16,18 +16,19 @@
 
 package io.sapl.interpreter.pip.util;
 
+import java.nio.charset.StandardCharsets;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hivemq.client.mqtt.datatypes.MqttClientIdentifier;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt5.reactor.Mqtt5ReactorClient;
+
 import io.sapl.api.interpreter.Val;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-
-import java.nio.charset.StandardCharsets;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 /**
  * This utility class provides functions to look up configurations from json objects, to handle broker configurations

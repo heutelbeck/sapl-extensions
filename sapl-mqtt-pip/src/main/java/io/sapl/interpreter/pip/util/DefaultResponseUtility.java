@@ -16,14 +16,15 @@
 
 package io.sapl.interpreter.pip.util;
 
+import static io.sapl.interpreter.pip.util.ConfigUtility.getConfigValueOrDefault;
+import static io.sapl.interpreter.pip.util.ConfigUtility.getMqttBrokerConfig;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import io.sapl.api.interpreter.Val;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-
-import static io.sapl.interpreter.pip.util.ConfigUtility.getConfigValueOrDefault;
-import static io.sapl.interpreter.pip.util.ConfigUtility.getMqttBrokerConfig;
 
 /**
  * This utility class provides functions to build the {@link DefaultResponseConfig} and the default response.

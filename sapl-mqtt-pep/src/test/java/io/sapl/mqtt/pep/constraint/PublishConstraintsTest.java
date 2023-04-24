@@ -16,25 +16,48 @@
 
 package io.sapl.mqtt.pep.constraint;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.hivemq.extension.sdk.api.interceptor.publish.parameter.PublishInboundOutput;
-import com.hivemq.extension.sdk.api.packets.publish.ModifiablePublishPacket;
-import com.hivemq.extension.sdk.api.packets.publish.PayloadFormatIndicator;
-import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
-import io.sapl.mqtt.pep.cache.MqttClientState;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_DISABLED;
+import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_ENABLED;
+import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_STATUS;
+import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_BLACKEN_PAYLOAD;
+import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_DISCLOSE_LEFT;
+import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_DISCLOSE_RIGHT;
+import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_QOS_CONSTRAINT;
+import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_QOS_LEVEL;
+import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_REPLACEMENT;
+import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_REPLACE_CONTENT_TYPE;
+import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_REPLACE_MESSAGE_EXPIRY_INTERVAL;
+import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_REPLACE_PAYLOAD;
+import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_RETAIN_MESSAGE_CONSTRAINT;
+import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_TIME_INTERVAL;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-import static io.sapl.mqtt.pep.constraint.PublishConstraints.*;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.hivemq.extension.sdk.api.interceptor.publish.parameter.PublishInboundOutput;
+import com.hivemq.extension.sdk.api.packets.publish.ModifiablePublishPacket;
+import com.hivemq.extension.sdk.api.packets.publish.PayloadFormatIndicator;
+
+import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 
 class PublishConstraintsTest {
 

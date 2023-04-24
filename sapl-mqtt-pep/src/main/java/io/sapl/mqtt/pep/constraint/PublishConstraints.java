@@ -16,14 +16,6 @@
 
 package io.sapl.mqtt.pep.constraint;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.hivemq.extension.sdk.api.packets.general.Qos;
-import com.hivemq.extension.sdk.api.packets.publish.ModifiablePublishPacket;
-import com.hivemq.extension.sdk.api.packets.publish.PayloadFormatIndicator;
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
-
-import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -31,6 +23,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.hivemq.extension.sdk.api.packets.general.Qos;
+import com.hivemq.extension.sdk.api.packets.publish.ModifiablePublishPacket;
+import com.hivemq.extension.sdk.api.packets.publish.PayloadFormatIndicator;
+
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This utility class provides constraints handling functions for mqtt publishes.

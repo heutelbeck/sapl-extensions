@@ -16,26 +16,29 @@
 
 package io.sapl.interpreter.pip.util;
 
+import static io.sapl.interpreter.pip.util.ErrorUtility.getRetrySpec;
+import static io.sapl.interpreter.pip.util.ErrorUtility.isClientCausedDisconnect;
+import static io.sapl.interpreter.pip.util.ErrorUtility.isErrorRelevantToRemoveClientCache;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.NoSuchElementException;
+
+import org.junit.jupiter.api.Test;
+
 import com.hivemq.client.internal.mqtt.exceptions.MqttClientStateExceptions;
 import com.hivemq.client.mqtt.exceptions.ConnectionClosedException;
 import com.hivemq.client.mqtt.exceptions.ConnectionFailedException;
 import com.hivemq.client.mqtt.exceptions.MqttClientStateException;
 import com.hivemq.client.mqtt.exceptions.MqttSessionExpiredException;
 import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5DisconnectException;
-import com.hivemq.client.mqtt.mqtt5.message.Mqtt5Message;
 import com.hivemq.client.mqtt.mqtt5.message.Mqtt5MessageType;
 import com.hivemq.client.mqtt.mqtt5.message.disconnect.Mqtt5Disconnect;
-import org.junit.jupiter.api.Test;
+
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
-
-import java.util.NoSuchElementException;
-
-import static io.sapl.interpreter.pip.util.ErrorUtility.*;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class ErrorUtilityTest {
     @Test

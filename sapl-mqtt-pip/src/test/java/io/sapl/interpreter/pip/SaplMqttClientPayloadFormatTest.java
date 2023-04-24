@@ -16,24 +16,28 @@
 
 package io.sapl.interpreter.pip;
 
-import ch.qos.logback.classic.Level;
+import static io.sapl.interpreter.pip.util.PayloadFormatUtility.convertBytesToArrayNode;
+
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Objects;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5PayloadFormatIndicator;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.embedded.EmbeddedHiveMQ;
+
+import ch.qos.logback.classic.Level;
 import io.sapl.api.interpreter.Val;
 import io.sapl.interpreter.InitializationException;
-import org.junit.jupiter.api.*;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
-
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.Objects;
-
-import static io.sapl.interpreter.pip.util.PayloadFormatUtility.convertBytesToArrayNode;
 
 class SaplMqttClientPayloadFormatTest extends SaplMqttClientTest {
 

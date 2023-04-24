@@ -16,16 +16,18 @@
 
 package io.sapl.interpreter.functions;
 
+import java.util.List;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.api.pdp.Decision;
 import io.sapl.interpreter.InitializationException;
 import io.sapl.pdp.EmbeddedPolicyDecisionPoint;
 import io.sapl.pdp.PolicyDecisionPointFactory;
-
-import org.junit.jupiter.api.*;
 import reactor.test.StepVerifier;
-
-import java.util.List;
 
 class MqttFunctionsIntegrationTest {
 

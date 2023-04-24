@@ -16,12 +16,76 @@
 
 package io.sapl.mqtt.pep;
 
+import static com.hivemq.extension.sdk.api.async.Async.Status.RUNNING;
+import static com.hivemq.extension.sdk.api.packets.disconnect.DisconnectReasonCode.NOT_AUTHORIZED;
+import static io.sapl.api.pdp.Decision.INDETERMINATE;
+import static io.sapl.api.pdp.Decision.NOT_APPLICABLE;
+import static io.sapl.api.pdp.Decision.PERMIT;
+import static io.sapl.mqtt.pep.mqtt_action.HiveMqEnforcement.enforceMqttConnectionByHiveMqBroker;
+import static io.sapl.mqtt.pep.mqtt_action.HiveMqEnforcement.enforceMqttPublishByHiveMqBroker;
+import static io.sapl.mqtt.pep.mqtt_action.HiveMqEnforcement.enforceMqttSubscriptionByHiveMqBroker;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.addSaplAuthzSubscriptionToMultiSubscription;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.cacheConstraintDetails;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.cacheCurrentTimeAsStartTimeOfMqttAction;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.cacheCurrentTimeAsTimeOfLastSignalEvent;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.cacheMqttActionDecisionFlux;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.cacheMqttTopicSubscription;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.cacheTopicsOfUnsubscribeMessage;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.containsAuthzDecisionOfSubscriptionIdOrNull;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.disposeMqttActionDecisionFluxAndRemoveDisposableFromCache;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.disposeMqttActionDecisionFluxes;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.disposeSharedClientDecisionFlux;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.getAuthzSubscriptionFromCachedMultiAuthzSubscription;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.getAuthzSubscriptionTimeoutDuration;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.getConstraintDetailsFromCache;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.getIdentAuthzDecision;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.getMqttActionStartTimeFromCache;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.getMqttTopicSubscriptionFromCache;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.getRemainingTimeLimitMillis;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.hasHandledObligationsSuccessfully;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.removeConstraintDetailsFromCache;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.removeIdentAuthzDecisionFromCache;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.removeLastSignalTimeFromCache;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.removeMqttActionDecisionFluxFromCache;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.removeMqttTopicSubscriptionFromCache;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.removeSaplAuthzSubscriptionFromMultiSubscription;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.removeStartTimeOfMqttActionFromCache;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.removeTopicsOfUnsubscribeMessageFromCache;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.saveIdentAuthzDecisionAndTransformToMap;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.subscribeMqttActionDecisionFluxAndCacheDisposable;
+import static io.sapl.mqtt.pep.util.DecisionFluxUtility.subscribeToMqttActionDecisionFluxes;
+import static io.sapl.mqtt.pep.util.HiveMqUtility.buildTopicSubscription;
+import static io.sapl.mqtt.pep.util.HiveMqUtility.getUnsubackReasonCode;
+import static io.sapl.mqtt.pep.util.HiveMqUtility.getUserName;
+import static io.sapl.mqtt.pep.util.HiveMqUtility.isMqttSubscriptionExisting;
+import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_AUTHZ_ACTION_TYPE;
+import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_TOPIC;
+import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.buildSaplAuthzSubscriptionForMqttConnection;
+import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.buildSaplAuthzSubscriptionForMqttPublish;
+import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.buildSaplAuthzSubscriptionForMqttSubscription;
+import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.buildSubscriptionId;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeoutException;
+
+import javax.annotation.Nullable;
+
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.async.Async;
 import com.hivemq.extension.sdk.api.async.TimeoutFallback;
 import com.hivemq.extension.sdk.api.auth.SimpleAuthenticator;
 import com.hivemq.extension.sdk.api.auth.SubscriptionAuthorizer;
-import com.hivemq.extension.sdk.api.auth.parameter.*;
+import com.hivemq.extension.sdk.api.auth.parameter.SimpleAuthInput;
+import com.hivemq.extension.sdk.api.auth.parameter.SimpleAuthOutput;
+import com.hivemq.extension.sdk.api.auth.parameter.SubscriptionAuthorizerInput;
+import com.hivemq.extension.sdk.api.auth.parameter.SubscriptionAuthorizerOutput;
 import com.hivemq.extension.sdk.api.events.client.ClientLifecycleEventListener;
 import com.hivemq.extension.sdk.api.events.client.parameters.AuthenticationSuccessfulInput;
 import com.hivemq.extension.sdk.api.events.client.parameters.ConnectionStartInput;
@@ -37,28 +101,20 @@ import com.hivemq.extension.sdk.api.services.Services;
 import com.hivemq.extension.sdk.api.services.session.SessionInformation;
 import com.hivemq.extension.sdk.api.services.subscription.SubscriptionsForClientResult;
 import com.hivemq.extension.sdk.api.services.subscription.TopicSubscription;
-import io.sapl.api.pdp.*;
+
+import io.sapl.api.pdp.AuthorizationSubscription;
+import io.sapl.api.pdp.Decision;
+import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
+import io.sapl.api.pdp.MultiAuthorizationSubscription;
+import io.sapl.api.pdp.PolicyDecisionPoint;
+import io.sapl.mqtt.pep.cache.MqttClientState;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 import io.sapl.mqtt.pep.constraint.ConstraintDetails;
 import io.sapl.mqtt.pep.constraint.ConstraintHandler;
-import io.sapl.mqtt.pep.cache.MqttClientState;
 import io.sapl.mqtt.pep.details.MqttSaplId;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import javax.annotation.Nullable;
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.*;
-
-import static com.hivemq.extension.sdk.api.async.Async.Status.RUNNING;
-import static com.hivemq.extension.sdk.api.packets.disconnect.DisconnectReasonCode.NOT_AUTHORIZED;
-import static io.sapl.api.pdp.Decision.*;
-import static io.sapl.mqtt.pep.mqtt_action.HiveMqEnforcement.*;
-import static io.sapl.mqtt.pep.util.DecisionFluxUtility.*;
-import static io.sapl.mqtt.pep.util.HiveMqUtility.*;
-import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.*;
 
 /**
  * This PEP enforces mqtt actions as an extension to the HiveMq broker.

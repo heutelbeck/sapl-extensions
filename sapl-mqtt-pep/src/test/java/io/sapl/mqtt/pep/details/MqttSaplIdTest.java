@@ -16,9 +16,9 @@
 
 package io.sapl.mqtt.pep.details;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+
+import org.junit.jupiter.api.Test;
 
 
 class MqttSaplIdTest {

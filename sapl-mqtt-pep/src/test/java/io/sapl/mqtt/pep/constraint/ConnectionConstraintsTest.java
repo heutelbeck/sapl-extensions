@@ -16,17 +16,20 @@
 
 package io.sapl.mqtt.pep.constraint;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
-import io.sapl.mqtt.pep.cache.MqttClientState;
-import org.junit.jupiter.api.Test;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-
 import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION;
 import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_TIME_LIMIT;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+
+import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 
 class ConnectionConstraintsTest {
 

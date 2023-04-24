@@ -16,10 +16,15 @@
 
 package io.sapl.mqtt.pep.config;
 
-import lombok.*;
-import lombok.extern.slf4j.Slf4j;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
-import javax.xml.bind.annotation.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Used to specify the sapl mqtt extension configuration file and to define the default configuration values.

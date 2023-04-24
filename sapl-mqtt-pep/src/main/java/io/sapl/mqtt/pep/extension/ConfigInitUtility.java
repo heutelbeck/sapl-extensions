@@ -1,12 +1,12 @@
 package io.sapl.mqtt.pep.extension;
 
+import java.io.File;
+import java.util.Objects;
+
 import io.sapl.mqtt.pep.config.SaplExtensionConfiguration;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
-import java.util.Objects;
 
 /**
  * This utility class provides functions for initialisation of the extension configuration.

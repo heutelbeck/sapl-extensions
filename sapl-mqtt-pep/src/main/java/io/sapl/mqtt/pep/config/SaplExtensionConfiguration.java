@@ -16,14 +16,15 @@
 
 package io.sapl.mqtt.pep.config;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.validator.routines.UrlValidator;
+import static java.lang.Math.min;
+import static org.apache.commons.validator.routines.UrlValidator.ALLOW_LOCAL_URLS;
 
 import java.io.File;
 import java.io.IOException;
 
-import static java.lang.Math.min;
-import static org.apache.commons.validator.routines.UrlValidator.ALLOW_LOCAL_URLS;
+import org.apache.commons.validator.routines.UrlValidator;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Used to read the sapl mqtt extension configuration file and to validate it's content.

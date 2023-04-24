@@ -16,18 +16,23 @@
 
 package io.sapl.mqtt.pep.util;
 
-import com.hivemq.extension.sdk.api.services.Services;
-import com.hivemq.extension.sdk.api.services.subscription.SubscriptionStore;
-import com.hivemq.extension.sdk.api.services.subscription.TopicSubscription;
-import io.sapl.mqtt.pep.details.MqttSaplId;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
+import com.hivemq.extension.sdk.api.services.Services;
+import com.hivemq.extension.sdk.api.services.subscription.SubscriptionStore;
+import com.hivemq.extension.sdk.api.services.subscription.TopicSubscription;
+
+import io.sapl.mqtt.pep.details.MqttSaplId;
 
 class HiveMqUtilityTest {
 

@@ -16,17 +16,24 @@
 
 package io.sapl.interpreter.pip.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sapl.api.interpreter.Val;
-import org.junit.jupiter.api.Test;
+import static io.sapl.interpreter.pip.SaplMqttClient.ENVIRONMENT_BROKER_ADDRESS;
+import static io.sapl.interpreter.pip.SaplMqttClient.ENVIRONMENT_BROKER_PORT;
+import static io.sapl.interpreter.pip.SaplMqttClient.ENVIRONMENT_CLIENT_ID;
+import static io.sapl.interpreter.pip.util.ConfigUtility.ENVIRONMENT_BROKER_CONFIG;
+import static io.sapl.interpreter.pip.util.ConfigUtility.ENVIRONMENT_BROKER_CONFIG_NAME;
+import static io.sapl.interpreter.pip.util.ConfigUtility.ENVIRONMENT_DEFAULT_BROKER_CONFIG_NAME;
+import static io.sapl.interpreter.pip.util.ErrorUtility.ENVIRONMENT_ERROR_RETRY_ATTEMPTS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import java.util.NoSuchElementException;
 
-import static io.sapl.interpreter.pip.SaplMqttClient.*;
-import static io.sapl.interpreter.pip.util.ConfigUtility.*;
-import static io.sapl.interpreter.pip.util.ErrorUtility.ENVIRONMENT_ERROR_RETRY_ATTEMPTS;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+
+import io.sapl.api.interpreter.Val;
 
 class ConfigUtilityTest {
 

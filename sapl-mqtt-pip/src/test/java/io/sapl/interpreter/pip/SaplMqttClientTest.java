@@ -16,8 +16,21 @@
 
 package io.sapl.interpreter.pip;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
+import static io.sapl.interpreter.pip.SaplMqttClient.ENVIRONMENT_BROKER_ADDRESS;
+import static io.sapl.interpreter.pip.SaplMqttClient.ENVIRONMENT_BROKER_PORT;
+import static io.sapl.interpreter.pip.SaplMqttClient.ENVIRONMENT_CLIENT_ID;
+import static io.sapl.interpreter.pip.util.ConfigUtility.ENVIRONMENT_BROKER_CONFIG;
+import static io.sapl.interpreter.pip.util.ConfigUtility.ENVIRONMENT_BROKER_CONFIG_NAME;
+import static io.sapl.interpreter.pip.util.ConfigUtility.ENVIRONMENT_DEFAULT_BROKER_CONFIG_NAME;
+import static io.sapl.interpreter.pip.util.ErrorUtility.ENVIRONMENT_EMIT_AT_RETRY;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.Map;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
@@ -28,18 +41,11 @@ import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAckReasonCo
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5PayloadFormatIndicator;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.embedded.EmbeddedHiveMQ;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import io.sapl.api.interpreter.Val;
 import io.sapl.interpreter.InitializationException;
-import org.junit.jupiter.api.BeforeAll;
-import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.Map;
-
-import static io.sapl.interpreter.pip.SaplMqttClient.*;
-import static io.sapl.interpreter.pip.util.ConfigUtility.*;
-import static io.sapl.interpreter.pip.util.ErrorUtility.ENVIRONMENT_EMIT_AT_RETRY;
 
 abstract class SaplMqttClientTest {
 

@@ -16,12 +16,13 @@
 
 package io.sapl.mqtt.pep.extension;
 
-import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+
+import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 
 class ConfigInitUtilityTest {
 

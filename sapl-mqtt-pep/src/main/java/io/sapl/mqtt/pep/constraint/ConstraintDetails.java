@@ -17,6 +17,7 @@
 package io.sapl.mqtt.pep.constraint;
 
 import com.hivemq.extension.sdk.api.interceptor.publish.parameter.PublishInboundOutput;
+
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 import lombok.Data;

@@ -16,10 +16,29 @@
 
 package io.sapl.mqtt.pep.extension;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
+import static io.sapl.mqtt.pep.MqttPep.SUBSCRIBE_AUTHZ_ACTION;
+import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_AUTHZ_ACTION_TYPE;
+import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_CLIENT_ID;
+import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_TOPIC;
+import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_USER_NAME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.when;
+
+import java.io.File;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.api.pdp.Decision;
@@ -27,18 +46,6 @@ import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 import io.sapl.pdp.PolicyDecisionPointFactory;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-
-import static io.sapl.mqtt.pep.MqttPep.*;
-import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 class PdpInitUtilityTest {
     private static final Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);

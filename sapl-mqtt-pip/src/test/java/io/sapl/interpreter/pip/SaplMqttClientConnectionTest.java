@@ -16,22 +16,30 @@
 
 package io.sapl.interpreter.pip;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.hivemq.embedded.EmbeddedHiveMQ;
-import io.sapl.api.interpreter.Val;
-import io.sapl.interpreter.InitializationException;
-import org.junit.jupiter.api.*;
-import reactor.core.publisher.Flux;
-import reactor.test.StepVerifier;
-import reactor.test.publisher.TestPublisher;
+import static io.sapl.interpreter.pip.SaplMqttClient.ENVIRONMENT_BROKER_ADDRESS;
+import static io.sapl.interpreter.pip.SaplMqttClient.ENVIRONMENT_BROKER_PORT;
+import static io.sapl.interpreter.pip.SaplMqttClient.ENVIRONMENT_CLIENT_ID;
+import static io.sapl.interpreter.pip.util.ConfigUtility.ENVIRONMENT_BROKER_CONFIG;
+import static io.sapl.interpreter.pip.util.ConfigUtility.ENVIRONMENT_BROKER_CONFIG_NAME;
+import static io.sapl.interpreter.pip.util.ConfigUtility.ENVIRONMENT_DEFAULT_BROKER_CONFIG_NAME;
 
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static io.sapl.interpreter.pip.SaplMqttClient.*;
-import static io.sapl.interpreter.pip.util.ConfigUtility.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.hivemq.embedded.EmbeddedHiveMQ;
+
+import io.sapl.api.interpreter.Val;
+import io.sapl.interpreter.InitializationException;
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
+import reactor.test.publisher.TestPublisher;
 
 class SaplMqttClientConnectionTest extends SaplMqttClientTest {
 

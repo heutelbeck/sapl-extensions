@@ -16,14 +16,16 @@
 
 package io.sapl.mqtt.pep.config;
 
-import com.hivemq.extension.sdk.api.annotations.ThreadSafe;
-import lombok.extern.slf4j.Slf4j;
+import java.io.File;
+import java.io.IOException;
 
 import javax.xml.bind.DataBindingException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.io.File;
-import java.io.IOException;
+
+import com.hivemq.extension.sdk.api.annotations.ThreadSafe;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Used to unmarshal the sapl mqtt extension configuration file.

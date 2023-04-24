@@ -16,15 +16,17 @@
 
 package io.sapl.interpreter.pip.util;
 
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.mockito.Mockito.mock;
+
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hivemq.client.internal.mqtt.reactor.MqttReactorClient;
 import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAck;
-import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Mono;
 
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.mockito.Mockito.mock;
+import reactor.core.publisher.Mono;
 
 class MqttClientValuesTest {
 

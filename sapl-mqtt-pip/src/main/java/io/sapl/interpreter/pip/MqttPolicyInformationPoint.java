@@ -16,9 +16,12 @@
 
 package io.sapl.interpreter.pip;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import io.sapl.api.interpreter.Val;
 import io.sapl.api.pip.Attribute;
 import io.sapl.api.pip.PolicyInformationPoint;
@@ -28,7 +31,6 @@ import io.sapl.api.validation.JsonObject;
 import io.sapl.api.validation.Text;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
-import java.util.*;
 
 /**
  * This policy information point allows the user to receive mqtt messages of subscribed topics from a mqtt broker.

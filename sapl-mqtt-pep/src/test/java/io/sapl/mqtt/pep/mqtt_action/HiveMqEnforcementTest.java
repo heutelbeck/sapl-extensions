@@ -16,15 +16,20 @@
 
 package io.sapl.mqtt.pep.mqtt_action;
 
-import com.hivemq.extension.sdk.api.interceptor.publish.parameter.PublishInboundOutput;
-import com.hivemq.extension.sdk.api.packets.publish.AckReasonCode;
-import io.sapl.api.pdp.AuthorizationDecision;
-import io.sapl.mqtt.pep.details.MqttSaplId;
-import org.junit.jupiter.api.Test;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import org.junit.jupiter.api.Test;
+
+import com.hivemq.extension.sdk.api.interceptor.publish.parameter.PublishInboundOutput;
+import com.hivemq.extension.sdk.api.packets.publish.AckReasonCode;
+
+import io.sapl.api.pdp.AuthorizationDecision;
+import io.sapl.mqtt.pep.details.MqttSaplId;
 
 class HiveMqEnforcementTest {
 

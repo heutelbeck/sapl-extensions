@@ -16,23 +16,25 @@
 
 package io.sapl.interpreter.pip;
 
-import ch.qos.logback.classic.Level;
-import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
-import com.hivemq.embedded.EmbeddedHiveMQ;
-import io.sapl.api.interpreter.Val;
-import io.sapl.interpreter.InitializationException;
-import io.sapl.interpreter.pip.util.DefaultResponseUtility;
+import static org.mockito.ArgumentMatchers.any;
+
+import java.time.Duration;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
+import com.hivemq.embedded.EmbeddedHiveMQ;
+
+import ch.qos.logback.classic.Level;
+import io.sapl.api.interpreter.Val;
+import io.sapl.interpreter.InitializationException;
+import io.sapl.interpreter.pip.util.DefaultResponseUtility;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
-
-import java.time.Duration;
-
-import static org.mockito.ArgumentMatchers.any;
 
 class SaplMqttClientExceptionTest extends SaplMqttClientTest{
     private static EmbeddedHiveMQ embeddedHiveMqBroker;

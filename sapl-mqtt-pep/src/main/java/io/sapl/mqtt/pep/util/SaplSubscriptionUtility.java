@@ -16,6 +16,16 @@
 
 package io.sapl.mqtt.pep.util;
 
+import static io.sapl.mqtt.pep.MqttPep.CONNECT_AUTHZ_ACTION;
+import static io.sapl.mqtt.pep.MqttPep.PUBLISH_AUTHZ_ACTION;
+import static io.sapl.mqtt.pep.MqttPep.SUBSCRIBE_AUTHZ_ACTION;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -27,17 +37,11 @@ import com.hivemq.extension.sdk.api.packets.general.Qos;
 import com.hivemq.extension.sdk.api.packets.publish.PayloadFormatIndicator;
 import com.hivemq.extension.sdk.api.services.Services;
 import com.hivemq.extension.sdk.api.services.subscription.TopicSubscription;
+
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.mqtt.pep.cache.MqttClientState;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.annotation.Nullable;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-
-import static io.sapl.mqtt.pep.MqttPep.*;
 
 /**
  * This utility class provides functions to build SAPL subscriptions for the mqtt action enforcement.

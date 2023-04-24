@@ -16,7 +16,14 @@
 
 package io.sapl.mqtt.pep.util;
 
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import com.hivemq.extension.sdk.api.services.subscription.TopicSubscription;
+
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 import io.sapl.mqtt.pep.cache.MqttClientState;
@@ -26,12 +33,6 @@ import lombok.experimental.UtilityClass;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class provides utility functions in the context of the sapl mqtt decision fluxes, especially for interactions
