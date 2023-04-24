@@ -1,0 +1,147 @@
+import filter as filter
+
+set "constraint_policy_set"
+first-applicable
+
+policy "constraint_subscription_policy"
+permit
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_SUBSCRIBE"
+where
+  action.type == "mqtt.subscribe";
+  resource.topic in ["topic", "retain", "messageExpiry", "contentTopic", "payloadTopic", "contentPayloadTopic",
+  "adviceContentPayloadTopic", "illegalObligation", "illegalAdvice", "resourceTransformation", "blackenTopic"];
+
+policy "constraint_publish_policy"
+permit
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "time_limit";
+
+policy "constraint_qos_publish_policy"
+permit
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "topic";
+obligation
+    {
+        "type" : "setQos",
+            "qosLevel" : 2
+    }
+
+policy "constraint_retain_publish_policy"
+permit
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "retain";
+obligation
+    {
+        "type" : "retainMessage",
+            "status" : "enabled"
+    }
+
+policy "constraint_message_expiry_publish_policy"
+permit
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "messageExpiry";
+obligation
+    {
+        "type" : "replaceMessageExpiryInterval",
+            "timeInterval" : 1
+    }
+
+policy "constraint_content_type_publish_policy"
+permit
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "contentTopic";
+obligation
+    {
+        "type" : "replaceContentType",
+            "replacement" : "content"
+    }
+
+policy "constraint_payload_publish_policy"
+permit
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "payloadTopic";
+obligation
+    {
+        "type" : "replacePayload",
+            "replacement" : "changedPayload"
+    }
+
+policy "obligation_illegal_publish_policy"
+permit
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "illegalObligation";
+obligation
+    {
+        "illegal" : "value"
+    }
+
+policy "advice_illegal_publish_policy"
+permit
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "illegalAdvice";
+advice
+    {
+        "illegal" : "value"
+    }
+
+policy "limit_connection_time_policy"
+permit
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_CONNECT"
+where
+  action.type == "mqtt.connect";
+obligation
+    {
+        "type" : "limitMqttActionDuration",
+            "timeLimit" : 1
+    }
+
+policy "limit_subscription_time_policy"
+permit
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_SUBSCRIBE"
+where
+  action.type == "mqtt.subscribe";
+  resource.topic == "time_limit";
+obligation
+    {
+        "type" : "limitMqttActionDuration",
+            "timeLimit" : 1
+    }
+
+policy "blacken_textual_payload_policy"
+permit
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "blackenTopic";
+obligation
+    {
+        "type" : "blackenPayload",
+            "discloseLeft" : 0,
+            "discloseRight" : 2,
+            "replacement" : "*"
+    }
+
+policy "transform_resource_policy"
+permit
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "resourceTransformation";
+transform
+  resource.topic |- filter.blacken

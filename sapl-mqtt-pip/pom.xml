@@ -1,0 +1,178 @@
+<!--
+
+    Copyright © 2019-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>io.sapl</groupId>
+	<artifactId>sapl-mqtt-pip</artifactId>
+	<version>2.1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>SAPL-MQTT-PIP</name>
+
+	<properties>
+		<!-- SAPL Depends on XText, which requires JDK11 from 2.24 upwards -->
+		<java.version>11</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- The Version of the SAPL Dependencies -->
+		<sapl.version>2.1.0-SNAPSHOT</sapl.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Streaming Attribute Authorization Engine Bill of Materials -->
+			<!-- This is a 'Bill of Materials' dependency. It does not directly introduce 
+				additional dependencies. This is a utility dependency, making it easier to 
+				use SAPL dependencies. Once this BOM has been imported in the <dependencyManagement> 
+				section of the POM all SAPL dependencies can be used without explicitly declaring 
+				a version. This ensures that when multiple SAPL dependencies are used, the 
+				versions of them are consistent. -->
+			<dependency>
+				<groupId>io.sapl</groupId>
+				<artifactId>sapl-bom</artifactId>
+				<version>2.1.0-SNAPSHOT</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!-- The embedded Streaming Attribute Engine PDP -->
+		<dependency>
+			<groupId>io.sapl</groupId>
+			<artifactId>sapl-pdp-embedded</artifactId>
+			<version>${sapl.version}</version>
+		</dependency>
+		<!-- A logging library for printing messages to the console -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.22</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- A library for testing -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.8.2</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- A library for reactive programming -->
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-core</artifactId>
+			<version>3.4.16</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- The mqtt client necessary for subscriptions to topics -->
+		<dependency>
+			<groupId>com.hivemq</groupId>
+			<artifactId>hivemq-mqtt-client</artifactId>
+			<version>1.3.0</version>
+		</dependency>
+		<!-- A mqtt client extension for reactive subscriptions -->
+		<dependency>
+			<groupId>com.hivemq</groupId>
+			<artifactId>hivemq-mqtt-client-reactor</artifactId>
+			<version>1.3.0</version>
+		</dependency>
+		<!-- An embedded mqtt broker for integration testing -->
+		<dependency>
+			<groupId>com.hivemq</groupId>
+			<artifactId>hivemq-community-edition-embedded</artifactId>
+			<version>2021.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.4</version>
+		</dependency>
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-test</artifactId>
+			<scope>test</scope>
+			<version>3.4.16</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-inline</artifactId>
+			<version>4.6.1</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- This plug-in creates a so-called "fat JAR", i.e., a JAR file which 
+				contains the code from this module and in addition, all dependencies are 
+				packed into the JAR as well. This results in a self-contained executable 
+				Java application directly runnable via 'java -jar'. -->
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>io.sapl.interpreter.pip.MqttPolicyInformationPoint</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.22.0</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.22.0</version>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>ossrh</id>
+			<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+
+
+</project>

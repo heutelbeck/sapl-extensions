@@ -1,0 +1,75 @@
+set "subscription_publish_policy_set"
+first-applicable
+
+policy "subscription_policy"
+permit
+  subject.clientId == "MQTT_CLIENT_SUBSCRIBE"
+where
+  action.type == "mqtt.subscribe";
+  resource.topic == "topic";
+
+policy "publish_policy"
+permit
+  subject.clientId == "MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "topic";
+
+
+policy "publish_for_subscribe_client_policy"
+permit
+  subject.clientId == "MQTT_CLIENT_SUBSCRIBE"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "topic";
+
+policy "subscribe_for_publish_client_policy"
+permit
+  subject.clientId == "MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.subscribe";
+  resource.topic == "topic";
+
+policy "second_subscription_policy"
+permit
+  subject.clientId == "MQTT_CLIENT_SUBSCRIBE"
+where
+  action.type == "mqtt.subscribe";
+  resource.topic == "secondTopic";
+
+policy "second_publish_policy"
+permit
+  subject.clientId == "MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "secondTopic";
+
+
+policy "subscription_denied_publish_policy"
+permit
+  subject.clientId == "MQTT_CLIENT_SUBSCRIBE"
+where
+  action.type == "mqtt.subscribe";
+  resource.topic == "denied_publish";
+
+policy "publish_denied_publish_policy"
+deny
+  subject.clientId == "MQTT_CLIENT_PUBLISH"
+where
+  action.type == "mqtt.publish";
+  resource.topic == "denied_publish";
+
+
+policy "subscription_denied_subscribe_policy"
+deny
+  subject.clientId == "MQTT_CLIENT_SUBSCRIBE"
+where
+  action.type == "mqtt.subscribe";
+  resource.topic == "denied_subscription";
+
+policy "publish_denied_subscribe_policy"
+permit
+    subject.clientId == "MQTT_CLIENT_PUBLISH"
+where
+    action.type == "mqtt.publish";
+    resource.topic == "denied_subscription";
