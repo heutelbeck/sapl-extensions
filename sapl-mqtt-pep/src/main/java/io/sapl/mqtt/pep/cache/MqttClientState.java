@@ -32,7 +32,6 @@ import io.sapl.api.pdp.MultiAuthorizationSubscription;
 import io.sapl.mqtt.pep.constraint.ConstraintDetails;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.var;
 import reactor.core.Disposable;
 import reactor.core.Disposables;
 import reactor.core.publisher.Flux;
