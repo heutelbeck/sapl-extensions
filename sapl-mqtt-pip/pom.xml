@@ -62,7 +62,6 @@
 		<dependency>
 			<groupId>io.sapl</groupId>
 			<artifactId>sapl-pdp-embedded</artifactId>
-			<version>${sapl.version}</version>
 		</dependency>
 		<!-- A logging library for printing messages to the console -->
 		<dependency>
@@ -174,5 +173,14 @@
 		</repository>
 	</repositories>
 
-
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 </project>
