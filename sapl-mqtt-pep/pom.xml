@@ -263,6 +263,7 @@
                 <version>2.22.0</version>
             </plugin>
             <plugin>
+				<?m2e ignore?>
                 <groupId>org.asciidoctor</groupId>
                 <artifactId>asciidoctor-maven-plugin</artifactId>
                 <version>${asciidoctor.version}</version>
