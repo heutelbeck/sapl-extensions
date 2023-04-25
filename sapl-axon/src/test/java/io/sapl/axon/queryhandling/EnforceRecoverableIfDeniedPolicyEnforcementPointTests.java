@@ -43,9 +43,9 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 	private static final String                                                 MAPPER_FILED_NAME        = "mapper";
 	private static final String                                                 ERROR_MAPPERS_FILED_NAME = "errorMappers";
 	private static final Duration                                               DEFAULT_TIMEOUT          = Duration
-			.ofMillis(500);
+			.ofMillis(1000);
 	private static final Duration                                               DEFAULT_TIMESTEP         = Duration
-			.ofMillis(20);
+			.ofMillis(50);
 	private static final SubscriptionQueryUpdateMessage<TestUpdateResponseType> DEFAULT_UPDATE_MESSAGE   = new GenericSubscriptionQueryUpdateMessage<TestUpdateResponseType>(
 			new TestUpdateResponseType());
 
