@@ -39,7 +39,7 @@ class SaplMqttClientSubscriptionsTest extends SaplMqttClientTest {
     @BeforeAll
     static void setUp() {
          // set logging level
-        logger.setLevel(Level.DEBUG);
+        logger.setLevel(Level.OFF);
     }
 
     @Test

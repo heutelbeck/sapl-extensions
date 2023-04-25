@@ -75,7 +75,7 @@ class RemotePdpUsageTest extends SaplMqttPepTest {
     @BeforeAll
     public static void beforeAll() throws InitializationException, ParserConfigurationException, TransformerException {
         // set logging level
-        rootLogger.setLevel(Level.INFO);
+        rootLogger.setLevel(Level.OFF);
 
         createExtensionConfigFile(saplServerLt.getFirstMappedPort());
 

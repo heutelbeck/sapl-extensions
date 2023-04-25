@@ -38,7 +38,7 @@ class SaplMqttDefaultResponseTest  extends SaplMqttClientTest {
     @BeforeAll
     static void setUp() throws InitializationException {
         // set logging level
-        logger.setLevel(Level.DEBUG);
+        logger.setLevel(Level.OFF);
 
         embeddedHiveMqBroker = startEmbeddedHiveMqBroker();
         hiveMqClient = startMqttClient();

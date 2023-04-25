@@ -18,6 +18,8 @@ package io.sapl.interpreter.functions;
 
 import java.util.List;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,7 @@ import io.sapl.api.pdp.Decision;
 import io.sapl.interpreter.InitializationException;
 import io.sapl.pdp.EmbeddedPolicyDecisionPoint;
 import io.sapl.pdp.PolicyDecisionPointFactory;
+import org.slf4j.LoggerFactory;
 import reactor.test.StepVerifier;
 
 class MqttFunctionsIntegrationTest {
@@ -34,8 +37,13 @@ class MqttFunctionsIntegrationTest {
     private static final String ACTION = "actionName";
     private static EmbeddedPolicyDecisionPoint pdp;
 
+    protected static final Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+
     @BeforeAll
     static void beforeAll() throws InitializationException {
+        // set logging level
+        rootLogger.setLevel(Level.OFF);
+
         pdp = buildPdp();
     }
 

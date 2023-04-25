@@ -46,7 +46,7 @@ class ConstraintHandlingIntegrationTest extends SaplMqttPepTest {
     @BeforeAll
     public static void beforeAll() throws InitializationException {
         // set logging level
-        rootLogger.setLevel(Level.DEBUG);
+        rootLogger.setLevel(Level.OFF);
 
         embeddedHiveMq = startEmbeddedHiveMqBroker();
         mqttClientPublish = startMqttClient("CONSTRAINT_MQTT_CLIENT_PUBLISH");
