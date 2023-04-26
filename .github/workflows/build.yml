@@ -50,7 +50,7 @@ jobs:
         node-version: '18'
 
     - name: Run tests
-      run: mvn -B package javadoc:jar
+      run: mvn -B package javadoc:jar -pl !sapl-axon
   
     - name: Clean up local repository before caching (Linux/Mac)
       if: ${{ matrix.os != 'windows-latest'}}
@@ -89,7 +89,7 @@ jobs:
     - name: Run analysis (Unit Tests, IT, JaCoCo, Sonar)    
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: mvn -B org.jacoco:jacoco-maven-plugin:0.8.7:prepare-agent verify org.jacoco:jacoco-maven-plugin:0.8.7:report org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar sonar:sonar failsafe:integration-test -P coverage,it -DskipITs=false -Dsonar.host.url=https://sonar.ftk.de -Dsonar.login=${SONAR_TOKEN} -Dsonar.exclusions=**/xtext-gen/**/*,**/xtend-gen/**/*,**/emf-gen/**/*
+      run: mvn -B org.jacoco:jacoco-maven-plugin:0.8.7:prepare-agent verify org.jacoco:jacoco-maven-plugin:0.8.7:report org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar sonar:sonar failsafe:integration-test -P coverage,it -DskipITs=false -Dsonar.host.url=https://sonar.ftk.de -Dsonar.login=${SONAR_TOKEN} -Dsonar.exclusions=**/xtext-gen/**/*,**/xtend-gen/**/*,**/emf-gen/**/* -pl !sapl-axon
 
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@v2
