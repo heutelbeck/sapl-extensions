@@ -77,9 +77,8 @@
 		<module>sapl-ethereum</module>
 		<module>sapl-axon</module>
 		<module>sapl-vaadin</module>
-		<module>sapl-mqtt-pip</module>
-		<module>sapl-mqtt-pep</module>
-		<module>sapl-mqtt-functions</module>
+		<module>sapl-mqtt</module>
+		<module>sapl-hivemq-extension</module>
 	</modules>
 
 	<distributionManagement>
