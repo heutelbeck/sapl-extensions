@@ -46,11 +46,11 @@ jobs:
       run: mvn -B package javadoc:jar -pl sapl-axon
   
     - name: Clean up local repository before caching (Linux/Mac)
-      if: ${{ matrix.os != 'windows-latest' && ! canceled() }}
+      if: ${{ matrix.os != 'windows-latest' && ! cancelled() }}
       run: rm -rf ~/.m2/repository/io/sapl
 
     - name: Clean up local repository before caching (Win)
-      if: ${{ matrix.os == 'windows-latest' && ! canceled() }}
+      if: ${{ matrix.os == 'windows-latest' && ! cancelled() }}
       run: rm -Recurse -Force ~/.m2/repository/io/sapl
           
   integration-tests:
@@ -81,11 +81,11 @@ jobs:
       run: mvn -B verify failsafe:integration-test -P coverage,it -DskipITs=false -pl sapl-axon
 
     - name: Clean up local repository before caching (Linux)
-      if: ${{ matrix.os == 'ubuntu-latest' && ! canceled() }}
+      if: ${{ matrix.os == 'ubuntu-latest' && ! cancelled() }}
       run: rm -rf ~/.m2/repository/io/sapl
 
     - name: Clean up local repository before caching (Win)
-      if: ${{ matrix.os == 'windows-latest' && ! canceled() }}
+      if: ${{ matrix.os == 'windows-latest' && ! cancelled() }}
       run: rm -Recurse -Force ~/.m2/repository/io/sapl
       
   delete-workflow-runs:
