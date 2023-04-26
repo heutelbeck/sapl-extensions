@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-package io.sapl.mqtt.pep.constraint;
+package io.sapl.mqtt.pep.extension;
 
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.File;
 
 import org.junit.jupiter.api.Test;
 
-class ConstraintsTest {
+class ConfigInitUtilityTests {
 
-    @Test
-    void when_constructorOfConstraintsIsCalled_then_throwUnsupportedOperationException() {
-        assertThrowsExactly(UnsupportedOperationException.class, Constraints::new);
-    }
+	@Test
+	void when_extensionConfigPathIsNotSpecified_then_useDefaultPathInExtensionHome() {
+		// GIVEN
+		var extensionHomeFolder = new File("src/test/resources/config");
+
+		// WHEN
+		var extensionConfig = ConfigInitUtility.getSaplMqttExtensionConfig(extensionHomeFolder, null);
+
+		// THEN
+		assertEquals(6000, extensionConfig.getConnectionEnforcementTimeoutMillis());
+	}
 }

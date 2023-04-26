@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 import com.hivemq.extension.sdk.api.services.Services;
 import com.hivemq.extension.sdk.api.services.subscription.SubscriptionStore;
@@ -34,25 +33,24 @@ import com.hivemq.extension.sdk.api.services.subscription.TopicSubscription;
 
 import io.sapl.mqtt.pep.details.MqttSaplId;
 
-class HiveMqUtilityTest {
+class HiveMqUtilityTests {
 
-    @Test
-    void  whenNoMqttSubscriptionExisting_then_returnFalse() {
-        // GIVEN
-        MqttSaplId mqttSaplId = new MqttSaplId("clientId", "subscriptionId");
-        SubscriptionStore subscriptionStoreMock = mock(SubscriptionStore.class);
-        CompletableFuture<Set<TopicSubscription>> setCompletableFutureTopicSubscription =
-                CompletableFuture.completedFuture(Set.of());
-        when(subscriptionStoreMock.getSubscriptions(anyString())).thenReturn(setCompletableFutureTopicSubscription);
+	@Test
+	void whenNoMqttSubscriptionExisting_then_returnFalse() {
+		// GIVEN
+		var mqttSaplId                            = new MqttSaplId("clientId", "subscriptionId");
+		var subscriptionStoreMock                 = mock(SubscriptionStore.class);
+		var setCompletableFutureTopicSubscription = CompletableFuture.<Set<TopicSubscription>>completedFuture(Set.of());
+		when(subscriptionStoreMock.getSubscriptions(anyString())).thenReturn(setCompletableFutureTopicSubscription);
 
-        try(MockedStatic<Services> servicesMockedStatic = mockStatic(Services.class)) {
-            servicesMockedStatic.when(Services::subscriptionStore).thenReturn(subscriptionStoreMock);
+		try (var servicesMockedStatic = mockStatic(Services.class)) {
+			servicesMockedStatic.when(Services::subscriptionStore).thenReturn(subscriptionStoreMock);
 
-            // WHEN
-            boolean isMqttSubscriptionExisting = HiveMqUtility.isMqttSubscriptionExisting(mqttSaplId);
+			// WHEN
+			var isMqttSubscriptionExisting = HiveMqUtility.isMqttSubscriptionExisting(mqttSaplId);
 
-            // THEN
-            assertFalse(isMqttSubscriptionExisting);
-        }
-    }
+			// THEN
+			assertFalse(isMqttSubscriptionExisting);
+		}
+	}
 }

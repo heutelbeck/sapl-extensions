@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-package io.sapl.mqtt.pep.extension;
+package io.sapl.mqtt.pep.constraint;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.File;
-
 import org.junit.jupiter.api.Test;
 
-import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
+import io.sapl.api.pdp.AuthorizationDecision;
+import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
+import io.sapl.mqtt.pep.cache.MqttClientState;
 
-class ConfigInitUtilityTest {
+class ConstraintDetailsTests {
 
-    @Test
-    void when_extensionConfigPathIsNotSpecified_then_useDefaultPathInExtensionHome() {
-        // GIVEN
-        File extensionHomeFolder = new File("src/test/resources/config");
+	@Test
+	void when_subscriptionIdGetsLookedUp_then_returnSubscriptionId() {
+		// GIVEN
+		var mqttClientState    = new MqttClientState("clientId");
+		var identAuthzDecision = new IdentifiableAuthorizationDecision("subscriptionId", AuthorizationDecision.PERMIT);
+		var constraintDetails  = new ConstraintDetails(mqttClientState.getClientId(), identAuthzDecision);
 
-        // WHEN
-        SaplMqttExtensionConfig extensionConfig =
-                ConfigInitUtility.getSaplMqttExtensionConfig(extensionHomeFolder, null);
+		// WHEN
+		var subscriptionId = constraintDetails.getSubscriptionId();
 
-        // THEN
-        assertEquals(6000, extensionConfig.getConnectionEnforcementTimeoutMillis());
-    }
+		// THEN
+		assertEquals("subscriptionId", subscriptionId);
+	}
 }
