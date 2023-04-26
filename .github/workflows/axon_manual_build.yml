@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  tests:
+  unit-tests:
     strategy:
       matrix:
         java: [ '17' ]
@@ -42,20 +42,24 @@ jobs:
         java-version: ${{ matrix.java }}
         cache: 'maven'
 
-    - name: Run tests
+    - name: Run unit tests
       run: mvn -B package javadoc:jar -pl sapl-axon
   
     - name: Clean up local repository before caching (Linux/Mac)
-      if: ${{ matrix.os != 'windows-latest'}}
+      if: ${{ matrix.os != 'windows-latest' && ! canceled() }}
       run: rm -rf ~/.m2/repository/io/sapl
 
     - name: Clean up local repository before caching (Win)
-      if: ${{ matrix.os == 'windows-latest'}}
+      if: ${{ matrix.os == 'windows-latest' && ! canceled() }}
       run: rm -Recurse -Force ~/.m2/repository/io/sapl
           
   integration-tests:
-    name: Integration Tests
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '17' ]
+        os: [ubuntu-latest, windows-latest]
+    name: Integration Tests (JDK ${{ matrix.java }} on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     
     steps:
@@ -73,9 +77,25 @@ jobs:
         java-version: 17
         cache: 'maven'
       
-    - name: Run ITs
+    - name: Run integration tests
       run: mvn -B verify failsafe:integration-test -P coverage,it -DskipITs=false -pl sapl-axon
 
+    - name: Clean up local repository before caching (Linux)
+      if: ${{ matrix.os == 'ubuntu-latest' && ! canceled() }}
+      run: rm -rf ~/.m2/repository/io/sapl
+
+    - name: Clean up local repository before caching (Win)
+      if: ${{ matrix.os == 'windows-latest' && ! canceled() }}
+      run: rm -Recurse -Force ~/.m2/repository/io/sapl
+      
+  delete-workflow-runs:
+    needs: [unit-tests, integration-tests]
+    if: ${{ ! cancelled() }}
+    name: Cleanup
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@v2
       with:
@@ -83,6 +103,3 @@ jobs:
         repository: ${{ github.repository }}
         retain_days: 1
         keep_minimum_runs: 6
-
-    - name: Clean up local repository before caching 
-      run: rm -rf ~/.m2/repository/io/sapl
