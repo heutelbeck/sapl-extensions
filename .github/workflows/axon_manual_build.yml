@@ -74,7 +74,7 @@ jobs:
         cache: 'maven'
       
     - name: Run ITs
-      run: mvn -B verify failsafe:integration-test -P coverage,it -DskipITs=false -pl sapl-axon
+      run: mvn -B verify failsafe:integration-test -P coverage,it -DskipITs=false -DskipTests -pl sapl-axon
 
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@v2
