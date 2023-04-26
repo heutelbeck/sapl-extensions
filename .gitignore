@@ -28,4 +28,3 @@ node_modules/
 **/package.json
 **/package-lock.json
 **/bin/
-/sapl-mqtt-pep/src/test/resources/config/remote/sapl-extension-config.xml

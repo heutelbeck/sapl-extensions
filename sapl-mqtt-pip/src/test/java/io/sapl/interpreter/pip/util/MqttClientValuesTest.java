@@ -30,22 +30,21 @@ import reactor.core.publisher.Mono;
 
 class MqttClientValuesTest {
 
-    @Test
-    void when_extractingMqttBrokerConfig_then_getCopy() {
-        // GIVEN
-        MqttReactorClient mqttReactorClientMock = mock(MqttReactorClient.class);
-        ObjectNode brokerConfig = JsonNodeFactory.instance.objectNode();
-        brokerConfig.put("key", "value");
-        Mqtt5ConnAck mqtt5ConnAckMock = mock(Mqtt5ConnAck.class);
-        Mono<Mqtt5ConnAck> mqtt5ConnAckMonoMock = Mono.just(mqtt5ConnAckMock);
+	@Test
+	void when_extractingMqttBrokerConfig_then_getCopy() {
+		// GIVEN
+		var mqttReactorClientMock = mock(MqttReactorClient.class);
+		var brokerConfig          = JsonNodeFactory.instance.objectNode();
+		brokerConfig.put("key", "value");
+		var mqtt5ConnAckMock     = mock(Mqtt5ConnAck.class);
+		var mqtt5ConnAckMonoMock = Mono.just(mqtt5ConnAckMock);
+		var mqttClientValues     = new MqttClientValues("clientId", mqttReactorClientMock,
+				brokerConfig, mqtt5ConnAckMonoMock);
 
-        MqttClientValues mqttClientValues = new MqttClientValues("clientId", mqttReactorClientMock,
-                brokerConfig, mqtt5ConnAckMonoMock);
+		// WHEN
+		ObjectNode mqttBrokerConfig = mqttClientValues.getMqttBrokerConfig();
 
-        // WHEN
-        ObjectNode mqttBrokerConfig = mqttClientValues.getMqttBrokerConfig();
-
-        // THEN
-        assertNotSame(mqttBrokerConfig, brokerConfig);
-    }
+		// THEN
+		assertNotSame(mqttBrokerConfig, brokerConfig);
+	}
 }
