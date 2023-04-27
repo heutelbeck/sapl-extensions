@@ -89,7 +89,7 @@ jobs:
     - name: Run analysis (Unit Tests, IT, JaCoCo, Sonar)    
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: mvn -B jacoco-maven-plugin:prepare-agent verify jacoco-maven-plugin:report sonar-maven-plugin:sonar sonar:sonar failsafe:integration-test -P coverage,it -DskipITs=false -Dsonar.host.url=https://sonar.ftk.de -Dsonar.login=${SONAR_TOKEN} -Dsonar.exclusions=**/xtext-gen/**/*,**/xtend-gen/**/*,**/emf-gen/**/* -pl !sapl-axon
+      run: mvn -B sonar:sonar failsafe:integration-test -Pcoverage,it -DskipITs=false -Dsonar.host.url=https://sonar.ftk.de -Dsonar.login=${SONAR_TOKEN} -Dsonar.exclusions=**/xtext-gen/**/*,**/xtend-gen/**/*,**/emf-gen/**/* -pl !sapl-axon
 
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@v2
