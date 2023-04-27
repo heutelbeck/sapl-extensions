@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -151,9 +150,9 @@ class RemotePdpUsageIT extends SaplMqttPepTest {
 
 		// start hivemq broker with sapl extension
 		EmbeddedHiveMQ embeddedHiveMq = EmbeddedHiveMQ.builder()
-				.withConfigurationFolder(Path.of("src/test/resources/embedded-config-folder"))
-				.withDataFolder(Path.of("src/test/resources/embedded-data-folder"))
-				.withExtensionsFolder(Path.of("src/test/resources/embedded-extensions-folder"))
+				.withConfigurationFolder(CONFIG_FOLDER)
+				.withDataFolder(DATA_FOLDER)
+				.withExtensionsFolder(EXTENSION_FOLDER)
 				.withEmbeddedExtension(embeddedExtensionBuild).build();
 		embeddedHiveMq.start().join();
 		return embeddedHiveMq;
