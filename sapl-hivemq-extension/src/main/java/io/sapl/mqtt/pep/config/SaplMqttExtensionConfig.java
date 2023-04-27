@@ -24,7 +24,6 @@ import javax.xml.bind.annotation.XmlType;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Used to specify the sapl mqtt extension configuration file and to define the default configuration values.

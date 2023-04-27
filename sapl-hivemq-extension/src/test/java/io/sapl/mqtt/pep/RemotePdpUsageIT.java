@@ -75,20 +75,20 @@ class RemotePdpUsageIT extends SaplMqttPepTest {
 		// set logging level
 		createExtensionConfigFile(saplServerLt.getFirstMappedPort());
 
-		embeddedHiveMq      = startEmbeddedBrokerWithRemotePdp();
-		mqttClientSubscribe = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
-		mqttClientPublish   = startMqttClient("MQTT_CLIENT_PUBLISH");
+		MQTT_BROKER      = startEmbeddedBrokerWithRemotePdp();
+		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
 	}
 
 	@AfterAll
 	public static void afterAll() {
-		if (mqttClientPublish.getState().isConnected()) {
-			mqttClientPublish.disconnect();
+		if (PUBLISH_CLIENT.getState().isConnected()) {
+			PUBLISH_CLIENT.disconnect();
 		}
-		if (mqttClientSubscribe.getState().isConnected()) {
-			mqttClientSubscribe.disconnect();
+		if (SUBSCRIBE_CLIENT.getState().isConnected()) {
+			SUBSCRIBE_CLIENT.disconnect();
 		}
-		embeddedHiveMq.stop().join();
+		MQTT_BROKER.stop().join();
 	}
 
 	@Test
@@ -102,16 +102,16 @@ class RemotePdpUsageIT extends SaplMqttPepTest {
 				false);
 
 		// WHEN
-		mqttClientSubscribe.subscribe(subscribeMessage);
-		mqttClientPublish.publish(publishMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessage);
 
 		// THEN
-		Mqtt5Publish receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL).receive();
+		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 
 		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
 
 		// FINALLY
-		mqttClientSubscribe.unsubscribeWith().topicFilter("topic").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("topic").send();
 	}
 
 	@Test
@@ -124,16 +124,16 @@ class RemotePdpUsageIT extends SaplMqttPepTest {
 		Mqtt5Publish publishMessage = buildMqttPublishMessage("topic", 1, true);
 
 		// WHEN
-		mqttClientSubscribe.subscribe(subscribeMessage);
-		mqttClientPublish.publish(publishMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessage);
 
 		saplServerLt.stop();
 
 		// THEN
 		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
 			assertFalse(saplServerLt.isRunning());
-			assertFalse(mqttClientSubscribe.getState().isConnected());
-			assertFalse(mqttClientPublish.getState().isConnected());
+			assertFalse(SUBSCRIBE_CLIENT.getState().isConnected());
+			assertFalse(PUBLISH_CLIENT.getState().isConnected());
 		});
 	}
 

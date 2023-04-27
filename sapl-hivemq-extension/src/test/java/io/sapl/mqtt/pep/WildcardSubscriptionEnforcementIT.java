@@ -36,26 +36,22 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscription;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCode;
 
-import ch.qos.logback.classic.Level;
 import io.sapl.interpreter.InitializationException;
 
 class WildcardSubscriptionEnforcementIT extends SaplMqttPepTest {
 
 	@BeforeAll
 	public static void beforeAll() throws InitializationException {
-		// set logging level
-		rootLogger.setLevel(Level.OFF);
-
-		embeddedHiveMq      = startEmbeddedHiveMqBroker();
-		mqttClientPublish   = startMqttClient("WILDCARD_MQTT_CLIENT_PUBLISH");
-		mqttClientSubscribe = startMqttClient("WILDCARD_MQTT_CLIENT_SUBSCRIBE");
+		MQTT_BROKER      = startEmbeddedHiveMqBroker();
+		PUBLISH_CLIENT   = startMqttClient("WILDCARD_MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = startMqttClient("WILDCARD_MQTT_CLIENT_SUBSCRIBE");
 	}
 
 	@AfterAll
 	public static void afterAll() {
-		mqttClientPublish.disconnect();
-		mqttClientSubscribe.disconnect();
-		embeddedHiveMq.stop().join();
+		PUBLISH_CLIENT.disconnect();
+		SUBSCRIBE_CLIENT.disconnect();
+		MQTT_BROKER.stop().join();
 	}
 
 	@Test
@@ -68,19 +64,19 @@ class WildcardSubscriptionEnforcementIT extends SaplMqttPepTest {
 				false);
 
 		// WHEN
-		mqttClientSubscribe.subscribe(subscribeMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
 
 		// THEN
 		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-			mqttClientPublish.publish(publishMessage);
-			Optional<Mqtt5Publish> receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL)
+			PUBLISH_CLIENT.publish(publishMessage);
+			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
 			assertEquals(publishMessagePayload, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		// FINALLY
-		mqttClientSubscribe.unsubscribeWith().topicFilter("first/#").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("first/#").send();
 	}
 
 	@Test
@@ -93,19 +89,19 @@ class WildcardSubscriptionEnforcementIT extends SaplMqttPepTest {
 				false);
 
 		// WHEN
-		mqttClientSubscribe.subscribe(subscribeMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
 
 		// THEN
 		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-			mqttClientPublish.publish(publishMessage);
-			Optional<Mqtt5Publish> receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL)
+			PUBLISH_CLIENT.publish(publishMessage);
+			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
 			assertEquals(publishMessagePayload, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		// FINALLY
-		mqttClientSubscribe.unsubscribeWith().topicFilter("first/+/third").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("first/+/third").send();
 	}
 
 	@Test
@@ -124,21 +120,21 @@ class WildcardSubscriptionEnforcementIT extends SaplMqttPepTest {
 
 		// WHEN
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> mqttClientSubscribe.subscribe(subscribeMessageMultipleTopics));
+				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessageMultipleTopics));
 		assertEquals(Mqtt5SubAckReasonCode.GRANTED_QOS_2, subAckException.getMqttMessage().getReasonCodes().get(0));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(1));
 
 		// THEN
 		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-			mqttClientPublish.publish(publishMessage);
-			Optional<Mqtt5Publish> receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL)
+			PUBLISH_CLIENT.publish(publishMessage);
+			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
 			assertEquals(publishMessagePayload, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		// FINALLY
-		mqttClientSubscribe.unsubscribeWith().topicFilter("first/#").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("first/#").send();
 	}
 
 	@Test
@@ -158,20 +154,20 @@ class WildcardSubscriptionEnforcementIT extends SaplMqttPepTest {
 
 		// WHEN
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> mqttClientSubscribe.subscribe(subscribeMessageMultipleTopics));
+				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessageMultipleTopics));
 		assertEquals(Mqtt5SubAckReasonCode.GRANTED_QOS_2, subAckException.getMqttMessage().getReasonCodes().get(0));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(1));
 
 		// THEN
 		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-			mqttClientPublish.publish(publishMessage);
-			Optional<Mqtt5Publish> receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL)
+			PUBLISH_CLIENT.publish(publishMessage);
+			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
 			assertEquals(publishMessagePayload, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		// FINALLY
-		mqttClientSubscribe.unsubscribeWith().topicFilter("first/+/third").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("first/+/third").send();
 	}
 }

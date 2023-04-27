@@ -25,7 +25,7 @@
 
     <name>SAPL HiveMQ Extension</name>
 
-    <description>A Hivemq extension that adds sapl pep functionality to the broker.</description>
+    <description>A HiveMQ extension that adds sapl pep functionality to the broker.</description>
 
     <properties>
         <extension.name>sapl-mqtt-pep</extension.name>

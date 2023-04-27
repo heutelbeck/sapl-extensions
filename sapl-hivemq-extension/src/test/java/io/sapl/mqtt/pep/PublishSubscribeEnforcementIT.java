@@ -46,7 +46,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 
 	@AfterEach
 	void afterAll() {
-		embeddedHiveMq.stop().join();
+		MQTT_BROKER.stop().join();
 	}
 
 	@Test
@@ -60,21 +60,21 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 				0, false, "test_content");
 
 		// WHEN
-		embeddedHiveMq      = startEmbeddedHiveMqBroker();
-		mqttClientPublish   = startMqttClient("MQTT_CLIENT_PUBLISH");
-		mqttClientSubscribe = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
-		mqttClientSubscribe.subscribe(subscribeMessage);
-		mqttClientPublish.publish(publishMessage);
+		MQTT_BROKER      = startEmbeddedHiveMqBroker();
+		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessage);
 
 		// THEN
-		Mqtt5Publish receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL).receive();
+		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 
 		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
 
 		// FINALLY
-		mqttClientPublish.disconnect();
-		mqttClientSubscribe.disconnect();
-		embeddedHiveMq.stop().join();
+		PUBLISH_CLIENT.disconnect();
+		SUBSCRIBE_CLIENT.disconnect();
+		MQTT_BROKER.stop().join();
 	}
 
 	@Test
@@ -91,30 +91,30 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 				2, false);
 
 		// WHEN
-		embeddedHiveMq      = startEmbeddedHiveMqBroker();
-		mqttClientPublish   = startMqttClient("MQTT_CLIENT_PUBLISH");
-		mqttClientSubscribe = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
-		mqttClientSubscribe.subscribe(subscribeMessage);
-		mqttClientPublish.publish(publishMessageQos0);
+		MQTT_BROKER      = startEmbeddedHiveMqBroker();
+		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessageQos0);
 
 		// THEN
-		Optional<Mqtt5Publish> receivedMessage = mqttClientSubscribe
+		Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT
 				.publishes(MqttGlobalPublishFilter.ALL)
 				.receive(1000, TimeUnit.MILLISECONDS);
 		assertTrue(receivedMessage.isEmpty());
 
 		Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-				() -> mqttClientPublish.publish(publishMessageQos1));
+				() -> PUBLISH_CLIENT.publish(publishMessageQos1));
 		assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
 
 		Mqtt5PubRecException pubRecException = assertThrowsExactly(Mqtt5PubRecException.class,
-				() -> mqttClientPublish.publish(publishMessageQos2));
+				() -> PUBLISH_CLIENT.publish(publishMessageQos2));
 		assertEquals(Mqtt5PubRecReasonCode.NOT_AUTHORIZED, pubRecException.getMqttMessage().getReasonCode());
 
 		// FINALLY
-		mqttClientPublish.disconnect();
-		mqttClientSubscribe.disconnect();
-		embeddedHiveMq.stop().join();
+		PUBLISH_CLIENT.disconnect();
+		SUBSCRIBE_CLIENT.disconnect();
+		MQTT_BROKER.stop().join();
 	}
 
 	@Test
@@ -126,27 +126,27 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 		Mqtt5Subscribe subscribeMessageQos2 = buildMqttSubscribeMessage("denied_subscription", 2);
 
 		// WHEN
-		embeddedHiveMq      = startEmbeddedHiveMqBroker();
-		mqttClientPublish   = startMqttClient("MQTT_CLIENT_PUBLISH");
-		mqttClientSubscribe = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		MQTT_BROKER      = startEmbeddedHiveMqBroker();
+		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
 
 		// THEN
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> mqttClientSubscribe.subscribe(subscribeMessageQos0));
+				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessageQos0));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
 		subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> mqttClientSubscribe.subscribe(subscribeMessageQos1));
+				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessageQos1));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
 		subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> mqttClientSubscribe.subscribe(subscribeMessageQos2));
+				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessageQos2));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
 		// FINALLY
-		mqttClientPublish.disconnect();
-		mqttClientSubscribe.disconnect();
-		embeddedHiveMq.stop().join();
+		PUBLISH_CLIENT.disconnect();
+		SUBSCRIBE_CLIENT.disconnect();
+		MQTT_BROKER.stop().join();
 	}
 
 	@Test
@@ -165,32 +165,32 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 		Mqtt5Publish secondPublishMessage = buildMqttPublishMessage("secondTopic", true);
 
 		// WHEN
-		embeddedHiveMq      = startEmbeddedHiveMqBroker();
-		mqttClientPublish   = startMqttClient("MQTT_CLIENT_PUBLISH");
-		mqttClientSubscribe = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
-		mqttClientSubscribe.subscribe(subscribeMessageMultipleTopics);
+		MQTT_BROKER      = startEmbeddedHiveMqBroker();
+		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessageMultipleTopics);
 
 		// THEN
 		await().atMost(6, TimeUnit.SECONDS).untilAsserted(() -> {
-			mqttClientPublish.publish(firstPublishMessage);
-			Optional<Mqtt5Publish> receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL)
+			PUBLISH_CLIENT.publish(firstPublishMessage);
+			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
 			assertEquals(publishMessagePayload, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		await().atMost(6, TimeUnit.SECONDS).untilAsserted(() -> {
-			mqttClientPublish.publish(secondPublishMessage);
-			Optional<Mqtt5Publish> receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL)
+			PUBLISH_CLIENT.publish(secondPublishMessage);
+			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
 			assertEquals(publishMessagePayload, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		// FINALLY
-		mqttClientPublish.disconnect();
-		mqttClientSubscribe.disconnect();
-		embeddedHiveMq.stop().join();
+		PUBLISH_CLIENT.disconnect();
+		SUBSCRIBE_CLIENT.disconnect();
+		MQTT_BROKER.stop().join();
 	}
 
 	@Test
@@ -211,29 +211,29 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 				false);
 
 		// WHEN
-		embeddedHiveMq      = startEmbeddedHiveMqBroker();
-		mqttClientPublish   = startMqttClient("MQTT_CLIENT_PUBLISH");
-		mqttClientSubscribe = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		MQTT_BROKER      = startEmbeddedHiveMqBroker();
+		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
 
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> mqttClientSubscribe.subscribe(subscribeMessageMultipleTopics));
+				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessageMultipleTopics));
 		assertEquals(Mqtt5SubAckReasonCode.GRANTED_QOS_2, subAckException.getMqttMessage().getReasonCodes().get(0));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(1));
 
 		// THEN
-		mqttClientPublish.publish(firstPublishMessage);
-		Mqtt5Publish receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL).receive();
+		PUBLISH_CLIENT.publish(firstPublishMessage);
+		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
 
-		mqttClientPublish.publish(secondPublishMessage);
-		Optional<Mqtt5Publish> receivedMessageSecond = mqttClientSubscribe
+		PUBLISH_CLIENT.publish(secondPublishMessage);
+		Optional<Mqtt5Publish> receivedMessageSecond = SUBSCRIBE_CLIENT
 				.publishes(MqttGlobalPublishFilter.ALL)
 				.receive(1000, TimeUnit.MILLISECONDS);
 		assertTrue(receivedMessageSecond.isEmpty());
 
 		// FINALLY
-		mqttClientPublish.disconnect();
-		mqttClientSubscribe.disconnect();
-		embeddedHiveMq.stop().join();
+		PUBLISH_CLIENT.disconnect();
+		SUBSCRIBE_CLIENT.disconnect();
+		MQTT_BROKER.stop().join();
 	}
 }

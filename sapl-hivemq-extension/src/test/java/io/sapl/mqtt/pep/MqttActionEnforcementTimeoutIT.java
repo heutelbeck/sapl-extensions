@@ -58,11 +58,11 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 		String              connectClientId    = "connectClient";
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(connectClientId)
-				.serverHost(mqttServerHost)
-				.serverPort(mqttServerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
-		embeddedHiveMq = startEmbeddedHiveMqBroker(pdpMock,
+		MQTT_BROKER = startEmbeddedHiveMqBroker(pdpMock,
 				"src/test/resources/config/timeout/connection");
 
 		// THEN
@@ -71,7 +71,7 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 		assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
 
 		// FINALLY
-		embeddedHiveMq.stop().join();
+		MQTT_BROKER.stop().join();
 	}
 
 	@Test
@@ -94,18 +94,18 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage("topic");
 
 		// WHEN
-		embeddedHiveMq      = startEmbeddedHiveMqBroker(pdpMock,
+		MQTT_BROKER      = startEmbeddedHiveMqBroker(pdpMock,
 				"src/test/resources/config/timeout/subscription");
-		mqttClientSubscribe = startMqttClient(subscriptionClientId);
+		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
 
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> mqttClientSubscribe.subscribe(subscribeMessage));
+				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessage));
 
 		// THEN
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
 		// FINALLY
-		embeddedHiveMq.stop().join();
+		MQTT_BROKER.stop().join();
 	}
 
 	@Test
@@ -129,17 +129,17 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 				1, false);
 
 		// WHEN
-		embeddedHiveMq    = startEmbeddedHiveMqBroker(pdpMock,
+		MQTT_BROKER    = startEmbeddedHiveMqBroker(pdpMock,
 				"src/test/resources/config/timeout/publish");
-		mqttClientPublish = startMqttClient(publishClientId);
+		PUBLISH_CLIENT = startMqttClient(publishClientId);
 
 		Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-				() -> mqttClientPublish.publish(publishMessage));
+				() -> PUBLISH_CLIENT.publish(publishMessage));
 
 		// THEN
 		assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
 
 		// FINALLY
-		embeddedHiveMq.stop().join();
+		MQTT_BROKER.stop().join();
 	}
 }

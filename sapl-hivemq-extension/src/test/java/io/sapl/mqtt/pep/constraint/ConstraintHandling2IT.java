@@ -44,16 +44,16 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 
 	@BeforeAll
 	public static void beforeAll() throws InitializationException {
-		embeddedHiveMq      = startEmbeddedHiveMqBroker();
-		mqttClientPublish   = startMqttClient("CONSTRAINT_MQTT_CLIENT_PUBLISH");
-		mqttClientSubscribe = startMqttClient("CONSTRAINT_MQTT_CLIENT_SUBSCRIBE");
+		MQTT_BROKER      = startEmbeddedHiveMqBroker();
+		PUBLISH_CLIENT   = startMqttClient("CONSTRAINT_MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = startMqttClient("CONSTRAINT_MQTT_CLIENT_SUBSCRIBE");
 	}
 
 	@AfterAll
 	public static void afterAll() {
-		mqttClientPublish.disconnect();
-		mqttClientSubscribe.disconnect();
-		embeddedHiveMq.stop().join();
+		PUBLISH_CLIENT.disconnect();
+		SUBSCRIBE_CLIENT.disconnect();
+		MQTT_BROKER.stop().join();
 	}
 
 	@Test
@@ -64,17 +64,17 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 		Mqtt5Publish   publishMessage   = buildMqttPublishMessage("topic", 0, false);
 
 		// WHEN
-		mqttClientSubscribe.subscribe(subscribeMessage);
-		mqttClientPublish.publish(publishMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessage);
 
-		Mqtt5Publish receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL).receive();
+		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 
 		// THEN
 		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
 		assertEquals(2, receivedMessage.getQos().getCode());
 
 		// FINALLY
-		mqttClientSubscribe.unsubscribeWith().topicFilter("topic").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("topic").send();
 	}
 
 	@Test
@@ -86,21 +86,21 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 		Mqtt5Publish   publishMessage   = buildMqttPublishMessage("messageExpiry", true);
 
 		// WHEN
-		mqttClientSubscribe.subscribe(subscribeMessage);
-		mqttClientPublish.publish(publishMessage);
-		Mqtt5Publish receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL).receive();
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessage);
+		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
 
 		// THEN
 		await().atMost(2500, TimeUnit.MILLISECONDS).untilAsserted(() -> {
-			Optional<Mqtt5Publish> receivedMessageAfterExpiry = mqttClientSubscribe
+			Optional<Mqtt5Publish> receivedMessageAfterExpiry = SUBSCRIBE_CLIENT
 					.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(1000, TimeUnit.MILLISECONDS);
 			assertTrue(receivedMessageAfterExpiry.isEmpty());
 		});
 
 		// FINALLY
-		mqttClientSubscribe.unsubscribeWith().topicFilter("messageExpiry").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("messageExpiry").send();
 	}
 
 	@Test
@@ -111,10 +111,10 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 		Mqtt5Publish   publishMessage   = buildMqttPublishMessage("contentTopic", false);
 
 		// WHEN
-		mqttClientSubscribe.subscribe(subscribeMessage);
-		mqttClientPublish.publish(publishMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessage);
 
-		Mqtt5Publish receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL).receive();
+		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 
 		// THEN
 		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
@@ -123,7 +123,7 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 				receivedMessage.getContentType().get().toByteBuffer()).toString());
 
 		// FINALLY
-		mqttClientSubscribe.unsubscribeWith().topicFilter("contentTopic").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("contentTopic").send();
 	}
 
 	@Test
@@ -134,10 +134,10 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 		Mqtt5Publish   publishMessage   = buildMqttPublishMessage("payloadTopic", false);
 
 		// WHEN
-		mqttClientSubscribe.subscribe(subscribeMessage);
-		mqttClientPublish.publish(publishMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessage);
 
-		Mqtt5Publish receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL).receive();
+		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 
 		// THEN
 		assertTrue(receivedMessage.getPayload().isPresent());
@@ -145,7 +145,7 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 				receivedMessage.getPayload().get()).toString());
 
 		// FINALLY
-		mqttClientSubscribe.unsubscribeWith().topicFilter("payloadTopic").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("payloadTopic").send();
 	}
 
 	@Test
@@ -162,10 +162,10 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 				.build();
 
 		// WHEN
-		mqttClientSubscribe.subscribe(subscribeMessage);
-		mqttClientPublish.publish(publishMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessage);
 
-		Mqtt5Publish receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL).receive();
+		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 
 		// THEN
 		assertTrue(receivedMessage.getPayload().isPresent());
@@ -173,7 +173,7 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 				receivedMessage.getPayload().get()).toString());
 
 		// FINALLY
-		mqttClientSubscribe.unsubscribeWith().topicFilter("blackenTopic").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("blackenTopic").send();
 	}
 
 	@Test
@@ -184,12 +184,12 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 		Mqtt5Publish   publishMessage   = buildMqttPublishMessage("time_limit", false);
 
 		// WHEN
-		mqttClientSubscribe.subscribe(subscribeMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
 
 		// THEN
 		await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
-			mqttClientPublish.publish(publishMessage);
-			Optional<Mqtt5Publish> receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL)
+			PUBLISH_CLIENT.publish(publishMessage);
+			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(500, TimeUnit.MILLISECONDS);
 			assertTrue(receivedMessage.isEmpty());
 		});
@@ -203,17 +203,17 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 		Mqtt5Publish   publishMessage   = buildMqttPublishMessage("illegalObligation", false);
 
 		// WHEN
-		mqttClientSubscribe.subscribe(subscribeMessage);
-		mqttClientPublish.publish(publishMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessage);
 
 		// THEN
-		Optional<Mqtt5Publish> receivedMessageAfterExpiry = mqttClientSubscribe
+		Optional<Mqtt5Publish> receivedMessageAfterExpiry = SUBSCRIBE_CLIENT
 				.publishes(MqttGlobalPublishFilter.ALL)
 				.receive(1000, TimeUnit.MILLISECONDS);
 		assertTrue(receivedMessageAfterExpiry.isEmpty());
 
 		// FINALLY
-		mqttClientSubscribe.unsubscribeWith().topicFilter("illegalObligation").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("illegalObligation").send();
 	}
 
 	// tests for illegal connections and subscriptions constraints
@@ -237,15 +237,15 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 		Mqtt5Publish   publishMessage   = buildMqttPublishMessage("illegalAdvice", false);
 
 		// WHEN
-		mqttClientSubscribe.subscribe(subscribeMessage);
-		mqttClientPublish.publish(publishMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessage);
 
 		// THEN
-		Mqtt5Publish receivedMessage = mqttClientSubscribe.publishes(MqttGlobalPublishFilter.ALL).receive();
+		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
 
 		// FINALLY
-		mqttClientSubscribe.unsubscribeWith().topicFilter("illegalAdvice").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("illegalAdvice").send();
 	}
 
 	@Test
@@ -256,16 +256,16 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 		Mqtt5Publish   publishMessage   = buildMqttPublishMessage("resourceTransformation", false);
 
 		// WHEN
-		mqttClientSubscribe.subscribe(subscribeMessage);
-		mqttClientPublish.publish(publishMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessage);
 
 		// THEN
-		Optional<Mqtt5Publish> receivedMessageAfterExpiry = mqttClientSubscribe
+		Optional<Mqtt5Publish> receivedMessageAfterExpiry = SUBSCRIBE_CLIENT
 				.publishes(MqttGlobalPublishFilter.ALL)
 				.receive(1000, TimeUnit.MILLISECONDS);
 		assertTrue(receivedMessageAfterExpiry.isEmpty());
 
 		// FINALLY
-		mqttClientSubscribe.unsubscribeWith().topicFilter("resourceTransformation").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("resourceTransformation").send();
 	}
 }

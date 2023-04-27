@@ -43,17 +43,17 @@ import io.sapl.mqtt.pep.cache.MqttClientState;
 
 class ConnectionEnforcementTestIT extends SaplMqttPepTest {
 
-	private static final String                                     publishClientId = "MQTT_CLIENT_PUBLISH";
-	private static final ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
+	private final static String                                     publishClientId = "MQTT_CLIENT_PUBLISH";
+	private final static ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
 	@BeforeAll
 	public static void beforeAll() {
-		embeddedHiveMq = startEmbeddedHiveMqBroker(mqttClientCache);
+		MQTT_BROKER = startEmbeddedHiveMqBroker(mqttClientCache);
 	}
 
 	@AfterAll
 	public static void afterAll() {
-		embeddedHiveMq.stop().join();
+		MQTT_BROKER.stop().join();
 	}
 
 	@Test
@@ -61,8 +61,8 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTest {
 		// GIVEN
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(publishClientId)
-				.serverHost(mqttServerHost)
-				.serverPort(mqttServerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.willPublish(Mqtt5Publish.builder()
 						.topic("lastWillTopic")
 						.qos(MqttQos.AT_MOST_ONCE)
@@ -85,8 +85,8 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTest {
 		// GIVEN
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(publishClientId)
-				.serverHost(mqttServerHost)
-				.serverPort(mqttServerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.simpleAuth(Mqtt5SimpleAuth
 						.builder()
 						.username("illegalUserName")
@@ -106,8 +106,8 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTest {
 		// GIVEN
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(publishClientId)
-				.serverHost(mqttServerHost)
-				.serverPort(mqttServerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.simpleAuth(Mqtt5SimpleAuth
 						.builder()
 						.username("toggle")
@@ -132,8 +132,8 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTest {
 
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(publishClientId)
-				.serverHost(mqttServerHost)
-				.serverPort(mqttServerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.simpleAuth(Mqtt5SimpleAuth
 						.builder()
 						.username("toggle")
@@ -142,8 +142,8 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTest {
 
 		Mqtt5BlockingClient secondBlockingMqttClient = Mqtt5Client.builder()
 				.identifier(secondClientId)
-				.serverHost(mqttServerHost)
-				.serverPort(mqttServerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
 		// WHEN
