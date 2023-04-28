@@ -18,7 +18,7 @@ public class QueryTest extends QueryTestsuite {
 	@Configuration
 	static class EmbeddedEventstoreConfiguration {
 		@Bean
-		public EventStorageEngine storageEngine() {
+		EventStorageEngine storageEngine() {
 			return new InMemoryEventStorageEngine();
 		}
 	}
