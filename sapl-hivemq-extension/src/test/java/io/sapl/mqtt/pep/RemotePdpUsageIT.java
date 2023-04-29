@@ -60,10 +60,10 @@ import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class RemotePdpUsageIT extends SaplMqttPepTest {
 
-	private static final String xmlFilePath = "src/test/resources/config/remote/sapl-extension-config.xml";
+	private static final String XML_FILE_PATH = "src/test/resources/config/remote/sapl-extension-config.xml";
 
 	@Container
-	static final GenericContainer<?> saplServerLt = new GenericContainer<>(
+	static final GenericContainer<?> SAPL_SERVER_LT = new GenericContainer<>(
 			DockerImageName.parse("ghcr.io/heutelbeck/sapl-server-lt:2.1.0-snapshot"))
 			.withCopyFileToContainer(MountableFile.forHostPath("src/test/resources/policies"),
 					"/pdp/data")
@@ -72,7 +72,7 @@ class RemotePdpUsageIT extends SaplMqttPepTest {
 	@BeforeAll
 	public static void beforeAll() throws InitializationException, ParserConfigurationException, TransformerException {
 		// set logging level
-		createExtensionConfigFile(saplServerLt.getFirstMappedPort());
+		createExtensionConfigFile(SAPL_SERVER_LT.getFirstMappedPort());
 
 		MQTT_BROKER      = startEmbeddedBrokerWithRemotePdp();
 		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
@@ -107,7 +107,7 @@ class RemotePdpUsageIT extends SaplMqttPepTest {
 		// THEN
 		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 
-		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
+		assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
 
 		// FINALLY
 		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("topic").send();
@@ -126,11 +126,11 @@ class RemotePdpUsageIT extends SaplMqttPepTest {
 		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
 		PUBLISH_CLIENT.publish(publishMessage);
 
-		saplServerLt.stop();
+		SAPL_SERVER_LT.stop();
 
 		// THEN
 		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-			assertFalse(saplServerLt.isRunning());
+			assertFalse(SAPL_SERVER_LT.isRunning());
 			assertFalse(SUBSCRIBE_CLIENT.getState().isConnected());
 			assertFalse(PUBLISH_CLIENT.getState().isConnected());
 		});
@@ -191,7 +191,7 @@ class RemotePdpUsageIT extends SaplMqttPepTest {
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		Transformer        transformer        = transformerFactory.newTransformer();
 		DOMSource          domSource          = new DOMSource(document);
-		StreamResult       streamResult       = new StreamResult(new File(xmlFilePath));
+		StreamResult       streamResult       = new StreamResult(new File(XML_FILE_PATH));
 
 		transformer.transform(domSource, streamResult);
 	}

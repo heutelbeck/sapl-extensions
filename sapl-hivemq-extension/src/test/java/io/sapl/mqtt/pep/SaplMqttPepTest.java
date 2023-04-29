@@ -54,7 +54,7 @@ public abstract class SaplMqttPepTest {
 	@TempDir
 	static Path EXTENSION_FOLDER;
 
-	protected static final String publishMessagePayload = "message";
+	protected static final String PUBLISH_MESSAGE_PAYLOAD = "message";
 
 	protected static EmbeddedHiveMQ startEmbeddedHiveMqBroker() {
 		return startEmbeddedHiveMqBroker(EXTENSIONS_PATH);
@@ -156,7 +156,7 @@ public abstract class SaplMqttPepTest {
 				.qos(Objects.requireNonNull(MqttQos.fromCode(qos)))
 				.retain(retain)
 				.contentType(contentType)
-				.payload(SaplMqttPepTest.publishMessagePayload.getBytes(StandardCharsets.UTF_8))
+				.payload(SaplMqttPepTest.PUBLISH_MESSAGE_PAYLOAD.getBytes(StandardCharsets.UTF_8))
 				.build();
 	}
 }

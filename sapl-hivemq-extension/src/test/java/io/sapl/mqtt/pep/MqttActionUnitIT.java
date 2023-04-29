@@ -443,7 +443,7 @@ class MqttActionUnitIT extends SaplMqttPepTest {
 
 		PUBLISH_CLIENT.publish(publishMessage);
 		var receivedMessage = secondMqttClientSubscribe.publishes(MqttGlobalPublishFilter.SUBSCRIBED).receive();
-		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
+		assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
 
 		verify(pdpMock, times(6)).decide(any(MultiAuthorizationSubscription.class));
 

@@ -70,7 +70,7 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 
 		// THEN
-		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
+		assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
 		assertEquals(2, receivedMessage.getQos().getCode());
 
 		// FINALLY
@@ -89,7 +89,7 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
 		PUBLISH_CLIENT.publish(publishMessage);
 		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
-		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
+		assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
 
 		// THEN
 		await().atMost(2500, TimeUnit.MILLISECONDS).untilAsserted(() -> {
@@ -117,7 +117,7 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 
 		// THEN
-		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
+		assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
 		assertTrue(receivedMessage.getContentType().isPresent());
 		assertEquals("content", StandardCharsets.UTF_8.decode(
 				receivedMessage.getContentType().get().toByteBuffer()).toString());
@@ -158,7 +158,7 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 				.qos(Objects.requireNonNull(MqttQos.fromCode(0)))
 				.retain(false)
 				.contentType("text/plain")
-				.payload(SaplMqttPepTest.publishMessagePayload.getBytes(StandardCharsets.UTF_8))
+				.payload(SaplMqttPepTest.PUBLISH_MESSAGE_PAYLOAD.getBytes(StandardCharsets.UTF_8))
 				.build();
 
 		// WHEN
@@ -242,7 +242,7 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 
 		// THEN
 		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
-		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
+		assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
 
 		// FINALLY
 		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("illegalAdvice").send();

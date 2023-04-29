@@ -69,7 +69,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 		// THEN
 		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 
-		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
+		assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
 
 		// FINALLY
 		PUBLISH_CLIENT.disconnect();
@@ -176,7 +176,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
-			assertEquals(publishMessagePayload, new String(receivedMessage.get().getPayloadAsBytes()));
+			assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		await().atMost(6, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -184,7 +184,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
-			assertEquals(publishMessagePayload, new String(receivedMessage.get().getPayloadAsBytes()));
+			assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		// FINALLY
@@ -223,7 +223,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 		// THEN
 		PUBLISH_CLIENT.publish(firstPublishMessage);
 		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
-		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
+		assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
 
 		PUBLISH_CLIENT.publish(secondPublishMessage);
 		Optional<Mqtt5Publish> receivedMessageSecond = SUBSCRIBE_CLIENT

@@ -72,7 +72,7 @@ class WildcardSubscriptionEnforcementIT extends SaplMqttPepTest {
 			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
-			assertEquals(publishMessagePayload, new String(receivedMessage.get().getPayloadAsBytes()));
+			assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		// FINALLY
@@ -97,7 +97,7 @@ class WildcardSubscriptionEnforcementIT extends SaplMqttPepTest {
 			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
-			assertEquals(publishMessagePayload, new String(receivedMessage.get().getPayloadAsBytes()));
+			assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		// FINALLY
@@ -130,7 +130,7 @@ class WildcardSubscriptionEnforcementIT extends SaplMqttPepTest {
 			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
-			assertEquals(publishMessagePayload, new String(receivedMessage.get().getPayloadAsBytes()));
+			assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		// FINALLY
@@ -164,7 +164,7 @@ class WildcardSubscriptionEnforcementIT extends SaplMqttPepTest {
 			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
-			assertEquals(publishMessagePayload, new String(receivedMessage.get().getPayloadAsBytes()));
+			assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		// FINALLY
