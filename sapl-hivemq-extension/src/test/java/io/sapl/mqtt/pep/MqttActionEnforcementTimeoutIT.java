@@ -62,7 +62,7 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
-		MQTT_BROKER = startEmbeddedHiveMqBroker(pdpMock,
+		MQTT_BROKER = startAndBuildBroker(pdpMock,
 				"src/test/resources/config/timeout/connection");
 
 		// THEN
@@ -71,7 +71,7 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 		assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
@@ -94,7 +94,7 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage("topic");
 
 		// WHEN
-		MQTT_BROKER      = startEmbeddedHiveMqBroker(pdpMock,
+		MQTT_BROKER      = startAndBuildBroker(pdpMock,
 				"src/test/resources/config/timeout/subscription");
 		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
 
@@ -105,7 +105,7 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
@@ -129,7 +129,7 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 				1, false);
 
 		// WHEN
-		MQTT_BROKER    = startEmbeddedHiveMqBroker(pdpMock,
+		MQTT_BROKER    = startAndBuildBroker(pdpMock,
 				"src/test/resources/config/timeout/publish");
 		PUBLISH_CLIENT = startMqttClient(publishClientId);
 
@@ -140,6 +140,6 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 		assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 }

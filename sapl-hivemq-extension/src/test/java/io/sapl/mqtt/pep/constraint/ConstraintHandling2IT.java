@@ -44,7 +44,7 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 
 	@BeforeAll
 	public static void beforeAll() throws InitializationException {
-		MQTT_BROKER      = startEmbeddedHiveMqBroker();
+		MQTT_BROKER      = startAndBuildBroker();
 		PUBLISH_CLIENT   = startMqttClient("CONSTRAINT_MQTT_CLIENT_PUBLISH");
 		SUBSCRIBE_CLIENT = startMqttClient("CONSTRAINT_MQTT_CLIENT_SUBSCRIBE");
 	}
@@ -53,7 +53,7 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 	public static void afterAll() {
 		PUBLISH_CLIENT.disconnect();
 		SUBSCRIBE_CLIENT.disconnect();
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test

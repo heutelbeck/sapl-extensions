@@ -76,7 +76,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER    = startEmbeddedHiveMqBroker(pdpMock,
+		MQTT_BROKER    = startAndBuildBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		PUBLISH_CLIENT = startMqttClient(publishClientId);
 
@@ -94,7 +94,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 		assertMqttClientStateWasCleanedUp(mqttClientCache, publishClientId, publishClientMqttPublishSaplSubscriptionId);
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
@@ -129,7 +129,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER    = startEmbeddedHiveMqBroker(pdpMock,
+		MQTT_BROKER    = startAndBuildBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		PUBLISH_CLIENT = startMqttClient(publishClientId);
 
@@ -145,7 +145,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 		assertMqttClientStateWasCleanedUp(mqttClientCache, publishClientId, publishClientMqttPublishSaplSubscriptionId);
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
@@ -177,7 +177,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER    = startEmbeddedHiveMqBroker(pdpMock,
+		MQTT_BROKER    = startAndBuildBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		PUBLISH_CLIENT = startMqttClient(publishClientId);
 
@@ -194,7 +194,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 		assertMqttClientStateWasCleanedUp(mqttClientCache, publishClientId, publishClientMqttPublishSaplSubscriptionId);
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
@@ -229,7 +229,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER      = startEmbeddedHiveMqBroker(pdpMock,
+		MQTT_BROKER      = startAndBuildBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
 
@@ -248,7 +248,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 				subscriptionClientMqttSubscriptionSaplSubscriptionId);
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
@@ -284,7 +284,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER      = startEmbeddedHiveMqBroker(pdpMock,
+		MQTT_BROKER      = startAndBuildBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
 
@@ -303,7 +303,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 				subscriptionClientMqttSubscriptionSaplSubscriptionId);
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
@@ -338,7 +338,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER      = startEmbeddedHiveMqBroker(pdpMock,
+		MQTT_BROKER      = startAndBuildBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
 
@@ -354,7 +354,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 				subscriptionClientMqttSubscriptionSaplSubscriptionId);
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
@@ -386,7 +386,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER      = startEmbeddedHiveMqBroker(pdpMock,
+		MQTT_BROKER      = startAndBuildBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
 
@@ -405,7 +405,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 				subscriptionClientMqttSubscriptionSaplSubscriptionId);
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	private void assertMqttClientStateWasCleanedUp(ConcurrentHashMap<String, MqttClientState> mqttClientCache,

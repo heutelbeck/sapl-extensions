@@ -46,7 +46,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 
 	@AfterEach
 	void afterAll() {
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
@@ -60,7 +60,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 				0, false, "test_content");
 
 		// WHEN
-		MQTT_BROKER      = startEmbeddedHiveMqBroker();
+		MQTT_BROKER      = startAndBuildBroker();
 		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
 		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
 		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
@@ -74,7 +74,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 		// FINALLY
 		PUBLISH_CLIENT.disconnect();
 		SUBSCRIBE_CLIENT.disconnect();
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
@@ -91,7 +91,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 				2, false);
 
 		// WHEN
-		MQTT_BROKER      = startEmbeddedHiveMqBroker();
+		MQTT_BROKER      = startAndBuildBroker();
 		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
 		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
 		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
@@ -114,7 +114,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 		// FINALLY
 		PUBLISH_CLIENT.disconnect();
 		SUBSCRIBE_CLIENT.disconnect();
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
@@ -126,7 +126,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 		Mqtt5Subscribe subscribeMessageQos2 = buildMqttSubscribeMessage("denied_subscription", 2);
 
 		// WHEN
-		MQTT_BROKER      = startEmbeddedHiveMqBroker();
+		MQTT_BROKER      = startAndBuildBroker();
 		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
 		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
 
@@ -146,7 +146,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 		// FINALLY
 		PUBLISH_CLIENT.disconnect();
 		SUBSCRIBE_CLIENT.disconnect();
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
@@ -165,7 +165,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 		Mqtt5Publish secondPublishMessage = buildMqttPublishMessage("secondTopic", true);
 
 		// WHEN
-		MQTT_BROKER      = startEmbeddedHiveMqBroker();
+		MQTT_BROKER      = startAndBuildBroker();
 		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
 		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
 		SUBSCRIBE_CLIENT.subscribe(subscribeMessageMultipleTopics);
@@ -190,7 +190,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 		// FINALLY
 		PUBLISH_CLIENT.disconnect();
 		SUBSCRIBE_CLIENT.disconnect();
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
@@ -211,7 +211,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 				false);
 
 		// WHEN
-		MQTT_BROKER      = startEmbeddedHiveMqBroker();
+		MQTT_BROKER      = startAndBuildBroker();
 		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
 		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
 
@@ -234,6 +234,6 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 		// FINALLY
 		PUBLISH_CLIENT.disconnect();
 		SUBSCRIBE_CLIENT.disconnect();
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 }

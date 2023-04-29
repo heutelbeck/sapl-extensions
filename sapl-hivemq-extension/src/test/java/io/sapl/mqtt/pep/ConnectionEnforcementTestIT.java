@@ -48,12 +48,12 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTest {
 
 	@BeforeAll
 	public static void beforeAll() {
-		MQTT_BROKER = startEmbeddedHiveMqBroker(MQTT_CLIENT_CACHE);
+		MQTT_BROKER = startAndBuildBroker(MQTT_CLIENT_CACHE);
 	}
 
 	@AfterAll
 	public static void afterAll() {
-		MQTT_BROKER.stop().join();
+		stopBroker();
 	}
 
 	@Test
