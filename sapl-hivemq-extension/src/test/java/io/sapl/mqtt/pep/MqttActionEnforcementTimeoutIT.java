@@ -16,12 +16,14 @@
 
 package io.sapl.mqtt.pep;
 
+import static io.sapl.mqtt.pep.SaplMqttPepTestUtility.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.hivemq.embedded.EmbeddedHiveMQ;
 import org.junit.jupiter.api.Test;
 
 import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
@@ -43,8 +45,11 @@ import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
 import reactor.core.publisher.Flux;
 
-class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
+class MqttActionEnforcementTimeoutIT {
 
+	private EmbeddedHiveMQ mqttBroker;
+	private Mqtt5BlockingClient publishClient;
+	private Mqtt5BlockingClient subscribeClient;
 
 	@Test
 	void when_timeoutWhileConnecting_then_denyConnection() {
@@ -62,7 +67,7 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
-		MQTT_BROKER = startAndBuildBroker(pdpMock,
+		this.mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/connection");
 
 		// THEN
@@ -71,7 +76,7 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 		assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
 
 		// FINALLY
-		stopBroker();
+		stopBroker(this.mqttBroker);
 	}
 
 	@Test
@@ -94,18 +99,18 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage("topic");
 
 		// WHEN
-		MQTT_BROKER      = startAndBuildBroker(pdpMock,
+		this.mqttBroker      = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/subscription");
-		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
+		this.subscribeClient = startMqttClient(subscriptionClientId);
 
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessage));
+				() -> this.subscribeClient.subscribe(subscribeMessage));
 
 		// THEN
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
 		// FINALLY
-		stopBroker();
+		stopBroker(this.mqttBroker);
 	}
 
 	@Test
@@ -129,17 +134,17 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 				1, false);
 
 		// WHEN
-		MQTT_BROKER    = startAndBuildBroker(pdpMock,
+		this.mqttBroker 	= buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/publish");
-		PUBLISH_CLIENT = startMqttClient(publishClientId);
+		this.publishClient 	= startMqttClient(publishClientId);
 
 		Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-				() -> PUBLISH_CLIENT.publish(publishMessage));
+				() -> this.publishClient.publish(publishMessage));
 
 		// THEN
 		assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
 
 		// FINALLY
-		stopBroker();
+		stopBroker(this.mqttBroker);
 	}
 }

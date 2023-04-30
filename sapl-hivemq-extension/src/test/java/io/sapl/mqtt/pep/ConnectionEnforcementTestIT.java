@@ -16,6 +16,7 @@
 
 package io.sapl.mqtt.pep;
 
+import static io.sapl.mqtt.pep.SaplMqttPepTestUtility.stopBroker;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -26,9 +27,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import com.hivemq.embedded.EmbeddedHiveMQ;
+import org.junit.jupiter.api.*;
 
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
@@ -41,19 +41,23 @@ import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
 import io.sapl.mqtt.pep.cache.MqttClientState;
 
-class ConnectionEnforcementTestIT extends SaplMqttPepTest {
+class ConnectionEnforcementTestIT {
 
-	private final static String PUBLISH_CLIENT_ID = "MQTT_CLIENT_PUBLISH";
-	private final static ConcurrentHashMap<String, MqttClientState> MQTT_CLIENT_CACHE = new ConcurrentHashMap<>();
+	private final static int    BROKER_PORT     										= 1883;
+	private final static String BROKER_HOST     										= "localhost";
+	private final static String PUBLISH_CLIENT_ID 										= "MQTT_CLIENT_PUBLISH";
+	private final static ConcurrentHashMap<String, MqttClientState> MQTT_CLIENT_CACHE 	= new ConcurrentHashMap<>();
 
-	@BeforeAll
-	public static void beforeAll() {
-		MQTT_BROKER = startAndBuildBroker(MQTT_CLIENT_CACHE);
+	private EmbeddedHiveMQ 		mqttBroker;
+
+	@BeforeEach
+	void beforeEach() {
+		this.mqttBroker = SaplMqttPepTestUtility.buildAndStartBroker(MQTT_CLIENT_CACHE);
 	}
 
-	@AfterAll
-	public static void afterAll() {
-		stopBroker();
+	@AfterEach
+	void afterEach() {
+		stopBroker(this.mqttBroker);
 	}
 
 	@Test
