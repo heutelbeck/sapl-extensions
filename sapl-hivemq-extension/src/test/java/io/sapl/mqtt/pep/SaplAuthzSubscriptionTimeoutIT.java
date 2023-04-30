@@ -38,7 +38,7 @@ import io.sapl.mqtt.pep.cache.MqttClientState;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
 import reactor.core.publisher.Flux;
 
-class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
+class SaplAuthzSubscriptionTimeoutIT extends MqttTestBase {
 
 	private final String subscriptionClientId = "subscriptionClient";
 	private final String publishClientId      = "publishClient";

@@ -45,7 +45,7 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCo
 
 import io.sapl.interpreter.InitializationException;
 
-class PublishSubscribeEnforcementIT extends SaplMqttPepTestUtil {
+class PublishSubscribeEnforcementIT extends MqttTestBase {
 
 	private EmbeddedHiveMQ mqttBroker;
 	private Mqtt5BlockingClient publishClient;

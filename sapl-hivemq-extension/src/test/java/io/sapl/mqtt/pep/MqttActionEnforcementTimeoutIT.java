@@ -44,7 +44,7 @@ import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
 import reactor.core.publisher.Flux;
 
-class MqttActionEnforcementTimeoutIT extends SaplMqttPepTestUtil {
+class MqttActionEnforcementTimeoutIT extends MqttTestBase {
 
 
 	@Test
@@ -59,8 +59,8 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTestUtil {
 		String              connectClientId    = "connectClient";
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(connectClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.buildBlocking();
 
 		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,

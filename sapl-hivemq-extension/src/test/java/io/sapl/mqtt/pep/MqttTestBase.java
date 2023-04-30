@@ -42,12 +42,7 @@ import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.cache.MqttClientState;
 
-public class SaplMqttPepTestUtil {
-
-	public final static String POLICIES_PATH   = "src/test/resources/policies";
-	public final static String EXTENSIONS_PATH = "src/test/resources/config";
-	public final static String BROKER_HOST     = "localhost";
-	public final static int    BROKER_PORT     = 1883;
+public class MqttTestBase {
 
 	@TempDir
 	static Path DATA_FOLDER;
@@ -58,50 +53,50 @@ public class SaplMqttPepTestUtil {
 
 	public static final String PUBLISH_MESSAGE_PAYLOAD = "message";
 
-	public static EmbeddedHiveMQ buildAndStartBroker() {
-		return buildAndStartBroker(EXTENSIONS_PATH);
+	public final int 	brokerPort 		= 1883;
+	public final String brokerHost 		= "localhost";
+	public final String extensionsPath 	= "src/test/resources/config";
+	public final String policiesPath 	= "src/test/resources/policies";
+
+	protected EmbeddedHiveMQ buildAndStartBroker() {
+		return buildAndStartBroker(extensionsPath);
 	}
 
-	public static EmbeddedHiveMQ buildAndStartBroker(
+	protected EmbeddedHiveMQ buildAndStartBroker(
 			ConcurrentHashMap<String, MqttClientState> mqttClientCache) {
 		return buildAndStartBroker(
-				new HivemqPepExtensionMain(POLICIES_PATH, EXTENSIONS_PATH, mqttClientCache));
+				new HivemqPepExtensionMain(policiesPath, extensionsPath, mqttClientCache));
 	}
 
-	public static EmbeddedHiveMQ buildAndStartBroker(PolicyDecisionPoint pdp) {
-		return buildAndStartBroker(new HivemqPepExtensionMain(EXTENSIONS_PATH, pdp));
+	protected EmbeddedHiveMQ buildAndStartBroker(PolicyDecisionPoint pdp) {
+		return buildAndStartBroker(new HivemqPepExtensionMain(extensionsPath, pdp));
 	}
 
-	public static EmbeddedHiveMQ buildAndStartBroker(PolicyDecisionPoint pdp, String saplExtensionConfigPath) {
+	protected EmbeddedHiveMQ buildAndStartBroker(PolicyDecisionPoint pdp, String saplExtensionConfigPath) {
 		return buildAndStartBroker(new HivemqPepExtensionMain(saplExtensionConfigPath, pdp));
 	}
 
-	public static EmbeddedHiveMQ buildAndStartBroker(PolicyDecisionPoint pdp,
-													 ConcurrentHashMap<String, MqttClientState> mqttClientCache) {
-		return buildAndStartBroker(pdp, EXTENSIONS_PATH, mqttClientCache);
-	}
-
-	public static EmbeddedHiveMQ buildAndStartBroker(PolicyDecisionPoint pdp, String saplExtensionConfigPath,
+	protected EmbeddedHiveMQ buildAndStartBroker(PolicyDecisionPoint pdp, String saplExtensionConfigPath,
 													 ConcurrentHashMap<String, MqttClientState> mqttClientCache) {
 		return buildAndStartBroker(new HivemqPepExtensionMain(saplExtensionConfigPath, pdp, mqttClientCache));
 	}
 
-	public static EmbeddedHiveMQ buildAndStartBroker(String saplExtensionConfigPath) {
+	protected EmbeddedHiveMQ buildAndStartBroker(String saplExtensionConfigPath) {
 		return buildAndStartBroker(
-				new HivemqPepExtensionMain(POLICIES_PATH, saplExtensionConfigPath));
+				new HivemqPepExtensionMain(policiesPath, saplExtensionConfigPath));
 	}
 
-	public static EmbeddedHiveMQ buildAndStartBroker(HivemqPepExtensionMain hiveMqPepExtensionMain) {
+	protected EmbeddedHiveMQ buildAndStartBroker(HivemqPepExtensionMain hiveMqPepExtensionMain) {
 		return startBroker(buildBrokerWithExtension(hiveMqPepExtensionMain));
 	}
 
 	@SneakyThrows
-	private static EmbeddedHiveMQ startBroker(EmbeddedHiveMQ broker) {
+	private EmbeddedHiveMQ startBroker(EmbeddedHiveMQ broker) {
 		broker.start().get();
 		return broker;
 	}
 
-	public static void stopBroker(EmbeddedHiveMQ broker) {
+	protected void stopBroker(EmbeddedHiveMQ broker) {
 		if (broker != null) {
 			try {
 				broker.stop().get();
@@ -112,11 +107,11 @@ public class SaplMqttPepTestUtil {
 		}
 	}
 
-	private static EmbeddedHiveMQ buildBrokerWithExtension(HivemqPepExtensionMain hiveMqPepExtensionMain) {
+	private EmbeddedHiveMQ buildBrokerWithExtension(HivemqPepExtensionMain hiveMqPepExtensionMain) {
 		return buildBroker(buildExtension(hiveMqPepExtensionMain));
 	}
 
-	private static EmbeddedHiveMQ buildBroker(EmbeddedExtension embeddedExtensionBuild) {
+	private EmbeddedHiveMQ buildBroker(EmbeddedExtension embeddedExtensionBuild) {
 		EmbeddedHiveMQ broker = EmbeddedHiveMQ.builder()
 				.withConfigurationFolder(DATA_FOLDER)
 				.withDataFolder(CONFIG_FOLDER)
@@ -129,7 +124,7 @@ public class SaplMqttPepTestUtil {
 		return broker;
 	}
 
-	private static EmbeddedExtension buildExtension(HivemqPepExtensionMain hiveMqPepExtensionMain) {
+	private EmbeddedExtension buildExtension(HivemqPepExtensionMain hiveMqPepExtensionMain) {
 		return EmbeddedExtension.builder()
 				.withId("SAPL-MQTT-PEP")
 				.withName("SAPL-MQTT-PEP")
@@ -141,27 +136,27 @@ public class SaplMqttPepTestUtil {
 				.build();
 	}
 
-	public static Mqtt5BlockingClient buildAndStartMqttClient(String mqttClientId) throws InitializationException {
-		return buildAndStartMqttClient(mqttClientId, BROKER_PORT);
+	protected Mqtt5BlockingClient buildAndStartMqttClient(String mqttClientId) throws InitializationException {
+		return buildAndStartMqttClient(mqttClientId, brokerPort);
 	}
 
-	public static Mqtt5BlockingClient buildAndStartMqttClient(String mqttClientId,
-															  int mqttServerPort) throws InitializationException {
+	protected Mqtt5BlockingClient buildAndStartMqttClient(String mqttClientId, int mqttServerPort)
+			throws InitializationException {
 		Mqtt5BlockingClient blockingMqttClient = buildMqttClient(mqttClientId, mqttServerPort);
 		startMqttClient(blockingMqttClient);
 		return blockingMqttClient;
 	}
 
 	@NotNull
-	private static Mqtt5BlockingClient buildMqttClient(String mqttClientId, int mqttServerPort) {
+	private Mqtt5BlockingClient buildMqttClient(String mqttClientId, int mqttServerPort) {
 		return Mqtt5Client.builder()
 				.identifier(mqttClientId)
-				.serverHost(BROKER_HOST)
+				.serverHost(brokerHost)
 				.serverPort(mqttServerPort)
 				.buildBlocking();
 	}
 
-	private static void startMqttClient(Mqtt5BlockingClient blockingMqttClient) throws InitializationException {
+	private void startMqttClient(Mqtt5BlockingClient blockingMqttClient) throws InitializationException {
 		Mqtt5ConnAck        connAckMessage     = blockingMqttClient.connect();
 		if (connAckMessage.getReasonCode() != Mqtt5ConnAckReasonCode.SUCCESS) {
 			throw new InitializationException("Connection to the mqtt broker couldn't be established" +
@@ -169,26 +164,26 @@ public class SaplMqttPepTestUtil {
 		}
 	}
 
-	public static Mqtt5Subscribe buildMqttSubscribeMessage(String topic) {
+	protected Mqtt5Subscribe buildMqttSubscribeMessage(String topic) {
 		return buildMqttSubscribeMessage(topic, 0);
 	}
 
-	public static Mqtt5Subscribe buildMqttSubscribeMessage(String topic, int qos) {
+	protected Mqtt5Subscribe buildMqttSubscribeMessage(String topic, int qos) {
 		return Mqtt5Subscribe.builder()
 				.topicFilter(topic)
 				.qos(Objects.requireNonNull(MqttQos.fromCode(qos)))
 				.build();
 	}
 
-	public static Mqtt5Publish buildMqttPublishMessage(String topic, boolean retain) {
+	protected Mqtt5Publish buildMqttPublishMessage(String topic, boolean retain) {
 		return buildMqttPublishMessage(topic, 0, retain);
 	}
 
-	public static Mqtt5Publish buildMqttPublishMessage(String topic, int qos, boolean retain) {
+	protected Mqtt5Publish buildMqttPublishMessage(String topic, int qos, boolean retain) {
 		return buildMqttPublishMessage(topic, qos, retain, null);
 	}
 
-	public static Mqtt5Publish buildMqttPublishMessage(String topic, int qos,
+	protected Mqtt5Publish buildMqttPublishMessage(String topic, int qos,
 			boolean retain, String contentType) {
 		return Mqtt5Publish.builder()
 				.topic(topic)

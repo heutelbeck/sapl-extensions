@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.hivemq.embedded.EmbeddedHiveMQ;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -68,7 +67,7 @@ import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-class MqttActionUnitIT extends SaplMqttPepTestUtil {
+class MqttActionUnitIT extends MqttTestBase {
 
 	private final String extensionConfigPathShortTimeout = "src/test/resources/config/timeout/saplAuthzSubscription";
 	private final String subscriptionClientId            = "subscriptionClient";
@@ -126,8 +125,8 @@ class MqttActionUnitIT extends SaplMqttPepTestUtil {
 		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock);
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(subscriptionClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.buildBlocking();
 
 		// THEN
@@ -241,8 +240,8 @@ class MqttActionUnitIT extends SaplMqttPepTestUtil {
 		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock);
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(subscriptionClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.buildBlocking();
 
 		// THEN
@@ -469,8 +468,8 @@ class MqttActionUnitIT extends SaplMqttPepTestUtil {
 		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock);
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(subscriptionClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.buildBlocking();
 
 		// THEN
@@ -503,8 +502,8 @@ class MqttActionUnitIT extends SaplMqttPepTestUtil {
 		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock);
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(subscriptionClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.buildBlocking();
 
 		// THEN
@@ -776,8 +775,8 @@ class MqttActionUnitIT extends SaplMqttPepTestUtil {
 
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(publishClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.buildBlocking();
 
 		// WHEN
@@ -821,8 +820,8 @@ class MqttActionUnitIT extends SaplMqttPepTestUtil {
 
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(publishClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.buildBlocking();
 
 		// WHEN
@@ -1039,8 +1038,8 @@ class MqttActionUnitIT extends SaplMqttPepTestUtil {
 
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(publishClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.buildBlocking();
 
 		// WHEN
@@ -1082,8 +1081,8 @@ class MqttActionUnitIT extends SaplMqttPepTestUtil {
 
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(publishClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.buildBlocking();
 
 		// WHEN

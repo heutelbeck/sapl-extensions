@@ -36,9 +36,9 @@ import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 
 import io.sapl.interpreter.InitializationException;
-import io.sapl.mqtt.pep.SaplMqttPepTestUtil;
+import io.sapl.mqtt.pep.MqttTestBase;
 
-class ConstraintHandling2IT extends SaplMqttPepTestUtil {
+class ConstraintHandling2IT extends MqttTestBase {
 
 	EmbeddedHiveMQ mqttBroker;
 	Mqtt5BlockingClient publishClient;
@@ -160,7 +160,7 @@ class ConstraintHandling2IT extends SaplMqttPepTestUtil {
 				.qos(Objects.requireNonNull(MqttQos.fromCode(0)))
 				.retain(false)
 				.contentType("text/plain")
-				.payload(SaplMqttPepTestUtil.PUBLISH_MESSAGE_PAYLOAD.getBytes(StandardCharsets.UTF_8))
+				.payload(MqttTestBase.PUBLISH_MESSAGE_PAYLOAD.getBytes(StandardCharsets.UTF_8))
 				.build();
 
 		// WHEN

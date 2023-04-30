@@ -56,7 +56,7 @@ import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 
 @Testcontainers
-class RemotePdpUsageIT extends SaplMqttPepTestUtil {
+class RemotePdpUsageIT extends MqttTestBase {
 
 	private static final String EXTENSION_CONFIG_FILE_NAME = "sapl-extension-config.xml";
 

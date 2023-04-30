@@ -39,7 +39,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.hivemq.embedded.EmbeddedHiveMQ;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -61,12 +60,12 @@ import io.sapl.api.pdp.MultiAuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.MqttPep;
-import io.sapl.mqtt.pep.SaplMqttPepTestUtil;
+import io.sapl.mqtt.pep.MqttTestBase;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-class ConstraintHandlingIT extends SaplMqttPepTestUtil {
+class ConstraintHandlingIT extends MqttTestBase {
 
 	private final String subscriptionClientId = "subscriptionClient";
 	private final String topic                = "testTopic";
@@ -283,8 +282,8 @@ class ConstraintHandlingIT extends SaplMqttPepTestUtil {
 
 		Mqtt5BlockingClient blockingMqttSubscriptionClient = Mqtt5Client.builder()
 				.identifier(subscriptionClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.buildBlocking();
 
 		// WHEN
