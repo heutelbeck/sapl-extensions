@@ -24,6 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
+import com.hivemq.embedded.EmbeddedHiveMQ;
 import org.junit.jupiter.api.*;
 
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
@@ -36,6 +38,10 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCo
 import io.sapl.interpreter.InitializationException;
 
 class WildcardSubscriptionEnforcementIT extends SaplMqttPepTestUtil {
+
+	private EmbeddedHiveMQ mqttBroker;
+	private Mqtt5BlockingClient publishClient;
+	private Mqtt5BlockingClient 	subscribeClient;
 
 	@BeforeEach
 	void beforeEach() throws InitializationException {

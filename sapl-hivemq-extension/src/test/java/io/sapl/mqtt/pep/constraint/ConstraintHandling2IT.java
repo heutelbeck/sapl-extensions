@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import com.hivemq.embedded.EmbeddedHiveMQ;
 import org.junit.jupiter.api.*;
 
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
@@ -38,6 +39,10 @@ import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.SaplMqttPepTestUtil;
 
 class ConstraintHandling2IT extends SaplMqttPepTestUtil {
+
+	EmbeddedHiveMQ mqttBroker;
+	Mqtt5BlockingClient publishClient;
+	Mqtt5BlockingClient subscribeClient;
 
 	@BeforeEach
 	void beforeEach() throws InitializationException {

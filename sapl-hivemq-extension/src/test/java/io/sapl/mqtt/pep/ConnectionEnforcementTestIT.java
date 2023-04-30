@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import com.hivemq.embedded.EmbeddedHiveMQ;
 import org.junit.jupiter.api.*;
 
 import com.hivemq.client.mqtt.datatypes.MqttQos;
@@ -43,6 +44,8 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTestUtil {
 
 	private final static String PUBLISH_CLIENT_ID = "MQTT_CLIENT_PUBLISH";
 	private final static ConcurrentHashMap<String, MqttClientState> MQTT_CLIENT_CACHE = new ConcurrentHashMap<>();
+
+	private EmbeddedHiveMQ mqttBroker;
 
 	@BeforeEach
 	void beforeEach() {

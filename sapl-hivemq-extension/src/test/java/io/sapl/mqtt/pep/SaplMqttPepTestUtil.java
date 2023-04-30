@@ -43,9 +43,6 @@ import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.cache.MqttClientState;
 
 public class SaplMqttPepTestUtil {
-	public EmbeddedHiveMQ 		mqttBroker;
-	public Mqtt5BlockingClient 	publishClient;
-	public Mqtt5BlockingClient 	subscribeClient;
 
 	public final static String POLICIES_PATH   = "src/test/resources/policies";
 	public final static String EXTENSIONS_PATH = "src/test/resources/config";

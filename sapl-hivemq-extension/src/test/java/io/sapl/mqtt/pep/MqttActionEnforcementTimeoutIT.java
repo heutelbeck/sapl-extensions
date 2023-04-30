@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.hivemq.embedded.EmbeddedHiveMQ;
 import org.junit.jupiter.api.Test;
 
 import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
@@ -62,7 +63,7 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTestUtil {
 				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
-		mqttBroker = buildAndStartBroker(pdpMock,
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/connection");
 
 		// THEN
@@ -94,9 +95,9 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTestUtil {
 		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage("topic");
 
 		// WHEN
-		mqttBroker = buildAndStartBroker(pdpMock,
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/subscription");
-		subscribeClient = buildAndStartMqttClient(subscriptionClientId);
+		Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
 				() -> subscribeClient.subscribe(subscribeMessage));
@@ -129,9 +130,9 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTestUtil {
 				1, false);
 
 		// WHEN
-		mqttBroker = buildAndStartBroker(pdpMock,
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/publish");
-		publishClient = buildAndStartMqttClient(publishClientId);
+		Mqtt5BlockingClient publishClient = buildAndStartMqttClient(publishClientId);
 
 		Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
 				() -> publishClient.publish(publishMessage));

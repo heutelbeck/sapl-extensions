@@ -34,6 +34,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
@@ -58,6 +59,10 @@ import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 class RemotePdpUsageIT extends SaplMqttPepTestUtil {
 
 	private static final String EXTENSION_CONFIG_FILE_NAME = "sapl-extension-config.xml";
+
+	private EmbeddedHiveMQ 		mqttBroker;
+	private Mqtt5BlockingClient publishClient;
+	private Mqtt5BlockingClient 	subscribeClient;
 
 	@TempDir
 	private static Path EXTENSION_CONFIG_DIR;
