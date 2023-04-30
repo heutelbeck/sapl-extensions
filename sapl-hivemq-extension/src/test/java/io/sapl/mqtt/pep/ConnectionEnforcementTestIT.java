@@ -41,14 +41,14 @@ import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
 import io.sapl.mqtt.pep.cache.MqttClientState;
 
-class ConnectionEnforcementTestIT extends SaplMqttPepTest {
+class ConnectionEnforcementTestIT extends SaplMqttPepTestUtil {
 
 	private final static String PUBLISH_CLIENT_ID = "MQTT_CLIENT_PUBLISH";
 	private final static ConcurrentHashMap<String, MqttClientState> MQTT_CLIENT_CACHE = new ConcurrentHashMap<>();
 
 	@BeforeAll
 	public static void beforeAll() {
-		MQTT_BROKER = startAndBuildBroker(MQTT_CLIENT_CACHE);
+		MQTT_BROKER = buildAndStartBroker(MQTT_CLIENT_CACHE);
 	}
 
 	@AfterAll

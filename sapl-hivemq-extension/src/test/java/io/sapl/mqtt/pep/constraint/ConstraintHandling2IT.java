@@ -38,15 +38,15 @@ import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 
 import io.sapl.interpreter.InitializationException;
-import io.sapl.mqtt.pep.SaplMqttPepTest;
+import io.sapl.mqtt.pep.SaplMqttPepTestUtil;
 
-class ConstraintHandling2IT extends SaplMqttPepTest {
+class ConstraintHandling2IT extends SaplMqttPepTestUtil {
 
 	@BeforeAll
 	public static void beforeAll() throws InitializationException {
-		MQTT_BROKER      = startAndBuildBroker();
-		PUBLISH_CLIENT   = startMqttClient("CONSTRAINT_MQTT_CLIENT_PUBLISH");
-		SUBSCRIBE_CLIENT = startMqttClient("CONSTRAINT_MQTT_CLIENT_SUBSCRIBE");
+		MQTT_BROKER      = buildAndStartBroker();
+		PUBLISH_CLIENT   = buildAndStartMqttClient("CONSTRAINT_MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = buildAndStartMqttClient("CONSTRAINT_MQTT_CLIENT_SUBSCRIBE");
 	}
 
 	@AfterAll
@@ -158,7 +158,7 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 				.qos(Objects.requireNonNull(MqttQos.fromCode(0)))
 				.retain(false)
 				.contentType("text/plain")
-				.payload(SaplMqttPepTest.PUBLISH_MESSAGE_PAYLOAD.getBytes(StandardCharsets.UTF_8))
+				.payload(SaplMqttPepTestUtil.PUBLISH_MESSAGE_PAYLOAD.getBytes(StandardCharsets.UTF_8))
 				.build();
 
 		// WHEN
@@ -222,7 +222,7 @@ class ConstraintHandling2IT extends SaplMqttPepTest {
 	@Timeout(10)
 	void when_timeLimitForConnectionIsSet_then_limitConnectionTime() throws InitializationException {
 		// GIVEN
-		Mqtt5BlockingClient mqttClientConnection = startMqttClient("CONSTRAINT_MQTT_CLIENT_CONNECT");
+		Mqtt5BlockingClient mqttClientConnection = buildAndStartMqttClient("CONSTRAINT_MQTT_CLIENT_CONNECT");
 
 		// THEN
 		await().atMost(2, TimeUnit.SECONDS)

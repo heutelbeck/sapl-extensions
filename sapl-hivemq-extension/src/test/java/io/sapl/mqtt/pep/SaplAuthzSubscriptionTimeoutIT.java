@@ -36,7 +36,7 @@ import io.sapl.mqtt.pep.cache.MqttClientState;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
 import reactor.core.publisher.Flux;
 
-class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
+class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 
 	private final String subscriptionClientId = "subscriptionClient";
 	private final String publishClientId      = "publishClient";
@@ -76,9 +76,9 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER    = startAndBuildBroker(pdpMock,
+		MQTT_BROKER    = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		PUBLISH_CLIENT = startMqttClient(publishClientId);
+		PUBLISH_CLIENT = buildAndStartMqttClient(publishClientId);
 
 		// WHEN
 		Mqtt5Publish         publishMessage  = buildMqttPublishMessage(topic, 1, false);
@@ -129,9 +129,9 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER    = startAndBuildBroker(pdpMock,
+		MQTT_BROKER    = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		PUBLISH_CLIENT = startMqttClient(publishClientId);
+		PUBLISH_CLIENT = buildAndStartMqttClient(publishClientId);
 
 		// WHEN
 		Mqtt5Publish publishMessage = buildMqttPublishMessage(topic, 1, false);
@@ -177,9 +177,9 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER    = startAndBuildBroker(pdpMock,
+		MQTT_BROKER    = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		PUBLISH_CLIENT = startMqttClient(publishClientId);
+		PUBLISH_CLIENT = buildAndStartMqttClient(publishClientId);
 
 		// WHEN
 		Mqtt5Publish         publishMessage  = buildMqttPublishMessage(topic, 1, false);
@@ -229,9 +229,9 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER      = startAndBuildBroker(pdpMock,
+		MQTT_BROKER      = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
+		SUBSCRIBE_CLIENT = buildAndStartMqttClient(subscriptionClientId);
 
 		// WHEN
 		Mqtt5Subscribe       subscribeMessage = buildMqttSubscribeMessage(topic);
@@ -284,9 +284,9 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER      = startAndBuildBroker(pdpMock,
+		MQTT_BROKER      = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
+		SUBSCRIBE_CLIENT = buildAndStartMqttClient(subscriptionClientId);
 
 		// WHEN
 		Mqtt5Subscribe       subscribeMessage = buildMqttSubscribeMessage(topic);
@@ -338,9 +338,9 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER      = startAndBuildBroker(pdpMock,
+		MQTT_BROKER      = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
+		SUBSCRIBE_CLIENT = buildAndStartMqttClient(subscriptionClientId);
 
 		// WHEN
 		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(topic);
@@ -386,9 +386,9 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTest {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER      = startAndBuildBroker(pdpMock,
+		MQTT_BROKER      = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
+		SUBSCRIBE_CLIENT = buildAndStartMqttClient(subscriptionClientId);
 
 		// WHEN
 		Mqtt5Subscribe   subscribeMessage   = buildMqttSubscribeMessage(topic);

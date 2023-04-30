@@ -38,13 +38,13 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCo
 
 import io.sapl.interpreter.InitializationException;
 
-class WildcardSubscriptionEnforcementIT extends SaplMqttPepTest {
+class WildcardSubscriptionEnforcementIT extends SaplMqttPepTestUtil {
 
 	@BeforeAll
 	public static void beforeAll() throws InitializationException {
-		MQTT_BROKER      = startAndBuildBroker();
-		PUBLISH_CLIENT   = startMqttClient("WILDCARD_MQTT_CLIENT_PUBLISH");
-		SUBSCRIBE_CLIENT = startMqttClient("WILDCARD_MQTT_CLIENT_SUBSCRIBE");
+		MQTT_BROKER      = buildAndStartBroker();
+		PUBLISH_CLIENT   = buildAndStartMqttClient("WILDCARD_MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = buildAndStartMqttClient("WILDCARD_MQTT_CLIENT_SUBSCRIBE");
 	}
 
 	@AfterAll

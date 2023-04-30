@@ -43,7 +43,7 @@ import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
 import reactor.core.publisher.Flux;
 
-class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
+class MqttActionEnforcementTimeoutIT extends SaplMqttPepTestUtil {
 
 
 	@Test
@@ -62,7 +62,7 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
-		MQTT_BROKER = startAndBuildBroker(pdpMock,
+		MQTT_BROKER = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/connection");
 
 		// THEN
@@ -94,9 +94,9 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage("topic");
 
 		// WHEN
-		MQTT_BROKER      = startAndBuildBroker(pdpMock,
+		MQTT_BROKER      = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/subscription");
-		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
+		SUBSCRIBE_CLIENT = buildAndStartMqttClient(subscriptionClientId);
 
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
 				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessage));
@@ -129,9 +129,9 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTest {
 				1, false);
 
 		// WHEN
-		MQTT_BROKER    = startAndBuildBroker(pdpMock,
+		MQTT_BROKER    = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/publish");
-		PUBLISH_CLIENT = startMqttClient(publishClientId);
+		PUBLISH_CLIENT = buildAndStartMqttClient(publishClientId);
 
 		Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
 				() -> PUBLISH_CLIENT.publish(publishMessage));

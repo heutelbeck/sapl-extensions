@@ -62,7 +62,7 @@ import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 
 @Testcontainers
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class RemotePdpUsageIT extends SaplMqttPepTest {
+class RemotePdpUsageIT extends SaplMqttPepTestUtil {
 
 	private static final String EXTENSION_CONFIG_FILE_NAME = "sapl-extension-config.xml";
 
@@ -82,8 +82,8 @@ class RemotePdpUsageIT extends SaplMqttPepTest {
 		createExtensionConfigFile(SAPL_SERVER_LT.getFirstMappedPort());
 
 		MQTT_BROKER      = startAndBuildBrokerWithRemotePdp();
-		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
-		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		PUBLISH_CLIENT   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
 	}
 
 	@AfterAll

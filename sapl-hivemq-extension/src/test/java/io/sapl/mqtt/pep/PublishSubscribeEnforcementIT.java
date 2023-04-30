@@ -42,7 +42,7 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCo
 
 import io.sapl.interpreter.InitializationException;
 
-class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
+class PublishSubscribeEnforcementIT extends SaplMqttPepTestUtil {
 
 	@AfterEach
 	void afterAll() {
@@ -60,9 +60,9 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 				0, false, "test_content");
 
 		// WHEN
-		MQTT_BROKER      = startAndBuildBroker();
-		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
-		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		MQTT_BROKER      = buildAndStartBroker();
+		PUBLISH_CLIENT   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
 		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
 		PUBLISH_CLIENT.publish(publishMessage);
 
@@ -91,9 +91,9 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 				2, false);
 
 		// WHEN
-		MQTT_BROKER      = startAndBuildBroker();
-		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
-		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		MQTT_BROKER      = buildAndStartBroker();
+		PUBLISH_CLIENT   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
 		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
 		PUBLISH_CLIENT.publish(publishMessageQos0);
 
@@ -126,9 +126,9 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 		Mqtt5Subscribe subscribeMessageQos2 = buildMqttSubscribeMessage("denied_subscription", 2);
 
 		// WHEN
-		MQTT_BROKER      = startAndBuildBroker();
-		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
-		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		MQTT_BROKER      = buildAndStartBroker();
+		PUBLISH_CLIENT   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
 
 		// THEN
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
@@ -165,9 +165,9 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 		Mqtt5Publish secondPublishMessage = buildMqttPublishMessage("secondTopic", true);
 
 		// WHEN
-		MQTT_BROKER      = startAndBuildBroker();
-		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
-		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		MQTT_BROKER      = buildAndStartBroker();
+		PUBLISH_CLIENT   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
 		SUBSCRIBE_CLIENT.subscribe(subscribeMessageMultipleTopics);
 
 		// THEN
@@ -211,9 +211,9 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTest {
 				false);
 
 		// WHEN
-		MQTT_BROKER      = startAndBuildBroker();
-		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
-		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		MQTT_BROKER      = buildAndStartBroker();
+		PUBLISH_CLIENT   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
+		SUBSCRIBE_CLIENT = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
 
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
 				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessageMultipleTopics));
