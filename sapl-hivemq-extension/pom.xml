@@ -77,6 +77,11 @@
             <artifactId>sapl-pdp-remote</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.sapl</groupId>
+            <artifactId>sapl-mqtt-functions</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-resolver</artifactId>
             <version>4.1.90.Final</version>
@@ -109,12 +114,6 @@
             <version>2.0.5</version>
         </dependency>
         <!-- testing -->
-        <dependency>
-            <groupId>com.hivemq</groupId>
-            <artifactId>hivemq-mqtt-client</artifactId>
-            <version>1.3.0</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -307,7 +306,7 @@
                                     <goal>hivemq</goal>
                                 </goals>
                                 <configuration>
-                                    <hiveMQDir>C:\Program Files\hivemq-4.7.5</hiveMQDir>
+                                    <hiveMQDir>C:\Program Files\hivemq-4.14.0</hiveMQDir>
                                     <debugMode>SERVER</debugMode>
                                 </configuration>
                             </execution>
