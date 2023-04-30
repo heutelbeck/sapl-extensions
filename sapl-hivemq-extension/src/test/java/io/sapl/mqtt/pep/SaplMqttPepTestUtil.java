@@ -43,9 +43,9 @@ import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.cache.MqttClientState;
 
 public class SaplMqttPepTestUtil {
-	public static EmbeddedHiveMQ      MQTT_BROKER;
-	public static Mqtt5BlockingClient PUBLISH_CLIENT;
-	public static Mqtt5BlockingClient SUBSCRIBE_CLIENT;
+	public EmbeddedHiveMQ 		mqttBroker;
+	public Mqtt5BlockingClient 	publishClient;
+	public Mqtt5BlockingClient 	subscribeClient;
 
 	public final static String POLICIES_PATH   = "src/test/resources/policies";
 	public final static String EXTENSIONS_PATH = "src/test/resources/config";
@@ -95,8 +95,7 @@ public class SaplMqttPepTestUtil {
 	}
 
 	public static EmbeddedHiveMQ buildAndStartBroker(HivemqPepExtensionMain hiveMqPepExtensionMain) {
-		MQTT_BROKER = startBroker(buildBrokerWithExtension(hiveMqPepExtensionMain));
-		return MQTT_BROKER;
+		return startBroker(buildBrokerWithExtension(hiveMqPepExtensionMain));
 	}
 
 	@SneakyThrows
@@ -105,11 +104,11 @@ public class SaplMqttPepTestUtil {
 		return broker;
 	}
 
-	public static void stopBroker() {
-		if (MQTT_BROKER != null) {
+	public static void stopBroker(EmbeddedHiveMQ broker) {
+		if (broker != null) {
 			try {
-				MQTT_BROKER.stop().get();
-				MQTT_BROKER.close();
+				broker.stop().get();
+				broker.close();
 			} catch (ExecutionException | IllegalStateException | InterruptedException e) {
 				// NOP ignore if broker already closed
 			}

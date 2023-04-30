@@ -76,23 +76,23 @@ class RemotePdpUsageIT extends SaplMqttPepTestUtil {
 		}
 		createExtensionConfigFile(SAPL_SERVER_LT.getFirstMappedPort());
 
-		MQTT_BROKER      = startAndBuildBrokerWithRemotePdp();
-		SUBSCRIBE_CLIENT = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
-		PUBLISH_CLIENT   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
+		mqttBroker = startAndBuildBrokerWithRemotePdp();
+		subscribeClient = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		publishClient = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
 	}
 
 	@AfterEach
 	void afterEach() {
-		if (PUBLISH_CLIENT.getState().isConnected()) {
-			PUBLISH_CLIENT.disconnect();
+		if (publishClient.getState().isConnected()) {
+			publishClient.disconnect();
 		}
-		if (SUBSCRIBE_CLIENT.getState().isConnected()) {
-			SUBSCRIBE_CLIENT.disconnect();
+		if (subscribeClient.getState().isConnected()) {
+			subscribeClient.disconnect();
 		}
 		if (SAPL_SERVER_LT.isRunning()) {
 			SAPL_SERVER_LT.stop();
 		}
-		stopBroker();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -105,16 +105,16 @@ class RemotePdpUsageIT extends SaplMqttPepTestUtil {
 				false);
 
 		// WHEN
-		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
-		PUBLISH_CLIENT.publish(publishMessage);
+		subscribeClient.subscribe(subscribeMessage);
+		publishClient.publish(publishMessage);
 
 		// THEN
-		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
+		Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 
 		assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
 
 		// FINALLY
-		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("topic").send();
+		subscribeClient.unsubscribeWith().topicFilter("topic").send();
 	}
 
 	@Test
@@ -126,16 +126,16 @@ class RemotePdpUsageIT extends SaplMqttPepTestUtil {
 		Mqtt5Publish publishMessage = buildMqttPublishMessage("topic", 1, true);
 
 		// WHEN
-		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
-		PUBLISH_CLIENT.publish(publishMessage);
+		subscribeClient.subscribe(subscribeMessage);
+		publishClient.publish(publishMessage);
 
 		SAPL_SERVER_LT.stop();
 
 		// THEN
 		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
 			assertFalse(SAPL_SERVER_LT.isRunning());
-			assertFalse(SUBSCRIBE_CLIENT.getState().isConnected());
-			assertFalse(PUBLISH_CLIENT.getState().isConnected());
+			assertFalse(subscribeClient.getState().isConnected());
+			assertFalse(publishClient.getState().isConnected());
 		});
 	}
 

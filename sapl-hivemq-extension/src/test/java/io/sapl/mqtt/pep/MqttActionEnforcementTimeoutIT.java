@@ -62,7 +62,7 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTestUtil {
 				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
-		MQTT_BROKER = buildAndStartBroker(pdpMock,
+		mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/connection");
 
 		// THEN
@@ -71,7 +71,7 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTestUtil {
 		assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
 
 		// FINALLY
-		stopBroker();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -94,18 +94,18 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTestUtil {
 		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage("topic");
 
 		// WHEN
-		MQTT_BROKER      = buildAndStartBroker(pdpMock,
+		mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/subscription");
-		SUBSCRIBE_CLIENT = buildAndStartMqttClient(subscriptionClientId);
+		subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessage));
+				() -> subscribeClient.subscribe(subscribeMessage));
 
 		// THEN
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
 		// FINALLY
-		stopBroker();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -129,17 +129,17 @@ class MqttActionEnforcementTimeoutIT extends SaplMqttPepTestUtil {
 				1, false);
 
 		// WHEN
-		MQTT_BROKER    = buildAndStartBroker(pdpMock,
+		mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/publish");
-		PUBLISH_CLIENT = buildAndStartMqttClient(publishClientId);
+		publishClient = buildAndStartMqttClient(publishClientId);
 
 		Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-				() -> PUBLISH_CLIENT.publish(publishMessage));
+				() -> publishClient.publish(publishMessage));
 
 		// THEN
 		assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
 
 		// FINALLY
-		stopBroker();
+		stopBroker(mqttBroker);
 	}
 }

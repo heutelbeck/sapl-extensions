@@ -46,7 +46,7 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTestUtil {
 
 	@AfterEach
 	void afterEach() {
-		stopBroker();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -60,21 +60,21 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTestUtil {
 				0, false, "test_content");
 
 		// WHEN
-		MQTT_BROKER      = buildAndStartBroker();
-		PUBLISH_CLIENT   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
-		SUBSCRIBE_CLIENT = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
-		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
-		PUBLISH_CLIENT.publish(publishMessage);
+		mqttBroker = buildAndStartBroker();
+		publishClient = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
+		subscribeClient = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		subscribeClient.subscribe(subscribeMessage);
+		publishClient.publish(publishMessage);
 
 		// THEN
-		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
+		Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 
 		assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
 
 		// FINALLY
-		PUBLISH_CLIENT.disconnect();
-		SUBSCRIBE_CLIENT.disconnect();
-		stopBroker();
+		publishClient.disconnect();
+		subscribeClient.disconnect();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -91,30 +91,30 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTestUtil {
 				2, false);
 
 		// WHEN
-		MQTT_BROKER      = buildAndStartBroker();
-		PUBLISH_CLIENT   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
-		SUBSCRIBE_CLIENT = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
-		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
-		PUBLISH_CLIENT.publish(publishMessageQos0);
+		mqttBroker = buildAndStartBroker();
+		publishClient = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
+		subscribeClient = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		subscribeClient.subscribe(subscribeMessage);
+		publishClient.publish(publishMessageQos0);
 
 		// THEN
-		Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT
+		Optional<Mqtt5Publish> receivedMessage = subscribeClient
 				.publishes(MqttGlobalPublishFilter.ALL)
 				.receive(1000, TimeUnit.MILLISECONDS);
 		assertTrue(receivedMessage.isEmpty());
 
 		Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-				() -> PUBLISH_CLIENT.publish(publishMessageQos1));
+				() -> publishClient.publish(publishMessageQos1));
 		assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
 
 		Mqtt5PubRecException pubRecException = assertThrowsExactly(Mqtt5PubRecException.class,
-				() -> PUBLISH_CLIENT.publish(publishMessageQos2));
+				() -> publishClient.publish(publishMessageQos2));
 		assertEquals(Mqtt5PubRecReasonCode.NOT_AUTHORIZED, pubRecException.getMqttMessage().getReasonCode());
 
 		// FINALLY
-		PUBLISH_CLIENT.disconnect();
-		SUBSCRIBE_CLIENT.disconnect();
-		stopBroker();
+		publishClient.disconnect();
+		subscribeClient.disconnect();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -126,27 +126,27 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTestUtil {
 		Mqtt5Subscribe subscribeMessageQos2 = buildMqttSubscribeMessage("denied_subscription", 2);
 
 		// WHEN
-		MQTT_BROKER      = buildAndStartBroker();
-		PUBLISH_CLIENT   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
-		SUBSCRIBE_CLIENT = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		mqttBroker = buildAndStartBroker();
+		publishClient = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
+		subscribeClient = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
 
 		// THEN
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessageQos0));
+				() -> subscribeClient.subscribe(subscribeMessageQos0));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
 		subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessageQos1));
+				() -> subscribeClient.subscribe(subscribeMessageQos1));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
 		subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessageQos2));
+				() -> subscribeClient.subscribe(subscribeMessageQos2));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
 		// FINALLY
-		PUBLISH_CLIENT.disconnect();
-		SUBSCRIBE_CLIENT.disconnect();
-		stopBroker();
+		publishClient.disconnect();
+		subscribeClient.disconnect();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -165,32 +165,32 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTestUtil {
 		Mqtt5Publish secondPublishMessage = buildMqttPublishMessage("secondTopic", true);
 
 		// WHEN
-		MQTT_BROKER      = buildAndStartBroker();
-		PUBLISH_CLIENT   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
-		SUBSCRIBE_CLIENT = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
-		SUBSCRIBE_CLIENT.subscribe(subscribeMessageMultipleTopics);
+		mqttBroker = buildAndStartBroker();
+		publishClient = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
+		subscribeClient = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		subscribeClient.subscribe(subscribeMessageMultipleTopics);
 
 		// THEN
 		await().atMost(6, TimeUnit.SECONDS).untilAsserted(() -> {
-			PUBLISH_CLIENT.publish(firstPublishMessage);
-			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
+			publishClient.publish(firstPublishMessage);
+			Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
 			assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		await().atMost(6, TimeUnit.SECONDS).untilAsserted(() -> {
-			PUBLISH_CLIENT.publish(secondPublishMessage);
-			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
+			publishClient.publish(secondPublishMessage);
+			Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(2, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
 			assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		// FINALLY
-		PUBLISH_CLIENT.disconnect();
-		SUBSCRIBE_CLIENT.disconnect();
-		stopBroker();
+		publishClient.disconnect();
+		subscribeClient.disconnect();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -211,29 +211,29 @@ class PublishSubscribeEnforcementIT extends SaplMqttPepTestUtil {
 				false);
 
 		// WHEN
-		MQTT_BROKER      = buildAndStartBroker();
-		PUBLISH_CLIENT   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
-		SUBSCRIBE_CLIENT = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		mqttBroker = buildAndStartBroker();
+		publishClient = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
+		subscribeClient = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
 
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessageMultipleTopics));
+				() -> subscribeClient.subscribe(subscribeMessageMultipleTopics));
 		assertEquals(Mqtt5SubAckReasonCode.GRANTED_QOS_2, subAckException.getMqttMessage().getReasonCodes().get(0));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(1));
 
 		// THEN
-		PUBLISH_CLIENT.publish(firstPublishMessage);
-		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
+		publishClient.publish(firstPublishMessage);
+		Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 		assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
 
-		PUBLISH_CLIENT.publish(secondPublishMessage);
-		Optional<Mqtt5Publish> receivedMessageSecond = SUBSCRIBE_CLIENT
+		publishClient.publish(secondPublishMessage);
+		Optional<Mqtt5Publish> receivedMessageSecond = subscribeClient
 				.publishes(MqttGlobalPublishFilter.ALL)
 				.receive(1000, TimeUnit.MILLISECONDS);
 		assertTrue(receivedMessageSecond.isEmpty());
 
 		// FINALLY
-		PUBLISH_CLIENT.disconnect();
-		SUBSCRIBE_CLIENT.disconnect();
-		stopBroker();
+		publishClient.disconnect();
+		subscribeClient.disconnect();
+		stopBroker(mqttBroker);
 	}
 }

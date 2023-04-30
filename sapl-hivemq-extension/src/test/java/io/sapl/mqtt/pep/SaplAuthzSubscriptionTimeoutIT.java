@@ -76,14 +76,14 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER    = buildAndStartBroker(pdpMock,
+		mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		PUBLISH_CLIENT = buildAndStartMqttClient(publishClientId);
+		publishClient = buildAndStartMqttClient(publishClientId);
 
 		// WHEN
 		Mqtt5Publish         publishMessage  = buildMqttPublishMessage(topic, 1, false);
 		Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-				() -> PUBLISH_CLIENT.publish(publishMessage));
+				() -> publishClient.publish(publishMessage));
 		assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
 
 		// THEN
@@ -94,7 +94,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 		assertMqttClientStateWasCleanedUp(mqttClientCache, publishClientId, publishClientMqttPublishSaplSubscriptionId);
 
 		// FINALLY
-		stopBroker();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -129,13 +129,13 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER    = buildAndStartBroker(pdpMock,
+		mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		PUBLISH_CLIENT = buildAndStartMqttClient(publishClientId);
+		publishClient = buildAndStartMqttClient(publishClientId);
 
 		// WHEN
 		Mqtt5Publish publishMessage = buildMqttPublishMessage(topic, 1, false);
-		PUBLISH_CLIENT.publish(publishMessage);
+		publishClient.publish(publishMessage);
 
 		// THEN
 		await().atMost(3, TimeUnit.SECONDS)
@@ -145,7 +145,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 		assertMqttClientStateWasCleanedUp(mqttClientCache, publishClientId, publishClientMqttPublishSaplSubscriptionId);
 
 		// FINALLY
-		stopBroker();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -177,14 +177,14 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER    = buildAndStartBroker(pdpMock,
+		mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		PUBLISH_CLIENT = buildAndStartMqttClient(publishClientId);
+		publishClient = buildAndStartMqttClient(publishClientId);
 
 		// WHEN
 		Mqtt5Publish         publishMessage  = buildMqttPublishMessage(topic, 1, false);
 		Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-				() -> PUBLISH_CLIENT.publish(publishMessage));
+				() -> publishClient.publish(publishMessage));
 		assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
 
 		// THEN
@@ -194,7 +194,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 		assertMqttClientStateWasCleanedUp(mqttClientCache, publishClientId, publishClientMqttPublishSaplSubscriptionId);
 
 		// FINALLY
-		stopBroker();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -229,14 +229,14 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER      = buildAndStartBroker(pdpMock,
+		mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		SUBSCRIBE_CLIENT = buildAndStartMqttClient(subscriptionClientId);
+		subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 
 		// WHEN
 		Mqtt5Subscribe       subscribeMessage = buildMqttSubscribeMessage(topic);
 		Mqtt5SubAckException subAckException  = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessage));
+				() -> subscribeClient.subscribe(subscribeMessage));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
 		// THEN
@@ -248,7 +248,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 				subscriptionClientMqttSubscriptionSaplSubscriptionId);
 
 		// FINALLY
-		stopBroker();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -284,14 +284,14 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER      = buildAndStartBroker(pdpMock,
+		mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		SUBSCRIBE_CLIENT = buildAndStartMqttClient(subscriptionClientId);
+		subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 
 		// WHEN
 		Mqtt5Subscribe       subscribeMessage = buildMqttSubscribeMessage(topic);
 		Mqtt5SubAckException subAckException  = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessage));
+				() -> subscribeClient.subscribe(subscribeMessage));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
 		// THEN
@@ -303,7 +303,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 				subscriptionClientMqttSubscriptionSaplSubscriptionId);
 
 		// FINALLY
-		stopBroker();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -338,13 +338,13 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER      = buildAndStartBroker(pdpMock,
+		mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		SUBSCRIBE_CLIENT = buildAndStartMqttClient(subscriptionClientId);
+		subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 
 		// WHEN
 		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(topic);
-		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		subscribeClient.subscribe(subscribeMessage);
 
 		// THEN
 		await().atMost(5, TimeUnit.SECONDS)
@@ -354,7 +354,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 				subscriptionClientMqttSubscriptionSaplSubscriptionId);
 
 		// FINALLY
-		stopBroker();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -386,16 +386,16 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		MQTT_BROKER      = buildAndStartBroker(pdpMock,
+		mqttBroker = buildAndStartBroker(pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
-		SUBSCRIBE_CLIENT = buildAndStartMqttClient(subscriptionClientId);
+		subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 
 		// WHEN
 		Mqtt5Subscribe   subscribeMessage   = buildMqttSubscribeMessage(topic);
 		Mqtt5Unsubscribe unsubscribeMessage = Mqtt5Unsubscribe.builder().topicFilter(topic).build();
-		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		subscribeClient.subscribe(subscribeMessage);
 
-		SUBSCRIBE_CLIENT.unsubscribe(unsubscribeMessage);
+		subscribeClient.unsubscribe(unsubscribeMessage);
 
 		// THEN
 		await().atMost(3, TimeUnit.SECONDS)
@@ -405,7 +405,7 @@ class SaplAuthzSubscriptionTimeoutIT extends SaplMqttPepTestUtil {
 				subscriptionClientMqttSubscriptionSaplSubscriptionId);
 
 		// FINALLY
-		stopBroker();
+		stopBroker(mqttBroker);
 	}
 
 	private void assertMqttClientStateWasCleanedUp(ConcurrentHashMap<String, MqttClientState> mqttClientCache,

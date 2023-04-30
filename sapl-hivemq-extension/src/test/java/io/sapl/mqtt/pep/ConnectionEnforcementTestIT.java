@@ -46,12 +46,12 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTestUtil {
 
 	@BeforeEach
 	void beforeEach() {
-		MQTT_BROKER = buildAndStartBroker(MQTT_CLIENT_CACHE);
+		mqttBroker = buildAndStartBroker(MQTT_CLIENT_CACHE);
 	}
 
 	@AfterEach
 	void afterEach() {
-		stopBroker();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
