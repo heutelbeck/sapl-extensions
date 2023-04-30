@@ -35,13 +35,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -61,7 +55,6 @@ import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 
 @Testcontainers
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class RemotePdpUsageIT extends SaplMqttPepTestUtil {
 
 	private static final String EXTENSION_CONFIG_FILE_NAME = "sapl-extension-config.xml";
@@ -76,9 +69,11 @@ class RemotePdpUsageIT extends SaplMqttPepTestUtil {
 					"/pdp/data")
 			.withExposedPorts(8080);
 
-	@BeforeAll
-	public static void beforeAll() throws InitializationException, ParserConfigurationException, TransformerException {
-		// set logging level
+	@BeforeEach
+	void beforeEach() throws InitializationException, ParserConfigurationException, TransformerException {
+		if (!SAPL_SERVER_LT.isRunning()) {
+			SAPL_SERVER_LT.start();
+		}
 		createExtensionConfigFile(SAPL_SERVER_LT.getFirstMappedPort());
 
 		MQTT_BROKER      = startAndBuildBrokerWithRemotePdp();
@@ -86,19 +81,21 @@ class RemotePdpUsageIT extends SaplMqttPepTestUtil {
 		PUBLISH_CLIENT   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
 	}
 
-	@AfterAll
-	public static void afterAll() {
+	@AfterEach
+	void afterEach() {
 		if (PUBLISH_CLIENT.getState().isConnected()) {
 			PUBLISH_CLIENT.disconnect();
 		}
 		if (SUBSCRIBE_CLIENT.getState().isConnected()) {
 			SUBSCRIBE_CLIENT.disconnect();
 		}
+		if (SAPL_SERVER_LT.isRunning()) {
+			SAPL_SERVER_LT.stop();
+		}
 		stopBroker();
 	}
 
 	@Test
-	@Order(1)
 	@Timeout(10)
 	void when_publishAndSubscribeForTopicPermitted_then_subscribeAndPublishTopic() throws InterruptedException {
 		// GIVEN
@@ -121,7 +118,6 @@ class RemotePdpUsageIT extends SaplMqttPepTestUtil {
 	}
 
 	@Test
-	@Order(2)
 	@Timeout(10)
 	void when_losingConnectionToPdpServer_then_DenyOnIndeterminate() {
 		// GIVEN

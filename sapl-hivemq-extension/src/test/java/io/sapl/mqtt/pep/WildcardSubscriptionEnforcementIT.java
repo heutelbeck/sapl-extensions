@@ -24,10 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5SubAckException;
@@ -40,15 +37,15 @@ import io.sapl.interpreter.InitializationException;
 
 class WildcardSubscriptionEnforcementIT extends SaplMqttPepTestUtil {
 
-	@BeforeAll
-	public static void beforeAll() throws InitializationException {
+	@BeforeEach
+	void beforeEach() throws InitializationException {
 		MQTT_BROKER      = buildAndStartBroker();
 		PUBLISH_CLIENT   = buildAndStartMqttClient("WILDCARD_MQTT_CLIENT_PUBLISH");
 		SUBSCRIBE_CLIENT = buildAndStartMqttClient("WILDCARD_MQTT_CLIENT_SUBSCRIBE");
 	}
 
-	@AfterAll
-	public static void afterAll() {
+	@AfterEach
+	void afterEach() {
 		PUBLISH_CLIENT.disconnect();
 		SUBSCRIBE_CLIENT.disconnect();
 		stopBroker();

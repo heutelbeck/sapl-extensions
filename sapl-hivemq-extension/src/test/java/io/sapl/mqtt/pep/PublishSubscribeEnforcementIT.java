@@ -45,7 +45,7 @@ import io.sapl.interpreter.InitializationException;
 class PublishSubscribeEnforcementIT extends SaplMqttPepTestUtil {
 
 	@AfterEach
-	void afterAll() {
+	void afterEach() {
 		stopBroker();
 	}
 

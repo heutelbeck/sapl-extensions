@@ -26,9 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
@@ -46,13 +44,13 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTestUtil {
 	private final static String PUBLISH_CLIENT_ID = "MQTT_CLIENT_PUBLISH";
 	private final static ConcurrentHashMap<String, MqttClientState> MQTT_CLIENT_CACHE = new ConcurrentHashMap<>();
 
-	@BeforeAll
-	public static void beforeAll() {
+	@BeforeEach
+	void beforeEach() {
 		MQTT_BROKER = buildAndStartBroker(MQTT_CLIENT_CACHE);
 	}
 
-	@AfterAll
-	public static void afterAll() {
+	@AfterEach
+	void afterEach() {
 		stopBroker();
 	}
 
