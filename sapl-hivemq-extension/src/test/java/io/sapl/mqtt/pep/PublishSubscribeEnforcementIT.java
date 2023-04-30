@@ -53,8 +53,8 @@ class PublishSubscribeEnforcementIT extends MqttTestBase {
 
 	@BeforeEach
 	void beforeEach() throws InitializationException {
-		mqttBroker = buildAndStartBroker();
-		publishClient = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
+		mqttBroker 		= buildAndStartBroker();
+		publishClient 	= buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
 		subscribeClient = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
 	}
 

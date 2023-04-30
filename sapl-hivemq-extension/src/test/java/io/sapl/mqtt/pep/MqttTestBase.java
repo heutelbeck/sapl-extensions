@@ -116,7 +116,8 @@ public class MqttTestBase {
 				.withConfigurationFolder(DATA_FOLDER)
 				.withDataFolder(CONFIG_FOLDER)
 				.withExtensionsFolder(EXTENSION_FOLDER)
-				.withEmbeddedExtension(embeddedExtensionBuild).build();
+				.withEmbeddedExtension(embeddedExtensionBuild)
+				.build();
 
 		InternalConfigurations.PAYLOAD_PERSISTENCE_TYPE.set(PersistenceType.FILE);
 		InternalConfigurations.RETAINED_MESSAGE_PERSISTENCE_TYPE.set(PersistenceType.FILE);
