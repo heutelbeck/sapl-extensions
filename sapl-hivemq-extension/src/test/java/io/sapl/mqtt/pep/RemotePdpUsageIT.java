@@ -16,7 +16,6 @@
 
 package io.sapl.mqtt.pep;
 
-import static io.sapl.mqtt.pep.SaplMqttPepTestUtility.*;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -35,9 +34,14 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -58,16 +62,12 @@ import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 
 @Testcontainers
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class RemotePdpUsageIT {
+class RemotePdpUsageIT extends SaplMqttPepTest {
 
 	private static final String EXTENSION_CONFIG_FILE_NAME = "sapl-extension-config.xml";
 
 	@TempDir
 	private static Path EXTENSION_CONFIG_DIR;
-
-	private EmbeddedHiveMQ 		mqttBroker;
-	private Mqtt5BlockingClient publishClient;
-	private Mqtt5BlockingClient subscribeClient;
 
 	@Container
 	static final GenericContainer<?> SAPL_SERVER_LT = new GenericContainer<>(
@@ -76,33 +76,29 @@ class RemotePdpUsageIT {
 					"/pdp/data")
 			.withExposedPorts(8080);
 
-	@BeforeEach
-	void beforeEach() throws InitializationException, ParserConfigurationException, TransformerException {
-		if (!SAPL_SERVER_LT.isRunning()) {
-			SAPL_SERVER_LT.start();
-		}
+	@BeforeAll
+	public static void beforeAll() throws InitializationException, ParserConfigurationException, TransformerException {
+		// set logging level
 		createExtensionConfigFile(SAPL_SERVER_LT.getFirstMappedPort());
 
-		this.mqttBroker      = startAndBuildBrokerWithRemotePdp();
-		this.subscribeClient = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
-		this.publishClient   = startMqttClient("MQTT_CLIENT_PUBLISH");
+		MQTT_BROKER      = startAndBuildBrokerWithRemotePdp();
+		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
 	}
 
-	@AfterEach
-	void afterEach() {
-		if (this.publishClient.getState().isConnected()) {
-			this.publishClient.disconnect();
+	@AfterAll
+	public static void afterAll() {
+		if (PUBLISH_CLIENT.getState().isConnected()) {
+			PUBLISH_CLIENT.disconnect();
 		}
-		if (this.subscribeClient.getState().isConnected()) {
-			this.subscribeClient.disconnect();
+		if (SUBSCRIBE_CLIENT.getState().isConnected()) {
+			SUBSCRIBE_CLIENT.disconnect();
 		}
-		stopBroker(this.mqttBroker);
-		if (SAPL_SERVER_LT.isRunning()) {
-			SAPL_SERVER_LT.stop();
-		}
+		stopBroker();
 	}
 
 	@Test
+	@Order(1)
 	@Timeout(10)
 	void when_publishAndSubscribeForTopicPermitted_then_subscribeAndPublishTopic() throws InterruptedException {
 		// GIVEN
@@ -112,19 +108,20 @@ class RemotePdpUsageIT {
 				false);
 
 		// WHEN
-		this.subscribeClient.subscribe(subscribeMessage);
-		this.publishClient.publish(publishMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessage);
 
 		// THEN
-		Mqtt5Publish receivedMessage = this.subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
+		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
 
 		assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
 
 		// FINALLY
-		this.subscribeClient.unsubscribeWith().topicFilter("topic").send();
+		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("topic").send();
 	}
 
 	@Test
+	@Order(2)
 	@Timeout(10)
 	void when_losingConnectionToPdpServer_then_DenyOnIndeterminate() {
 		// GIVEN
@@ -133,16 +130,16 @@ class RemotePdpUsageIT {
 		Mqtt5Publish publishMessage = buildMqttPublishMessage("topic", 1, true);
 
 		// WHEN
-		this.subscribeClient.subscribe(subscribeMessage);
-		this.publishClient.publish(publishMessage);
+		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		PUBLISH_CLIENT.publish(publishMessage);
 
 		SAPL_SERVER_LT.stop();
 
 		// THEN
 		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
 			assertFalse(SAPL_SERVER_LT.isRunning());
-			assertFalse(this.subscribeClient.getState().isConnected());
-			assertFalse(this.publishClient.getState().isConnected());
+			assertFalse(SUBSCRIBE_CLIENT.getState().isConnected());
+			assertFalse(PUBLISH_CLIENT.getState().isConnected());
 		});
 	}
 
