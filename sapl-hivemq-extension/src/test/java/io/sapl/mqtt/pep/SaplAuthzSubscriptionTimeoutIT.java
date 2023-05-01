@@ -1,5 +1,6 @@
 package io.sapl.mqtt.pep;
 
+import static io.sapl.mqtt.pep.MqttTestUtil.*;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,6 +13,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -36,9 +38,17 @@ import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.cache.MqttClientState;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
+import org.junit.jupiter.api.io.TempDir;
 import reactor.core.publisher.Flux;
 
-class SaplAuthzSubscriptionTimeoutIT extends MqttTestBase {
+class SaplAuthzSubscriptionTimeoutIT {
+
+	@TempDir
+	Path dataFolder;
+	@TempDir
+	Path configFolder;
+	@TempDir
+	Path extensionFolder;
 
 	private final String subscriptionClientId = "subscriptionClient";
 	private final String publishClientId      = "publishClient";
@@ -78,7 +88,7 @@ class SaplAuthzSubscriptionTimeoutIT extends MqttTestBase {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		Mqtt5BlockingClient publishClient = buildAndStartMqttClient(publishClientId);
 
@@ -131,7 +141,7 @@ class SaplAuthzSubscriptionTimeoutIT extends MqttTestBase {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		Mqtt5BlockingClient publishClient = buildAndStartMqttClient(publishClientId);
 
@@ -179,7 +189,7 @@ class SaplAuthzSubscriptionTimeoutIT extends MqttTestBase {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		Mqtt5BlockingClient publishClient = buildAndStartMqttClient(publishClientId);
 
@@ -231,7 +241,7 @@ class SaplAuthzSubscriptionTimeoutIT extends MqttTestBase {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 
@@ -286,7 +296,7 @@ class SaplAuthzSubscriptionTimeoutIT extends MqttTestBase {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 
@@ -340,7 +350,7 @@ class SaplAuthzSubscriptionTimeoutIT extends MqttTestBase {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 
@@ -388,7 +398,7 @@ class SaplAuthzSubscriptionTimeoutIT extends MqttTestBase {
 
 		ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
 
-		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
 				"src/test/resources/config/timeout/saplAuthzSubscription", mqttClientCache);
 		Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 

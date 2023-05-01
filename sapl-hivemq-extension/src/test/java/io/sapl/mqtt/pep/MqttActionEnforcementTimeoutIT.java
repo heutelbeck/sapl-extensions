@@ -16,6 +16,7 @@
 
 package io.sapl.mqtt.pep;
 
+import static io.sapl.mqtt.pep.MqttTestUtil.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,10 +43,19 @@ import io.sapl.api.pdp.MultiAuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
+import org.junit.jupiter.api.io.TempDir;
 import reactor.core.publisher.Flux;
 
-class MqttActionEnforcementTimeoutIT extends MqttTestBase {
+import java.nio.file.Path;
 
+class MqttActionEnforcementTimeoutIT {
+
+	@TempDir
+	Path dataFolder;
+	@TempDir
+	Path configFolder;
+	@TempDir
+	Path extensionFolder;
 
 	@Test
 	void when_timeoutWhileConnecting_then_denyConnection() {
@@ -63,7 +73,7 @@ class MqttActionEnforcementTimeoutIT extends MqttTestBase {
 				.serverPort(brokerPort)
 				.buildBlocking();
 
-		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
 				"src/test/resources/config/timeout/connection");
 
 		// THEN
@@ -95,7 +105,7 @@ class MqttActionEnforcementTimeoutIT extends MqttTestBase {
 		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage("topic");
 
 		// WHEN
-		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
 				"src/test/resources/config/timeout/subscription");
 		Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 
@@ -130,7 +140,7 @@ class MqttActionEnforcementTimeoutIT extends MqttTestBase {
 				1, false);
 
 		// WHEN
-		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(pdpMock,
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
 				"src/test/resources/config/timeout/publish");
 		Mqtt5BlockingClient publishClient = buildAndStartMqttClient(publishClientId);
 

@@ -16,6 +16,7 @@
 
 package io.sapl.mqtt.pep;
 
+import static io.sapl.mqtt.pep.MqttTestUtil.*;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -39,8 +41,16 @@ import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAckReasonCo
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
 import io.sapl.mqtt.pep.cache.MqttClientState;
+import org.junit.jupiter.api.io.TempDir;
 
-class ConnectionEnforcementTestIT extends MqttTestBase {
+class ConnectionEnforcementTestIT {
+
+	@TempDir
+	Path dataFolder;
+	@TempDir
+	Path configFolder;
+	@TempDir
+	Path extensionFolder;
 
 	private final static String PUBLISH_CLIENT_ID = "MQTT_CLIENT_PUBLISH";
 	private final static ConcurrentHashMap<String, MqttClientState> MQTT_CLIENT_CACHE = new ConcurrentHashMap<>();
@@ -49,7 +59,7 @@ class ConnectionEnforcementTestIT extends MqttTestBase {
 
 	@BeforeEach
 	void beforeEach() {
-		mqttBroker = buildAndStartBroker(MQTT_CLIENT_CACHE);
+		mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, MQTT_CLIENT_CACHE);
 	}
 
 	@AfterEach

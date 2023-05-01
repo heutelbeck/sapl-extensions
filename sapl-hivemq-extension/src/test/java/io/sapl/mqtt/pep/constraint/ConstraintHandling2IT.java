@@ -16,12 +16,14 @@
 
 package io.sapl.mqtt.pep.constraint;
 
+import static io.sapl.mqtt.pep.MqttTestUtil.*;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -36,9 +38,17 @@ import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 
 import io.sapl.interpreter.InitializationException;
-import io.sapl.mqtt.pep.MqttTestBase;
+import io.sapl.mqtt.pep.MqttTestUtil;
+import org.junit.jupiter.api.io.TempDir;
 
-class ConstraintHandling2IT extends MqttTestBase {
+class ConstraintHandling2IT {
+
+	@TempDir
+	Path dataFolder;
+	@TempDir
+	Path configFolder;
+	@TempDir
+	Path extensionFolder;
 
 	EmbeddedHiveMQ mqttBroker;
 	Mqtt5BlockingClient publishClient;
@@ -46,7 +56,7 @@ class ConstraintHandling2IT extends MqttTestBase {
 
 	@BeforeEach
 	void beforeEach() throws InitializationException {
-		mqttBroker = buildAndStartBroker();
+		mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder);
 		publishClient = buildAndStartMqttClient("CONSTRAINT_MQTT_CLIENT_PUBLISH");
 		subscribeClient = buildAndStartMqttClient("CONSTRAINT_MQTT_CLIENT_SUBSCRIBE");
 	}
@@ -160,7 +170,7 @@ class ConstraintHandling2IT extends MqttTestBase {
 				.qos(Objects.requireNonNull(MqttQos.fromCode(0)))
 				.retain(false)
 				.contentType("text/plain")
-				.payload(MqttTestBase.PUBLISH_MESSAGE_PAYLOAD.getBytes(StandardCharsets.UTF_8))
+				.payload(MqttTestUtil.PUBLISH_MESSAGE_PAYLOAD.getBytes(StandardCharsets.UTF_8))
 				.build();
 
 		// WHEN

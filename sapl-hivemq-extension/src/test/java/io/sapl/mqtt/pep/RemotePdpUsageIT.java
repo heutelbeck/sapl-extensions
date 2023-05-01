@@ -16,6 +16,7 @@
 
 package io.sapl.mqtt.pep;
 
+import static io.sapl.mqtt.pep.MqttTestUtil.*;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -56,16 +57,22 @@ import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 
 @Testcontainers
-class RemotePdpUsageIT extends MqttTestBase {
-
-	private static final String EXTENSION_CONFIG_FILE_NAME = "sapl-extension-config.xml";
-
-	private EmbeddedHiveMQ 		mqttBroker;
-	private Mqtt5BlockingClient publishClient;
-	private Mqtt5BlockingClient 	subscribeClient;
+class RemotePdpUsageIT {
 
 	@TempDir
-	private static Path EXTENSION_CONFIG_DIR;
+	Path dataFolder;
+	@TempDir
+	Path configFolder;
+	@TempDir
+	Path extensionFolder;
+	@TempDir
+	Path extensionConfigDir;
+
+	private EmbeddedHiveMQ 			mqttBroker;
+	private Mqtt5BlockingClient 	publishClient;
+	private Mqtt5BlockingClient 	subscribeClient;
+
+	private final String extensionConfigFileName = "sapl-extension-config.xml";
 
 	@Container
 	static final GenericContainer<?> SAPL_SERVER_LT = new GenericContainer<>(
@@ -145,30 +152,30 @@ class RemotePdpUsageIT extends MqttTestBase {
 	}
 
 	@SneakyThrows
-	private static EmbeddedHiveMQ startAndBuildBrokerWithRemotePdp() {
+	private EmbeddedHiveMQ startAndBuildBrokerWithRemotePdp() {
 		EmbeddedHiveMQ embeddedHiveMq = buildBrokerWithExtension();
 		startBrokerWithRemotePdp(embeddedHiveMq);
 		return embeddedHiveMq;
 	}
 
-	private static void startBrokerWithRemotePdp(EmbeddedHiveMQ embeddedHiveMq) throws InterruptedException, ExecutionException {
+	private void startBrokerWithRemotePdp(EmbeddedHiveMQ embeddedHiveMq) throws InterruptedException, ExecutionException {
 		embeddedHiveMq.start().get();
 	}
 
-	private static EmbeddedHiveMQ buildBrokerWithExtension() {
+	private EmbeddedHiveMQ buildBrokerWithExtension() {
 		final EmbeddedExtension embeddedExtensionBuild = buildBrokerExtension();
 		return buildBroker(embeddedExtensionBuild);
 	}
 
-	private static EmbeddedHiveMQ buildBroker(EmbeddedExtension embeddedExtensionBuild) {
+	private EmbeddedHiveMQ buildBroker(EmbeddedExtension embeddedExtensionBuild) {
 		return EmbeddedHiveMQ.builder()
-				.withConfigurationFolder(CONFIG_FOLDER)
-				.withDataFolder(DATA_FOLDER)
-				.withExtensionsFolder(EXTENSION_FOLDER)
+				.withConfigurationFolder(configFolder)
+				.withDataFolder(dataFolder)
+				.withExtensionsFolder(extensionFolder)
 				.withEmbeddedExtension(embeddedExtensionBuild).build();
 	}
 
-	private static EmbeddedExtension buildBrokerExtension() {
+	private EmbeddedExtension buildBrokerExtension() {
 		return EmbeddedExtension.builder()
 				.withId("SAPL-MQTT-PEP")
 				.withName("SAPL-MQTT-PEP")
@@ -176,11 +183,11 @@ class RemotePdpUsageIT extends MqttTestBase {
 				.withPriority(0)
 				.withStartPriority(1000)
 				.withAuthor("Nils Mahnken")
-				.withExtensionMain(new HivemqPepExtensionMain(EXTENSION_CONFIG_DIR.toString()))
+				.withExtensionMain(new HivemqPepExtensionMain(extensionConfigDir.toString()))
 				.build();
 	}
 
-	private static void createExtensionConfigFile(Integer port)
+	private void createExtensionConfigFile(Integer port)
 			throws ParserConfigurationException, TransformerException {
 		DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
 
@@ -213,8 +220,8 @@ class RemotePdpUsageIT extends MqttTestBase {
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		Transformer        transformer        = transformerFactory.newTransformer();
 		DOMSource          domSource          = new DOMSource(document);
-		StreamResult       streamResult       = new StreamResult(new File(Path.of(EXTENSION_CONFIG_DIR.toString(),
-												EXTENSION_CONFIG_FILE_NAME).toString()));
+		StreamResult       streamResult       = new StreamResult(new File(Path.of(extensionConfigDir.toString(),
+				extensionConfigFileName).toString()));
 
 		transformer.transform(domSource, streamResult);
 	}

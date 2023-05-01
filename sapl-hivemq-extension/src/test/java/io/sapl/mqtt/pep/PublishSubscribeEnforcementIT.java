@@ -16,11 +16,13 @@
 
 package io.sapl.mqtt.pep;
 
+import static io.sapl.mqtt.pep.MqttTestUtil.*;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -44,8 +46,16 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscription;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCode;
 
 import io.sapl.interpreter.InitializationException;
+import org.junit.jupiter.api.io.TempDir;
 
-class PublishSubscribeEnforcementIT extends MqttTestBase {
+class PublishSubscribeEnforcementIT {
+
+	@TempDir
+	Path dataFolder;
+	@TempDir
+	Path configFolder;
+	@TempDir
+	Path extensionFolder;
 
 	private EmbeddedHiveMQ mqttBroker;
 	private Mqtt5BlockingClient publishClient;
@@ -53,7 +63,7 @@ class PublishSubscribeEnforcementIT extends MqttTestBase {
 
 	@BeforeEach
 	void beforeEach() throws InitializationException {
-		mqttBroker 		= buildAndStartBroker();
+		mqttBroker 		= buildAndStartBroker(dataFolder, configFolder, extensionFolder);
 		publishClient 	= buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
 		subscribeClient = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
 	}
