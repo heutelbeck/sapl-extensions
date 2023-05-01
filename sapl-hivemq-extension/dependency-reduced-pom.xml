@@ -28,9 +28,11 @@
             <configuration>
               <artifactSet>
                 <excludes>
-                  <exclude>com.hivemq:hivemq-extension-sdk</exclude>
-                  <exclude>ch.qos.logback:*</exclude>
                   <exclude>javax.servlet:*</exclude>
+                  <exclude>ch.qos.logback:*</exclude>
+                  <exclude>aopalliance:aopalliance</exclude>
+                  <exclude>org.springframework:*jcl</exclude>
+                  <exclude>com.hivemq:hivemq-extension-sdk</exclude>
                 </excludes>
               </artifactSet>
               <filters>
@@ -40,6 +42,128 @@
                     <exclude>META-INF/*.SF</exclude>
                     <exclude>META-INF/*.DSA</exclude>
                     <exclude>META-INF/*.RSA</exclude>
+                    <exclude>META-INF/NOTICE*</exclude>
+                    <exclude>META-INF/notice*</exclude>
+                    <exclude>META-INF/MANIFEST.MF</exclude>
+                    <exclude>META-INF/LICENSE*</exclude>
+                    <exclude>META-INF/license*</exclude>
+                    <exclude>META-INF/LGPL*</exclude>
+                    <exclude>META-INF/ASL*</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.eclipse.emf:*</artifact>
+                  <excludes>
+                    <exclude>about.html</exclude>
+                    <exclude>plugin.xml</exclude>
+                    <exclude>plugin.properties</exclude>
+                    <exclude>about.ini</exclude>
+                    <exclude>about.mappings</exclude>
+                    <exclude>about.properties</exclude>
+                    <exclude>modeling32*</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.eclipse.platform:*</artifact>
+                  <excludes>
+                    <exclude>about.html</exclude>
+                    <exclude>plugin.xml</exclude>
+                    <exclude>plugin.properties</exclude>
+                    <exclude>about.ini</exclude>
+                    <exclude>about.mappings</exclude>
+                    <exclude>about.properties</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.eclipse.xtext:org.eclipse.xtext.*</artifact>
+                  <excludes>
+                    <exclude>about.html</exclude>
+                    <exclude>plugin.xml</exclude>
+                    <exclude>plugin.properties</exclude>
+                    <exclude>about.ini</exclude>
+                    <exclude>about.mappings</exclude>
+                    <exclude>about.properties</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.eclipse.xtext:org.eclipse.xtext</artifact>
+                  <excludes>
+                    <exclude>plugin.properties</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.eclipse.platform:org.eclipse.osgi</artifact>
+                  <excludes>
+                    <exclude>*api_description</exclude>
+                    <exclude>*options</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>io.netty:netty*</artifact>
+                  <excludes>
+                    <exclude>META-INF/io.netty.versions.properties</exclude>
+                    <exclude>META-INF/services/reactor.blockhound*</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.springframework:*</artifact>
+                  <excludes>
+                    <exclude>org.apache.commons.logging.*</exclude>
+                    <exclude>META-INF/services/reactor.blockhound*</exclude>
+                    <exclude>org.aopalliance.*</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.springframework:spring</artifact>
+                  <excludes>
+                    <exclude>org.apache.commons.logging.*</exclude>
+                    <exclude>META-INF/services/reactor.blockhound*</exclude>
+                    <exclude>org.aopalliance.*</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.springframework.security:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/spring/aot.factories</exclude>
+                    <exclude>META-INF/spring.tooling</exclude>
+                    <exclude>META-INF/spring.schemas</exclude>
+                    <exclude>META-INF/spring.handlers</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.springframework:*aop</artifact>
+                  <excludes>
+                    <exclude>META-INF/spring/aot.factories</exclude>
+                    <exclude>META-INF/spring.tooling</exclude>
+                    <exclude>META-INF/spring.schemas</exclude>
+                    <exclude>META-INF/spring.handlers</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.springframework:*context</artifact>
+                  <excludes>
+                    <exclude>META-INF/spring/aot.factories</exclude>
+                    <exclude>META-INF/spring.tooling</exclude>
+                    <exclude>META-INF/spring.schemas</exclude>
+                    <exclude>META-INF/spring.handlers</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.springframework:*core</artifact>
+                  <excludes>
+                    <exclude>META-INF/spring/aot.factories</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.springframework:*messaging</artifact>
+                  <excludes>
+                    <exclude>META-INF/spring/aot.factories</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.springframework:*web</artifact>
+                  <excludes>
+                    <exclude>META-INF/spring/aot.factories</exclude>
                   </excludes>
                 </filter>
               </filters>
