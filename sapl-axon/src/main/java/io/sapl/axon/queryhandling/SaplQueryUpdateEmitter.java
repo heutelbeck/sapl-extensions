@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
+
 import org.axonframework.common.Registration;
 import org.axonframework.messaging.GenericMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
@@ -36,8 +37,10 @@ import io.sapl.axon.annotation.EnforceDropUpdatesWhileDenied;
 import io.sapl.axon.annotation.EnforceRecoverableUpdatesIfDenied;
 import io.sapl.axon.annotation.PreHandleEnforce;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
-import lombok.Value;
+import io.sapl.axon.util.SinkManyWrapper;
+
 import lombok.extern.slf4j.Slf4j;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.EmitFailureHandler;
@@ -89,20 +92,15 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		return registerUpdateHandler(query, updateBufferSize);
 	}
 
-	@Value
-	private static class QueryEnforcementConfiguration {
-		QueryAuthorizationMode mode;
-		Flux<AuthorizationDecision> decisions;
+	private record QueryEnforcementConfiguration(QueryAuthorizationMode mode, Flux<AuthorizationDecision> decisions) {
 	}
 
-	@Value
-	private static class QueryData<U> {
-		QueryAuthorizationMode mode;
-		Sinks.One<QueryEnforcementConfiguration> enforcementConfigurationSink;
-		Sinks.Many<SubscriptionQueryUpdateMessage<U>> updateSink;
+	private record QueryData<U> (QueryAuthorizationMode mode,
+			Sinks.One<QueryEnforcementConfiguration> enforcementConfigurationSink,
+			SinkManyWrapper<SubscriptionQueryUpdateMessage<U>> updateSinkWrapper) {
 
 		public QueryData<U> withMode(QueryAuthorizationMode newMode) {
-			return new QueryData<U>(newMode, enforcementConfigurationSink, updateSink);
+			return new QueryData<U>(newMode, enforcementConfigurationSink, updateSinkWrapper);
 		}
 	}
 
@@ -153,10 +151,10 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		activeQueries.keySet().stream().filter(m -> m.getIdentifier().equals(messageIdentifier))
 				.forEach(query -> Optional.ofNullable(activeQueries.get(query)).ifPresent(queryData -> {
 					try {
-						queryData.getEnforcementConfigurationSink().emitValue(enforcementConfiguration,
+						queryData.enforcementConfigurationSink().emitValue(enforcementConfiguration,
 								EmitFailureHandler.FAIL_FAST);
 					} catch (Exception e) {
-						emitError(query, e, queryData.getUpdateSink());
+						emitError(query, e, queryData.updateSinkWrapper());
 					}
 				}));
 	}
@@ -173,8 +171,8 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
 		Sinks.One<QueryEnforcementConfiguration> enforcementConfigurationSink = Sinks.one();
 
-		Many<SubscriptionQueryUpdateMessage<U>> updateSink = Sinks.many().replay()
-				.<SubscriptionQueryUpdateMessage<U>>limit(updateBufferSize);
+		Many<SubscriptionQueryUpdateMessage<U>> updateSink = Sinks.many().replay().limit(updateBufferSize);
+		SinkManyWrapper<SubscriptionQueryUpdateMessage<U>> updateSinkWrapper = new SinkManyWrapper<>(updateSink);
 
 		Runnable removeHandler = () -> activeQueries.remove(query);
 		Registration registration = () -> {
@@ -183,47 +181,47 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		};
 
 		activeQueries.put(query,
-				new QueryData<U>(QueryAuthorizationMode.UNDEFINED, enforcementConfigurationSink, updateSink));
+				new QueryData<U>(QueryAuthorizationMode.UNDEFINED, enforcementConfigurationSink, updateSinkWrapper));
 
 		final Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux = updateSink.asFlux().doOnCancel(removeHandler)
 				.doOnTerminate(removeHandler);
 
 		var securedUpdates = enforcementConfigurationSink.asMono().flatMapMany(authzConfig -> {
 			activeQueries.computeIfPresent(query,
-					(__, originalQueryData) -> originalQueryData.withMode(authzConfig.getMode()));
+					(__, originalQueryData) -> originalQueryData.withMode(authzConfig.mode()));
 
-			if (authzConfig.getMode() == QueryAuthorizationMode.IMMEDIATE_DENY) {
+			if (authzConfig.mode() == QueryAuthorizationMode.IMMEDIATE_DENY) {
 				return Flux
 						.just(new GenericSubscriptionQueryUpdateMessage<>(
 								(Class<U>) registeredQuery.getUpdateResponseType().getExpectedResponseType(),
 								new AccessDeniedException("Access Denied"), Map.of()))
 						.doOnCancel(removeHandler).doOnTerminate(removeHandler);
 			}
-			if (authzConfig.getMode() == QueryAuthorizationMode.TILL_DENIED) {
-				return EnforceUpdatesTillDeniedPolicyEnforcementPoint.of(registeredQuery, authzConfig.getDecisions(),
+			if (authzConfig.mode() == QueryAuthorizationMode.TILL_DENIED) {
+				return EnforceUpdatesTillDeniedPolicyEnforcementPoint.of(registeredQuery, authzConfig.decisions(),
 						updateMessageFlux, constraintHandlerService, query.getResponseType(),
 						query.getUpdateResponseType());
 			}
-			if (authzConfig.getMode() == QueryAuthorizationMode.DROP_WHILE_DENIED) {
-				return EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint.of(registeredQuery,
-						authzConfig.getDecisions(), updateMessageFlux, constraintHandlerService,
-						query.getResponseType(), query.getUpdateResponseType());
+			if (authzConfig.mode() == QueryAuthorizationMode.DROP_WHILE_DENIED) {
+				return EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint.of(registeredQuery, authzConfig.decisions(),
+						updateMessageFlux, constraintHandlerService, query.getResponseType(),
+						query.getUpdateResponseType());
 			}
-			if (authzConfig.getMode() == QueryAuthorizationMode.RECOVERABLE_IF_DENIED) {
+			if (authzConfig.mode() == QueryAuthorizationMode.RECOVERABLE_IF_DENIED) {
 				var originalUpdateResponseType = (ResponseType<U>) query.getMetaData()
 						.get(RecoverableResponse.RECOVERABLE_UPDATE_TYPE_KEY);
 				if (originalUpdateResponseType != null) {
 					log.debug("Client requested access denied recoverability.");
 
-					return EnforceRecoverableIfDeniedPolicyEnforcementPoint.of(registeredQuery,
-							authzConfig.getDecisions(), updateMessageFlux, constraintHandlerService,
-							query.getResponseType(), originalUpdateResponseType);
+					return EnforceRecoverableIfDeniedPolicyEnforcementPoint.of(registeredQuery, authzConfig.decisions(),
+							updateMessageFlux, constraintHandlerService, query.getResponseType(),
+							originalUpdateResponseType);
 				}
 				log.debug(
 						"While handler supports recoverability, client did not request it. Fall back to TILL_DENIED enforcement. Requested: {}",
 						query.getUpdateResponseType().getExpectedResponseType().getSimpleName());
 
-				return EnforceUpdatesTillDeniedPolicyEnforcementPoint.of(registeredQuery, authzConfig.getDecisions(),
+				return EnforceUpdatesTillDeniedPolicyEnforcementPoint.of(registeredQuery, authzConfig.decisions(),
 						updateMessageFlux, constraintHandlerService, query.getResponseType(),
 						query.getUpdateResponseType());
 			}
@@ -231,7 +229,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		});
 
 		return (UpdateHandlerRegistration<U>) new UpdateHandlerRegistration(registration, securedUpdates,
-				() -> updateSink.emitComplete(EmitFailureHandler.FAIL_FAST));
+				updateSinkWrapper::complete);
 	}
 
 	private SubscriptionQueryMessage<?, ?, ?> reconstructOriginalQuery(SubscriptionQueryMessage<?, ?, ?> query) {
@@ -305,7 +303,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		activeQueries.keySet().stream().filter(payloadMatchesQueryResponseType(update.getPayloadType()))
 				.filter(sqm -> filter.test((SubscriptionQueryMessage<?, ?, U>) sqm))
 				.forEach(query -> Optional.ofNullable(activeQueries.get(query))
-						.ifPresent(uh -> doEmit(query, uh.getUpdateSink(), update)));
+						.ifPresent(uh -> doEmit(query, uh.updateSinkWrapper(), update)));
 	}
 
 	private Predicate<SubscriptionQueryMessage<?, ?, ?>> payloadMatchesQueryResponseType(Class<?> payloadType) {
@@ -327,11 +325,11 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <U> void doEmit(SubscriptionQueryMessage<?, ?, ?> query, Sinks.Many<?> updateHandler,
+	private <U> void doEmit(SubscriptionQueryMessage<?, ?, ?> query, SinkManyWrapper<?> updateHandler,
 			SubscriptionQueryUpdateMessage<U> update) {
 		MessageMonitor.MonitorCallback monitorCallback = updateMessageMonitor.onMessageIngested(update);
 		try {
-			((Many<SubscriptionQueryUpdateMessage<U>>) updateHandler).emitNext(update, EmitFailureHandler.FAIL_FAST);
+			((SinkManyWrapper<SubscriptionQueryUpdateMessage<U>>) updateHandler).next(update);
 			monitorCallback.reportSuccess();
 		} catch (Exception e) {
 			log.info(
@@ -349,17 +347,17 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		activeQueries.keySet().stream().filter(filter)
 				.forEach(query -> Optional.ofNullable(activeQueries.get(query)).ifPresent(queryData -> {
 					try {
-						if (queryData.getMode() != QueryAuthorizationMode.UNDEFINED)
-							queryData.getUpdateSink().emitComplete(EmitFailureHandler.FAIL_FAST);
+						if (queryData.mode() != QueryAuthorizationMode.UNDEFINED)
+							queryData.updateSinkWrapper().complete();
 					} catch (Exception e) {
-						emitError(query, e, queryData.getUpdateSink());
+						emitError(query, e, queryData.updateSinkWrapper());
 					}
 				}));
 	}
 
-	private void emitError(SubscriptionQueryMessage<?, ?, ?> query, Throwable cause, Sinks.Many<?> updateHandler) {
+	private void emitError(SubscriptionQueryMessage<?, ?, ?> query, Throwable cause, SinkManyWrapper<?> updateHandler) {
 		try {
-			updateHandler.emitError(cause, EmitFailureHandler.FAIL_FAST);
+			updateHandler.error(cause);
 		} catch (Exception e) {
 			log.error("An error happened while trying to inform update handler about the error. Query: {}", query);
 		}
@@ -369,10 +367,11 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		activeQueries.keySet().stream().filter(filter)
 				.forEach(query -> Optional.ofNullable(activeQueries.get(query)).ifPresent(queryData -> {
 
-					if (queryData.getMode() != QueryAuthorizationMode.UNDEFINED) {
-						emitError(query, cause, queryData.getUpdateSink());
+					if (queryData.mode() != QueryAuthorizationMode.UNDEFINED) {
+						emitError(query, cause, queryData.updateSinkWrapper());
 					} else {
-						queryData.getUpdateSink().emitComplete(EmitFailureHandler.FAIL_FAST);
+						queryData.enforcementConfigurationSink().emitEmpty(EmitFailureHandler.FAIL_FAST);
+						queryData.updateSinkWrapper().complete();
 					}
 				}));
 	}

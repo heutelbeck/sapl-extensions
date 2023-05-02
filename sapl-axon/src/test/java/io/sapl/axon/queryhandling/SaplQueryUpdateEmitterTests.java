@@ -36,7 +36,6 @@ import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.UpdateHandlerRegistration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -1012,30 +1011,6 @@ class SaplQueryUpdateEmitterTests {
 	}
 
 	@Test
-	@Disabled // FIXME: intermittend failure
-// @formatter:off 
-	/* 
-	 * io.sapl.axon.queryhandling.SaplQueryUpdateEmitter: L375
-	 *     should complete because no authorization exists for this query
-	 *     in other cases an error is emitted (L362)
-	 * org.axonframework.queryhandling.SimpleQueryUpdateEmitter: L250
-	 *     does emit an error instead of completion
-	 *     because it doesn't differentiate between AuthorizationModes
-	 *
-	 * the updates in this test do timeout
-	 *   -> no completion signal is sent via the Flux.
-	 * the updateSink is identical in both methods registerUpdateHandler(..) & completeExceptionally(..)
-	 *   this was checked with system identity hashes
-	 * tried modifying the SaplQueryUpdateEmitter to emit an error instead of a
-	 *   completion in this case.
-	 *   -> still no signal.
-	 * in both cases: tryEmitComplete/tryEmitError of the query's updateSink (L176)
-	 *   is successful.
-	 * so the issue is not the FAIL_FAST EmitFailureHandler. also all other emits
-	 *   with FAIL_FAST work just fine (see other passing tests).
-	 * it seems like the signal isn't passed from the Sink to the Flux.
-	 */
-// @formatter:on
 	void when_completeExceptionally_and_unauthorized_then_complete() {
 		var query = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
 				ResponseTypes.instanceOf(FlaggedUpdateResponseType.class));

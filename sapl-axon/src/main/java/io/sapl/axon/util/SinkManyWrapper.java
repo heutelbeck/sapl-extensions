@@ -1,93 +1,75 @@
 package io.sapl.axon.util;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
+import org.axonframework.queryhandling.SinkWrapper;
 
-import io.grpc.internal.AtomicBackoff;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import reactor.core.publisher.Sinks;
-import reactor.core.publisher.Sinks.EmitResult;
 
+/**
+ * Wrapper around {@link Sinks.Many} for busy looping.
+ *
+ * @param <T> The value type
+ * @author Dominic Heutelbeck
+ * @since 2.1.0
+ */
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class SinkManyWrapper<T> {
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class SinkManyWrapper<T> implements SinkWrapper<T> {
 
-	private static record EmitAction<T> (T data, Throwable error) {
-		static <T> EmitAction<T> emitNextAction(T data) {
-			return new EmitAction<T>(data, null);
+	Sinks.Many<T> fluxSink;
+
+	/**
+	 * Initializes this wrapper with delegate sink.
+	 *
+	 * @param fluxSink Delegate sink
+	 */
+
+	/**
+	 * Wrapper around {@link Sinks.Many#tryEmitComplete()}. Throws exception on
+	 * failure cases.}.
+	 */
+	@Override
+	public void complete() {
+		Sinks.EmitResult result;
+		// noinspection StatementWithEmptyBody
+		while ((result = fluxSink.tryEmitComplete()) == Sinks.EmitResult.FAIL_NON_SERIALIZED) {
+			// busy spin
 		}
+		result.orThrow();
+	}
 
-		static <T> EmitAction<T> emitCompleteAction() {
-			return new EmitAction<T>(null, null);
+	/**
+	 * Wrapper around {@link Sinks.Many#tryEmitNext(Object)}. Throws exception on
+	 * failure cases.
+	 *
+	 * @param value to be passed to the delegate sink
+	 */
+	@Override
+	public void next(T value) {
+		Sinks.EmitResult result;
+		// noinspection StatementWithEmptyBody
+		while ((result = fluxSink.tryEmitNext(value)) == Sinks.EmitResult.FAIL_NON_SERIALIZED) {
+			// busy spin
 		}
+		result.orThrow();
+	}
 
-		static <T> EmitAction<T> emitErrorAction(Throwable error) {
-			return new EmitAction<T>(null, error);
+	/**
+	 * Wrapper around {@link Sinks.Many#tryEmitError(Throwable)}. Throws exception
+	 * on failure cases.
+	 *
+	 * @param t to be passed to the delegate sink
+	 */
+	@Override
+	public void error(Throwable t) {
+		Sinks.EmitResult result;
+		// noinspection StatementWithEmptyBody
+		while ((result = fluxSink.tryEmitError(t)) == Sinks.EmitResult.FAIL_NON_SERIALIZED) {
+			// busy spin
 		}
+		result.orThrow();
 
-		boolean isNextAction() {
-			return data != null && error == null;
-		}
-
-		boolean isCompleteAction() {
-			return data == null && error == null;
-		}
-
-		boolean isErrorAction() {
-			return data == null && error != null;
-		}
-	}
-
-	final Sinks.Many<T> manySink;
-	final Queue<EmitAction<T>> actionQueue = new ConcurrentLinkedQueue<>();
-	AtomicBackoff backoffValueMs = resetBackoff();
-	AtomicBoolean actionSuccess = new AtomicBoolean(true);
-
-	public void emitNext(T data) {
-		actionQueue.add(EmitAction.emitNextAction(data));
-	}
-
-	public void emitComplete() {
-		actionQueue.add(EmitAction.emitCompleteAction());
-	}
-
-	public void emitError(Throwable error) {
-		actionQueue.add(EmitAction.emitErrorAction(error));
-	}
-
-	private boolean handleNextAction() {
-		var action = actionQueue.peek();
-		if (action == null)
-			return false;
-		var success = tryPerformEmit(action);
-		actionSuccess.set(success);
-		if (success) {
-			actionQueue.poll();
-			resetBackoff();
-		} else
-			backoff();
-		return true;
-	}
-
-	private boolean tryPerformEmit(EmitAction<T> action) {
-		var result = EmitResult.OK;
-		if (action.isNextAction())
-			result = manySink.tryEmitNext(action.data());
-		if (action.isCompleteAction())
-			result = manySink.tryEmitComplete();
-		if (action.isErrorAction())
-			result = manySink.tryEmitError(action.error());
-		return result != EmitResult.FAIL_NON_SERIALIZED;
-	}
-
-	private void backoff() {
-		backoffValueMs.getState().backoff();
-	}
-
-	private AtomicBackoff resetBackoff() {
-		return backoffValueMs = new AtomicBackoff("sinkManyBackoff", 1);
 	}
 }
