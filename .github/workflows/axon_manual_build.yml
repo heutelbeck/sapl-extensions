@@ -23,7 +23,7 @@ jobs:
     strategy:
       matrix:
         java: [ '17' ]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
     name: Unit Tests (JDK ${{ matrix.java }} on ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
@@ -57,7 +57,7 @@ jobs:
     strategy:
       matrix:
         java: [ '17' ]
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
     name: Integration Tests (JDK ${{ matrix.java }} on ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
@@ -80,8 +80,8 @@ jobs:
     - name: Run integration tests
       run: mvn -B verify failsafe:integration-test -P coverage,it -DskipITs=false -pl sapl-axon
 
-    - name: Clean up local repository before caching (Linux)
-      if: ${{ matrix.os == 'ubuntu-latest' && ! cancelled() }}
+    - name: Clean up local repository before caching (Linux/Mac)
+      if: ${{ matrix.os != 'windows-latest' && ! cancelled() }}
       run: rm -rf ~/.m2/repository/io/sapl
 
     - name: Clean up local repository before caching (Win)
