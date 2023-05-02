@@ -41,9 +41,9 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
 	private static final String                                                 MAPPER_FILED_NAME        = "mapper";
 	private static final String                                                 ERROR_MAPPERS_FILED_NAME = "errorMappers";
 	private static final Duration                                               DEFAULT_TIMEOUT          = Duration
-			.ofMillis(1000);
+			.ofMillis(250);
 	private static final Duration                                               DEFAULT_TIMESTEP         = Duration
-			.ofMillis(50);
+			.ofMillis(10);
 	private static final SubscriptionQueryUpdateMessage<TestUpdateResponseType> DEFAULT_UPDATE_MESSAGE   = new GenericSubscriptionQueryUpdateMessage<TestUpdateResponseType>(
 			new TestUpdateResponseType());
 

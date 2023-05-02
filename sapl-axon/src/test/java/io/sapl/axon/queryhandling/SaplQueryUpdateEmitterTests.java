@@ -63,8 +63,8 @@ class SaplQueryUpdateEmitterTests {
 	private static final String DEFAULT_MESSAGE_IDENTIFIER = "messageIdentifier";
 	private static final String DEFAULT_CAUSE = "defaultCause";
 	private static final FlaggedUpdateResponseType DEFAULT_UPDATE_RESPONSE_TYPE = new FlaggedUpdateResponseType();
-	private static final Duration DEFAULT_TIMEOUT = Duration.ofMillis(1000);
-	private static final Duration DEFAULT_TIMESTEP = Duration.ofMillis(50);
+	private static final Duration DEFAULT_TIMEOUT = Duration.ofMillis(500);
+	private static final Duration DEFAULT_TIMESTEP = Duration.ofMillis(20);
 	private static final String MAPPER_FILED_NAME = "mapper";
 	private static final String DISPATCH_INTERCEPTORS_FILED_NAME = "dispatchInterceptors";
 
