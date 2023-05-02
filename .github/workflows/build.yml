@@ -25,7 +25,7 @@ jobs:
     strategy:
       matrix:
         java: [ '17' ]
-        os: [ubuntu-latest]#, windows-latest, macos-latest]
+        os: [ubuntu-latest]
     name: Unit Tests (JDK ${{ matrix.java }} on ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
@@ -50,7 +50,7 @@ jobs:
         node-version: '18'
 
     - name: Run tests
-      run: mvn -B package javadoc:jar -pl !sapl-axon
+      run: mvn -B package javadoc:jar
   
     - name: Clean up local repository before caching (Linux/Mac)
       if: ${{ matrix.os != 'windows-latest'}}
@@ -89,7 +89,7 @@ jobs:
     - name: Run analysis (Unit Tests, IT, JaCoCo, Sonar)    
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: mvn -B clean verify sonar:sonar failsafe:integration-test -Pcoverage,it  -pl !sapl-axon -Dsonar.login=${SONAR_TOKEN}
+      run: mvn -B clean verify sonar:sonar failsafe:integration-test -Pcoverage,it  -Dsonar.login=${SONAR_TOKEN}
 
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@v2
