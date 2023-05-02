@@ -105,8 +105,6 @@ class SaplQueryUpdateEmitterTests {
 				.thenCallRealMethod();
 	}
 
-	final String TEXTSUBSCRIPTIONQUERYUPDATEMESSAGE = "some-text";
-
 	private SaplQueryUpdateEmitter emitter;
 	private SubscriptionQueryMessage<String, List<String>, String> subscriptionQueryMessage;
 

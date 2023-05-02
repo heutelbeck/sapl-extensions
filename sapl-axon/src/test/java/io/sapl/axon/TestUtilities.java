@@ -28,7 +28,7 @@ public class TestUtilities {
 
 	public static <U> Predicate<SubscriptionQueryMessage<?, ?, U>> alwaysTrue(
 			SubscriptionQueryUpdateMessage<U> forUpdate) {
-		return val -> true;
+		return __ -> true;
 	}
 
 	public static boolean matches(ResultMessage<?> messageA, Object other) {
