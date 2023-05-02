@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.DefaultSubscriptionQueryResult;
-import org.axonframework.queryhandling.QueryBus;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.axonframework.queryhandling.SimpleQueryBus;
 import org.axonframework.queryhandling.SubscriptionQueryMessage;
@@ -33,20 +32,17 @@ import reactor.core.publisher.Mono;
 
 class SaplQueryGatewayTests {
 
-	private static final AccessDeniedException ACCESS_DENIED         = new AccessDeniedException("Access denied");
-	private static final String                DEFAULT_QUERY_MESSAGE = "default test query message";
-	private static final ResponseType<?>       DEFAULT_RESPONSE_TYPE = ResponseTypes.instanceOf(String.class);
-
-	private QueryBus queryBus;
+	private static final AccessDeniedException ACCESS_DENIED = new AccessDeniedException("Access denied");
+	private static final String DEFAULT_QUERY_MESSAGE = "default test query message";
+	private static final ResponseType<?> DEFAULT_RESPONSE_TYPE = ResponseTypes.instanceOf(String.class);
 
 	private SaplQueryGateway gateway;
-	private AtomicInteger    accessDeniedCounter;
-	private Runnable         accessDeniedHandler = () -> accessDeniedCounter.getAndIncrement();
+	private AtomicInteger accessDeniedCounter;
+	private Runnable accessDeniedHandler = () -> accessDeniedCounter.getAndIncrement();
 
 	@BeforeEach
 	void beforeEach() {
-		queryBus            = spy(SimpleQueryBus.builder().build());
-		gateway             = spy(new SaplQueryGateway(queryBus, List.of()));
+		gateway = spy(new SaplQueryGateway(SimpleQueryBus.builder().build(), List.of()));
 		accessDeniedCounter = new AtomicInteger(0);
 	}
 
@@ -70,20 +66,18 @@ class SaplQueryGatewayTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	void when_wrappedSubscriptionQuery_with_accessDenied_then_executeAccessDeniedHandler() {
-		var emitter      = mock(QueryUpdateEmitter.class);
+		var emitter = mock(QueryUpdateEmitter.class);
 		var registration = new UpdateHandlerRegistration<>(() -> false, Flux.just(), () -> {
-							});
+		});
 		when(emitter.registerUpdateHandler(any(SubscriptionQueryMessage.class), anyInt())).thenReturn(registration);
-		queryBus = spy(SimpleQueryBus.builder().queryUpdateEmitter(emitter).build());
-		gateway  = spy(new SaplQueryGateway(queryBus, List.of()));
+		var queryBus = spy(SimpleQueryBus.builder().queryUpdateEmitter(emitter).build());
+		var gateway = spy(new SaplQueryGateway(queryBus, List.of()));
 
-		doReturn(
-				new DefaultSubscriptionQueryResult<>(Mono.empty(), Flux.error(ACCESS_DENIED), () -> false))
+		doReturn(new DefaultSubscriptionQueryResult<>(Mono.empty(), Flux.error(ACCESS_DENIED), () -> false))
 				.when(gateway).subscriptionQuery(any(String.class), any(SubscriptionQueryMessage.class),
 						any(ResponseType.class), any(ResponseType.class), anyInt());
 		var result = gateway.recoverableSubscriptionQuery(DEFAULT_QUERY_MESSAGE, DEFAULT_RESPONSE_TYPE,
-				DEFAULT_RESPONSE_TYPE,
-				accessDeniedHandler);
+				DEFAULT_RESPONSE_TYPE, accessDeniedHandler);
 
 		assertNull(result.initialResult().block());
 		assertThrows(AccessDeniedException.class, () -> result.updates().blockLast());

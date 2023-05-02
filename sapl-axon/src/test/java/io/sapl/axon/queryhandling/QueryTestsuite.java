@@ -45,7 +45,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -313,10 +312,8 @@ public abstract class QueryTestsuite {
 
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
 
-		create(result.initialResult().timeout(timeout))
-				.expectNext(queryPayload).verifyComplete();
-		create(result.updates().timeout(timeout).take(5))
-				.expectNextCount(5L).verifyComplete();
+		create(result.initialResult().timeout(timeout)).expectNext(queryPayload).verifyComplete();
+		create(result.updates().timeout(timeout).take(5)).expectNextCount(5L).verifyComplete();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
 		result.close();
 	}
@@ -335,10 +332,8 @@ public abstract class QueryTestsuite {
 
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
 
-		create(result.initialResult().timeout(timeout))
-				.expectErrorMatches(isAccessDenied()).verify();
-		create(result.updates().timeout(timeout))
-				.expectErrorMatches(isAccessDenied()).verify();
+		create(result.initialResult().timeout(timeout)).expectErrorMatches(isAccessDenied()).verify();
+		create(result.updates().timeout(timeout)).expectErrorMatches(isAccessDenied()).verify();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
 
 		result.close();
@@ -361,10 +356,8 @@ public abstract class QueryTestsuite {
 
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
 
-		create(result.initialResult().timeout(timeout))
-				.expectNext(queryPayload).verifyComplete();
-		create(result.updates().timeout(timeout)).expectNextCount(5)
-				.expectErrorMatches(isAccessDenied()).verify();
+		create(result.initialResult().timeout(timeout)).expectNext(queryPayload).verifyComplete();
+		create(result.updates().timeout(timeout)).expectNextCount(5).expectErrorMatches(isAccessDenied()).verify();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
 
 		result.close();
@@ -395,15 +388,10 @@ public abstract class QueryTestsuite {
 
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates, initialEmitDelayMs);
 
-		create(result.initialResult()
-				.timeout(timeout))
-				.expectNext(queryPayload).verifyComplete();
-		create(result.updates().take(7)
-				.timeout(timeout))
-				.expectNext(
-						queryPayload + "-0", queryPayload + "-1", queryPayload + "-2", queryPayload + "-3", queryPayload
-								+ "-4",
-						/* ... DROP 5-9 ... , */ queryPayload + "-10", queryPayload + "-11" /* , IGNORE 12-13 */)
+		create(result.initialResult().timeout(timeout)).expectNext(queryPayload).verifyComplete();
+		create(result.updates().take(7).timeout(timeout)).expectNext(queryPayload + "-0", queryPayload + "-1",
+				queryPayload + "-2", queryPayload + "-3", queryPayload + "-4",
+				/* ... DROP 5-9 ... , */ queryPayload + "-10", queryPayload + "-11" /* , IGNORE 12-13 */)
 				.verifyComplete();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
 		result.close();
@@ -439,13 +427,9 @@ public abstract class QueryTestsuite {
 				instanceOf(String.class), instanceOf(String.class), accessDeniedHandler);
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
 
-		create(result.initialResult().timeout(timeout))
-				.expectNext(queryPayload).verifyComplete();
-		create(result.updates().take(6))
-				.expectNext(queryPayload + "-0", queryPayload + "-1", queryPayload + "-2", queryPayload + "-3",
-						queryPayload + "-4")
-				.expectError(AccessDeniedException.class)
-				.verify(timeout);
+		create(result.initialResult().timeout(timeout)).expectNext(queryPayload).verifyComplete();
+		create(result.updates().take(6)).expectNext(queryPayload + "-0", queryPayload + "-1", queryPayload + "-2",
+				queryPayload + "-3", queryPayload + "-4").expectError(AccessDeniedException.class).verify(timeout);
 
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
 		verify(accessDeniedHandler, times(1)).run();
@@ -482,10 +466,8 @@ public abstract class QueryTestsuite {
 				instanceOf(String.class), instanceOf(String.class), accessDeniedHandler);
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
 
-		create(result.initialResult().timeout(timeout))
-				.expectNext(queryPayload).verifyComplete();
-		create(result.updates().onErrorContinue((t, o) -> accessDeniedHandler.run()).take(6)
-				.timeout(timeout))
+		create(result.initialResult().timeout(timeout)).expectNext(queryPayload).verifyComplete();
+		create(result.updates().onErrorContinue((t, o) -> accessDeniedHandler.run()).take(6).timeout(timeout))
 				.expectNext(queryPayload + "-0", queryPayload + "-1", queryPayload + "-2", queryPayload + "-3",
 						queryPayload + "-4", queryPayload + "-10")
 				.verifyComplete();
@@ -721,13 +703,10 @@ public abstract class QueryTestsuite {
 				instanceOf(String.class));
 
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
-		create(result.initialResult().timeout(timeout))
-				.expectNext(queryPayload.toUpperCase()).verifyComplete();
-		create(result.updates().timeout(timeout).take(15))
-				.expectNext("CASEC1-0", "CASEC1-2", "CASEC1-4", "CASEC1-6", "CASEC1-8", "CASEC1-10", "CASEC1-11",
-						"CASEC1-12", "CASEC1-13", "CASEC1-14", "CASEC1-15", "CASEC1-16", "CASEC1-17", "CASEC1-18",
-						"CASEC1-19")
-				.verifyComplete();
+		create(result.initialResult().timeout(timeout)).expectNext(queryPayload.toUpperCase()).verifyComplete();
+		create(result.updates().timeout(timeout).take(15)).expectNext("CASEC1-0", "CASEC1-2", "CASEC1-4", "CASEC1-6",
+				"CASEC1-8", "CASEC1-10", "CASEC1-11", "CASEC1-12", "CASEC1-13", "CASEC1-14", "CASEC1-15", "CASEC1-16",
+				"CASEC1-17", "CASEC1-18", "CASEC1-19").verifyComplete();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
 		verify(resultMessageMappingProvider, times(21)).mapPayload(any(), any(), any());
 		result.close();
@@ -764,8 +743,7 @@ public abstract class QueryTestsuite {
 				instanceOf(String.class));
 
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
-		create(result.initialResult().timeout(timeout))
-				.expectNext(queryPayload.toUpperCase()).verifyComplete();
+		create(result.initialResult().timeout(timeout)).expectNext(queryPayload.toUpperCase()).verifyComplete();
 		create(result.updates().timeout(timeout).take(7))
 				.expectNext("CASEC2-0", "CASEC2-2", "CASEC2-4", "CASEC2-8", "CASEC2-9", "CASEC2-10", "CASEC2-11")
 				.verifyComplete();
@@ -804,10 +782,9 @@ public abstract class QueryTestsuite {
 				instanceOf(String.class), instanceOf(String.class), accessDeniedHandler);
 
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
-		create(result.initialResult().timeout(timeout))
-				.expectNext(queryPayload.toUpperCase()).verifyComplete();
-		create(result.updates().timeout(timeout).take(7))
-				.expectNext("CASEC3-0", "CASEC3-2", "CASEC3-4").expectErrorMatches(isAccessDenied()).verify();
+		create(result.initialResult().timeout(timeout)).expectNext(queryPayload.toUpperCase()).verifyComplete();
+		create(result.updates().timeout(timeout).take(7)).expectNext("CASEC3-0", "CASEC3-2", "CASEC3-4")
+				.expectErrorMatches(isAccessDenied()).verify();
 		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
 		verify(accessDeniedHandler, times(1)).run();
 		verify(resultMessageMappingProvider, times(6)).mapPayload(any(), any(), any());
@@ -846,11 +823,9 @@ public abstract class QueryTestsuite {
 				instanceOf(String.class), instanceOf(String.class), accessDeniedHandler);
 
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
-		create(result.initialResult().timeout(timeout))
-				.expectNext(queryPayload.toUpperCase()).verifyComplete();
+		create(result.initialResult().timeout(timeout)).expectNext(queryPayload.toUpperCase()).verifyComplete();
 
-		create(result.updates().onErrorContinue(accessDeniedHandlerOnError)
-				.timeout(timeout).take(7))
+		create(result.updates().onErrorContinue(accessDeniedHandlerOnError).timeout(timeout).take(7))
 				.expectNext("CASEC4-0", "CASEC4-2", "CASEC4-4", "CASEC4-8", "CASEC4-9", "CASEC4-10", "CASEC4-11")
 				.verifyComplete();
 		verify(accessDeniedHandler, times(0)).run();
@@ -861,8 +836,7 @@ public abstract class QueryTestsuite {
 	}
 
 	@Test
-	void when_constraintWantsCollectionFilter_then_CollectionsAreFiltered()
-			throws JsonMappingException, JsonProcessingException {
+	void when_constraintWantsCollectionFilter_then_CollectionsAreFiltered() throws JsonProcessingException {
 		var emitIntervallMs = 20L;
 		var queryPayload = "caseCX1";
 		var numberOfUpdates = 20L;
@@ -998,7 +972,7 @@ public abstract class QueryTestsuite {
 		public Predicate<ResultMessage<?>> getHandler(JsonNode constraint) {
 			return update -> {
 				String[] split = ((String) update.getPayload()).split("-");
-				return Integer.valueOf(split[1]) % 2 == 0;
+				return Integer.parseInt(split[1]) % 2 == 0;
 			};
 		}
 
