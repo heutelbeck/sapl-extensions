@@ -16,6 +16,7 @@
 
 package io.sapl.mqtt.pep;
 
+import static io.sapl.mqtt.pep.MqttTestUtil.*;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -23,12 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import com.hivemq.embedded.EmbeddedHiveMQ;
+import org.junit.jupiter.api.*;
 
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
@@ -40,29 +41,39 @@ import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAckReasonCo
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
 import io.sapl.mqtt.pep.cache.MqttClientState;
+import org.junit.jupiter.api.io.TempDir;
 
-class ConnectionEnforcementTestIT extends SaplMqttPepTest {
+class ConnectionEnforcementTestIT {
 
-	private final static String                                     publishClientId = "MQTT_CLIENT_PUBLISH";
-	private final static ConcurrentHashMap<String, MqttClientState> mqttClientCache = new ConcurrentHashMap<>();
+	@TempDir
+	Path dataFolder;
+	@TempDir
+	Path configFolder;
+	@TempDir
+	Path extensionFolder;
 
-	@BeforeAll
-	public static void beforeAll() {
-		MQTT_BROKER = startEmbeddedHiveMqBroker(mqttClientCache);
+	private final static String PUBLISH_CLIENT_ID = "MQTT_CLIENT_PUBLISH";
+	private final static ConcurrentHashMap<String, MqttClientState> MQTT_CLIENT_CACHE = new ConcurrentHashMap<>();
+
+	private EmbeddedHiveMQ mqttBroker;
+
+	@BeforeEach
+	void beforeEach() {
+		mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, MQTT_CLIENT_CACHE);
 	}
 
-	@AfterAll
-	public static void afterAll() {
-		MQTT_BROKER.stop().join();
+	@AfterEach
+	void afterEach() {
+		stopBroker(mqttBroker);
 	}
 
 	@Test
 	void when_clientStartsPermittedConnection_then_acknowledgeConnection() {
 		// GIVEN
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
-				.identifier(publishClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.identifier(PUBLISH_CLIENT_ID)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.willPublish(Mqtt5Publish.builder()
 						.topic("lastWillTopic")
 						.qos(MqttQos.AT_MOST_ONCE)
@@ -84,9 +95,9 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTest {
 	void when_clientStartsDeniedConnection_then_prohibitConnection() {
 		// GIVEN
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
-				.identifier(publishClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.identifier(PUBLISH_CLIENT_ID)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.simpleAuth(Mqtt5SimpleAuth
 						.builder()
 						.username("illegalUserName")
@@ -98,16 +109,16 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTest {
 				blockingMqttClient::connect);
 		assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
 		await().atMost(2, TimeUnit.SECONDS)
-				.untilAsserted(() -> assertFalse(mqttClientCache.containsKey(publishClientId)));
+				.untilAsserted(() -> assertFalse(MQTT_CLIENT_CACHE.containsKey(PUBLISH_CLIENT_ID)));
 	}
 
 	@Test
 	void when_existingConnectionGetsDenied_then_cancelConnection() {
 		// GIVEN
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
-				.identifier(publishClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.identifier(PUBLISH_CLIENT_ID)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.simpleAuth(Mqtt5SimpleAuth
 						.builder()
 						.username("toggle")
@@ -121,7 +132,7 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTest {
 		// THEN
 		await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
 			assertFalse(blockingMqttClient.getState().isConnected());
-			assertFalse(mqttClientCache.containsKey(publishClientId));
+			assertFalse(MQTT_CLIENT_CACHE.containsKey(PUBLISH_CLIENT_ID));
 		});
 	}
 
@@ -131,9 +142,9 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTest {
 		String secondClientId = "SECOND_MQTT_CLIENT_PUBLISH";
 
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
-				.identifier(publishClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.identifier(PUBLISH_CLIENT_ID)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.simpleAuth(Mqtt5SimpleAuth
 						.builder()
 						.username("toggle")
@@ -142,8 +153,8 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTest {
 
 		Mqtt5BlockingClient secondBlockingMqttClient = Mqtt5Client.builder()
 				.identifier(secondClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.buildBlocking();
 
 		// WHEN
@@ -158,8 +169,8 @@ class ConnectionEnforcementTestIT extends SaplMqttPepTest {
 			assertFalse(blockingMqttClient.getState().isConnected());
 			assertTrue(secondBlockingMqttClient.getState().isConnected());
 
-			assertFalse(mqttClientCache.containsKey(publishClientId));
-			assertTrue(mqttClientCache.containsKey(secondClientId));
+			assertFalse(MQTT_CLIENT_CACHE.containsKey(PUBLISH_CLIENT_ID));
+			assertTrue(MQTT_CLIENT_CACHE.containsKey(secondClientId));
 		});
 
 		// FINALLY

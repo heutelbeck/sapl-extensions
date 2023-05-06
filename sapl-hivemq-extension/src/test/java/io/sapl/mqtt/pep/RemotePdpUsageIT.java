@@ -16,11 +16,14 @@
 
 package io.sapl.mqtt.pep;
 
+import static io.sapl.mqtt.pep.MqttTestUtil.*;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -32,13 +35,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.Timeout;
+import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -57,41 +57,57 @@ import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 
 @Testcontainers
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class RemotePdpUsageIT extends SaplMqttPepTest {
+class RemotePdpUsageIT {
 
-	private static final String xmlFilePath = "src/test/resources/config/remote/sapl-extension-config.xml";
+	@TempDir
+	Path dataFolder;
+	@TempDir
+	Path configFolder;
+	@TempDir
+	Path extensionFolder;
+	@TempDir
+	Path extensionConfigDir;
+
+	private EmbeddedHiveMQ 			mqttBroker;
+	private Mqtt5BlockingClient 	publishClient;
+	private Mqtt5BlockingClient 	subscribeClient;
+
+	private final String extensionConfigFileName = "sapl-extension-config.xml";
 
 	@Container
-	static final GenericContainer<?> saplServerLt = new GenericContainer<>(
+	static final GenericContainer<?> SAPL_SERVER_LT = new GenericContainer<>(
 			DockerImageName.parse("ghcr.io/heutelbeck/sapl-server-lt:2.1.0-snapshot"))
 			.withCopyFileToContainer(MountableFile.forHostPath("src/test/resources/policies"),
 					"/pdp/data")
 			.withExposedPorts(8080);
 
-	@BeforeAll
-	public static void beforeAll() throws InitializationException, ParserConfigurationException, TransformerException {
-		// set logging level
-		createExtensionConfigFile(saplServerLt.getFirstMappedPort());
+	@BeforeEach
+	void beforeEach() throws InitializationException, ParserConfigurationException, TransformerException {
+		if (!SAPL_SERVER_LT.isRunning()) {
+			SAPL_SERVER_LT.start();
+		}
+		createExtensionConfigFile(SAPL_SERVER_LT.getFirstMappedPort());
 
-		MQTT_BROKER      = startEmbeddedBrokerWithRemotePdp();
-		SUBSCRIBE_CLIENT = startMqttClient("MQTT_CLIENT_SUBSCRIBE");
-		PUBLISH_CLIENT   = startMqttClient("MQTT_CLIENT_PUBLISH");
+		mqttBroker = startAndBuildBrokerWithRemotePdp();
+		subscribeClient = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");
+		publishClient = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
 	}
 
-	@AfterAll
-	public static void afterAll() {
-		if (PUBLISH_CLIENT.getState().isConnected()) {
-			PUBLISH_CLIENT.disconnect();
+	@AfterEach
+	void afterEach() {
+		if (publishClient.getState().isConnected()) {
+			publishClient.disconnect();
 		}
-		if (SUBSCRIBE_CLIENT.getState().isConnected()) {
-			SUBSCRIBE_CLIENT.disconnect();
+		if (subscribeClient.getState().isConnected()) {
+			subscribeClient.disconnect();
 		}
-		MQTT_BROKER.stop().join();
+		if (SAPL_SERVER_LT.isRunning()) {
+			SAPL_SERVER_LT.stop();
+		}
+		stopBroker(mqttBroker);
 	}
 
 	@Test
-	@Order(1)
 	@Timeout(10)
 	void when_publishAndSubscribeForTopicPermitted_then_subscribeAndPublishTopic() throws InterruptedException {
 		// GIVEN
@@ -101,20 +117,19 @@ class RemotePdpUsageIT extends SaplMqttPepTest {
 				false);
 
 		// WHEN
-		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
-		PUBLISH_CLIENT.publish(publishMessage);
+		subscribeClient.subscribe(subscribeMessage);
+		publishClient.publish(publishMessage);
 
 		// THEN
-		Mqtt5Publish receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL).receive();
+		Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 
-		assertEquals(publishMessagePayload, new String(receivedMessage.getPayloadAsBytes()));
+		assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
 
 		// FINALLY
-		SUBSCRIBE_CLIENT.unsubscribeWith().topicFilter("topic").send();
+		subscribeClient.unsubscribeWith().topicFilter("topic").send();
 	}
 
 	@Test
-	@Order(2)
 	@Timeout(10)
 	void when_losingConnectionToPdpServer_then_DenyOnIndeterminate() {
 		// GIVEN
@@ -123,42 +138,56 @@ class RemotePdpUsageIT extends SaplMqttPepTest {
 		Mqtt5Publish publishMessage = buildMqttPublishMessage("topic", 1, true);
 
 		// WHEN
-		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
-		PUBLISH_CLIENT.publish(publishMessage);
+		subscribeClient.subscribe(subscribeMessage);
+		publishClient.publish(publishMessage);
 
-		saplServerLt.stop();
+		SAPL_SERVER_LT.stop();
 
 		// THEN
 		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-			assertFalse(saplServerLt.isRunning());
-			assertFalse(SUBSCRIBE_CLIENT.getState().isConnected());
-			assertFalse(PUBLISH_CLIENT.getState().isConnected());
+			assertFalse(SAPL_SERVER_LT.isRunning());
+			assertFalse(subscribeClient.getState().isConnected());
+			assertFalse(publishClient.getState().isConnected());
 		});
 	}
 
-	private static EmbeddedHiveMQ startEmbeddedBrokerWithRemotePdp() {
-		// build extension
-		final EmbeddedExtension embeddedExtensionBuild = EmbeddedExtension.builder()
+	@SneakyThrows
+	private EmbeddedHiveMQ startAndBuildBrokerWithRemotePdp() {
+		EmbeddedHiveMQ embeddedHiveMq = buildBrokerWithExtension();
+		startBrokerWithRemotePdp(embeddedHiveMq);
+		return embeddedHiveMq;
+	}
+
+	private void startBrokerWithRemotePdp(EmbeddedHiveMQ embeddedHiveMq) throws InterruptedException, ExecutionException {
+		embeddedHiveMq.start().get();
+	}
+
+	private EmbeddedHiveMQ buildBrokerWithExtension() {
+		final EmbeddedExtension embeddedExtensionBuild = buildBrokerExtension();
+		return buildBroker(embeddedExtensionBuild);
+	}
+
+	private EmbeddedHiveMQ buildBroker(EmbeddedExtension embeddedExtensionBuild) {
+		return EmbeddedHiveMQ.builder()
+				.withConfigurationFolder(configFolder)
+				.withDataFolder(dataFolder)
+				.withExtensionsFolder(extensionFolder)
+				.withEmbeddedExtension(embeddedExtensionBuild).build();
+	}
+
+	private EmbeddedExtension buildBrokerExtension() {
+		return EmbeddedExtension.builder()
 				.withId("SAPL-MQTT-PEP")
 				.withName("SAPL-MQTT-PEP")
 				.withVersion("1.0.0")
 				.withPriority(0)
 				.withStartPriority(1000)
 				.withAuthor("Nils Mahnken")
-				.withExtensionMain(new HivemqPepExtensionMain("src/test/resources/config/remote"))
+				.withExtensionMain(new HivemqPepExtensionMain(extensionConfigDir.toString()))
 				.build();
-
-		// start hivemq broker with sapl extension
-		EmbeddedHiveMQ embeddedHiveMq = EmbeddedHiveMQ.builder()
-				.withConfigurationFolder(CONFIG_FOLDER)
-				.withDataFolder(DATA_FOLDER)
-				.withExtensionsFolder(EXTENSION_FOLDER)
-				.withEmbeddedExtension(embeddedExtensionBuild).build();
-		embeddedHiveMq.start().join();
-		return embeddedHiveMq;
 	}
 
-	private static void createExtensionConfigFile(Integer port)
+	private void createExtensionConfigFile(Integer port)
 			throws ParserConfigurationException, TransformerException {
 		DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
 
@@ -191,7 +220,8 @@ class RemotePdpUsageIT extends SaplMqttPepTest {
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		Transformer        transformer        = transformerFactory.newTransformer();
 		DOMSource          domSource          = new DOMSource(document);
-		StreamResult       streamResult       = new StreamResult(new File(xmlFilePath));
+		StreamResult       streamResult       = new StreamResult(new File(Path.of(extensionConfigDir.toString(),
+				extensionConfigFileName).toString()));
 
 		transformer.transform(domSource, streamResult);
 	}

@@ -16,6 +16,7 @@
 
 package io.sapl.mqtt.pep.constraint;
 
+import static io.sapl.mqtt.pep.MqttTestUtil.*;
 import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_CONSTRAINT_TYPE;
 import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_ENABLED;
 import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION;
@@ -33,12 +34,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.jupiter.api.AfterEach;
+import com.hivemq.embedded.EmbeddedHiveMQ;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -60,20 +62,22 @@ import io.sapl.api.pdp.MultiAuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.MqttPep;
-import io.sapl.mqtt.pep.SaplMqttPepTest;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
+import org.junit.jupiter.api.io.TempDir;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-class ConstraintHandlingIT extends SaplMqttPepTest {
+class ConstraintHandlingIT {
+
+	@TempDir
+	Path dataFolder;
+	@TempDir
+	Path configFolder;
+	@TempDir
+	Path extensionFolder;
 
 	private final String subscriptionClientId = "subscriptionClient";
 	private final String topic                = "testTopic";
-
-	@AfterEach
-	void afterEach() {
-		MQTT_BROKER.stop().join();
-	}
 
 	@Test
 	@Timeout(30)
@@ -120,20 +124,20 @@ class ConstraintHandlingIT extends SaplMqttPepTest {
 		Mqtt5Publish   publishMessage   = buildMqttPublishMessage(topic, false);
 
 		// WHEN
-		MQTT_BROKER = startEmbeddedHiveMqBroker(pdpMock);
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
 
-		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
-		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
-		SUBSCRIBE_CLIENT.publish(publishMessage);
-		assertTrue(SUBSCRIBE_CLIENT
+		Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
+		subscribeClient.subscribe(subscribeMessage);
+		subscribeClient.publish(publishMessage);
+		assertTrue(subscribeClient
 				.publishes(MqttGlobalPublishFilter.SUBSCRIBED)
 				.receive(800, TimeUnit.MILLISECONDS)
 				.isPresent());
 
 		// THEN
 		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-			SUBSCRIBE_CLIENT.publish(publishMessage);
-			assertTrue(SUBSCRIBE_CLIENT
+			subscribeClient.publish(publishMessage);
+			assertTrue(subscribeClient
 					.publishes(MqttGlobalPublishFilter.SUBSCRIBED)
 					.receive(1000, TimeUnit.MILLISECONDS)
 					.isEmpty());
@@ -141,7 +145,7 @@ class ConstraintHandlingIT extends SaplMqttPepTest {
 		verify(pdpMock, times(3)).decide(any(MultiAuthorizationSubscription.class));
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -200,28 +204,28 @@ class ConstraintHandlingIT extends SaplMqttPepTest {
 		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(topic);
 		Mqtt5Publish   publishMessage   = buildMqttPublishMessage(topic, false);
 
-		MQTT_BROKER = startEmbeddedHiveMqBroker(pdpMock);
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
 
-		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
-		PUBLISH_CLIENT   = startMqttClient(publishClientId);
+		Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
+		Mqtt5BlockingClient publishClient = buildAndStartMqttClient(publishClientId);
 
 		// WHEN
-		SUBSCRIBE_CLIENT.subscribe(subscribeMessage);
+		subscribeClient.subscribe(subscribeMessage);
 		await().atMost(5, TimeUnit.SECONDS).untilTrue(isCompleteSubscriptionClientMqttSubscriptionDecisionFlux);
 
 		// THEN
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			PUBLISH_CLIENT.publish(publishMessage);
-			Optional<Mqtt5Publish> receivedMessage = SUBSCRIBE_CLIENT.publishes(MqttGlobalPublishFilter.ALL)
+			publishClient.publish(publishMessage);
+			Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL)
 					.receive(3, TimeUnit.SECONDS);
 			assertTrue(receivedMessage.isPresent());
-			assertEquals(publishMessagePayload, new String(receivedMessage.get().getPayloadAsBytes()));
+			assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
 		});
 
 		verify(pdpMock, times(4)).decide(any(MultiAuthorizationSubscription.class));
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -254,17 +258,17 @@ class ConstraintHandlingIT extends SaplMqttPepTest {
 		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(topic);
 
 		// WHEN
-		MQTT_BROKER      = startEmbeddedHiveMqBroker(pdpMock);
-		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
+		Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 
 		// THEN
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessage));
+				() -> subscribeClient.subscribe(subscribeMessage));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 		verify(pdpMock, times(2)).decide(any(MultiAuthorizationSubscription.class));
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -287,12 +291,12 @@ class ConstraintHandlingIT extends SaplMqttPepTest {
 
 		Mqtt5BlockingClient blockingMqttSubscriptionClient = Mqtt5Client.builder()
 				.identifier(subscriptionClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
+				.serverHost(brokerHost)
+				.serverPort(brokerPort)
 				.buildBlocking();
 
 		// WHEN
-		MQTT_BROKER = startEmbeddedHiveMqBroker(pdpMock);
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
 
 		// THEN
 		Mqtt5ConnAckException connAckException = assertThrowsExactly(Mqtt5ConnAckException.class,
@@ -301,7 +305,7 @@ class ConstraintHandlingIT extends SaplMqttPepTest {
 		verify(pdpMock, times(1)).decide(any(MultiAuthorizationSubscription.class));
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker(mqttBroker);
 	}
 
 	@Test
@@ -336,10 +340,10 @@ class ConstraintHandlingIT extends SaplMqttPepTest {
 		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(topic);
 
 		// WHEN
-		MQTT_BROKER      = startEmbeddedHiveMqBroker(pdpMock);
-		SUBSCRIBE_CLIENT = startMqttClient(subscriptionClientId);
+		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
+		Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> SUBSCRIBE_CLIENT.subscribe(subscribeMessage));
+				() -> subscribeClient.subscribe(subscribeMessage));
 		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
 		emitterUndefined.tryEmitNext(new IdentifiableAuthorizationDecision(
@@ -351,6 +355,6 @@ class ConstraintHandlingIT extends SaplMqttPepTest {
 		assertFalse(wasCanceled.get());
 
 		// FINALLY
-		MQTT_BROKER.stop().join();
+		stopBroker(mqttBroker);
 	}
 }

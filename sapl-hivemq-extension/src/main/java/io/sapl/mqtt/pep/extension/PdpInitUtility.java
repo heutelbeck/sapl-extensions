@@ -4,9 +4,11 @@ import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP
 import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP_CLIENT_SECRET;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import io.sapl.api.pdp.PolicyDecisionPoint;
+import io.sapl.extensions.mqtt.MqttFunctionLibrary;
 import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 import io.sapl.pdp.EmbeddedPolicyDecisionPoint;
@@ -52,8 +54,11 @@ public class PdpInitUtility {
     private static EmbeddedPolicyDecisionPoint buildEmbeddedPdp(SaplMqttExtensionConfig saplMqttExtensionConfig,
                                                          File extensionHomeFolder, String policiesPath) {
         try {
+            var mqttFunctionLibraryCollection = new ArrayList<>(1);
+            mqttFunctionLibraryCollection.add(new MqttFunctionLibrary());
             return PolicyDecisionPointFactory.filesystemPolicyDecisionPoint(
-                    getPoliciesPath(saplMqttExtensionConfig, extensionHomeFolder, policiesPath));
+                    getPoliciesPath(saplMqttExtensionConfig, extensionHomeFolder, policiesPath),
+            new ArrayList<>(1), mqttFunctionLibraryCollection);
         } catch (InitializationException e) {
             log.error("Failed to build embedded pdp on extension startup with following reason: {}", e.getMessage());
             return null;

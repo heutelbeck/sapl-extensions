@@ -77,19 +77,23 @@
             <artifactId>sapl-pdp-remote</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.sapl</groupId>
+            <artifactId>sapl-mqtt-functions</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-resolver</artifactId>
-            <version>4.1.79.Final</version>
+            <version>4.1.90.Final</version>
         </dependency>
         <dependency>
             <groupId>com.hivemq</groupId>
             <artifactId>hivemq-extension-sdk</artifactId>
-            <version>4.8.2</version>
+            <version>4.13.0</version>
         </dependency>
         <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>2.3.3</version>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -106,25 +110,19 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.31</version>
+            <version>2.0.5</version>
         </dependency>
         <!-- testing -->
         <dependency>
-            <groupId>com.hivemq</groupId>
-            <artifactId>hivemq-mqtt-client</artifactId>
-            <version>1.3.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.9.0</version>
+            <version>5.9.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.9.0</version>
+            <version>5.9.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -142,13 +140,19 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
+            <version>1.4.6</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.hivemq</groupId>
             <artifactId>hivemq-community-edition-embedded</artifactId>
-            <version>2021.3</version>
+            <version>2023.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jctools</groupId>
+            <artifactId>jctools-core</artifactId>
+            <version>4.0.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -172,19 +176,19 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-inline</artifactId>
-            <version>4.6.1</version>
+            <version>5.2.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
-            <version>3.4.22</version>
+            <version>3.5.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>5.8.2</version>
+            <version>5.9.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -194,7 +198,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.11.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -209,9 +218,11 @@
                         <configuration>
                             <artifactSet>
                                 <excludes>
-                                    <exclude>com.hivemq:hivemq-extension-sdk</exclude>
-                                    <exclude>ch.qos.logback:*</exclude>
                                     <exclude>javax.servlet:*</exclude>
+                                    <exclude>ch.qos.logback:*</exclude>
+                                    <exclude>aopalliance:aopalliance</exclude>
+                                    <exclude>org.springframework:*jcl</exclude>
+                                    <exclude>com.hivemq:hivemq-extension-sdk</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>
@@ -221,6 +232,128 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/NOTICE*</exclude>
+                                        <exclude>META-INF/notice*</exclude>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                        <exclude>META-INF/LICENSE*</exclude>
+                                        <exclude>META-INF/license*</exclude>
+                                        <exclude>META-INF/LGPL*</exclude>
+                                        <exclude>META-INF/ASL*</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.eclipse.emf:*</artifact>
+                                    <excludes>
+                                        <exclude>about.html</exclude>
+                                        <exclude>plugin.xml</exclude>
+                                        <exclude>plugin.properties</exclude>
+                                        <exclude>about.ini</exclude>
+                                        <exclude>about.mappings</exclude>
+                                        <exclude>about.properties</exclude>
+                                        <exclude>modeling32*</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.eclipse.platform:*</artifact>
+                                    <excludes>
+                                        <exclude>about.html</exclude>
+                                        <exclude>plugin.xml</exclude>
+                                        <exclude>plugin.properties</exclude>
+                                        <exclude>about.ini</exclude>
+                                        <exclude>about.mappings</exclude>
+                                        <exclude>about.properties</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.eclipse.xtext:org.eclipse.xtext.*</artifact>
+                                    <excludes>
+                                        <exclude>about.html</exclude>
+                                        <exclude>plugin.xml</exclude>
+                                        <exclude>plugin.properties</exclude>
+                                        <exclude>about.ini</exclude>
+                                        <exclude>about.mappings</exclude>
+                                        <exclude>about.properties</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.eclipse.xtext:org.eclipse.xtext</artifact>
+                                    <excludes>
+                                        <exclude>plugin.properties</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.eclipse.platform:org.eclipse.osgi</artifact>
+                                    <excludes>
+                                        <exclude>*api_description</exclude>
+                                        <exclude>*options</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>io.netty:netty*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/io.netty.versions.properties</exclude>
+                                        <exclude>META-INF/services/reactor.blockhound*</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.springframework:*</artifact>
+                                    <excludes>
+                                        <exclude>org.apache.commons.logging.*</exclude>
+                                        <exclude>META-INF/services/reactor.blockhound*</exclude>
+                                        <exclude>org.aopalliance.*</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.springframework:spring</artifact>
+                                    <excludes>
+                                        <exclude>org.apache.commons.logging.*</exclude>
+                                        <exclude>META-INF/services/reactor.blockhound*</exclude>
+                                        <exclude>org.aopalliance.*</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.springframework.security:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/spring/aot.factories</exclude>
+                                        <exclude>META-INF/spring.tooling</exclude>
+                                        <exclude>META-INF/spring.schemas</exclude>
+                                        <exclude>META-INF/spring.handlers</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.springframework:*aop</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/spring/aot.factories</exclude>
+                                        <exclude>META-INF/spring.tooling</exclude>
+                                        <exclude>META-INF/spring.schemas</exclude>
+                                        <exclude>META-INF/spring.handlers</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.springframework:*context</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/spring/aot.factories</exclude>
+                                        <exclude>META-INF/spring.tooling</exclude>
+                                        <exclude>META-INF/spring.schemas</exclude>
+                                        <exclude>META-INF/spring.handlers</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.springframework:*core</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/spring/aot.factories</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.springframework:*messaging</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/spring/aot.factories</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.springframework:*web</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/spring/aot.factories</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
@@ -301,7 +434,7 @@
                                     <goal>hivemq</goal>
                                 </goals>
                                 <configuration>
-                                    <hiveMQDir>C:\Program Files\hivemq-4.7.5</hiveMQDir>
+                                    <hiveMQDir>C:\Program Files\hivemq-4.14.0</hiveMQDir>
                                     <debugMode>SERVER</debugMode>
                                 </configuration>
                             </execution>
@@ -311,7 +444,7 @@
             </build>
         </profile>
     </profiles>
-    
+
     	<distributionManagement>
 		<snapshotRepository>
 			<id>ossrh</id>
