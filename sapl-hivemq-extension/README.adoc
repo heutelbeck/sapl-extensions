@@ -28,13 +28,13 @@ Also, it is possible to start the extension via an embedded HiveMQ broker. To do
 <dependencies>
     <dependency>
         <groupId>io.sapl</groupId>
-        <artifactId>sapl-mqtt-pep</artifactId>
+        <artifactId>sapl-hivemq-extension</artifactId>
         <version>2.1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
         <groupId>com.hivemq</groupId>
         <artifactId>hivemq-community-edition-embedded</artifactId>
-        <version>2022.1</version>
+        <version>2023.2</version>
     </dependency>
 </dependencies>
 ----

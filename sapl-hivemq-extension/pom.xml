@@ -28,7 +28,7 @@
     <description>A HiveMQ extension that adds sapl pep functionality to the broker.</description>
 
     <properties>
-        <extension.name>sapl-mqtt-pep</extension.name>
+        <extension.name>sapl-hivemq-extension</extension.name>
         <extension.author>Nils Mahnken</extension.author>
         <asciidoctor.version>1.5.7.1</asciidoctor.version>
         <output.dir>${basedir}</output.dir>
