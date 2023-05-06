@@ -226,26 +226,69 @@
   </build>
   <profiles>
     <profile>
-      <id>RunWithHiveMQ</id>
+      <id>publish</id>
       <build>
         <plugins>
           <plugin>
-            <groupId>com.hivemq</groupId>
-            <artifactId>hivemq-maven-plugin</artifactId>
-            <version>4.0.3</version>
+            <artifactId>maven-javadoc-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <version>3.1.1</version>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.2.1</version>
             <executions>
               <execution>
-                <id>hivemq</id>
-                <phase>package</phase>
+                <id>attach-sources</id>
                 <goals>
-                  <goal>hivemq</goal>
+                  <goal>jar</goal>
                 </goals>
-                <configuration>
-                  <hiveMQDir>C:\Program Files\hivemq-4.14.0</hiveMQDir>
-                  <debugMode>SERVER</debugMode>
-                </configuration>
               </execution>
             </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.13</version>
+            <extensions>true</extensions>
+            <executions>
+              <execution>
+                <id>default-deploy</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>deploy</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>true</autoReleaseAfterClose>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <gpgArguments>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
           </plugin>
         </plugins>
       </build>
@@ -539,7 +582,7 @@
     <java.version>17</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <extension.name>sapl-mqtt-pep</extension.name>
+    <extension.name>sapl-hivemq-extension</extension.name>
     <extension.author>Nils Mahnken</extension.author>
     <maven.deploy.skip>true</maven.deploy.skip>
     <source.document.name>README.adoc</source.document.name>
