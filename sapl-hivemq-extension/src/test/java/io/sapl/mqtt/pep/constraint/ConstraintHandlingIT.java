@@ -291,8 +291,8 @@ class ConstraintHandlingIT {
 
 		Mqtt5BlockingClient blockingMqttSubscriptionClient = Mqtt5Client.builder()
 				.identifier(subscriptionClientId)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
 		// WHEN

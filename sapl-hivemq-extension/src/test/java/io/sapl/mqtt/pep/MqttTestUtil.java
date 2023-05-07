@@ -45,25 +45,25 @@ import io.sapl.mqtt.pep.cache.MqttClientState;
 @UtilityClass
 public class MqttTestUtil {
 
-	public static final int 	brokerPort 				= 1883;
-	public static final String 	brokerHost 				= "localhost";
-	public static final String 	extensionsPath 			= "src/test/resources/config";
-	public static final String 	policiesPath 			= "src/test/resources/policies";
+	public static final int 	BROKER_PORT 			= 1883;
+	public static final String 	BROKER_HOST 			= "localhost";
+	public static final String 	EXTENSIONS_PATH 		= "src/test/resources/config";
+	public static final String 	POLICIES_PATH 			= "src/test/resources/policies";
 	public static final String 	PUBLISH_MESSAGE_PAYLOAD = "message";
 
 	public static EmbeddedHiveMQ buildAndStartBroker(Path configDir, Path dataDir, Path extensionsDir) {
-		return buildAndStartBroker(configDir, dataDir, extensionsDir, extensionsPath);
+		return buildAndStartBroker(configDir, dataDir, extensionsDir, EXTENSIONS_PATH);
 	}
 
 	public static EmbeddedHiveMQ buildAndStartBroker(Path configDir, Path dataDir, Path extensionsDir,
 			ConcurrentHashMap<String, MqttClientState> mqttClientCache) {
 		return buildAndStartBroker(configDir, dataDir, extensionsDir,
-				new HivemqPepExtensionMain(policiesPath, extensionsPath, mqttClientCache));
+				new HivemqPepExtensionMain(POLICIES_PATH, EXTENSIONS_PATH, mqttClientCache));
 	}
 
 	public static EmbeddedHiveMQ buildAndStartBroker(Path configDir, Path dataDir, Path extensionsDir,
 													 PolicyDecisionPoint pdp) {
-		return buildAndStartBroker(configDir, dataDir, extensionsDir, new HivemqPepExtensionMain(extensionsPath, pdp));
+		return buildAndStartBroker(configDir, dataDir, extensionsDir, new HivemqPepExtensionMain(EXTENSIONS_PATH, pdp));
 	}
 
 	public static EmbeddedHiveMQ buildAndStartBroker(Path configDir, Path dataDir, Path extensionsDir,
@@ -82,7 +82,7 @@ public class MqttTestUtil {
 	public static EmbeddedHiveMQ buildAndStartBroker(Path configDir, Path dataDir, Path extensionsDir,
 													 String saplExtensionConfigPath) {
 		return buildAndStartBroker(configDir, dataDir, extensionsDir,
-				new HivemqPepExtensionMain(policiesPath, saplExtensionConfigPath));
+				new HivemqPepExtensionMain(POLICIES_PATH, saplExtensionConfigPath));
 	}
 
 	public static EmbeddedHiveMQ buildAndStartBroker(Path configDir, Path dataDir, Path extensionsDir,
@@ -140,7 +140,7 @@ public class MqttTestUtil {
 	}
 
 	public static Mqtt5BlockingClient buildAndStartMqttClient(String mqttClientId) throws InitializationException {
-		return buildAndStartMqttClient(mqttClientId, brokerPort);
+		return buildAndStartMqttClient(mqttClientId, BROKER_PORT);
 	}
 
 	public static Mqtt5BlockingClient buildAndStartMqttClient(String mqttClientId, int mqttServerPort)
@@ -154,7 +154,7 @@ public class MqttTestUtil {
 	private static Mqtt5BlockingClient buildMqttClient(String mqttClientId, int mqttServerPort) {
 		return Mqtt5Client.builder()
 				.identifier(mqttClientId)
-				.serverHost(brokerHost)
+				.serverHost(BROKER_HOST)
 				.serverPort(mqttServerPort)
 				.buildBlocking();
 	}

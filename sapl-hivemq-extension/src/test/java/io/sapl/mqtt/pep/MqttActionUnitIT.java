@@ -135,8 +135,8 @@ class MqttActionUnitIT {
 		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(subscriptionClientId)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
 		// THEN
@@ -250,8 +250,8 @@ class MqttActionUnitIT {
 		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(subscriptionClientId)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
 		// THEN
@@ -478,8 +478,8 @@ class MqttActionUnitIT {
 		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(subscriptionClientId)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
 		// THEN
@@ -512,8 +512,8 @@ class MqttActionUnitIT {
 		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(subscriptionClientId)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
 		// THEN
@@ -787,8 +787,8 @@ class MqttActionUnitIT {
 
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(publishClientId)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
 		// WHEN
@@ -833,8 +833,8 @@ class MqttActionUnitIT {
 
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(publishClientId)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
 		// WHEN
@@ -1055,8 +1055,8 @@ class MqttActionUnitIT {
 
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(publishClientId)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
 		// WHEN
@@ -1099,8 +1099,8 @@ class MqttActionUnitIT {
 
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(publishClientId)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
 		// WHEN

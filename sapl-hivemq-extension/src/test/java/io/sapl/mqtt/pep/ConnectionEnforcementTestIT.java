@@ -72,8 +72,8 @@ class ConnectionEnforcementTestIT {
 		// GIVEN
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(PUBLISH_CLIENT_ID)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.willPublish(Mqtt5Publish.builder()
 						.topic("lastWillTopic")
 						.qos(MqttQos.AT_MOST_ONCE)
@@ -96,8 +96,8 @@ class ConnectionEnforcementTestIT {
 		// GIVEN
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(PUBLISH_CLIENT_ID)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.simpleAuth(Mqtt5SimpleAuth
 						.builder()
 						.username("illegalUserName")
@@ -117,8 +117,8 @@ class ConnectionEnforcementTestIT {
 		// GIVEN
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(PUBLISH_CLIENT_ID)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.simpleAuth(Mqtt5SimpleAuth
 						.builder()
 						.username("toggle")
@@ -143,8 +143,8 @@ class ConnectionEnforcementTestIT {
 
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(PUBLISH_CLIENT_ID)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.simpleAuth(Mqtt5SimpleAuth
 						.builder()
 						.username("toggle")
@@ -153,8 +153,8 @@ class ConnectionEnforcementTestIT {
 
 		Mqtt5BlockingClient secondBlockingMqttClient = Mqtt5Client.builder()
 				.identifier(secondClientId)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
 		// WHEN

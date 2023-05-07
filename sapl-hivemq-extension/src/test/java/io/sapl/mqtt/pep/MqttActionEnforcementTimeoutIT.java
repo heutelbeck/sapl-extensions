@@ -69,8 +69,8 @@ class MqttActionEnforcementTimeoutIT {
 		String              connectClientId    = "connectClient";
 		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
 				.identifier(connectClientId)
-				.serverHost(brokerHost)
-				.serverPort(brokerPort)
+				.serverHost(BROKER_HOST)
+				.serverPort(BROKER_PORT)
 				.buildBlocking();
 
 		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
