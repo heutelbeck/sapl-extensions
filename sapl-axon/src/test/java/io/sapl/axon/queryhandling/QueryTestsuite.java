@@ -22,8 +22,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.ResultMessage;
@@ -76,33 +76,33 @@ import reactor.test.StepVerifier;
 @SpringBootTest
 @Import(TestScenarioConfiguration.class)
 public abstract class QueryTestsuite {
-	private static final String REMOVE_YOUNGER_THAN18 = "removeYoungerThan18";
-	private static final String LIST_RESPONSE_QUERY = "ListResponseQuery";
-	private static final String ONLY_EVEN_NUMBERS = "only even numbers in string";
-	private static final String ANONYMOUS = "anonymous";
-	private static final String BAD_ANNOTATIONS1 = "BadAnnotations1";
-	private static final String BAD_ANNOTATIONS2 = "BadAnnotations2";
-	private static final String BAD_ANNOTATIONS3 = "BadAnnotations3";
+	private static final String REMOVE_YOUNGER_THAN18            = "removeYoungerThan18";
+	private static final String LIST_RESPONSE_QUERY              = "ListResponseQuery";
+	private static final String ONLY_EVEN_NUMBERS                = "only even numbers in string";
+	private static final String ANONYMOUS                        = "anonymous";
+	private static final String BAD_ANNOTATIONS1                 = "BadAnnotations1";
+	private static final String BAD_ANNOTATIONS2                 = "BadAnnotations2";
+	private static final String BAD_ANNOTATIONS3                 = "BadAnnotations3";
 	private static final String BAD_RESOURCE_SERIALIZATION_QUERY = "BadResourceSerializationQuery";
-	private static final String DROP_QUERY = "DropQuery";
-	private static final String I_WAS_REPLACED = "I was replaced";
-	private static final String POST_HANDLE_NO_RESOURCE_QUERY = "PostHandleNoResourceQuery";
-	private static final String POST_HANDLE_QUERY = "PostHandleEnforceQuery";
-	private static final String PRE_HANDLE_QUERY = "PreHandleEnforceQuery";
-	private static final String QUERY = "Query Content";
-	private static final String RECOVERABLE_QUERY = "RecoverableQuery";
-	private static final String RESOURCE = "Resource Description";
-	private static final String RESOURCE_EXPR = "'" + RESOURCE + "'";
-	private static final String UNSECURED_QUERY = "UnsecuredQuery";
-	private static final String FAILING_PRE_QUERY = "failingPreQuery";
-	private static final String FAILING_POST_QUERY = "failingPostQuery";
-	private static final String MODIFY_ERROR = "modify error";
-	private static final String MODIFY_RESULT = "modify result";
-	private static final String MODIFIED_RESULT = "this is a modified result";
-	private static final String MODIFIED_QUERY = "modifiedQuery";
-	private static final String MODIFY_QUERY = "modifyQuery";
-	private static final String ON_DECISION_DO = "onDecisionDo";
-	private static final String MAP_UPDATE_PAYLOAD_TO_UPPERCASE = "map update payload to uppercase";
+	private static final String DROP_QUERY                       = "DropQuery";
+	private static final String I_WAS_REPLACED                   = "I was replaced";
+	private static final String POST_HANDLE_NO_RESOURCE_QUERY    = "PostHandleNoResourceQuery";
+	private static final String POST_HANDLE_QUERY                = "PostHandleEnforceQuery";
+	private static final String PRE_HANDLE_QUERY                 = "PreHandleEnforceQuery";
+	private static final String QUERY                            = "Query Content";
+	private static final String RECOVERABLE_QUERY                = "RecoverableQuery";
+	private static final String RESOURCE                         = "Resource Description";
+	private static final String RESOURCE_EXPR                    = "'" + RESOURCE + "'";
+	private static final String UNSECURED_QUERY                  = "UnsecuredQuery";
+	private static final String FAILING_PRE_QUERY                = "failingPreQuery";
+	private static final String FAILING_POST_QUERY               = "failingPostQuery";
+	private static final String MODIFY_ERROR                     = "modify error";
+	private static final String MODIFY_RESULT                    = "modify result";
+	private static final String MODIFIED_RESULT                  = "this is a modified result";
+	private static final String MODIFIED_QUERY                   = "modifiedQuery";
+	private static final String MODIFY_QUERY                     = "modifyQuery";
+	private static final String ON_DECISION_DO                   = "onDecisionDo";
+	private static final String MAP_UPDATE_PAYLOAD_TO_UPPERCASE  = "map update payload to uppercase";
 
 	private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
@@ -301,9 +301,9 @@ public abstract class QueryTestsuite {
 	@Test
 	void when_preHandlerSecuredSubscriptionQueryAndPermit_then_initialReturnAndUpdatesAreEmitted() {
 		var emitIntervallMs = 50L;
-		var queryPayload = "case1";
+		var queryPayload    = "case1";
 		var numberOfUpdates = 5L;
-		var timeout = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
+		var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
@@ -321,9 +321,9 @@ public abstract class QueryTestsuite {
 	@Test
 	void when_preHandlerSecuredSubscriptionQueryAndDeny_then_bothStreamsAccessDenied() {
 		var emitIntervallMs = 20L;
-		var queryPayload = "case2";
+		var queryPayload    = "case2";
 		var numberOfUpdates = 5L;
-		var timeout = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
+		var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 
@@ -342,9 +342,9 @@ public abstract class QueryTestsuite {
 	@Test
 	void when_preHandlerSecuredSubscriptionQueryAndPermitPermitDeny_then_initialReturnAndUpdatesAreEmittedAndDenyForUpdatesLater() {
 		var emitIntervallMs = 50L;
-		var queryPayload = "case3";
+		var queryPayload    = "case3";
 		var numberOfUpdates = 5L;
-		var timeout = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
+		var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.concat(Flux.just(AuthorizationDecision.PERMIT),
@@ -367,10 +367,10 @@ public abstract class QueryTestsuite {
 	void when_dropHandlerSecuredSubscriptionQueryAndPermitDenyPermit_then_initialReturnAndUpdatesAreEmittedAndDroppedWhileDenied()
 			throws InterruptedException {
 		var initialEmitDelayMs = 250L;
-		var emitIntervallMs = 250L;
-		var queryPayload = "case4";
-		var numberOfUpdates = 14L;
-		var timeout = Duration.ofMillis(initialEmitDelayMs + emitIntervallMs * (numberOfUpdates + 2L));
+		var emitIntervallMs    = 250L;
+		var queryPayload       = "case4";
+		var numberOfUpdates    = 14L;
+		var timeout            = Duration.ofMillis(initialEmitDelayMs + emitIntervallMs * (numberOfUpdates + 2L));
 
 		// @formatter:off
 		when(pdp.decide(any(AuthorizationSubscription.class)))
@@ -401,9 +401,9 @@ public abstract class QueryTestsuite {
 	void when_recoverableHandlerSecuredSubscriptionQueryAndPermitDenyPermitNoContiniue_then_initialReturnAndUpdatesAreEmittedAndAccessDeniedTerminatesUpdates()
 			throws InterruptedException {
 		var emitIntervallMs = 50L;
-		var queryPayload = "case5";
+		var queryPayload    = "case5";
 		var numberOfUpdates = 14L;
-		var timeout = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
+		var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
 		// @formatter:off
 		when(pdp.decide(any(AuthorizationSubscription.class)))
@@ -441,9 +441,9 @@ public abstract class QueryTestsuite {
 	void when_recoverableHandlerSecuredSubscriptionQueryAndPermitDenyPermitWithContiniue_then_initialReturnAndUpdatesAreEmittedAndAccessDeniedThenResumesOnPermit()
 			throws InterruptedException {
 		var emitIntervallMs = 100L;
-		var queryPayload = "case6";
+		var queryPayload    = "case6";
 		var numberOfUpdates = 14L;
-		var timeout = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
+		var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
 		// @formatter:off
 		when(pdp.decide(any(AuthorizationSubscription.class)))
@@ -457,12 +457,12 @@ public abstract class QueryTestsuite {
 		// @formatter:on
 
 		var accessDeniedHandler = spy(new Runnable() {
-			@Override
-			public void run() {
-				// NOOP
-			}
-		});
-		var result = queryGateway.recoverableSubscriptionQuery(RECOVERABLE_QUERY, queryPayload,
+									@Override
+									public void run() {
+										// NOOP
+									}
+								});
+		var result              = queryGateway.recoverableSubscriptionQuery(RECOVERABLE_QUERY, queryPayload,
 				instanceOf(String.class), instanceOf(String.class), accessDeniedHandler);
 		emitUpdates(queryPayload, emitIntervallMs, numberOfUpdates);
 
@@ -679,9 +679,9 @@ public abstract class QueryTestsuite {
 	@Test
 	void when_preHandlerSecuredSubscriptionQueryAndPermitWithConstraints_then_initialReturnAndUpdatesAreEmitted() {
 		var emitIntervallMs = 50L;
-		var queryPayload = "caseC1";
+		var queryPayload    = "caseC1";
 		var numberOfUpdates = 20L;
-		var timeout = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
+		var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
 		var constraints = JSON.arrayNode();
 		constraints.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
@@ -717,9 +717,9 @@ public abstract class QueryTestsuite {
 	@Test
 	void when_dropHandlerSubscriptionQueryAndPermitWithConstraints_then_initialReturnAndUpdatesAreEmitted() {
 		var emitIntervallMs = 100L;
-		var queryPayload = "caseC2";
+		var queryPayload    = "caseC2";
 		var numberOfUpdates = 15L;
-		var timeout = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
+		var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
 		var constraints = JSON.arrayNode();
 		constraints.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
@@ -755,9 +755,9 @@ public abstract class QueryTestsuite {
 	@Test
 	void when_recoverableHandlerSubscriptionQueryAndPermitWithConstraints_then_initialReturnAndUpdatesAreEmitted() {
 		var emitIntervallMs = 50L;
-		var queryPayload = "caseC3";
+		var queryPayload    = "caseC3";
 		var numberOfUpdates = 20L;
-		var timeout = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
+		var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
 		var constraints = JSON.arrayNode();
 		constraints.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
@@ -794,9 +794,9 @@ public abstract class QueryTestsuite {
 	@Test
 	void when_recoverableHandlerSubscriptionQueryAndPermitWithConstraintsWithRecovery_then_initialReturnAndUpdatesAreEmitted() {
 		var emitIntervallMs = 50L;
-		var queryPayload = "caseC4";
+		var queryPayload    = "caseC4";
 		var numberOfUpdates = 20L;
-		var timeout = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
+		var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
 		var constraints = JSON.arrayNode();
 		constraints.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
@@ -807,15 +807,15 @@ public abstract class QueryTestsuite {
 		constraints2.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
 		constraints2.add(JSON.textNode(MODIFY_ERROR));
 
-		Flux<AuthorizationDecision> decisions = Flux.concat(
+		Flux<AuthorizationDecision> decisions                  = Flux.concat(
 				Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints)),
 				Flux.just(AuthorizationDecision.DENY)
 						.delayElements(Duration.ofMillis(5 * emitIntervallMs + emitIntervallMs / 2)),
 				Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints2))
 						.delayElements(Duration.ofMillis(3 * emitIntervallMs - emitIntervallMs / 4)));
-		var accessDeniedHandler = mock(Runnable.class);
+		var                         accessDeniedHandler        = mock(Runnable.class);
 		@SuppressWarnings("unchecked")
-		var accessDeniedHandlerOnError = (BiConsumer<Throwable, Object>) mock(BiConsumer.class);
+		var                         accessDeniedHandlerOnError = (BiConsumer<Throwable, Object>) mock(BiConsumer.class);
 
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
 
@@ -838,9 +838,9 @@ public abstract class QueryTestsuite {
 	@Test
 	void when_constraintWantsCollectionFilter_then_CollectionsAreFiltered() throws JsonProcessingException {
 		var emitIntervallMs = 20L;
-		var queryPayload = "caseCX1";
+		var queryPayload    = "caseCX1";
 		var numberOfUpdates = 20L;
-		var timeout = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
+		var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
 		var constraints = JSON.arrayNode();
 		constraints.add(mapper.readTree("{ \"type\" : \"filterMessagePayloadContent\", \"actions\": [" + "{"
@@ -952,7 +952,7 @@ public abstract class QueryTestsuite {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class DataPoint {
-		String name;
+		String  name;
 		Integer age;
 	};
 
@@ -1041,7 +1041,7 @@ public abstract class QueryTestsuite {
 		}
 
 		@Override
-		public Function<String, String> getHandler(JsonNode constraint) {
+		public UnaryOperator<String> getHandler(JsonNode constraint) {
 			return this::map;
 		}
 
@@ -1059,7 +1059,7 @@ public abstract class QueryTestsuite {
 		}
 
 		@Override
-		public Function<Throwable, Throwable> getHandler(JsonNode constraint) {
+		public UnaryOperator<Throwable> getHandler(JsonNode constraint) {
 			return this::map;
 		}
 

@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandHandler;
@@ -325,7 +325,7 @@ public abstract class CommandTestsuite {
 		}
 
 		@Override
-		public Function<String, String> getHandler(JsonNode constraint) {
+		public UnaryOperator<String> getHandler(JsonNode constraint) {
 			return this::map;
 		}
 
@@ -343,7 +343,7 @@ public abstract class CommandTestsuite {
 		}
 
 		@Override
-		public Function<Throwable, Throwable> getHandler(JsonNode constraint) {
+		public UnaryOperator<Throwable> getHandler(JsonNode constraint) {
 			return this::map;
 		}
 

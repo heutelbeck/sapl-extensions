@@ -1,6 +1,7 @@
 package io.sapl.axon.constrainthandling;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
