@@ -18,7 +18,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>3.4.1</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -173,6 +173,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.6.0</version>
         <executions>
           <execution>
             <id>assembly</id>
@@ -190,11 +191,11 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.0</version>
+        <version>3.1.0</version>
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.22.0</version>
+        <version>3.1.0</version>
       </plugin>
       <plugin>
         <groupId>org.asciidoctor</groupId>
@@ -575,16 +576,16 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
-    <output.dir>${basedir}</output.dir>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
     <asciidoctor.version>1.5.7.1</asciidoctor.version>
+    <extension.name>sapl-hivemq-extension</extension.name>
     <sapl.version>3.0.0-SNAPSHOT</sapl.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <extension.author>Nils Mahnken</extension.author>
+    <output.dir>${basedir}</output.dir>
     <java.version>17</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <extension.name>sapl-hivemq-extension</extension.name>
-    <extension.author>Nils Mahnken</extension.author>
-    <maven.deploy.skip>true</maven.deploy.skip>
     <source.document.name>README.adoc</source.document.name>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 </project>
