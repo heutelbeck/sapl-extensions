@@ -76,7 +76,7 @@ class RemotePdpUsageIT {
 
 	@Container
 	static final GenericContainer<?> SAPL_SERVER_LT = new GenericContainer<>(
-			DockerImageName.parse("ghcr.io/heutelbeck/sapl-server-lt:2.1.0-snapshot"))
+			DockerImageName.parse("ghcr.io/heutelbeck/sapl-server-lt:3.0.0-snapshot"))
 			.withCopyFileToContainer(MountableFile.forHostPath("src/test/resources/policies"),
 					"/pdp/data")
 			.withExposedPorts(8080);
