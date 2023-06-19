@@ -272,13 +272,13 @@ public final class MqttClientState {
 
 	/**
 	 * Adds the given mqtt action decision
-	 * {@link "Flux<IdentifiableAuthorizationDecision>"} to the state.
+	 * {@link Flux} of {@link IdentifiableAuthorizationDecision} to the state.
 	 * 
 	 * @param id             the reference under which the mqtt action decision
-	 *                       {@link "Flux<IdentifiableAuthorizationDecision>"} s to
+	 *                       {@link Flux} of {@link IdentifiableAuthorizationDecision} s to
 	 *                       add
 	 * @param identAuthzFlux the mqtt action decision
-	 *                       {@link "Flux<IdentifiableAuthorizationDecision>"} to
+	 *                       {@link Flux} of {@link IdentifiableAuthorizationDecision} to
 	 *                       add
 	 */
 	public void addMqttActionDecisionFluxToMap(String id, Flux<IdentifiableAuthorizationDecision> identAuthzFlux) {
@@ -287,11 +287,11 @@ public final class MqttClientState {
 
 	/**
 	 * Gets the referenced mqtt action decision
-	 * {@link "Flux<IdentifiableAuthorizationDecision>"} from the state.
+	 * {@link Flux} of {@link IdentifiableAuthorizationDecision} from the state.
 	 * 
 	 * @param id the reference of the mqtt action decision flux to return
 	 * @return the referenced mqtt action decision
-	 *         {@link "Flux<IdentifiableAuthorizationDecision>"}
+	 *         {@link Flux} of {@link IdentifiableAuthorizationDecision}
 	 */
 	public Flux<IdentifiableAuthorizationDecision> getMqttActionDecisionFluxFromMap(String id) {
 		return mqttActionDecisionFluxesMap.get(id);
@@ -299,21 +299,21 @@ public final class MqttClientState {
 
 	/**
 	 * Removes the referenced mqtt action decision
-	 * {@link "Flux<IdentifiableAuthorizationDecision>"} from the state.
+	 * {@link Flux} of {@link IdentifiableAuthorizationDecision} from the state.
 	 * 
 	 * @param id the reference of the mqtt action decision
-	 *           {@link "Flux<IdentifiableAuthorizationDecision>"} to remove
+	 *           {@link Flux} of {@link IdentifiableAuthorizationDecision} to remove
 	 */
 	public void removeMqttActionDecisionFluxFromMap(String id) {
 		mqttActionDecisionFluxesMap.remove(id);
 	}
 
 	/**
-	 * Gets all mqtt action decision {@link "Flux<IdentifiableAuthorizationDecision>"}
+	 * Gets all mqtt action decision {@link Flux} of {@link IdentifiableAuthorizationDecision}
 	 * from the state.
 	 * 
 	 * @return all mqtt action decision
-	 *         {@link "Flux<IdentifiableAuthorizationDecision>"} from the state
+	 *         {@link Flux} of {@link IdentifiableAuthorizationDecision} from the state
 	 */
 	public Set<Map.Entry<String, Flux<IdentifiableAuthorizationDecision>>> getMqttActionDecisionFluxesFromMap() {
 		return mqttActionDecisionFluxesMap.entrySet();
