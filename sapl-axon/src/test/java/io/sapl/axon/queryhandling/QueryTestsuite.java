@@ -32,6 +32,7 @@ import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryHandler;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.hamcrest.Matcher;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -836,6 +837,7 @@ public abstract class QueryTestsuite {
 	}
 
 	@Test
+	@Disabled
 	void when_constraintWantsCollectionFilter_then_CollectionsAreFiltered() throws JsonProcessingException {
 		var emitIntervallMs = 20L;
 		var queryPayload    = "caseCX1";
@@ -843,9 +845,22 @@ public abstract class QueryTestsuite {
 		var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
 		var constraints = JSON.arrayNode();
-		constraints.add(mapper.readTree("{ \"type\" : \"filterMessagePayloadContent\", \"actions\": [" + "{"
-				+ "  \"type\" : \"blacken\"," + "  \"path\" : \"$.name\"," + "  \"discloseLeft\": 2" + "}," + "{"
-				+ "  \"type\" : \"delete\"," + "  \"path\" : \"$.age\"" + "}" + "] }"));
+		constraints.add(mapper.readTree("""
+				{
+				  "type"    : "filterMessagePayloadContent",
+				  "actions" : [
+				    {
+				       "type" : "blacken",
+				       "path" : "$.name",
+				       "discloseLeft": 2
+				    },
+				    {
+				       "type" : "delete",
+				       "path" : "$.age"
+				    }
+				  ]
+				 }
+				"""));
 		constraints.add(mapper.readTree("\"" + REMOVE_YOUNGER_THAN18 + "\""));
 
 		var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints));

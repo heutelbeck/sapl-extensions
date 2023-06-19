@@ -42,7 +42,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class GeometryBuilder {
 
-	private static final String UNABLE_TO_PARSE_GEOJSON = "Provided GeoJSON-format is not compliant. Unable to parse geometry.";
+	private static final String UNABLE_TO_PARSE_GEO_JSON = "Provided GeoJSON-format is not compliant. Unable to parse geometry.";
 
 	private static final String UNABLE_TO_PARSE_WKT = "Provided WKT-format is not compliant. Unable to parse geometry.";
 
@@ -55,7 +55,7 @@ public final class GeometryBuilder {
 		try {
 			return geoJsonReader.read(stringReader);
 		} catch (IOException e) {
-			throw new PolicyEvaluationException(UNABLE_TO_PARSE_GEOJSON, e);
+			throw new PolicyEvaluationException(UNABLE_TO_PARSE_GEO_JSON, e);
 		}
 	}
 

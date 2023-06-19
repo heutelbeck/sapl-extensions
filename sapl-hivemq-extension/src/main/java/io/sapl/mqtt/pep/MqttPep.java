@@ -240,7 +240,7 @@ public class MqttPep {
                                     buildUnsubscribeInterceptorForSaplSubscriptionTimeout(unsubscribeInboundInput));
                     clientContext.addUnsubackOutboundInterceptor(
                             (unSubAckOutboundInput, unSubAckOutboundOutput) ->
-                                    buildUnsubackInterceptorForSaplSubscriptionTimeout(unSubAckOutboundInput));
+                                    buildUnsubscribeAckInterceptorForSaplSubscriptionTimeout(unSubAckOutboundInput));
                 });
     }
 
@@ -325,11 +325,11 @@ public class MqttPep {
         int packetId = unsubscribeInboundInput.getUnsubscribePacket().getPacketIdentifier();
         List<String> unsubscribeTopics = unsubscribeInboundInput.getUnsubscribePacket().getTopicFilters();
 
-        // cache for usage in unsuback interceptor method for sapl subscription timeout purposes
+        // cache for usage in unsubscribe ack interceptor method for sapl subscription timeout purposes
         cacheTopicsOfUnsubscribeMessage(mqttClientCache.get(clientId), packetId, unsubscribeTopics);
     }
 
-    private void buildUnsubackInterceptorForSaplSubscriptionTimeout(UnsubackOutboundInput unsubackOutboundInput) {
+    private void buildUnsubscribeAckInterceptorForSaplSubscriptionTimeout(UnsubackOutboundInput unsubackOutboundInput) {
         String clientId = unsubackOutboundInput.getClientInformation().getClientId();
         var mqttClientState = mqttClientCache.get(clientId);
         int packetId = unsubackOutboundInput.getUnsubackPacket().getPacketIdentifier();

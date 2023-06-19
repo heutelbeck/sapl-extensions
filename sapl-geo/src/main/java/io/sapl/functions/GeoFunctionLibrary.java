@@ -74,7 +74,7 @@ public class GeoFunctionLibrary {
 			+ " Coordinate Reference System is the unprojected (source) system (WGS84 recommended).";
 	private static final String LENGTH_DOC = "length(GEOMETRY): Returns the length of the geometry (perimeter in case of areal geometries). The returned value is in the units of the coordinates or of the projection (if projection applied).";
 	private static final String AREA_DOC = "area(GEOMETRY): Returns the area of the geometry. The returned value is in the units (squared) of the coordinates or of the projection (if projection applied).";
-	private static final String IS_SIMPLE_DOC = "isSimple(GEOMETRY): Returns true if the geometry has no anomalous geometric points (e.g. self interesection, self tangency,...).";
+	private static final String IS_SIMPLE_DOC = "isSimple(GEOMETRY): Returns true if the geometry has no anomalous geometric points (e.g. self intersection, self tangency,...).";
 	private static final String IS_VALID_DOC = "isValid(GEOMETRY): Returns true if the geometry is topologically valid according to OGC specifications.";
 	private static final String IS_CLOSED_DOC = "isClosed(GEOMETRY): Returns true if the geometry is either empty or from type (Multi)Point or a closed (Multi)LineString.";
 
@@ -257,46 +257,6 @@ public class GeoFunctionLibrary {
 		return Val.of(result);
 	}
 
-	// @Function(docs = TOMETER_DOC)
-	// public JsonNode toMeter(@Number JsonNode jsonValue, @Text JsonNode jsonUnit)
-	// throws
-	// FunctionException {
-	// double convertedValue;
-	// log.info("->>>>>>>>>>>>>>{} - {}", jsonValue, jsonUnit.asText());
-	// log.info("*****>{}<", Unit.valueOf("cm"));
-	// log.info("*****>{}<", Unit.valueOf("yd"));
-	// Unit<? extends Quantity> unitFrom = Unit.valueOf(jsonUnit.asText());
-	//
-	// if (unitFrom.isCompatible(SI.METER)) {
-	// UnitConverter unitConv = unitFrom.getConverterTo(SI.METER);
-	// convertedValue = unitConv.convert(jsonValue.asDouble());
-	// } else {
-	// throw new FunctionException(String.format(UNIT_NOT_CONVERTIBLE,
-	// jsonUnit.asText(),
-	// "m"));
-	// }
-	// log.info("->>>>>>>>>>>>>>{}", convertedValue);
-	// return JSON.numberNode(BigDecimal.valueOf(convertedValue));
-	// }
-	//
-	// @Function(docs = TOSQUAREMETER_DOC)
-	// public JsonNode toSquareMeter(@Number JsonNode jsonValue, @Text JsonNode
-	// jsonUnit)
-	// {
-	// double convertedValue;
-	// Unit<? extends Quantity> unitFrom = Unit.valueOf(jsonUnit.asText());
-	//
-	// if (unitFrom.isCompatible(SI.SQUARE_METRE)) {
-	// UnitConverter unitConv = unitFrom.getConverterTo(SI.SQUARE_METRE);
-	// convertedValue = unitConv.convert(jsonValue.asDouble());
-	// } else {
-	// throw new FunctionException(String.format(UNIT_NOT_CONVERTIBLE,
-	// jsonUnit.asText(),
-	// "m^2"));
-	// }
-	// return JSON.numberNode(BigDecimal.valueOf(convertedValue));
-	// }
-
 	@Function(docs = BAG_SIZE_DOC)
 	public Val bagSize(@JsonObject Val jsonGeometry) {
 		return Val.of(geoOf(jsonGeometry).getNumGeometries());
@@ -341,11 +301,11 @@ public class GeoFunctionLibrary {
 	public Val resToGeometryBag(@Array Val resourceArray) {
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode[] nodes = mapper.convertValue(resourceArray.get(), JsonNode[].class);
-		Val[] vals = new Val[nodes.length];
+		Val[] values = new Val[nodes.length];
 		for (int i = 0; i < nodes.length; i++) {
-			vals[i] = Val.of(nodes[i]);
+			values[i] = Val.of(nodes[i]);
 		}
-		return geometryBag(vals);
+		return geometryBag(values);
 	}
 
 	@Function(docs = AT_LEAST_ONE_MEMBER_OF_DOC)

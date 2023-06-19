@@ -26,10 +26,10 @@ import io.sapl.spring.constraints.api.Responsible;
 /**
  * Base interface to for implementing constraint handlers that allow for the
  * filtering of update messages.
- * 
+ * <p>
  * Only update messages will be emitted, if the respective predicate is true for
  * it.
- * 
+ * <p>
  * TODO: apply filter to initial result.
  * 
  * @author Dominic Heutelbeck

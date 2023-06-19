@@ -67,7 +67,7 @@ public class TraccarConnection {
 
 	protected static final String TEST_OKAY = "ok";
 
-	private RequestSpecification requestSpec = new RequestSpecification();
+	private final RequestSpecification requestSpec = new RequestSpecification();
 
 	private WebClientRequestExecutor requestExecutor;
 
@@ -138,7 +138,7 @@ public class TraccarConnection {
 			return Flux.error(new PolicyEvaluationException(UNABLE_TO_READ_FROM_SERVER));
 		}
 		Arrays.sort(traccarPositions, TraccarPosition::compareDescending);
-		// Highest ID is most current position
+		// Highest ID is the most current position
 		return Flux.just(traccarPositions[0]);
 	}
 

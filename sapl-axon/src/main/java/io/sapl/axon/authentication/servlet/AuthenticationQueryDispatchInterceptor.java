@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import lombok.NonNull;
 import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.axonframework.queryhandling.QueryMessage;
 
@@ -27,8 +28,8 @@ public class AuthenticationQueryDispatchInterceptor implements MessageDispatchIn
 	 * as a JSON String.
 	 */
 	@Override
-	public BiFunction<Integer, QueryMessage<?, ?>, QueryMessage<?, ?>> handle(
-			List<? extends QueryMessage<?, ?>> messages) {
+	public @NonNull BiFunction<Integer, QueryMessage<?, ?>, QueryMessage<?, ?>> handle(
+			@NonNull List<? extends QueryMessage<?, ?>> messages) {
 		return (index, query) -> {
 			if (query.getMetaData().get("subject") != null)
 				return query;

@@ -32,7 +32,7 @@ import io.sapl.spring.constraints.api.Responsible;
  * 
  * Base interface for implementing constraint handlers that can intercept a
  * CommandMessage.
- * 
+ * <p>
  * Users can choose to overwrite the
  * {@link CommandConstraintHandlerProvider#getHandler} method to completely
  * change the behavior, or to overwrite one of the specialized methods to only
@@ -45,7 +45,7 @@ public interface CommandConstraintHandlerProvider extends Responsible, HasPriori
 
 	/**
 	 * @param constraint The constraint required by the authorization decision.
-	 * @return The handler triggering all required side-effects and potentially
+	 * @return The handler triggering all required side effects and potentially
 	 *         changing the message.
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -59,7 +59,7 @@ public interface CommandConstraintHandlerProvider extends Responsible, HasPriori
 			var baseMessage    = new GenericMessage(command.getIdentifier(), newPayloadType, newPayload, newMetaData);
 			return new GenericCommandMessage(baseMessage, newCommandName);
 		};
-	};
+	}
 
 	/**
 	 * Method for triggering side-effects.

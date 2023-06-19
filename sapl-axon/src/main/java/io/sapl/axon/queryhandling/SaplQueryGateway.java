@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-/**
- * partly copied from package package org.axonframework.queryhandling;
- * copied parts will be marked
- */
-
 package io.sapl.axon.queryhandling;
 
 import static org.axonframework.messaging.GenericMessage.asMessage;
@@ -42,11 +37,11 @@ import reactor.util.concurrent.Queues;
 
 /**
  * A custom QueryGateway for sending recoverable subscription queries. 
- * 
+ * <p>
  * Usage:
  * <pre>{@code
  * var result = queryGateway.recoverableSubscriptionQuery(
- *                querName, queryPayload,instanceOf(String.class), 
+ *                queryName, queryPayload,instanceOf(String.class),
  *                instanceOf(String.class), accessDeniedHandler);
  * result.initialResult().subscribe();
  * result.updates().onErrorContinue((t, o) -> { \/* do something *\/}).subscribe();
@@ -77,8 +72,8 @@ public class SaplQueryGateway extends DefaultQueryGateway {
 	 * @param query               The {@code query} to be sent
 	 * @param initialResponseType The initial response type used for this query
 	 * @param updateResponseType  The update response type used for this query
-	 * @param accessDeniedHandler The runner called whenever an access denied event
-	 *                            occured in the update stream
+	 * @param accessDeniedHandler The runner called whenever an access-denied event
+	 *                            occurs in the update stream
 	 * @param <Q>                 The type of the query
 	 * @param <I>                 The type of the initial response
 	 * @param <U>                 The type of the incremental update
@@ -102,8 +97,8 @@ public class SaplQueryGateway extends DefaultQueryGateway {
 	 * @param query               The {@code query} to be sent
 	 * @param initialResponseType The initial response type used for this query
 	 * @param updateResponseType  The update response type used for this query
-	 * @param accessDeniedHandler The runner called whenever an access denied event
-	 *                            occured in the update stream
+	 * @param accessDeniedHandler The runner called whenever an access-denied event
+	 *                            occurs in the update stream
 	 * @param <Q>                 The type of the query
 	 * @param <I>                 The type of the initial response
 	 * @param <U>                 The type of the incremental update
@@ -126,8 +121,8 @@ public class SaplQueryGateway extends DefaultQueryGateway {
 	 * @param query               The {@code query} to be sent
 	 * @param initialResponseType The initial response type used for this query
 	 * @param updateResponseType  The update response type used for this query
-	 * @param accessDeniedHandler The runner called whenever an access denied event
-	 *                            occured in the update stream
+	 * @param accessDeniedHandler The runner called whenever an access-denied event
+	 *                            occurs in the update stream
 	 * @param <Q>                 The type of the query
 	 * @param <I>                 The type of the initial response
 	 * @param <U>                 The type of the incremental update
@@ -151,8 +146,8 @@ public class SaplQueryGateway extends DefaultQueryGateway {
 	 * @param query               the {@code query} to be sent
 	 * @param initialResponseType the initial response type used for this query
 	 * @param updateResponseType  the update response type used for this query
-	 * @param accessDeniedHandler The runner called whenever an access denied event
-	 *                            occured in the update stream
+	 * @param accessDeniedHandler The runner called whenever an access-denied event
+	 *                            occurs in the update stream
 	 * @param <Q>                 the type of the query
 	 * @param <I>                 the type of the initial response
 	 * @param <U>                 the type of the incremental update
@@ -177,8 +172,8 @@ public class SaplQueryGateway extends DefaultQueryGateway {
 	 * @param initialResponseType the initial response type used for this query
 	 * @param updateResponseType  the update response type used for this query
 	 * @param updateBufferSize    the size of buffer which accumulates updates
-	 * @param accessDeniedHandler The runner called whenever an access denied event
-	 *                            occured in the update stream before subscription
+	 * @param accessDeniedHandler The runner called whenever an access-denied event
+	 *                            occurs in the update stream before subscription
 	 *                            to the flux is made
 	 * @param <Q>                 the type of the query
 	 * @param <I>                 the type of the initial response
@@ -207,7 +202,7 @@ public class SaplQueryGateway extends DefaultQueryGateway {
 			ResponseType<U> updateResponseType, Runnable accessDeniedHandler) {
 		return new DefaultSubscriptionQueryResult<>(
 				wrappedResult.initialResult(), wrappedResult.updates().map(RecoverableResponse::unwrap)
-						.doOnError(__ -> accessDeniedHandler.run()).map(val -> updateResponseType.convert(val)),
+						.doOnError(__ -> accessDeniedHandler.run()).map(updateResponseType::convert),
 				wrappedResult);
 	}
 

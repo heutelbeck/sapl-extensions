@@ -175,7 +175,7 @@ public class PostGISConfig {
 <10> Numeric start primary key, from which the geometries shall be imported.
 <11> Numeric end primary key, until which the geometries shall be imported. If none is provided, all geometries beginning from *10* are imported.
 <12> The SRID into which the coordinates will be projected during the import. If no projection is required the field can just be left empty or assigned a `0` instead.
-<13> Boolean to decide, whether the coordinates shall be flipped before being imported into the policy. The rationale here is, that GIS-databases usually store `X` and `Y` values, whereas SAPL-Geo works with Latitude and Longitude values (see http://postgis.net/2013/08/18/tip_lon_lat/[this arcticle] for further information).
+<13> Boolean to decide, whether the coordinates shall be flipped before being imported into the policy. The rationale here is, that GIS-databases usually store `X` and `Y` values, whereas SAPL-Geo works with Latitude and Longitude values (see http://postgis.net/2013/08/18/tip_lon_lat/[this article] for further information).
 <14> Establishes a SSL-connection to the database if set to `true`. Please note that server certificate (respectively the CA of the servers certificate) must be trusted in a TrustStore. Further options can be set in the custom `urlParams` field.
 <15> Further arguments that can be specified freely and will be passed when establishing the connection to the database. Multiple parameters must be delimited using the `&`-sign.
 

@@ -83,7 +83,7 @@ public class DecisionFluxUtility {
     }
 
     /**
-     * Disposes all decision fluxes for mqtt action enforcement. Further, a new {@link Disposable.Composite} will be
+     * Disposes all decision fluxes for mqtt action enforcement. Further, a new {@link reactor.core.Disposable.Composite} will be
      * set in the {@link MqttClientState} for potentially new subscriptions of mqtt action enforcement decision fluxes.
      * @param mqttClientState the cached state of the client
      */
@@ -96,7 +96,7 @@ public class DecisionFluxUtility {
 
     /**
      * Disposes the shared client decision flux for all mqtt action enforcements of a client. Further,
-     * a new {@link Disposable.Composite} will be set in the {@link MqttClientState} for a
+     * a new {@link reactor.core.Disposable.Composite} will be set in the {@link MqttClientState} for a
      * potentially new subscription of a shared client decision flux.
      * @param mqttClientState the cached state of the client
      */
@@ -329,7 +329,7 @@ public class DecisionFluxUtility {
     }
 
     /**
-     * Caches the disposable of a mqtt action decision flux and adds it to a {@link Disposable.Composite} in the cache.
+     * Caches the disposable of a mqtt action decision flux and adds it to a {@link reactor.core.Disposable.Composite} in the cache.
      * @param mqttClientState the cached state of the client
      * @param subscriptionId the id to identify the decision flux for mqtt action enforcement
      * @param disposable the disposable of a mqtt action decision flux
@@ -342,7 +342,7 @@ public class DecisionFluxUtility {
 
     /**
      * Disposes the referenced mqtt action decision flux and removes its disposable from the cache including
-     * removal from the {@link Disposable.Composite}.
+     * removal from the {@link reactor.core.Disposable.Composite}.
      * @param mqttClientState the cached state of the client
      * @param subscriptionId the id to identify the decision flux for mqtt action enforcement
      */

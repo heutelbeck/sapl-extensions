@@ -37,7 +37,7 @@ import io.sapl.spring.constraints.api.Responsible;
  * 
  * Base interface for implementing constraint handlers that can intercept a
  * ResultMessage or a raw result of a query handler method.
- * 
+ * <p>
  * Users can choose to overwrite the
  * {@link ResultConstraintHandlerProvider#getHandler} method to completely
  * change the behavior, or to overwrite one of the specialized methods to only
@@ -50,7 +50,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
 
 	/**
 	 * @param constraint The constraint required by the authorization decision.
-	 * @return The handler triggering all required side-effects and potentially
+	 * @return The handler triggering all required side effects and potentially
 	 *         changing the result.
 	 */
 	default Function<Object, Object> getHandler(JsonNode constraint) {
@@ -60,7 +60,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
 
 			return mapPayload(result, Object.class, constraint);
 		};
-	};
+	}
 
 	/**
 	 * Handling of result messages.

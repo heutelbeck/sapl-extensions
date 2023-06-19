@@ -52,8 +52,8 @@ import reactor.core.publisher.Mono;
 
 /**
  * The Ethereum Policy Information Point gives access to most methods of the
- * JSON-RPC Ethereum API (https://github.com/ethereum/wiki/wiki/JSON-RPC)
- *
+ * <a href="https://github.com/ethereum/wiki/wiki/JSON-RPC">JSON-RPC Ethereum API</a>.
+ * <p>
  * Excluded are all methods that would change the state of the blockchain as it
  * doesn't make sense to use them during a policy evaluation. These methods are
  * eth_sendTransaction, eth_sendRawTransaction, eth_submitWork and
@@ -63,13 +63,13 @@ import reactor.core.publisher.Mono;
  * eth_newPendingTransactionFilter, eth_uninstallFilter, shh_post,
  * shh_newIdentity, shh_addToGroup, shh_newFilter and shh_uninstallFilter. Also
  * excluded are the deprecated methods eth_getCompilers, eth_compileSolidity,
- * eth_compileLLL and eth_compileSerpent. Further excluded are all db_ methods
+ * eth_compileLLL and eth_compileSerpent. Further, excluded are all db_ methods
  * as they are deprecated and will be removed. Also excluded is the eth_getProof
  * method as at time of writing this there doesn't exist an implementation in
  * the Web3j API.
- *
- * Finally the methods verifyTransaction and loadContractInformation are not
- * part of the JSON RPC API but are considered to be a more user friendly
+ * <p>
+ * Finally, the methods verifyTransaction and loadContractInformation are not
+ * part of the JSON RPC API but are considered to be a more user-friendly
  * implementation of the most common use cases.
  */
 
@@ -113,11 +113,11 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for verifying if a given transaction has taken place.
 	 * 
-	 * @param saplObject needs to have the following values: <br>
+	 * @param leftHandValue needs to have the following values: <br>
 	 *                   "transactionHash" : The hash of the transaction that should
 	 *                   be verified <br>
 	 *                   "fromAccount" : The address of the account the transaction
-	 *                   is send from <br>
+	 *                   is sent from <br>
 	 *                   "toAccount" : The address of the account that receives the
 	 *                   transaction <br>
 	 *                   "transactionValue" : A BigInteger that represents the value
@@ -158,7 +158,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for querying the state of a contract.
 	 * 
-	 * @param saplObject needs to have the following values <br>
+	 * @param leftHandValue needs to have the following values <br>
 	 *                   "fromAccount" : (Optional) The account that makes the
 	 *                   request <br>
 	 *                   "contractAddress" : The address of the called contract <br>
@@ -214,7 +214,7 @@ public class EthereumPolicyInformationPoint {
 	 * This simply returns the version of the client running the node that the
 	 * EthPip connects to.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -233,7 +233,7 @@ public class EthereumPolicyInformationPoint {
 	 * This function can be used to get the Keccak-256 Hash (which is commonly used
 	 * in Ethereum) of a given hex value.
 	 * 
-	 * @param saplObject should contain only a string that has to be a hex value,
+	 * @param leftHandValue should contain only a string that has to be a hex value,
 	 *                   otherwise the hash can't be calculated.
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
@@ -256,7 +256,7 @@ public class EthereumPolicyInformationPoint {
 	 * Rinkeby testnet and 42 for Kovan Testnet. Any other id most probably refers
 	 * to a private testnet.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -275,7 +275,7 @@ public class EthereumPolicyInformationPoint {
 	 * A simple method that checks if the client is listening for network
 	 * connections.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -294,7 +294,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method to find out the number of connected peers.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -313,7 +313,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for querying the version of the currently used ethereum protocol.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -331,7 +331,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Simple method to check if the client is currently syncing with the network.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -350,7 +350,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for retrieving the address of the client coinbase.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -370,7 +370,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Simple method to check if the client is mining.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -391,7 +391,7 @@ public class EthereumPolicyInformationPoint {
 	 * Method for querying the number of hashes per second that the client is mining
 	 * with.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -409,7 +409,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for querying the current gas price in wei.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -427,7 +427,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for returning all addresses owned by the client.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -445,11 +445,11 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for receiving the number of the most recent block.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
-	 * @return Flux of JsonNodes containing the block number as BigInteger.
+	 * @return Flux of JsonNodes containing the block number as a BigInteger.
 	 */
 	@Attribute(name = "blockNumber", docs = "Returns the number of most recent block.")
 	public Flux<Val> ethBlockNumber(Val leftHandValue, Map<String, JsonNode> variables) {
@@ -464,13 +464,13 @@ public class EthereumPolicyInformationPoint {
 	 * Method for querying the balance of an account at a given block. If no
 	 * DefaultBlockParameter is provided the latest Block will be queried.
 	 * 
-	 * @param saplObject needs to have the following values: <br>
+	 * @param leftHandValue needs to have the following values: <br>
 	 *                   "address": The address of the account that you want to get
 	 *                   the balance of. <br>
 	 *                   "defaultBlockParameter": (Optional) BigInteger value of the
 	 *                   desired block number <b>or</b> one of the strings "latest",
 	 *                   "earliest", or "pending".
-	 * @param variables
+	 * @param variables  SAPL variables
 	 * @return Flux of JsonNodes holding the balance in wei as BigInteger.
 	 *
 	 */
@@ -492,7 +492,7 @@ public class EthereumPolicyInformationPoint {
 	 * "https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getstorageat">Json-RPC</a>
 	 * to find out how the storage position is being calculated.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "address": Address of the contract that the storage belongs
 	 *                   to. <br>
 	 *                   "position": Position of the stored data. <br>
@@ -522,7 +522,7 @@ public class EthereumPolicyInformationPoint {
 	 * account has sent or the number of interactions with other contracts in the
 	 * case of a contract account.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "address": Address of the account that the transactionCount
 	 *                   should be returned from. <br>
 	 *                   "defaultBlockParameter": (Optional) BigInteger value of the
@@ -550,7 +550,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for querying the number of transactions in a block with a given hash.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "blockHash": The hash of the block in question as String.
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
@@ -573,7 +573,7 @@ public class EthereumPolicyInformationPoint {
 	 * Method for querying the number of transactions in a block with a given
 	 * number.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "defaultBlockParameter": (Optional) BigInteger value of the
 	 *                   desired block number <b>or</b> one of the strings "latest",
 	 *                   "earliest", or "pending".
@@ -596,7 +596,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for querying the number of uncles in a block with a given hash.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "blockHash": The hash of the block in question as String.
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
@@ -617,7 +617,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for querying the number of uncles in a block with a given number.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "defaultBlockParameter": (Optional) BigInteger value of the
 	 *                   desired block number <b>or</b> one of the strings "latest",
 	 *                   "earliest", or "pending".
@@ -640,7 +640,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for getting the code stored at a certain address.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "address": Address of the contract that the code should be
 	 *                   returned from. <br>
 	 *                   "defaultBlockParameter": (Optional) BigInteger value of the
@@ -666,7 +666,7 @@ public class EthereumPolicyInformationPoint {
 	 * Method for calculating the signature needed for Ethereum transactions. The
 	 * address to sign with mus be unlocked in the client.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "address": Address used to sign with. <br>
 	 *                   "sha3HashOfDataToSign": The message that should be signed.
 	 * @param variables  can optionally contain a key with value
@@ -692,7 +692,7 @@ public class EthereumPolicyInformationPoint {
 	 * transaction. To use it just hand in a transaction converted to JsonNode with
 	 * the ObjectMapper. An example can be found in the documentation.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "transaction": An
 	 *                   org.web3j.protocol.core.methods.request.Transaction mapped
 	 *                   to JsonNode. <br>
@@ -722,7 +722,7 @@ public class EthereumPolicyInformationPoint {
 	 * transaction converted to JsonNode with the ObjectMapper. An example can be
 	 * found in the documentation.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "transaction": An
 	 *                   org.web3j.protocol.core.methods.request.Transaction mapped
 	 *                   to JsonNode.
@@ -744,7 +744,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method to retrieve a complete block by using its hash.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "blockHash": The hash of the block that should be
 	 *                   retrieved. <br>
 	 *                   "returnFullTransactionObjects": (Optional) To include the
@@ -769,7 +769,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method to retrieve a complete block by using its number.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "returnFullTransactionObjects": (Optional) To include the
 	 *                   full transaction objects this value has to be true. If
 	 *                   false or not provided, only the transaction hashes will be
@@ -796,7 +796,7 @@ public class EthereumPolicyInformationPoint {
 	 * Method for getting the full information of a transaction by providing its
 	 * hash.
 	 * 
-	 * @param saplObject should only be the transaction hash.
+	 * @param leftHandValue should only be the transaction hash.
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -815,7 +815,7 @@ public class EthereumPolicyInformationPoint {
 	 * Method for getting the full information of a transaction by providing the
 	 * block hash and index to find it.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "blockHash": Hash of the block the transaction is in. <br>
 	 *                   "transactionIndex": Position of the transaction in the
 	 *                   block. <br>
@@ -838,7 +838,7 @@ public class EthereumPolicyInformationPoint {
 	 * Method for getting the full information of a transaction by providing the
 	 * block number and index to find it.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "defaultBlockParameter": Should in this case hold the
 	 *                   number of the Block as BigInteger. "transactionIndex": The
 	 *                   position of the transaction in the block.
@@ -861,7 +861,7 @@ public class EthereumPolicyInformationPoint {
 	 * Method for getting the transaction receipt by the hash of the corresponding
 	 * transaction.
 	 * 
-	 * @param saplObject should contain only the transaction hash as a String.
+	 * @param leftHandValue should contain only the transaction hash as a String.
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -880,7 +880,7 @@ public class EthereumPolicyInformationPoint {
 	 * Method for getting the hashes of pending transactions (transactions that have
 	 * been broadcast, but not yet mined into a block).
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  is unused here
 	 * @return A Flux of Json Nodes that hold the hashes of the pending
 	 *         transactions.
@@ -894,7 +894,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for getting an uncle by block hash and position of the uncle.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "blockHash": Hash of the block the uncle is in. <br>
 	 *                   "uncleIndex": Position in the uncles list as BigInteger.
 	 * @param variables  can optionally contain a key with value
@@ -915,7 +915,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for getting an uncle by block number and position of the uncle.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "defaultBlockParameter": Here it should hold the number of
 	 *                   the block the uncle is in. <br>
 	 *                   "uncleIndex": Position in the uncles list as BigInteger.
@@ -938,7 +938,7 @@ public class EthereumPolicyInformationPoint {
 	 * This method returns a list of filter logs that occurred since the last
 	 * received list.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "filterId": The identification number of the requested
 	 *                   filter as BigInteger.
 	 * @param variables  can optionally contain a key with value
@@ -958,7 +958,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method that returns all logs matching a given filter id.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "filterId": The identification number of the requested
 	 *                   filter as BigInteger.
 	 * @param variables  can optionally contain a key with value
@@ -979,7 +979,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method that returns all logs matching a given filter object.
 	 * 
-	 * @param saplObject needs to hold the following values: <br>
+	 * @param leftHandValue needs to hold the following values: <br>
 	 *                   "fromBlock": Hex value of the block from which on should be
 	 *                   filtered from (beginning with 0x). <br>
 	 *                   "toBlock": Hex value of the block from where the filtering
@@ -1007,7 +1007,7 @@ public class EthereumPolicyInformationPoint {
 	 * Method to get a List of the current block hash, the seed hash and the
 	 * difficulty.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -1026,7 +1026,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for querying the current whisper protocol version.
 	 * 
-	 * @param saplObject is unused here
+	 * @param leftHandValue is unused here
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -1045,7 +1045,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method to verify if the client has the private keys for a certain identity.
 	 * 
-	 * @param saplObject needs to be the public address of the identity.
+	 * @param leftHandValue needs to be the public address of the identity.
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -1065,7 +1065,7 @@ public class EthereumPolicyInformationPoint {
 	 * Method for getting all new shh messages grouped in arrays. Each array holds
 	 * the new messages that appeared since the last array.
 	 * 
-	 * @param saplObject should simply be the filter id as BigInteger value.
+	 * @param leftHandValue should simply be the filter id as BigInteger value.
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds
@@ -1083,7 +1083,7 @@ public class EthereumPolicyInformationPoint {
 	/**
 	 * Method for getting all shh messages from a certain filter.
 	 * 
-	 * @param saplObject should simply be the filter id as BigInteger value.
+	 * @param leftHandValue should simply be the filter id as BigInteger value.
 	 * @param variables  can optionally contain a key with value
 	 *                   "ethPollingInterval" that holds the time span in which the
 	 *                   blockchain should be polled in milliseconds

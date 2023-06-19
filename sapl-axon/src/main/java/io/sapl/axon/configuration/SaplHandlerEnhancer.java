@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
  * 
  * The SaplHandlerEnhancer is responsible for adding Policy Enforcement Points
  * to all command and query handlers in the system.
- *
+ * <p>
  * Upon application startup, Axon scans all classes for the @CommandHandler
  * or @QueryHandler annotations. All of these are registered as
  * MessageHandlingMembers and this Service is called for each of them, which

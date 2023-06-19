@@ -31,38 +31,38 @@ import lombok.Getter;
 public class PostGISConfig {
 
 	private static final String ARG_NOT_EXISTING = "Configured table or column name does not exist in the database.";
-	private static final String COLUMN_NAME = "COLUMN_NAME";
-	private static final String JDBC_SERVICE = "jdbc:postgresql://";
-	private static final String SSL_PARAM = "ssl=true";
-	private static final String SQL_QUERY = "SELECT %s, %s FROM %s WHERE %s;";
-	private static final String SQL_AS_TEXT = "ST_AsText(";
-	private static final String SQL_FLIP = "ST_FlipCoordinates(";
-	private static final String SQL_TRANSFORM = "ST_Transform(";
-	private static final String SQL_AND = " AND ";
-	private static final char SLASH = '/';
-	private static final char QM = '?';
-	private static final char AMP = '&';
-	private static final String SEQ = "<=";
-	private static final String GEQ = ">=";
-	private static final char COLON = ':';
-	private static final char COMMA = ',';
-	private static final char CLOSING_PAREN = ')';
+	private static final String COLUMN_NAME      = "COLUMN_NAME";
+	private static final String JDBC_SERVICE     = "jdbc:postgresql://";
+	private static final String SSL_PARAM        = "ssl=true";
+	private static final String SQL_QUERY        = "SELECT %s, %s FROM %s WHERE %s;";
+	private static final String SQL_AS_TEXT      = "ST_AsText(";
+	private static final String SQL_FLIP         = "ST_FlipCoordinates(";
+	private static final String SQL_TRANSFORM    = "ST_Transform(";
+	private static final String SQL_AND          = " AND ";
+	private static final char   SLASH            = '/';
+	private static final char   QM               = '?';
+	private static final char   AMP              = '&';
+	private static final String SEQ              = "<=";
+	private static final String GEQ              = ">=";
+	private static final char   COLON            = ':';
+	private static final char   COMMA            = ',';
+	private static final char   CLOSING_PAREN    = ')';
 
-	private String serverAdress;
-	private String port;
-	private String db;
-	private String table;
-	private String username;
-	private String password;
-	private String pkColName;
-	private String idColName;
-	private String geometryColName;
-	private int from;
-	private int until = -1;
-	private boolean flipCoordinates;
-	private int projectionSRID;
-	private boolean ssl;
-	private String urlParams;
+	private String    serverAddress;
+	private String    port;
+	private String    db;
+	private String    table;
+	private String    username;
+	private String    password;
+	private String    pkColName;
+	private String    idColName;
+	private String    geometryColName;
+	private int       from;
+	private final int until = -1;
+	private boolean   flipCoordinates;
+	private int       projectionSRID;
+	private boolean   ssl;
+	private String    urlParams;
 
 	public Connection getConnection() throws SQLException {
 		return DriverManager.getConnection(buildUrl(), getUsername(), getPassword());
@@ -78,7 +78,8 @@ public class PostGISConfig {
 
 	protected String buildUrl() {
 		StringBuilder url = new StringBuilder();
-		url.append(JDBC_SERVICE).append(getServerAdress()).append(COLON).append(getPort()).append(SLASH).append(getDb())
+		url.append(JDBC_SERVICE).append(getServerAddress()).append(COLON).append(getPort()).append(SLASH)
+				.append(getDb())
 				.append(QM);
 
 		if (ssl) {
@@ -94,8 +95,8 @@ public class PostGISConfig {
 	protected boolean verifySqlArguments() {
 		try (Connection conn = getConnection()) {
 
-			DatabaseMetaData dbm = conn.getMetaData();
-			ResultSet cols = dbm.getColumns(null, null, getTable(), null);
+			DatabaseMetaData dbm  = conn.getMetaData();
+			ResultSet        cols = dbm.getColumns(null, null, getTable(), null);
 
 			return colsExist(cols, getIdColName(), getGeometryColName(), getPkColName());
 		} catch (SQLException e) {
@@ -113,8 +114,8 @@ public class PostGISConfig {
 	}
 
 	private String buildGeometryExpression() {
-		int parenthesis = 1;
-		StringBuilder result = new StringBuilder();
+		int           parenthesis = 1;
+		StringBuilder result      = new StringBuilder();
 		result.append(SQL_AS_TEXT);
 
 		if (flipCoordinates) {

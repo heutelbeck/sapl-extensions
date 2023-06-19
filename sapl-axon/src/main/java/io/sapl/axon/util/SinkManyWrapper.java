@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 import reactor.core.publisher.Sinks;
 
 /**
- * Wrapper around {@link Sinks.Many} for busy looping.
+ * Wrapper around {@link reactor.core.publisher.Sinks.Many} for busy looping.
  *
  * @param <T> The value type
  * @author Dominic Heutelbeck
@@ -21,14 +21,7 @@ public class SinkManyWrapper<T> implements SinkWrapper<T> {
 	Sinks.Many<T> fluxSink;
 
 	/**
-	 * Initializes this wrapper with delegate sink.
 	 *
-	 * @param fluxSink Delegate sink
-	 */
-
-	/**
-	 * Wrapper around {@link Sinks.Many#tryEmitComplete()}. Throws exception on
-	 * failure cases.}.
 	 */
 	@Override
 	public void complete() {
@@ -41,7 +34,7 @@ public class SinkManyWrapper<T> implements SinkWrapper<T> {
 	}
 
 	/**
-	 * Wrapper around {@link Sinks.Many#tryEmitNext(Object)}. Throws exception on
+	 * Wrapper around {@link reactor.core.publisher.Sinks.Many#tryEmitNext(Object)}. Throws exception on
 	 * failure cases.
 	 *
 	 * @param value to be passed to the delegate sink
@@ -57,7 +50,7 @@ public class SinkManyWrapper<T> implements SinkWrapper<T> {
 	}
 
 	/**
-	 * Wrapper around {@link Sinks.Many#tryEmitError(Throwable)}. Throws exception
+	 * Wrapper around {@link reactor.core.publisher.Sinks.Many#tryEmitError(Throwable)}. Throws exception
 	 * on failure cases.
 	 *
 	 * @param t to be passed to the delegate sink
@@ -65,7 +58,7 @@ public class SinkManyWrapper<T> implements SinkWrapper<T> {
 	@Override
 	public void error(Throwable t) {
 		Sinks.EmitResult result;
-		// noinspection StatementWithEmptyBody
+		// no inspection StatementWithEmptyBody
 		while ((result = fluxSink.tryEmitError(t)) == Sinks.EmitResult.FAIL_NON_SERIALIZED) {
 			// busy spin
 		}

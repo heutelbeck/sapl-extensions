@@ -24,20 +24,20 @@ import java.lang.annotation.Target;
 /**
  * This annotation can be used inside classes (aggregates, entities, domain
  * services) containing {@code @CommandHandler} methods.
- * 
+ * <p>
  * Whenever Axon is about to call a {@code @CommandHandler} method which is
  * secured by one of the SAPL enforcement annotations, and the PDP returned a
  * decision containing constraints, for each constraint all methods with this
  * annotation in the same object as the {@code @CommandHandler} are examined to
  * determine if they are responsible for handling the constraint.
- * 
+ * <p>
  * If the method is responsible, it is invoked and access is granted if the
  * method returns without raising an Exception.
- * 
+ * <p>
  * The responsibility of the Method is determined by evaluating the SpEL
  * expression contained in the annotation. The method is responsible to handle
  * the constraint, if the expression is empty or evaluates true.
- *
+ * <p>
  * To make a reasonable decision about its responsibility, the following data is
  * made available to the SpEL expression in its evaluation context:
  * 
@@ -57,7 +57,7 @@ import java.lang.annotation.Target;
  * Example:
  * 
  * <pre>{@code 
- * 	@ConstraintHandler("#constraint.get('type').textValue() == 'documentSuspisiousManipulation'")
+ * 	@ConstraintHandler("#constraint.get('type').textValue() == 'documentSuspiciousManipulation'")
  * 	public void handleSuspiciousManipulation(JsonNode constraint) {
  * 		apply(new SuspiciousManipulation(id, constraint.get("username").textValue()));
  * 	}

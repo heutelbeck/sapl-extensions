@@ -214,11 +214,11 @@ public class AuthorizationSubscriptionBuilderService {
 		if (expressionNotSet(spelExpression))
 			return messageToJson(message);
 
-		var seplEvaluationContext = new StandardEvaluationContext(commandHandlingObject);
-		seplEvaluationContext.setVariable(MESSAGE, message);
-		seplEvaluationContext.setVariable(COMMAND, message.getPayload());
-		seplEvaluationContext.setVariable(METADATA, message.getMetaData());
-		return evaluateSpel((String) spelExpression, seplEvaluationContext);
+		var spelEvaluationContext = new StandardEvaluationContext(commandHandlingObject);
+		spelEvaluationContext.setVariable(MESSAGE, message);
+		spelEvaluationContext.setVariable(COMMAND, message.getPayload());
+		spelEvaluationContext.setVariable(METADATA, message.getMetaData());
+		return evaluateSpel((String) spelExpression, spelEvaluationContext);
 
 	}
 

@@ -56,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
  * This service collects all constraint handlers available in the application
  * context and context of command execution and assembles a constraint handler
  * bundle for each decision.
- * 
+ * <p>
  * It checks if all obligations can be satisfied or raises an
  * AccessDeniedException.
  * 
@@ -227,7 +227,7 @@ public class ConstraintHandlerService {
 
 		var obligationsWithoutHandler = new HashSet<JsonNode>();
 		decision.getObligations()
-				.ifPresent(obligations -> obligations.forEach(obligation -> obligationsWithoutHandler.add(obligation)));
+				.ifPresent(obligations -> obligations.forEach(obligationsWithoutHandler::add));
 
 		Optional<Class<?>> returnType = executable.map(Executable::getAnnotatedReturnType).map(AnnotatedType::getType)
 				.map(TypeFactory::rawClass);
@@ -265,7 +265,7 @@ public class ConstraintHandlerService {
 
 		var obligationsWithoutHandler = new HashSet<JsonNode>();
 		decision.getObligations()
-				.ifPresent(obligations -> obligations.forEach(obligation -> obligationsWithoutHandler.add(obligation)));
+				.ifPresent(obligations -> obligations.forEach(obligationsWithoutHandler::add));
 
 		var onDecisionHandlers = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
 		var queryMappingHandlers = constructQueryMessageMappingHandlers(decision, obligationsWithoutHandler);
@@ -295,21 +295,21 @@ public class ConstraintHandlerService {
 
 	private <T> Function<Object, Object> constructResultMessageMappingHandlers(AuthorizationDecision decision,
 			HashSet<JsonNode> obligationsWithoutHandler, ResponseType<T> responseType) {
-		var obligationFun = constructResultMesaageMappingHandlers(decision.getObligations(),
+		var obligationFun = constructResultMessageMappingHandlers(decision.getObligations(),
 				obligationsWithoutHandler::remove, responseType);
-		var adviceFun = constructResultMesaageMappingHandlers(decision.getAdvice(), __ -> {
+		var adviceFun = constructResultMessageMappingHandlers(decision.getAdvice(), __ -> {
 		}, responseType);
 
 		return result -> {
 			var newResult = result;
 			try {
-				newResult = obligationFun.orElseGet(() -> Functions.identity()).apply(result);
+				newResult = obligationFun.orElseGet(Functions::identity).apply(result);
 			} catch (Throwable t) {
 				log.error("Failed to execute obligation handlers. {}", t.getLocalizedMessage());
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
-				newResult = adviceFun.orElseGet(() -> Functions.identity()).apply(newResult);
+				newResult = adviceFun.orElseGet(Functions::identity).apply(newResult);
 			} catch (Throwable t) {
 				log.error("Failed to execute advice handlers. {}", t.getLocalizedMessage());
 			}
@@ -317,7 +317,7 @@ public class ConstraintHandlerService {
 		};
 	}
 
-	private <T> Optional<Function<Object, Object>> constructResultMesaageMappingHandlers(
+	private <T> Optional<Function<Object, Object>> constructResultMessageMappingHandlers(
 			Optional<ArrayNode> constraints, Consumer<JsonNode> onHandlerFound, ResponseType<T> responseType) {
 		return constraints.map(constraintsArray -> {
 			var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<Object, Object>>>(
@@ -390,7 +390,7 @@ public class ConstraintHandlerService {
 
 		var obligationsWithoutHandler = new HashSet<JsonNode>();
 		decision.getObligations()
-				.ifPresent(obligations -> obligations.forEach(obligation -> obligationsWithoutHandler.add(obligation)));
+				.ifPresent(obligations -> obligations.forEach(obligationsWithoutHandler::add));
 
 		var onDecisionHandlers = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
 		var errorMappingHandlers = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
@@ -416,13 +416,13 @@ public class ConstraintHandlerService {
 		return error -> {
 			var newError = error;
 			try {
-				newError = obligationFun.orElseGet(() -> Functions.identity()).apply(newError);
+				newError = obligationFun.orElseGet(Functions::identity).apply(newError);
 			} catch (Throwable t) {
 				log.error("Failed to execute obligation handlers. {}", t.getLocalizedMessage());
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
-				newError = adviceFun.orElseGet(() -> Functions.identity()).apply(newError);
+				newError = adviceFun.orElseGet(Functions::identity).apply(newError);
 			} catch (Throwable t) {
 				log.error("Failed to execute advice handlers. {}", t.getLocalizedMessage());
 			}
@@ -460,13 +460,13 @@ public class ConstraintHandlerService {
 		return command -> {
 			var newCommand = command;
 			try {
-				newCommand = obligationFun.orElseGet(() -> Functions.identity()).apply(newCommand);
+				newCommand = obligationFun.orElseGet(Functions::identity).apply(newCommand);
 			} catch (Throwable t) {
 				log.error("Failed to execute obligation handlers. {}", t.getLocalizedMessage());
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
-				newCommand = adviceFun.orElseGet(() -> Functions.identity()).apply(newCommand);
+				newCommand = adviceFun.orElseGet(Functions::identity).apply(newCommand);
 			} catch (Throwable t) {
 				log.error("Failed to execute advice handlers. {}", t.getLocalizedMessage());
 			}
@@ -504,13 +504,13 @@ public class ConstraintHandlerService {
 		return query -> {
 			var newQuery = query;
 			try {
-				newQuery = obligationFun.orElseGet(() -> Functions.identity()).apply(newQuery);
+				newQuery = obligationFun.orElseGet(Functions::identity).apply(newQuery);
 			} catch (Throwable t) {
 				log.error("Failed to execute obligation handlers. {}", t.getLocalizedMessage());
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
-				newQuery = adviceFun.orElseGet(() -> Functions.identity()).apply(newQuery);
+				newQuery = adviceFun.orElseGet(Functions::identity).apply(newQuery);
 			} catch (Throwable t) {
 				log.error("Failed to execute advice handlers. {}", t.getLocalizedMessage());
 			}
@@ -549,13 +549,13 @@ public class ConstraintHandlerService {
 		return result -> {
 			var newResult = result;
 			try {
-				newResult = (T) obligationFun.orElseGet(() -> Functions.identity()).apply(result);
+				newResult = (T) obligationFun.orElseGet(Functions::identity).apply(result);
 			} catch (Throwable t) {
 				log.error("Failed to execute obligation handlers. {}", t.getLocalizedMessage());
 				throw new AccessDeniedException("Access Denied");
 			}
 			try {
-				newResult = (T) adviceFun.orElseGet(() -> Functions.identity()).apply(newResult);
+				newResult = (T) adviceFun.orElseGet(Functions::identity).apply(newResult);
 			} catch (Throwable t) {
 				log.error("Failed to execute advice handlers. {}", t.getLocalizedMessage());
 			}
@@ -591,10 +591,10 @@ public class ConstraintHandlerService {
 		var onDecisionAdviceHandlers = onDecisionHandlers(decision.getAdvice(), __ -> {
 		});
 
-		return (auhtzDecision, message) -> {
-			onDecisionObligationHandlers.map(biConsumer -> (Runnable) (() -> biConsumer.accept(auhtzDecision, message)))
+		return (authzDecision, message) -> {
+			onDecisionObligationHandlers.map(biConsumer -> (Runnable) (() -> biConsumer.accept(authzDecision, message)))
 					.map(this::obligation).ifPresent(Runnable::run);
-			onDecisionAdviceHandlers.map(biConsumer -> (Runnable) (() -> biConsumer.accept(auhtzDecision, message)))
+			onDecisionAdviceHandlers.map(biConsumer -> (Runnable) (() -> biConsumer.accept(authzDecision, message)))
 					.map(this::advice).ifPresent(Runnable::run);
 		};
 	}
@@ -678,7 +678,7 @@ public class ConstraintHandlerService {
 		context.setVariable("command", command);
 		var expression = PARSER.parseExpression(annotationValue);
 
-		Object value = null;
+		Object value;
 		try {
 			value = expression.getValue(context);
 			log.debug("Expression evaluated to: {}", value);
@@ -770,7 +770,7 @@ public class ConstraintHandlerService {
 			try {
 				handler.run();
 			} catch (Throwable t) {
-				log.error("Failed to execute adivce handlers. {}", t.getLocalizedMessage());
+				log.error("Failed to execute advice handlers. {}", t.getLocalizedMessage());
 			}
 		};
 	}

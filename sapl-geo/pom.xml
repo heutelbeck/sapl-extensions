@@ -93,11 +93,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-inline</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-nop</artifactId>
 			<scope>test</scope>
@@ -177,7 +172,7 @@
 				<configuration>
 					<sourceDirectory>src/asciidoc</sourceDirectory>
 					<attributes>
-						<endpoint-url>http://docs.openconjurer.org</endpoint-url>
+						<endpoint-url>https://sapl.io/socumentation/sapl-geo</endpoint-url>
 						<sourcedir>${project.build.sourceDirectory}</sourcedir>
 						<project-version>${project.version}</project-version>
 					</attributes>

@@ -3,6 +3,7 @@ package io.sapl.axon.commandhandling;
 import java.lang.reflect.Executable;
 import java.util.Optional;
 
+import lombok.NonNull;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
@@ -55,7 +56,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
 	 * 
 	 */
 	@Override
-	public Object handle(Message<?> message, T aggregate) throws Exception {
+	public Object handle(@NonNull Message<?> message, T aggregate) throws Exception {
 		var preEnforceAnnotation = findPreEnforceAnnotation();
 		if (preEnforceAnnotation.isPresent()) {
 			return preEnforcePolices((CommandMessage<?>) message, aggregate, preEnforceAnnotation.get());
@@ -106,7 +107,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
 			throw bundle.executeOnErrorHandlers(new AccessDeniedException("Access Denied"));
 		}
 
-		CommandMessage<?> mappedCommand = null;
+		CommandMessage<?> mappedCommand;
 		try {
 			mappedCommand = bundle.executeCommandMappingHandlers(command);
 		} catch (Exception t) {
@@ -114,14 +115,14 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
 			throw bundle.executeOnErrorHandlers(new AccessDeniedException("Access Denied"));
 		}
 
-		Object result = null;
+		Object result;
 		try {
 			result = delegate.handle(mappedCommand, aggregate);
 		} catch (Exception t) {
 			throw bundle.executeOnErrorHandlers(t);
 		}
 
-		Object mappedResult = null;
+		Object mappedResult;
 		try {
 			mappedResult = bundle.executePostHandlingHandlers(result);
 		} catch (Exception t) {

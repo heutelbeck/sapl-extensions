@@ -17,28 +17,28 @@ import reactor.util.concurrent.Queues;
 /**
  * This class wraps a source {@code Flux<T>} and provides two reactive accessors
  * to the Flux.
- * 
+ * <p>
  * The first accessor is a {@code Mono<T>} and the second accessor is a
  * {@code Flux<T>}.
- * 
+ * <p>
  * The purpose is to avoid the creation of two independent subscriptions to the
  * source when these are subscribed to in a short period of time.
- * 
+ * <p>
  * The primary use-case is the sharing of a {@code Flux<AuthorizationDecision>}
  * between the PEP in the {@code @QueryHandler} producing the initial result and
  * the PEP in the UpdateEmitter.
- * 
+ * <p>
  * Axon does not enforce that the initial result and the updates are subscribed
  * both or in a specific sequence.
- * 
+ * <p>
  * The FluxOneAndManyTap keeps the connection to the source {@code Flux} alive
  * and caches the last event of the source for the provided TTL.
- * 
+ * <p>
  * If one of the accessors is subscribed to after the other within the set TTL,
  * the source is only subscribed to once, and a cached value of propagated
  * first, if available.
- * 
- * IF the second subscription does occurs later than the TTL after the end of
+ * <p>
+ * IF the second subscription occurs later than the TTL after the end of
  * the first accessor subscription, the connection is dropped after TTL and the
  * source is newly subscribed to.
  * 
@@ -52,14 +52,14 @@ public class FluxOneAndManyTap<T> {
 	private final Flux<T>  source;
 	private final Duration connectionTtl;
 
-	private AtomicReference<T>          cache            = new AtomicReference<>();
-	private AtomicReference<Disposable> sourceDisposable = new AtomicReference<>();
-	private AtomicReference<One<T>>     oneSink          = new AtomicReference<>();
-	private AtomicReference<Many<T>>    manySink         = new AtomicReference<>();
+	private final AtomicReference<T>          cache            = new AtomicReference<>();
+	private final AtomicReference<Disposable> sourceDisposable = new AtomicReference<>();
+	private final AtomicReference<One<T>>     oneSink          = new AtomicReference<>();
+	private final AtomicReference<Many<T>>    manySink         = new AtomicReference<>();
 	private boolean                     oneCalled        = false;
-	private AtomicBoolean               oneSubscribed    = new AtomicBoolean(false);
+	private final AtomicBoolean               oneSubscribed    = new AtomicBoolean(false);
 	private boolean                     manyCalled       = false;
-	private AtomicBoolean               manySubscribed   = new AtomicBoolean(false);
+	private final AtomicBoolean               manySubscribed   = new AtomicBoolean(false);
 
 	/**
 	 * Create a FluxOneAndManyTap
@@ -136,7 +136,7 @@ public class FluxOneAndManyTap<T> {
 		manyCalled = true;
 
 		/*
-		 * Unicast ensured, that this can only be subscribed to once. No additional
+		 * Unicast ensured, that this can only be subscribed once. No additional
 		 * check necessary
 		 */
 		Many<T> sink = Sinks.many().unicast().onBackpressureBuffer(Queues.<T>one().get());
@@ -190,7 +190,7 @@ public class FluxOneAndManyTap<T> {
 	}
 
 	private Disposable subscribeToSource() {
-		return source.doOnNext(v -> cache.set(v)).doOnNext(v -> {
+		return source.doOnNext(cache::set).doOnNext(v -> {
 			cache.set(v);
 			updateOne(sink -> sink.tryEmitValue(v));
 			updateMany(sink -> sink.tryEmitNext(v));
@@ -201,8 +201,8 @@ public class FluxOneAndManyTap<T> {
 			if (signal == SignalType.ON_ERROR) // Has been taken care of by doOnError
 				return;
 
-			updateOne(sink -> sink.tryEmitEmpty());
-			updateMany(sink -> sink.tryEmitComplete());
+			updateOne(Sinks.Empty::tryEmitEmpty);
+			updateMany(Many::tryEmitComplete);
 		}).subscribe();
 	}
 

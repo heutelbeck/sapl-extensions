@@ -23,7 +23,7 @@ import reactor.core.Disposable;
 /**
  * This is a builder to class to create a multi subscription with multiple components.
  * An instance of this class may be acquired via the method {@link PepBuilderService#getMultiBuilder() PepBuilderService.getMultiBuilder()}.
- *
+ * <p>
  * A subscription subject can be set with the function {@link #subject(Object)}.
  * The "with()" method is an overloaded function which allows to add a Vaadin component to the subscription.
  * Calling the "with()" function will return a specific multi-pep-builder object (In case of a button for example {@link VaadinPep.VaadinMultiButtonPepBuilder}).

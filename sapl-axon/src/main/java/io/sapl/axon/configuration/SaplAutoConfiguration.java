@@ -65,7 +65,7 @@ public class SaplAutoConfiguration {
 
 	/**
 	 * For PEPs based on @EnforceRecoverableUpdatesIfDenied, the class @see
-	 * io.sapl.axon.queryhandlingRecoverableResponse must be serializable. XStream
+	 * io.sapl.axon.queryhandling.RecoverableResponse must be serializable. XStream
 	 * uses a whitelist for determining which classes may be serialized. This method
 	 * registers the RecoverableResponse.
 	 * 
@@ -113,7 +113,7 @@ public class SaplAutoConfiguration {
 	 * inject interceptors.
 	 * 
 	 * @param commandBus  the CommandBus
-	 * @param interceptor the authn interceptor
+	 * @param authnSupplier the authn interceptor
 	 * @return ReactorCommandGateway with Authn interceptor
 	 */
 	@Bean
@@ -128,7 +128,7 @@ public class SaplAutoConfiguration {
 	 * inject interceptors.
 	 * 
 	 * @param queryBus    the QueryBus
-	 * @param interceptor the authn interceptor
+	 * @param authnSupplier the authn interceptor
 	 * @return ReactorQueryGateway with Authn interceptor
 	 */
 	@Bean
@@ -208,7 +208,7 @@ public class SaplAutoConfiguration {
 	 *                                             UpdateFilterConstraintHandlerProvider
 	 *                                             implementation in the
 	 *                                             ApplicationContext.
-	 * @param resulteMappingProviders              All
+	 * @param resultMappingProviders              All
 	 *                                             ResultConstraintHandlerProvider
 	 *                                             implementation in the
 	 *                                             ApplicationContext.
@@ -223,11 +223,11 @@ public class SaplAutoConfiguration {
 			List<ErrorMappingConstraintHandlerProvider> globalErrorMappingHandlerProviders,
 			List<MappingConstraintHandlerProvider<?>> globalMappingProviders,
 			List<UpdateFilterConstraintHandlerProvider> filterPredicateProviders,
-			List<ResultConstraintHandlerProvider> resulteMappingProviders) {
+			List<ResultConstraintHandlerProvider> resultMappingProviders) {
 		log.trace("Deploy ConstraintHandlerService");
 		return new ConstraintHandlerService(mapper, parameterResolver, globalRunnableProviders,
 				globalCommandMessageMappingProviders, globalQueryMappingProviders, globalErrorMappingHandlerProviders,
-				globalMappingProviders, filterPredicateProviders, resulteMappingProviders);
+				globalMappingProviders, filterPredicateProviders, resultMappingProviders);
 	}
 
 	/**

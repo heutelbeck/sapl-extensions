@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import lombok.NonNull;
 import org.axonframework.messaging.GenericResultMessage;
 import org.axonframework.messaging.ResultMessage;
 import org.axonframework.messaging.responsetypes.ResponseType;
@@ -41,14 +42,14 @@ import reactor.core.publisher.Flux;
 /**
  * The EnforceDropWhileDeniedPolicyEnforcementPoint for
  * SubscriptionUpdateMessages
- *
+ * <p>
  * After an initial PERMIT, the PEP subscribes to the resource access point and
  * forwards events downstream until a non-PERMIT decision from the PDP is
  * received. Then, all events are dropped until a new PERMIT signal arrives.
- *
+ * <p>
  * Whenever a decision is received, the handling of obligations and advice are
  * updated accordingly.
- *
+ * <p>
  * The PEP does not permit onErrorContinue() downstream.
  * 
  * @author Dominic Heutelbeck
@@ -93,8 +94,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
 	 * @param query                      The Query
 	 * @param decisions                  The PDP decision stream.
 	 * @param resourceAccessPoint        The incoming messages.
-	 * @param constraintHandlerService   The ConstraintHandlerService
-	 *                                   constraintHandlerService.
+	 * @param constraintHandlerService   The ConstraintHandlerService.
 	 * @param resultResponseType         The initial response type.
 	 * @param originalUpdateResponseType The result response type.
 	 * @return A wrapped Flux of SubscriptionQueryUpdateMessage.
@@ -104,13 +104,13 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
 			Flux<SubscriptionQueryUpdateMessage<V>> resourceAccessPoint,
 			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<V> originalUpdateResponseType) {
-		var pep = new EnforceRecoverableIfDeniedPolicyEnforcementPoint<V>(query, decisions, resourceAccessPoint,
+		var pep = new EnforceRecoverableIfDeniedPolicyEnforcementPoint<>(query, decisions, resourceAccessPoint,
 				constraintHandlerService, resultResponseType, originalUpdateResponseType);
 		return pep.doOnCancel(pep::handleCancel).onErrorStop();
 	}
 
 	@Override
-	public void subscribe(CoreSubscriber<? super SubscriptionQueryUpdateMessage<RecoverableResponse<U>>> actual) {
+	public void subscribe(@NonNull CoreSubscriber<? super SubscriptionQueryUpdateMessage<RecoverableResponse<U>>> actual) {
 		if (sink != null)
 			throw new IllegalStateException("Operator may only be subscribed once.");
 		var context = actual.currentContext();
@@ -164,7 +164,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
 			try {
 				U newResponse = (U) constraintHandlerService.deserializeResource(implicitDecision.getResource().get(),
 						updateResponseType);
-				sink.next(new GenericSubscriptionQueryUpdateMessage<RecoverableResponse<U>>(
+				sink.next(new GenericSubscriptionQueryUpdateMessage<>(
 						new RecoverableResponse<>(updateResponseType, newResponse)));
 				disposeDecisionsAndResourceAccessPoint();
 			} catch (AccessDeniedException e) {

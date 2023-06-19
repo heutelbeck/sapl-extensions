@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import lombok.Data;
 
 /**
- * The subscriptionQueryDecisionCacheTTL property configures how log a
+ * The subscriptionQueryDecisionCacheTTL property configures how log an
  * authorization subscription is kept alive in case of subscription queries
  * where the initial query handler and update emitter are independently
  * accessed.

@@ -174,7 +174,7 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
     }
 
     @Test
-    @SuppressWarnings("unchecked")//suppress mock
+    @SuppressWarnings("unchecked")
     void when_constraintHasDefaultValuesAndDialogIsClosed_then_getHandlerReturnsFalse() {
         // GIVEN
         ObjectNode node = JsonNodeFactory.instance.objectNode();

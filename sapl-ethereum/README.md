@@ -14,7 +14,7 @@ To use the Ethereum Policy Information Point, you have to include the dependency
     <version>2.0.0</version>
 </dependency>
 ```
-Furthermore you will have to use a PDP to work with. In case you want to use an Embedded PDP you can include the following dependency:
+Furthermore, you will have to use a PDP to work with. In case you want to use an Embedded PDP you can include the following dependency:
 
 ```xml
 <dependency>
@@ -76,7 +76,7 @@ public Web3j web3j() {
 ```
 
 ### Adjusting the polling interval
-Please note that you can define the interval in which the Ethereum PIP requests information from the blockchain. By default an interval of 5 seconds is used, as by now the intermediate time between new blocks on the Ethereum mainnet is at about 12 seconds, rendering it unnecessary to aim for higher accuracy. If you want to adjust this polling interval you can do so in the PDP configuration file `pdp.json`. First add a variable called `ethPipConfig`. Then add a variable with the key `ethPollingInterval` and the time between polls in milliseconds to this config variable:
+Please note that you can define the interval in which the Ethereum PIP requests information from the blockchain. By default, an interval of 5 seconds is used, as by now the intermediate time between new blocks on the Ethereum mainnet is at about 12 seconds, rendering it unnecessary to aim for higher accuracy. If you want to adjust this polling interval you can do so in the PDP configuration file `pdp.json`. First add a variable called `ethPipConfig`. Then add a variable with the key `ethPollingInterval` and the time between polls in milliseconds to this config variable:
 
 ```json
 {
@@ -105,7 +105,7 @@ The result of the call can be used just like any value in the SAPL policies. For
 
 
 ## User-friendly methods
-Now we will explain how to use the methods included in this policy information point. In this section we will look at the user friendly methods that don't require deep understanding of the **Web3j API** or the Ethereum blockchain. You can use them by just looking at the code of a smart contract or by using basic information like transaction hashes and addresses. If you have no clue of these things yet, you can start at the official [Ethereum Website](https://ethereum.org/what-is-ethereum/).
+Now we will explain how to use the methods included in this policy information point. In this section we will look at the user-friendly methods that don't require deep understanding of the **Web3j API** or the Ethereum blockchain. You can use them by just looking at the code of a smart contract or by using basic information like transaction hashes and addresses. If you have no clue of these things yet, you can start at the official [Ethereum Website](https://ethereum.org/what-is-ethereum/).
 
 If you are already an advanced Ethereum user and want to get even more options to receive information from the blockchain there will be a section with advanced methods later on.
 
@@ -113,9 +113,9 @@ If you are already an advanced Ethereum user and want to get even more options t
 ---
 #### contract
 
-This function was added to provide a simple, user-friendly way of retreiving information from a contract on the Ethereum Blockchain. It needs to receive a JsonNode with the following information:
+This function was added to provide a simple, user-friendly way of retrieving information from a contract on the Ethereum Blockchain. It needs to receive a JsonNode with the following information:
 
- - "fromAccount":  (Optional) The account which the request is send from
+ - "fromAccount":  (Optional) The account which the request is sent from
  - "contractAddress":    The address of the contract that should be called
  - "functionName": The name of the function that should be called
  - "inputParams":  The type and value of all input params that the called function requires in the same order as in the function declaration
@@ -465,7 +465,7 @@ This section lists all methods that can give information about accounts. There i
 
 
 ### Eth methods for smart contracts
-Apart from the contract method presented above, there are some more useful ways of getting information from a contract. The storage method can be used to access any saved variable from a contract's storage. Calculating the exact position can be complicated and is explained in [JsonRpc]. The code method returns the code of a smart contract. The call method is similar to  the contract method and can be used to get a function result from a smart contract. The difference is, that with call one has to provide a transaction including the encoded function, what is more complicated. Furthermore the result is not being decoded, so the user has to work with the encoded return data.
+Apart from the contract method presented above, there are some more useful ways of getting information from a contract. The storage method can be used to access any saved variable from a contract's storage. Calculating the exact position can be complicated and is explained in [JsonRpc]. The code method returns the code of a smart contract. The call method is similar to  the contract method and can be used to get a function result from a smart contract. The difference is, that with call one has to provide a transaction including the encoded function, what is more complicated. Furthermore, the result is not being decoded, so the user has to work with the encoded return data.
 
 ---
 #### storage

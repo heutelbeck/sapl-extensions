@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import org.locationtech.jts.geom.Geometry;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -34,15 +35,15 @@ import lombok.Getter;
 
 public class PostGISConnection {
 
-	private static final String NAME_REGEX = "[^a-zA-Z0-9]+";
-	private static final String EMPTY_STRING = "";
-	private static final int NAME_INDEX = 1;
-	private static final int GEOM_INDEX = 2;
-	private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
-	private static final ObjectMapper MAPPER = new ObjectMapper();
-	private static Pattern jsonNamePattern = Pattern.compile(NAME_REGEX);
-	protected static final String AF_TEST = "AF_TEST";
-	protected static final String TEST_OKAY = "ok";
+	private static final String          NAME_REGEX      = "[^a-zA-Z0-9]+";
+	private static final String          EMPTY_STRING    = "";
+	private static final int             NAME_INDEX      = 1;
+	private static final int             GEOM_INDEX      = 2;
+	private static final JsonNodeFactory JSON            = JsonNodeFactory.instance;
+	private static final ObjectMapper    MAPPER          = new ObjectMapper();
+	private static final Pattern         jsonNamePattern = Pattern.compile(NAME_REGEX);
+	protected static final String        AF_TEST         = "AF_TEST";
+	protected static final String        TEST_OKAY       = "ok";
 
 	@Getter
 	private PostGISConfig config;
@@ -83,7 +84,7 @@ public class PostGISConnection {
 	private static ObjectNode formatResultSet(ResultSet rs) throws SQLException {
 		ObjectNode geometries = JSON.objectNode();
 		while (rs.next()) {
-			String name = jsonNamePattern.matcher(rs.getString(NAME_INDEX)).replaceAll(EMPTY_STRING);
+			String   name = jsonNamePattern.matcher(rs.getString(NAME_INDEX)).replaceAll(EMPTY_STRING);
 			Geometry geom = GeometryBuilder.fromWkt(rs.getString(GEOM_INDEX));
 			geometries.set(name, GeometryBuilder.toJsonNode(geom));
 		}

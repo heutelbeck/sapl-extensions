@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
 
+import lombok.NonNull;
 import org.axonframework.common.Registration;
 import org.axonframework.messaging.GenericMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
@@ -74,7 +75,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	public SaplQueryUpdateEmitter(
 			Optional<MessageMonitor<? super SubscriptionQueryUpdateMessage<?>>> updateMessageMonitor,
 			ConstraintHandlerService constraintHandlerService) {
-		this.updateMessageMonitor = updateMessageMonitor.orElseGet(() -> NoOpMessageMonitor.INSTANCE);
+		this.updateMessageMonitor = updateMessageMonitor.orElse(NoOpMessageMonitor.INSTANCE);
 		this.constraintHandlerService = constraintHandlerService;
 	}
 
@@ -100,15 +101,12 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 			SinkManyWrapper<SubscriptionQueryUpdateMessage<U>> updateSinkWrapper) {
 
 		public QueryData<U> withMode(QueryAuthorizationMode newMode) {
-			return new QueryData<U>(newMode, enforcementConfigurationSink, updateSinkWrapper);
+			return new QueryData<>(newMode, enforcementConfigurationSink, updateSinkWrapper);
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public boolean queryUpdateHandlerRegistered(SubscriptionQueryMessage<?, ?, ?> query) {
+	public boolean queryUpdateHandlerRegistered(@NonNull SubscriptionQueryMessage<?, ?, ?> query) {
 		return activeQueries.keySet().stream().anyMatch(q -> q.getIdentifier().equals(query.getIdentifier()));
 	}
 
@@ -159,13 +157,10 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 				}));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public <U> UpdateHandlerRegistration<U> registerUpdateHandler(SubscriptionQueryMessage<?, ?, ?> registeredQuery,
-			int updateBufferSize) {
+	public <U> UpdateHandlerRegistration<U> registerUpdateHandler(@NonNull SubscriptionQueryMessage<?, ?, ?> registeredQuery,
+																  int updateBufferSize) {
 
 		var query = reconstructOriginalQuery(registeredQuery);
 
@@ -181,7 +176,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		};
 
 		activeQueries.put(query,
-				new QueryData<U>(QueryAuthorizationMode.UNDEFINED, enforcementConfigurationSink, updateSinkWrapper));
+				new QueryData<>(QueryAuthorizationMode.UNDEFINED, enforcementConfigurationSink, updateSinkWrapper));
 
 		final Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux = updateSink.asFlux().doOnCancel(removeHandler)
 				.doOnTerminate(removeHandler);
@@ -244,12 +239,9 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		return query;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public <U> void emit(Predicate<SubscriptionQueryMessage<?, ?, U>> filter,
-			SubscriptionQueryUpdateMessage<U> update) {
+	public <U> void emit(@NonNull Predicate<SubscriptionQueryMessage<?, ?, U>> filter,
+						 @NonNull SubscriptionQueryUpdateMessage<U> update) {
 		runOnAfterCommitOrNow(() -> doEmit(filter, intercept(update)));
 	}
 
@@ -263,35 +255,23 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 		return intercepted;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public void complete(Predicate<SubscriptionQueryMessage<?, ?, ?>> filter) {
+	public void complete(@NonNull Predicate<SubscriptionQueryMessage<?, ?, ?>> filter) {
 		runOnAfterCommitOrNow(() -> doComplete(filter));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public void completeExceptionally(Predicate<SubscriptionQueryMessage<?, ?, ?>> filter, Throwable cause) {
+	public void completeExceptionally(@NonNull Predicate<SubscriptionQueryMessage<?, ?, ?>> filter, @NonNull Throwable cause) {
 		runOnAfterCommitOrNow(() -> doCompleteExceptionally(filter, cause));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public Registration registerDispatchInterceptor(
-			MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>> interceptor) {
+			@NonNull MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>> interceptor) {
 		dispatchInterceptors.add(interceptor);
 		return () -> dispatchInterceptors.remove(interceptor);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public Set<SubscriptionQueryMessage<?, ?, ?>> activeSubscriptions() {
 		return activeQueries.keySet();
@@ -379,7 +359,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	/**
 	 * Either runs the provided {@link Runnable} immediately or adds it to a
 	 * {@link List} as a resource to the current {@link UnitOfWork} if
-	 * {@link SimpleQueryUpdateEmitter#inStartedPhaseOfUnitOfWork} returns
+	 * {@link org.axonframework.queryhandling.SimpleQueryUpdateEmitter#inStartedPhaseOfUnitOfWork} returns
 	 * {@code true}. This is done to ensure any emitter calls made from a message
 	 * handling function are executed in the {@link UnitOfWork.Phase#AFTER_COMMIT}
 	 * phase.
@@ -390,15 +370,15 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	 * can do this by retrieving the current UnitOfWork and performing any of the
 	 * {@link QueryUpdateEmitter} calls in a different phase.
 	 *
-	 * @param queryUpdateTask a {@link Runnable} to be ran immediately or as a
+	 * @param queryUpdateTask a {@link Runnable} to be run immediately or as a
 	 *                        resource if
-	 *                        {@link SimpleQueryUpdateEmitter#inStartedPhaseOfUnitOfWork}
+	 *                        {@link org.axonframework.queryhandling.SimpleQueryUpdateEmitter#inStartedPhaseOfUnitOfWork}
 	 *                        returns {@code true}
 	 */
 	private void runOnAfterCommitOrNow(Runnable queryUpdateTask) {
 		if (inStartedPhaseOfUnitOfWork()) {
 			UnitOfWork<?> unitOfWork = CurrentUnitOfWork.get();
-			unitOfWork.getOrComputeResource(this.toString() + QUERY_UPDATE_TASKS_RESOURCE_KEY, resourceKey -> {
+			unitOfWork.getOrComputeResource(this + QUERY_UPDATE_TASKS_RESOURCE_KEY, resourceKey -> {
 				List<Runnable> queryUpdateTasks = new ArrayList<>();
 				unitOfWork.afterCommit(uow -> queryUpdateTasks.forEach(Runnable::run));
 				return queryUpdateTasks;

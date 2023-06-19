@@ -40,12 +40,12 @@ public class RecoverableResponse<U> {
 	 */
 	public static final String RECOVERABLE_UPDATE_TYPE_KEY = "recoverableUpdateType";
 
-	ResponseType<U> reponseType;
+	ResponseType<U> responseType;
 	U               payload;
 
 	/**
-	 * Unwraps the wrapped response. No response present implies an access denied
-	 * exception. In a map operation, this enables onErrorContinue.
+	 * Unwraps the wrapped response. No response present implies an AccessDeniedException.
+	 * In a map operation, this enables onErrorContinue.
 	 * 
 	 * @return Unwrapped update, or an AccessDeniedException.
 	 */
@@ -67,10 +67,10 @@ public class RecoverableResponse<U> {
 	 * Utility factory method creating access denied responses.
 	 * 
 	 * @param <T>         The Response type.
-	 * @param reponseType The Response type.
+	 * @param responseType The Response type.
 	 * @return An access denied response.
 	 */
-	public static <T> RecoverableResponse<T> accessDenied(ResponseType<T> reponseType) {
-		return new RecoverableResponse<>(reponseType, null);
+	public static <T> RecoverableResponse<T> accessDenied(ResponseType<T> responseType) {
+		return new RecoverableResponse<>(responseType, null);
 	}
 }

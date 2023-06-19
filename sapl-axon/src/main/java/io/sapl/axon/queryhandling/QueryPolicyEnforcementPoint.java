@@ -11,6 +11,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import lombok.NonNull;
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
 import org.axonframework.messaging.annotation.WrappedMessageHandlingMember;
@@ -91,11 +92,8 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 		this.properties = properties;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public Object handle(Message<?> message, T source) throws Exception {
+	public Object handle(@NonNull Message<?> message, T source) throws Exception {
 
 		var updateType = updateTypeIfSubscriptionQuery(message);
 		if (updateType.isPresent()) {
@@ -116,7 +114,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 		var preEnforceAnnotationsPresent = annotationsMatching(saplAnnotations,
 				QUERY_ANNOTATIONS_IMPLYING_PREENFORCING);
 		if (preEnforceAnnotationsPresent.size() > 1) {
-			log.error("Only one of the follwoing annotations is allowed on a query handler at the same time: {}",
+			log.error("Only one of the following annotations is allowed on a query handler at the same time: {}",
 					QUERY_ANNOTATIONS_IMPLYING_PREENFORCING.stream().map(a -> "@" + a.getSimpleName())
 							.collect(Collectors.joining(", ")));
 			log.error(
@@ -133,7 +131,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 					preEnforcementAnnotation.annotationType().getSimpleName(),
 					message.getPayloadType().getSimpleName());
 			var preEnforceAuthzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(
-					(QueryMessage<?, ?>) message, preEnforcementAnnotation, handlerExecutable, Optional.empty());
+					message, preEnforcementAnnotation, handlerExecutable, Optional.empty());
 			preEnforcedQueryResult = Optional
 					.of(pdp.decide(preEnforceAuthzSubscription).defaultIfEmpty(AuthorizationDecision.DENY).next()
 							.flatMap(enforcePreEnforceDecision(message, source, Optional.empty())));
@@ -144,7 +142,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 				.filter(annotation -> annotation.annotationType().isAssignableFrom(PostHandleEnforce.class))
 				.findFirst();
 
-		if (!postEnforceAnnotation.isEmpty()) {
+		if (postEnforceAnnotation.isPresent()) {
 			queryResult = queryResult.onErrorResume(enforcePostEnforceOnErrorResult(message, postEnforceAnnotation))
 					.flatMap(enforcePostEnforceOnSuccessfulQueryResult(message, postEnforceAnnotation));
 		}
@@ -154,28 +152,28 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 		return queryResult.toFuture();
 	}
 
-	private Function<? super Object, ? extends Mono<? extends Object>> enforcePostEnforceOnSuccessfulQueryResult(
+	private Function<? super Object, ? extends Mono<?>> enforcePostEnforceOnSuccessfulQueryResult(
 			QueryMessage<?, ?> message, Optional<Annotation> postEnforceAnnotation) {
 		return actualQueryResultValue -> {
 			var postEnforcementAnnotation = (PostHandleEnforce) postEnforceAnnotation.get();
 			log.debug("Building a @PostHandlerEnforce PEP for the query handler of {}. ",
 					message.getPayloadType().getSimpleName());
 			var postEnforceAuthzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(
-					(QueryMessage<?, ?>) message, postEnforcementAnnotation, handlerExecutable,
+					message, postEnforcementAnnotation, handlerExecutable,
 					Optional.of(actualQueryResultValue));
 			return pdp.decide(postEnforceAuthzSubscription).defaultIfEmpty(AuthorizationDecision.DENY).next()
 					.flatMap(enforcePostEnforceDecision(message, actualQueryResultValue));
 		};
 	}
 
-	private Function<? super Throwable, ? extends Mono<? extends Object>> enforcePostEnforceOnErrorResult(
+	private Function<? super Throwable, ? extends Mono<?>> enforcePostEnforceOnErrorResult(
 			QueryMessage<?, ?> message, Optional<Annotation> postEnforceAnnotation) {
 		return error -> {
 			var postEnforcementAnnotation = (PostHandleEnforce) postEnforceAnnotation.get();
 			log.debug("Building a @PostHandlerEnforce PEP (error value) for the query handler of {}. ",
 					message.getPayloadType().getSimpleName());
 			var postEnforceAuthzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(
-					(QueryMessage<?, ?>) message, postEnforcementAnnotation, handlerExecutable, Optional.of(error));
+					message, postEnforcementAnnotation, handlerExecutable, Optional.of(error));
 			return pdp.decide(postEnforceAuthzSubscription).defaultIfEmpty(AuthorizationDecision.DENY).next()
 					.flatMap(enforcePostEnforceDecisionOnErrorResult(message, error));
 		};
@@ -186,7 +184,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 			T source, Optional<ResponseType<?>> updateType) {
 		return decision -> {
 			@SuppressWarnings("rawtypes")
-			QueryConstraintHandlerBundle constraintHandler = null;
+			QueryConstraintHandlerBundle constraintHandler;
 			try {
 				constraintHandler = axonConstraintEnforcementService.buildQueryPreHandlerBundle(decision,
 						message.getResponseType(), updateType);
@@ -230,7 +228,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 		return decision -> {
 			log.debug("PostHandlerEnforce {} for error {}", decision, error.getMessage());
 			@SuppressWarnings("rawtypes")
-			QueryConstraintHandlerBundle constraintHandler = null;
+			QueryConstraintHandlerBundle constraintHandler;
 			try {
 				constraintHandler = axonConstraintEnforcementService.buildQueryPostHandlerBundle(decision,
 						message.getResponseType());
@@ -259,7 +257,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 		return decision -> {
 			log.debug("PostHandlerEnforce {} for {} [{}]", decision, message.getPayloadType(), returnObject);
 			@SuppressWarnings("rawtypes")
-			QueryConstraintHandlerBundle constraintHandler = null;
+			QueryConstraintHandlerBundle constraintHandler;
 			try {
 				constraintHandler = axonConstraintEnforcementService.buildQueryPostHandlerBundle(decision,
 						message.getResponseType());
@@ -297,7 +295,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 	}
 
 	private Mono<Object> callDelegate(Message<?> message, T source) {
-		Object result = null;
+		Object result;
 		try {
 			result = delegate.handle(message, source);
 		} catch (Exception e) {
@@ -327,7 +325,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 
 		if (!annotationsMatching(saplAnnotations, Set.of(PostHandleEnforce.class)).isEmpty()) {
 			log.error("@PostHandleEnforce found while handling a subscription query. This is not allowed."
-					+ " Immediately deny access. Consider making usre there are distinct queries and "
+					+ " Immediately deny access. Consider making sure there are distinct queries and "
 					+ "query handlers for normal queries and subscription queries, if your normal query requires "
 					+ "@PostHandleEnforce.");
 			emitter.immediatelyDenySubscriptionWithId(message.getIdentifier());
@@ -339,7 +337,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 		var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForQuery(message,
 				streamingAnnotation, handlerExecutable, Optional.empty());
 		var decisions = pdp.decide(authzSubscription).defaultIfEmpty(AuthorizationDecision.DENY);
-		var tap = new FluxOneAndManyTap<AuthorizationDecision>(decisions,
+		var tap = new FluxOneAndManyTap<>(decisions,
 				properties.getSubscriptionQueryDecisionCacheTTL());
 		var initialDecision = tap.one();
 		var tappedDecisions = tap.many();
@@ -363,22 +361,22 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
 	}
 
 	private Optional<ResponseType<?>> updateTypeIfSubscriptionQuery(Message<?> message) {
-		return emitter.activeSubscriptions().stream().filter(sameAsHandlededMessage(message)).findFirst()
+		return emitter.activeSubscriptions().stream().filter(sameAsHandledMessage(message)).findFirst()
 				.map(SubscriptionQueryMessage::getUpdateResponseType);
 	}
 
-	private Predicate<? super SubscriptionQueryMessage<?, ?, ?>> sameAsHandlededMessage(Message<?> message) {
+	private Predicate<? super SubscriptionQueryMessage<?, ?, ?>> sameAsHandledMessage(Message<?> message) {
 		return sub -> sub.getIdentifier().equals(message.getIdentifier());
 	}
 
-	private final Set<Annotation> saplAnnotationsOnUnderlyingExecutable() {
+	private Set<Annotation> saplAnnotationsOnUnderlyingExecutable() {
 		var allAnnotationsOnExecutable = handlerExecutable.getDeclaredAnnotations();
 		return Arrays.stream(allAnnotationsOnExecutable).filter(this::isSaplAnnotation)
 				.collect(Collectors.toUnmodifiableSet());
 	}
 
 	private boolean isSaplAnnotation(Annotation annotation) {
-		return SAPL_AXON_ANNOTATIONS.stream().filter(matchesAnnotationType(annotation)).findFirst().isPresent();
+		return SAPL_AXON_ANNOTATIONS.stream().anyMatch(matchesAnnotationType(annotation));
 	}
 
 	private Predicate<? super Class<?>> matchesAnnotationType(Annotation annotation) {

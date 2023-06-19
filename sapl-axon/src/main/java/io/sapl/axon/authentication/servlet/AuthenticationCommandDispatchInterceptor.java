@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import lombok.NonNull;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
 
@@ -27,8 +28,8 @@ public class AuthenticationCommandDispatchInterceptor implements MessageDispatch
 	 * as a JSON String.
 	 */
 	@Override
-	public BiFunction<Integer, CommandMessage<?>, CommandMessage<?>> handle(
-			List<? extends CommandMessage<?>> messages) {
+	public @NonNull BiFunction<Integer, CommandMessage<?>, CommandMessage<?>> handle(
+			@NonNull List<? extends CommandMessage<?>> messages) {
 		return (index, command) -> {
 			if (command.getMetaData().get("subject") != null)
 				return command;

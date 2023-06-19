@@ -268,15 +268,15 @@ public class ExamplePage implements BeforeEnterObserver {
 Annotate a view with the `OnDenyNavigate` annotation to manage Vaadin navigation with SAPL Vaadin. This annotation accepts
 the following arguments:
 
-| Name               | Type | Description                                                                                     | Default Value                                            |
-|--------------------|------|-------------------------------------------------------------------------------------------------|----------------------------------------------------------|
-| `value`            | String | The path to navigate to                                                                         | "/"                                                      |
-| `subject`          | String | SAPL subject                                                                                    | JSON representation of the current authorization context |
-| `action`           | String | SAPL action                                                                                     | string "navigate_to"                                     |
-| `resource`         | String | SAPL resource                                                                                   | Name of the target class of the navigation               |
-| `environment`      | String | SAPL environment                                                                                | empty String                                             |
+| Name               | Type                                      | Description                                                                                     | Default Value                                            |
+|--------------------|-------------------------------------------|-------------------------------------------------------------------------------------------------|----------------------------------------------------------|
+| `value`            | String                                    | The path to navigate to                                                                         | "/"                                                      |
+| `subject`          | String                                    | SAPL subject                                                                                    | JSON representation of the current authorization context |
+| `action`           | String                                    | SAPL action                                                                                     | string "navigate_to"                                     |
+| `resource`         | String                                    | SAPL resource                                                                                   | Name of the target class of the navigation               |
+| `environment`      | String                                    | SAPL environment                                                                                | empty String                                             |
 | `navigation`       | VaadinNavigationPepService.NavigationType | Whether to trigger a REDIRECT or a REROUTE event                                                | REDIRECT                                                 |
-| `onLifecycleEvent` | VaadinNavigationPepService.LifecycleType | The Vaadin lifecycle at which the policy is executed (ENTER = beforeEnter, LEAVE = beforeLeave) | ENTER                                                    |
+| `onLifecycleEvent` | VaadinNavigationPepService.LifecycleType  | The Vaadin lifecycle at which the policy is executed (ENTER = beforeEnter, LEAVE = beforeLeave) | ENTER                                                    |
 
 The parameters `subject`, `action`, `resource`, and `environment` can be set using the Spring Expression Language (SpEL).
 When doing so, the current, possibly extended, `org.springframework.security.core.Authentication` (from `SecurityContextHolder.getContext().getAuthentication()`)

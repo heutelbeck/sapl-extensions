@@ -67,12 +67,12 @@ public class HiveMqUtility {
 
     /**
      * Extracts the acknowledgement reason code from a mqtt unsubscribe message.
-     * @param unsubackOutboundInput the input to extract the reason code from
+     * @param unsubscribeAckOutboundInput the input to extract the reason code from
      * @param index to specify the right reason code
      * @return the acknowledgement reason code of a mqtt unsubscribe message
      */
-    public static UnsubackReasonCode getUnsubackReasonCode(UnsubackOutboundInput unsubackOutboundInput, int index) {
-        return unsubackOutboundInput.getUnsubackPacket().getReasonCodes().get(index);
+    public static UnsubackReasonCode getUnsubackReasonCode(UnsubackOutboundInput unsubscribeAckOutboundInput, int index) {
+        return unsubscribeAckOutboundInput.getUnsubackPacket().getReasonCodes().get(index);
     }
 
     /**

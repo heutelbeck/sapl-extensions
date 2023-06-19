@@ -33,7 +33,7 @@ public interface ResponseTypeSupport {
 	 *         {@code responseType} and false if it cannot
 	 */
 	default boolean supports(Class<?> responseType) {
-		return getSupportedResponseTypes().stream().filter(isSupportedType(responseType)).findFirst().isPresent();
+		return getSupportedResponseTypes().stream().anyMatch(isSupportedType(responseType));
 	}
 
 	private Predicate<? super ResponseType<?>> isSupportedType(Class<?> payloadType) {
@@ -60,9 +60,8 @@ public interface ResponseTypeSupport {
 	 *         {@code responseType} and false if it cannot
 	 */
 	default boolean supports(ResponseType<?> responseType) {
-		return getSupportedResponseTypes().stream().filter(compatibleResponseType(responseType)).findFirst()
-				.isPresent();
-	};
+		return getSupportedResponseTypes().stream().anyMatch(compatibleResponseType(responseType));
+	}
 
 	private Predicate<? super ResponseType<?>> compatibleResponseType(ResponseType<?> responseType) {
 		return supportedType -> {

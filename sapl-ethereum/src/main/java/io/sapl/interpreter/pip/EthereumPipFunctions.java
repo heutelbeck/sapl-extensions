@@ -242,231 +242,338 @@ public class EthereumPipFunctions {
 				}
 
 				switch (solidityType) {
-				case ADDRESS:
-					return new Address(textValue);
-				case "bool":
-				case "boolean":
-					return new Bool(value.asBoolean());
-				case "string":
-					return new Utf8String(textValue);
-				case "bytes":
-					return new DynamicBytes(binaryValue);
-				case "byte":
-					return new org.web3j.abi.datatypes.primitive.Byte((byte) value.asInt());
-				case "char":
-					return new Char(textValue.charAt(0));
-				case "double":
-					log.warn("You tried to use a double type but this is not supported as function input. "
-							+ DEFAULT_RETURN_WARNING);
-					return DEFAULT_RETURN_TYPE;
-				case "float":
-					log.warn("You tried to use a float type but this is not supported as function input. "
-							+ DEFAULT_RETURN_WARNING);
-					return DEFAULT_RETURN_TYPE;
-				case "uint":
-					return new Uint(bigIntegerValue);
-				case "int":
-					return new org.web3j.abi.datatypes.Int(bigIntegerValue);
-				case "long":
-					return new org.web3j.abi.datatypes.primitive.Long(value.asLong());
-				case "short":
-					return new org.web3j.abi.datatypes.primitive.Short(value.shortValue());
-				case "uint8":
-					return new Uint8(bigIntegerValue);
-				case "int8":
-					return new Int8(bigIntegerValue);
-				case "uint16":
-					return new Uint16(bigIntegerValue);
-				case "int16":
-					return new Int16(bigIntegerValue);
-				case "uint24":
-					return new Uint24(bigIntegerValue);
-				case "int24":
-					return new Int24(bigIntegerValue);
-				case "uint32":
-					return new Uint32(bigIntegerValue);
-				case "int32":
-					return new Int32(bigIntegerValue);
-				case "uint40":
-					return new Uint40(bigIntegerValue);
-				case "int40":
-					return new Int40(bigIntegerValue);
-				case "uint48":
-					return new Uint48(bigIntegerValue);
-				case "int48":
-					return new Int48(bigIntegerValue);
-				case "uint56":
-					return new Uint56(bigIntegerValue);
-				case "int56":
-					return new Int56(bigIntegerValue);
-				case "uint64":
-					return new Uint64(bigIntegerValue);
-				case "int64":
-					return new Int64(bigIntegerValue);
-				case "uint72":
-					return new Uint72(bigIntegerValue);
-				case "int72":
-					return new Int72(bigIntegerValue);
-				case "uint80":
-					return new Uint80(bigIntegerValue);
-				case "int80":
-					return new Int80(bigIntegerValue);
-				case "uint88":
-					return new Uint88(bigIntegerValue);
-				case "int88":
-					return new Int88(bigIntegerValue);
-				case "uint96":
-					return new Uint96(bigIntegerValue);
-				case "int96":
-					return new Int96(bigIntegerValue);
-				case "uint104":
-					return new Uint104(bigIntegerValue);
-				case "int104":
-					return new Int104(bigIntegerValue);
-				case "uint112":
-					return new Uint112(bigIntegerValue);
-				case "int112":
-					return new Int112(bigIntegerValue);
-				case "uint120":
-					return new Uint120(bigIntegerValue);
-				case "int120":
-					return new Int120(bigIntegerValue);
-				case "uint128":
-					return new Uint128(bigIntegerValue);
-				case "int128":
-					return new Int128(bigIntegerValue);
-				case "uint136":
-					return new Uint136(bigIntegerValue);
-				case "int136":
-					return new Int136(bigIntegerValue);
-				case "uint144":
-					return new Uint144(bigIntegerValue);
-				case "int144":
-					return new Int144(bigIntegerValue);
-				case "uint152":
-					return new Uint152(bigIntegerValue);
-				case "int152":
-					return new Int152(bigIntegerValue);
-				case "uint160":
-					return new Uint160(bigIntegerValue);
-				case "int160":
-					return new Int160(bigIntegerValue);
-				case "uint168":
-					return new Uint168(bigIntegerValue);
-				case "int168":
-					return new Int168(bigIntegerValue);
-				case "uint176":
-					return new Uint176(bigIntegerValue);
-				case "int176":
-					return new Int176(bigIntegerValue);
-				case "uint184":
-					return new Uint184(bigIntegerValue);
-				case "int184":
-					return new Int184(bigIntegerValue);
-				case "uint192":
-					return new Uint192(bigIntegerValue);
-				case "int192":
-					return new Int192(bigIntegerValue);
-				case "uint200":
-					return new Uint200(bigIntegerValue);
-				case "int200":
-					return new Int200(bigIntegerValue);
-				case "uint208":
-					return new Uint208(bigIntegerValue);
-				case "int208":
-					return new Int208(bigIntegerValue);
-				case "uint216":
-					return new Uint216(bigIntegerValue);
-				case "int216":
-					return new Int216(bigIntegerValue);
-				case "uint224":
-					return new Uint224(bigIntegerValue);
-				case "int224":
-					return new Int224(bigIntegerValue);
-				case "uint232":
-					return new Uint232(bigIntegerValue);
-				case "int232":
-					return new Int232(bigIntegerValue);
-				case "uint240":
-					return new Uint240(bigIntegerValue);
-				case "int240":
-					return new Int240(bigIntegerValue);
-				case "uint248":
-					return new Uint248(bigIntegerValue);
-				case "int248":
-					return new Int248(bigIntegerValue);
-				case "uint256":
-					return new Uint256(bigIntegerValue);
-				case "int256":
-					return new Int256(bigIntegerValue);
-				case "bytes1":
-					return new Bytes1(binaryValue);
-				case "bytes2":
-					return new Bytes2(binaryValue);
-				case "bytes3":
-					return new Bytes3(binaryValue);
-				case "bytes4":
-					return new Bytes4(binaryValue);
-				case "bytes5":
-					return new Bytes5(binaryValue);
-				case "bytes6":
-					return new Bytes6(binaryValue);
-				case "bytes7":
-					return new Bytes7(binaryValue);
-				case "bytes8":
-					return new Bytes8(binaryValue);
-				case "bytes9":
-					return new Bytes9(binaryValue);
-				case "bytes10":
-					return new Bytes10(binaryValue);
-				case "bytes11":
-					return new Bytes11(binaryValue);
-				case "bytes12":
-					return new Bytes12(binaryValue);
-				case "bytes13":
-					return new Bytes13(binaryValue);
-				case "bytes14":
-					return new Bytes14(binaryValue);
-				case "bytes15":
-					return new Bytes15(binaryValue);
-				case "bytes16":
-					return new Bytes16(binaryValue);
-				case "bytes17":
-					return new Bytes17(binaryValue);
-				case "bytes18":
-					return new Bytes18(binaryValue);
-				case "bytes19":
-					return new Bytes19(binaryValue);
-				case "bytes20":
-					return new Bytes20(binaryValue);
-				case "bytes21":
-					return new Bytes21(binaryValue);
-				case "bytes22":
-					return new Bytes22(binaryValue);
-				case "bytes23":
-					return new Bytes23(binaryValue);
-				case "bytes24":
-					return new Bytes24(binaryValue);
-				case "bytes25":
-					return new Bytes25(binaryValue);
-				case "bytes26":
-					return new Bytes26(binaryValue);
-				case "bytes27":
-					return new Bytes27(binaryValue);
-				case "bytes28":
-					return new Bytes28(binaryValue);
-				case "bytes29":
-					return new Bytes29(binaryValue);
-				case "bytes30":
-					return new Bytes30(binaryValue);
-				case "bytes31":
-					return new Bytes31(binaryValue);
-				case "bytes32":
-					return new Bytes32(binaryValue);
-				default:
-					log.warn("The type with the name {} couldn't be found. " + DEFAULT_RETURN_WARNING, solidityType);
-					return DEFAULT_RETURN_TYPE;
-
+					case ADDRESS -> {
+						return new Address(textValue);
+					}
+					case "bool", "boolean" -> {
+						return new Bool(value.asBoolean());
+					}
+					case "string" -> {
+						return new Utf8String(textValue);
+					}
+					case "bytes" -> {
+						return new DynamicBytes(binaryValue);
+					}
+					case "byte" -> {
+						return new org.web3j.abi.datatypes.primitive.Byte((byte) value.asInt());
+					}
+					case "char" -> {
+						return new Char(textValue.charAt(0));
+					}
+					case "double" -> {
+						log.warn("You tried to use a double type but this is not supported as function input. "
+								+ DEFAULT_RETURN_WARNING);
+						return DEFAULT_RETURN_TYPE;
+					}
+					case "float" -> {
+						log.warn("You tried to use a float type but this is not supported as function input. "
+								+ DEFAULT_RETURN_WARNING);
+						return DEFAULT_RETURN_TYPE;
+					}
+					case "uint" -> {
+						return new Uint(bigIntegerValue);
+					}
+					case "int" -> {
+						return new org.web3j.abi.datatypes.Int(bigIntegerValue);
+					}
+					case "long" -> {
+						return new org.web3j.abi.datatypes.primitive.Long(value.asLong());
+					}
+					case "short" -> {
+						return new org.web3j.abi.datatypes.primitive.Short(value.shortValue());
+					}
+					case "uint8" -> {
+						return new Uint8(bigIntegerValue);
+					}
+					case "int8" -> {
+						return new Int8(bigIntegerValue);
+					}
+					case "uint16" -> {
+						return new Uint16(bigIntegerValue);
+					}
+					case "int16" -> {
+						return new Int16(bigIntegerValue);
+					}
+					case "uint24" -> {
+						return new Uint24(bigIntegerValue);
+					}
+					case "int24" -> {
+						return new Int24(bigIntegerValue);
+					}
+					case "uint32" -> {
+						return new Uint32(bigIntegerValue);
+					}
+					case "int32" -> {
+						return new Int32(bigIntegerValue);
+					}
+					case "uint40" -> {
+						return new Uint40(bigIntegerValue);
+					}
+					case "int40" -> {
+						return new Int40(bigIntegerValue);
+					}
+					case "uint48" -> {
+						return new Uint48(bigIntegerValue);
+					}
+					case "int48" -> {
+						return new Int48(bigIntegerValue);
+					}
+					case "uint56" -> {
+						return new Uint56(bigIntegerValue);
+					}
+					case "int56" -> {
+						return new Int56(bigIntegerValue);
+					}
+					case "uint64" -> {
+						return new Uint64(bigIntegerValue);
+					}
+					case "int64" -> {
+						return new Int64(bigIntegerValue);
+					}
+					case "uint72" -> {
+						return new Uint72(bigIntegerValue);
+					}
+					case "int72" -> {
+						return new Int72(bigIntegerValue);
+					}
+					case "uint80" -> {
+						return new Uint80(bigIntegerValue);
+					}
+					case "int80" -> {
+						return new Int80(bigIntegerValue);
+					}
+					case "uint88" -> {
+						return new Uint88(bigIntegerValue);
+					}
+					case "int88" -> {
+						return new Int88(bigIntegerValue);
+					}
+					case "uint96" -> {
+						return new Uint96(bigIntegerValue);
+					}
+					case "int96" -> {
+						return new Int96(bigIntegerValue);
+					}
+					case "uint104" -> {
+						return new Uint104(bigIntegerValue);
+					}
+					case "int104" -> {
+						return new Int104(bigIntegerValue);
+					}
+					case "uint112" -> {
+						return new Uint112(bigIntegerValue);
+					}
+					case "int112" -> {
+						return new Int112(bigIntegerValue);
+					}
+					case "uint120" -> {
+						return new Uint120(bigIntegerValue);
+					}
+					case "int120" -> {
+						return new Int120(bigIntegerValue);
+					}
+					case "uint128" -> {
+						return new Uint128(bigIntegerValue);
+					}
+					case "int128" -> {
+						return new Int128(bigIntegerValue);
+					}
+					case "uint136" -> {
+						return new Uint136(bigIntegerValue);
+					}
+					case "int136" -> {
+						return new Int136(bigIntegerValue);
+					}
+					case "uint144" -> {
+						return new Uint144(bigIntegerValue);
+					}
+					case "int144" -> {
+						return new Int144(bigIntegerValue);
+					}
+					case "uint152" -> {
+						return new Uint152(bigIntegerValue);
+					}
+					case "int152" -> {
+						return new Int152(bigIntegerValue);
+					}
+					case "uint160" -> {
+						return new Uint160(bigIntegerValue);
+					}
+					case "int160" -> {
+						return new Int160(bigIntegerValue);
+					}
+					case "uint168" -> {
+						return new Uint168(bigIntegerValue);
+					}
+					case "int168" -> {
+						return new Int168(bigIntegerValue);
+					}
+					case "uint176" -> {
+						return new Uint176(bigIntegerValue);
+					}
+					case "int176" -> {
+						return new Int176(bigIntegerValue);
+					}
+					case "uint184" -> {
+						return new Uint184(bigIntegerValue);
+					}
+					case "int184" -> {
+						return new Int184(bigIntegerValue);
+					}
+					case "uint192" -> {
+						return new Uint192(bigIntegerValue);
+					}
+					case "int192" -> {
+						return new Int192(bigIntegerValue);
+					}
+					case "uint200" -> {
+						return new Uint200(bigIntegerValue);
+					}
+					case "int200" -> {
+						return new Int200(bigIntegerValue);
+					}
+					case "uint208" -> {
+						return new Uint208(bigIntegerValue);
+					}
+					case "int208" -> {
+						return new Int208(bigIntegerValue);
+					}
+					case "uint216" -> {
+						return new Uint216(bigIntegerValue);
+					}
+					case "int216" -> {
+						return new Int216(bigIntegerValue);
+					}
+					case "uint224" -> {
+						return new Uint224(bigIntegerValue);
+					}
+					case "int224" -> {
+						return new Int224(bigIntegerValue);
+					}
+					case "uint232" -> {
+						return new Uint232(bigIntegerValue);
+					}
+					case "int232" -> {
+						return new Int232(bigIntegerValue);
+					}
+					case "uint240" -> {
+						return new Uint240(bigIntegerValue);
+					}
+					case "int240" -> {
+						return new Int240(bigIntegerValue);
+					}
+					case "uint248" -> {
+						return new Uint248(bigIntegerValue);
+					}
+					case "int248" -> {
+						return new Int248(bigIntegerValue);
+					}
+					case "uint256" -> {
+						return new Uint256(bigIntegerValue);
+					}
+					case "int256" -> {
+						return new Int256(bigIntegerValue);
+					}
+					case "bytes1" -> {
+						return new Bytes1(binaryValue);
+					}
+					case "bytes2" -> {
+						return new Bytes2(binaryValue);
+					}
+					case "bytes3" -> {
+						return new Bytes3(binaryValue);
+					}
+					case "bytes4" -> {
+						return new Bytes4(binaryValue);
+					}
+					case "bytes5" -> {
+						return new Bytes5(binaryValue);
+					}
+					case "bytes6" -> {
+						return new Bytes6(binaryValue);
+					}
+					case "bytes7" -> {
+						return new Bytes7(binaryValue);
+					}
+					case "bytes8" -> {
+						return new Bytes8(binaryValue);
+					}
+					case "bytes9" -> {
+						return new Bytes9(binaryValue);
+					}
+					case "bytes10" -> {
+						return new Bytes10(binaryValue);
+					}
+					case "bytes11" -> {
+						return new Bytes11(binaryValue);
+					}
+					case "bytes12" -> {
+						return new Bytes12(binaryValue);
+					}
+					case "bytes13" -> {
+						return new Bytes13(binaryValue);
+					}
+					case "bytes14" -> {
+						return new Bytes14(binaryValue);
+					}
+					case "bytes15" -> {
+						return new Bytes15(binaryValue);
+					}
+					case "bytes16" -> {
+						return new Bytes16(binaryValue);
+					}
+					case "bytes17" -> {
+						return new Bytes17(binaryValue);
+					}
+					case "bytes18" -> {
+						return new Bytes18(binaryValue);
+					}
+					case "bytes19" -> {
+						return new Bytes19(binaryValue);
+					}
+					case "bytes20" -> {
+						return new Bytes20(binaryValue);
+					}
+					case "bytes21" -> {
+						return new Bytes21(binaryValue);
+					}
+					case "bytes22" -> {
+						return new Bytes22(binaryValue);
+					}
+					case "bytes23" -> {
+						return new Bytes23(binaryValue);
+					}
+					case "bytes24" -> {
+						return new Bytes24(binaryValue);
+					}
+					case "bytes25" -> {
+						return new Bytes25(binaryValue);
+					}
+					case "bytes26" -> {
+						return new Bytes26(binaryValue);
+					}
+					case "bytes27" -> {
+						return new Bytes27(binaryValue);
+					}
+					case "bytes28" -> {
+						return new Bytes28(binaryValue);
+					}
+					case "bytes29" -> {
+						return new Bytes29(binaryValue);
+					}
+					case "bytes30" -> {
+						return new Bytes30(binaryValue);
+					}
+					case "bytes31" -> {
+						return new Bytes31(binaryValue);
+					}
+					case "bytes32" -> {
+						return new Bytes32(binaryValue);
+					}
+					default -> {
+						log.warn("The type with the name {} couldn't be found. " + DEFAULT_RETURN_WARNING, solidityType);
+						return DEFAULT_RETURN_TYPE;
+					}
 				}
 			}
 			catch (IOException | StringIndexOutOfBoundsException e) {

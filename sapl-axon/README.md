@@ -211,7 +211,7 @@ where
 
 The ```@QueryHandler``` methods can be secured similarly to the command side by adding SAPL annotations. However, for the query side, there are four different types of PEPs. Each PEP type corresponds to different annotations. Also, these annotations behave differently if the query is a normal or a subscription query.
 
-#### Security Annoatrions and Non-Subscription Queries
+#### Security Annotations and Non-Subscription Queries
 
 - ```@PreHandleEnforce```: Established a PEP that constructs the authorization subscription and gets a decision *before* invoking the ```@QueryHandler``` method. 
 - ```@PostHandleEnforce```: Established a PEP that constructs the authorization subscription and gets a decision *after* invoking the ```@QueryHandler``` method. Developers can use this annotation if the query result is required to construct the authorization subscription. The query result is available as ```#queryResult``` for SpEL expression in the annotation.
@@ -227,7 +227,7 @@ The ```@QueryHandler``` methods can be secured similarly to the command side by 
 
 The first three PEPs are straightforward forward, and the subscription can be customized using SpEL in the same way as for queries. For the ```@EnforceRecoverableUpdatesIfDenied```, the client application has to do a few more steps to react on access denied events in the update stream. As Axon terminates a subscription query, whenever it sends an exception in a subscription query response, the updates have to be wrapped in a dedicated event and be unwrapped at the client side. Also, the client side has to explicitly signal to the query handling side that PEP must wrap the updates.
 
-To do so, the client sends the query via the ```SaplQueryGateway```, which signals the request to the query sinde and unwraps the updates transparently for the client. The client now can decide to continue to stay subscribed by using ```onErrorContinue``` on the update ```FLux```.
+To do so, the client sends the query via the ```SaplQueryGateway```, which signals the request to the query side and unwraps the updates transparently for the client. The client now can decide to continue to stay subscribed by using ```onErrorContinue``` on the update ```FLux```.
 
 ```java
   @Autowired
@@ -246,13 +246,13 @@ To do so, the client sends the query via the ```SaplQueryGateway```, which signa
 
 SAPL allows the PDP to make decisions that only grant access under certain additional constraints that the PEP must fulfill (i.e., obligations) or should fulfill (i.e., advice). Each constraint is expressed as an arbitrary JSON value in the decisions obligations or advice field. The PEP must deny access whenever any obligation is present, and the PEP has no way to fulfill the requested constraint.
 
-The automatically created PEPs of the SAPL Axon extension support the insection of handlers for constraints at different points in the execution paths of commands and queries. There are two basic categories of constraint handlers. Constraint handler methods are annotated by the ```@ConstraintHandler``` annotations and constraint handler provider beans.
+The automatically created PEPs of the SAPL Axon extension support the injection of handlers for constraints at different points in the execution paths of commands and queries. There are two basic categories of constraint handlers. Constraint handler methods are annotated by the ```@ConstraintHandler``` annotations and constraint handler provider beans.
 
 #### Constraint Handler Provider Beans
 
 A constraint handler provider bean is a factory bean creating concrete constraint handlers for specific constraints. All of these beans implement the ```Responsible``` interface, which offers the method ```boolean isResponsible(JsonNode constraint)```. Whenever the PDP sends a decision to a PEP, the PEP asks all handler provider beans if they are responsible for any given constraint in the decision. A handler provider is responsible for a constraint if its ```isResponsible``` method returns  ```true``` for the constraint. If the matching handler is type-dependent, its handler provider implements the ```TypeSupport```or ```ResponseTypeSupport``` interface to enable the PEP to check for type compatibility. 
 
-Once the PEP identifies a handler provider as responsible (```isResponsible``` returns ```true``` and the types involved are compatible), the PEP asks the handler provider to generate a constraint handler for the constraint. Typically such a handler is something like a ```Runnable```, ```Consumer```, or ```Function```. Finally, the PEP hooks the handlers into the command or query handling execution path.
+Once the PEP identifies a handler provider as responsible (```isResponsible``` returns ```true``` and the types involved are compatible), the PEP asks the handler provider to generate a constraint handler for the constraint. Typically, such a handler is something like a ```Runnable```, ```Consumer```, or ```Function```. Finally, the PEP hooks the handlers into the command or query handling execution path.
 
 The different Axon-specific handler provider interfaces reside in the package ```io.sapl.constrainthandling.api```:
 
@@ -261,7 +261,7 @@ The different Axon-specific handler provider interfaces reside in the package ``
 - ```OnDecisionConstraintHandlerProvider```returns a ```BiConsumer<AuthorizationDecision, Message<?>>``` which is executed whenever the PDP returns a new decision.
 - The ```ResultConstraintHandlerProvider``` returns a ```Function<Object, Object>``` which is applied to query result messages.
 - The ```UpdateFilterConstraintHandlerProvider```filters update messages of subscription queries. It returns a ```Predicate<ResultMessage<?>>```; if present, only updates satisfying the predicate are sent downstream.
-- The ```CollectionAndOptionalFilterPredicateProvider``` is a sub-type of ```ResultConstraintHandlerProvider```. The developer can implement the ```boolean test(T o, JsonNode constraint)``` method. And when a query returns an ```Iterable```, ```array```, or ```Optional```. The handler will remove all elements that do not satisfy this predicate.
+- The ```CollectionAndOptionalFilterPredicateProvider``` is a subtype of ```ResultConstraintHandlerProvider```. The developer can implement the ```boolean test(T o, JsonNode constraint)``` method. And when a query returns an ```Iterable```, ```array```, or ```Optional```. The handler will remove all elements that do not satisfy this predicate.
 
 Further, there are the following interfaces from ```io.sapl.spring.constraints.api``` which are used in the Axon extension as well:
 
@@ -298,7 +298,7 @@ obligation
 	}
 ```
 
-This handler is triggered when the constraint is a JOSN Object, where  ```type``` equals ```filterMessagePayloadContent```. Then the array ```actions``` indicated a sequence of modifications to be made to the payload. The action ```replace``` attempts to replace the sub-section of the payload indicated by the JSONPath expression with the content of ```replacement```. The action ```delete``` sets the selected field to ```null```. The action ```blacken``` assumes the indicated value is a string, and the parts not excluded by ```discloseLeft``` or ```discloseRight``` are replaced with the character in ```replacement``` (defaulting to an Unicode square). 
+This handler is triggered when the constraint is a JSON Object, where  ```type``` equals ```filterMessagePayloadContent```. Then the array ```actions``` indicated a sequence of modifications to be made to the payload. The action ```replace``` attempts to replace the subsection of the payload indicated by the JSONPath expression with the content of ```replacement```. The action ```delete``` sets the selected field to ```null```. The action ```blacken``` assumes the indicated value is a string, and the parts not excluded by ```discloseLeft``` or ```discloseRight``` are replaced with the character in ```replacement``` (defaulting to a Unicode square). 
 
 This handler attempts to map the payload to JSON, then applies the actions and attempts to map it map to the original class. 
 

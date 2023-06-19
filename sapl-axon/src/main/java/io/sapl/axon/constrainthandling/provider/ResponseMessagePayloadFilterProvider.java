@@ -15,12 +15,12 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * This provider offers the manipulation of ResultMessage payloads.
- * 
+ * <p>
  * The constraint must be a JSON Object.
- * 
+ * <p>
  * The constraint must contain the field "type" with value
  * "filterMessagePayloadContent".
- * 
+ * <p>
  * See {@link io.sapl.spring.constraints.providers.ContentFilterUtil} for
  * supported actions.
  * 
@@ -38,9 +38,6 @@ public class ResponseMessagePayloadFilterProvider implements ResultConstraintHan
 
 	private final ObjectMapper objectMapper;
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public boolean isResponsible(JsonNode constraint) {
 		if (constraint == null || !constraint.isObject())
@@ -54,17 +51,11 @@ public class ResponseMessagePayloadFilterProvider implements ResultConstraintHan
 		return CONSTRAINT_TYPE.equals(type.asText());
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public Set<ResponseType<?>> getSupportedResponseTypes() {
 		return SUPPORTED_TYPES;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
 		return ContentFilterUtil.getHandler(constraint, objectMapper).apply(payload);

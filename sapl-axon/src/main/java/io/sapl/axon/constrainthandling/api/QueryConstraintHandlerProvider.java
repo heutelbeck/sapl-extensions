@@ -35,7 +35,7 @@ import io.sapl.spring.constraints.api.Responsible;
  * 
  * Base interface for implementing constraint handlers that can intercept a
  * QueryMessage.
- * 
+ * <p>
  * Users can choose to overwrite the
  * {@link QueryConstraintHandlerProvider#getHandler} method to completely
  * change the behavior, or to overwrite one of the specialized methods to only
@@ -48,7 +48,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
 
 	/**
 	 * @param constraint The constraint required by the authorization decision.
-	 * @return The handler triggering all required side-effects and potentially
+	 * @return The handler triggering all required side effects and potentially
 	 *         changing the message.
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -59,7 +59,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
 			var newPayloadType  = mapPayloadType(query.getPayloadType(), constraint);
 			var newMetaData     = mapMetadata(query.getMetaData(), constraint);
 			var newQueryName    = mapQueryName(query.getQueryName(), constraint);
-			var newResponseType = mapReponseType(query.getResponseType(), constraint);
+			var newResponseType = mapResponseType(query.getResponseType(), constraint);
 			var baseMessage     = new GenericMessage(query.getIdentifier(), newPayloadType, newPayload, newMetaData);
 			if (query instanceof SubscriptionQueryMessage) {
 				var newUpdateResponseType = mapUpdateResponseType(
@@ -70,7 +70,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
 			}
 			return new GenericQueryMessage(baseMessage, newQueryName, newResponseType);
 		};
-	};
+	}
 
 	/**
 	 * 
@@ -90,7 +90,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
 	 * @param constraint  The constraint.
 	 * @return A potentially updated response type.
 	 */
-	default ResponseType<?> mapReponseType(ResponseType<?> responseType, JsonNode constraint) {
+	default ResponseType<?> mapResponseType(ResponseType<?> responseType, JsonNode constraint) {
 		return responseType;
 	}
 

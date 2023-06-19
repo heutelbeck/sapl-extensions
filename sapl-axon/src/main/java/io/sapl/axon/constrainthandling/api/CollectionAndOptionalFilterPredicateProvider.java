@@ -3,7 +3,6 @@ package io.sapl.axon.constrainthandling.api;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
@@ -20,32 +19,25 @@ import reactor.core.publisher.Mono;
  * {@code CollectionAndOptionalFilterPredicateProvider#test(Object, JsonNode)}
  * method.
  * 
- * @param <T> Payload type
+ * @param <T> pay load type
  * 
  * @author Dominic Heutelbeck
  * @since 2.1.0
  */
 public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultConstraintHandlerProvider {
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	default int getPriority() {
 		return 1000; // Execute before other mapping handlers
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	default Set<ResponseType<?>> getSupportedResponseTypes() {
 		var type = getContainedType();
 		return Set.of(ResponseTypes.multipleInstancesOf(type), ResponseTypes.optionalInstanceOf(type),
 				ResponseTypes.publisherOf(type));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	default Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
 		if (payload instanceof Optional) {
@@ -61,10 +53,10 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
 		}
 
 		return filterCollection((Collection<T>) payload, constraint);
-	};
+	}
 
 	/**
-	 * @param payload the Flux payload
+	 * @param payload    the Flux payload
 	 * @param constraint the constraint
 	 * @return a Flux only containing elements where the predicate is true
 	 */
@@ -73,9 +65,10 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
 	}
 
 	/**
-	 * @param payload the Mono payload
+	 * @param payload    the Mono payload
 	 * @param constraint the constraint
-	 * @return The original if the predicate was true for the content, else an empty Mono.
+	 * @return The original if the predicate was true for the content, else an empty
+	 *         Mono.
 	 */
 	default Object filterMono(Mono<T> payload, JsonNode constraint) {
 		return payload.filter(x -> test(x, constraint));
@@ -83,11 +76,11 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
 
 	private Optional<T> filterOptional(Optional<T> payload, JsonNode constraint) {
 		return payload.filter(x -> test(x, constraint));
-	};
+	}
 
 	private Collection<T> filterCollection(Collection<T> payload, JsonNode constraint) {
-		return payload.stream().filter(x -> test(x, constraint)).collect(Collectors.toList());
-	};
+		return payload.stream().filter(x -> test(x, constraint)).toList();
+	}
 
 	/**
 	 * @return The type contained in the {@code Collection} or {@code Optional}.

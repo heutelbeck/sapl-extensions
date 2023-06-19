@@ -113,10 +113,9 @@ public class KMLImport {
 		ObjectNode geometries = JSON.objectNode();
 		for (Object obj : placeMarks) {
 
-			if (!(obj instanceof SimpleFeature)) {
+			if (!(obj instanceof SimpleFeature feature)) {
 				throw new PolicyEvaluationException(UNABLE_TO_PARSE_KML);
 			} else {
-				SimpleFeature feature = (SimpleFeature) obj;
 				Geometry geom = (Geometry) feature.getAttribute(ATT_GEOM);
 				geometries.set((String) feature.getAttribute(ATT_NAME), GeometryBuilder.toJsonNode(geom));
 			}

@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import lombok.NonNull;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.SubscriptionQueryMessage;
@@ -39,18 +40,18 @@ import reactor.core.publisher.Flux;
 
 /**
  * The EnforceTillDeniedPolicyEnforcementPoint for SubscriptionUpdateMessages
- *
+ * <p>
  * If the initial decision of the PDP is not PERMIT, an AccessDeniedException is
  * signaled downstream without subscribing to resource access point.
- *
+ * <p>
  * After an initial PERMIT, the PEP subscribes to the resource access point and
  * forwards events downstream until a non-PERMIT decision from the PDP is
  * received. Then, an AccessDeniedException is signaled downstream and the PDP
  * and resource access point subscriptions are cancelled.
- *
+ * <p>
  * Whenever a decision is received, the handling of obligations and advice are
  * updated accordingly.
- *
+ * <p>
  * The PEP does not permit onErrorContinue() downstream.
  * 
  * @author Dominic Heutelbeck
@@ -94,8 +95,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
 	 * @param query                    The Query
 	 * @param decisions                The PDP decision stream.
 	 * @param updateMessageFlux        The incoming messages.
-	 * @param constraintHandlerService The ConstraintHandlerService
-	 *                                 constraintHandlerService.
+	 * @param constraintHandlerService The ConstraintHandlerService.
 	 * @param resultResponseType       The initial response type.
 	 * @param updateResponseType       The result response type.
 	 * @return A wrapped Flux of SubscriptionQueryUpdateMessage.
@@ -104,15 +104,14 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
 			Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
 			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
 			ResponseType<?> updateResponseType) {
-		EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> pep = new EnforceUpdatesTillDeniedPolicyEnforcementPoint<U>(
+		EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> pep = new EnforceUpdatesTillDeniedPolicyEnforcementPoint<>(
 				query, decisions, updateMessageFlux, constraintHandlerService, resultResponseType, updateResponseType);
-		return (Flux<SubscriptionQueryUpdateMessage<U>>) pep
-				.onErrorMap(AccessDeniedException.class, pep::handleAccessDenied).doOnCancel(pep::handleCancel)
+		return pep.onErrorMap(AccessDeniedException.class, pep::handleAccessDenied).doOnCancel(pep::handleCancel)
 				.onErrorStop();
 	}
 
 	@Override
-	public void subscribe(CoreSubscriber<? super SubscriptionQueryUpdateMessage<U>> subscriber) {
+	public void subscribe(@NonNull CoreSubscriber<? super SubscriptionQueryUpdateMessage<U>> subscriber) {
 		if (sink != null)
 			throw new IllegalStateException("Operator may only be subscribed once.");
 		var context = subscriber.currentContext();
@@ -152,7 +151,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
 
 		if (decision.getResource().isPresent()) {
 			try {
-				sink.next(new GenericSubscriptionQueryUpdateMessage<U>((U) constraintHandlerService
+				sink.next(new GenericSubscriptionQueryUpdateMessage<>((U) constraintHandlerService
 						.deserializeResource(decision.getResource().get(), updateResponseType)));
 			} catch (AccessDeniedException e) {
 				log.error("Error replacing stream with resource. Ending Stream.", e);

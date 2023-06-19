@@ -53,12 +53,12 @@
 		</developer>
 	</developers>
 
-	<inceptionYear>2017-2021</inceptionYear>
+	<inceptionYear>2023</inceptionYear>
 
 	<licenses>
 		<license>
 			<name>Apache 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
 		</license>
 	</licenses>
 
@@ -72,7 +72,7 @@
 		<maven.deploy.skip>true</maven.deploy.skip>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<failsafe.version>3.0.0</failsafe.version>
+		<failsafe.version>3.1.0</failsafe.version>
 		<jacoco.version>0.8.9</jacoco.version>
 	</properties>
 

@@ -35,13 +35,24 @@ import io.sapl.spring.constraints.api.ConsumerConstraintHandlerProvider;
  * "{addConsumerConstraintHandlerProviders()}" on your builder to register a new
  * instance of this class. Fields can be registered with the method
  * {@link #bindField(HasValue)}.
- *
+ * <p>
  * This provider manages constrains of type "saplVaadin" with id "validation",
- * here an example: ... obligation { "type": "saplVaadin", "id" : "validation",
- * "fields": { "fieldA": { "$schema": "http://json-schema.org/draft-07/schema#",
- * "type": "number", "maximum": 20, "message": "This message is displayed as
- * validator message" } } } ...
- *
+ * here an example:
+ * <pre>
+ * obligation {
+ *              "type": "saplVaadin",
+ *              "id" : "validation",
+ *              "fields": {
+ *                "fieldA": {
+ *                  {@code "$schema": "http://json-schema.org/draft-07/schema#",}
+ *                  "type": "number",
+ *                  "maximum": 20,
+ *                  "message": "This message is displayed as validator message"
+ *                }
+ *              }
+ *            }
+ * </pre>
+ * <p>
  * Each field defined in the constraint "fields" dict should be bound using
  * {@link #bindField(HasValue)}. We use a slightly modified version of the
  * JsonSchema define validations in the policy. Each field entry is transformed
@@ -75,7 +86,7 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
 	}
 
 	/**
-	 * This method is used by {@link VaadinConstraintEnforcementService} to get a
+	 * This method is used by {@link io.sapl.vaadin.VaadinConstraintEnforcementService} to get a
 	 * handler for each constraint in the decision. The handler is a consumer
 	 * functional interface consuming the ui related to the component specified in
 	 * the builder.

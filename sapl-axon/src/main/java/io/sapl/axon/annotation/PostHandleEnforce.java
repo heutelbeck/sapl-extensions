@@ -26,25 +26,25 @@ import java.lang.annotation.Target;
 /**
  * The {@code @PostHandleEnforce} annotation establishes a policy enforcement
  * point (PEP) for Handlers of standard (non-subscription) queries.
- * 
+ * <p>
  * This annotation can be combined with {@code @PreHandleEnforce} for
  * non-subscription queries.
- * 
+ * <p>
  * If the {@code @QueryHandler} is invoked the query handler is first executed,
  * and then the PDP is asked for one decision which is then enforced.
- * 
+ * <p>
  * The advantage over {@code @PreHandleEnforce} is, that the query result can
  * also be used to formulate the authorization subscription.
- * 
+ * <p>
  * The parameters of the annotation can be used to customize the
  * {@code AuthorizationSubscription} sent to the PDP. If a field is left empty,
  * the PEP attempts to construct a reasonable subscription element from the
  * security context, inspecting messages, and using reflection of the involved
  * objects.
- * 
+ * <p>
  * By default, the subject is determined by serializing the 'subject' field of
  * the message metadata into a JsonNode using the default {@code ObjectMapper}.
- * 
+ * <p>
  * To be able to construct reasonable {@code AuthorizationSubscription} objects,
  * the following data is made available to the SpEL expression in its evaluation
  * context:

@@ -11,13 +11,13 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * This provider offers a filter based on predicates specified in the
- * contraints.
- * 
+ * constraints.
+ * <p>
  * The constraint must be a JSON Object.
- * 
+ * <p>
  * The constraint must contain the field "type" with value
  * "filterMessagePayloadPredicate".
- * 
+ * <p>
  * See {@link io.sapl.spring.constraints.providers.ContentFilterUtil} for
  * supported conditions.
  * 
@@ -33,9 +33,6 @@ public class ResponseMessagePayloadFilterPredicateProvider
 
 	private final ObjectMapper objectMapper;
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public boolean isResponsible(JsonNode constraint) {
 		if (constraint == null || !constraint.isObject())
@@ -49,9 +46,6 @@ public class ResponseMessagePayloadFilterPredicateProvider
 		return CONSTRAINT_TYPE.equals(type.asText());
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public Class<Object> getContainedType() {
 		return Object.class;
