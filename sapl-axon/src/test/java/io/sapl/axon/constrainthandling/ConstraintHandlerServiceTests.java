@@ -1,9 +1,9 @@
 package io.sapl.axon.constrainthandling;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -12,6 +12,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Executable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,9 +51,9 @@ import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
 
 class ConstraintHandlerServiceTests {
 
-	private static class UnknownResponseType<R> extends AbstractResponseType<R> {
+	private final static Optional<Executable> EMPTY = Optional.empty();
 
-		private static final long serialVersionUID = -9035650923297559796L;
+	private static class UnknownResponseType<R> extends AbstractResponseType<R> {
 
 		protected UnknownResponseType(Class<R> expectedResponseType) {
 			super(expectedResponseType);
@@ -378,7 +379,7 @@ class ConstraintHandlerServiceTests {
 		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
 		assertThrows(AccessDeniedException.class,
-				() -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null));
+				() -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
 	}
 
 	@Test
@@ -566,8 +567,7 @@ class ConstraintHandlerServiceTests {
 		var obligations = factory.arrayNode().add("obligation");
 		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		assertThrows(AccessDeniedException.class,
-				() -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null));
+		assertThrows(AccessDeniedException.class, () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
 	}
 
 	@Test
@@ -733,8 +733,7 @@ class ConstraintHandlerServiceTests {
 		var obligations = factory.arrayNode().add("obligation");
 		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		assertThrows(AccessDeniedException.class,
-				() -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null));
+		assertThrows(AccessDeniedException.class, () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
 	}
 
 	@Test
@@ -914,7 +913,7 @@ class ConstraintHandlerServiceTests {
 		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
 		assertThrows(AccessDeniedException.class,
-				() -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null));
+				() -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
 	}
 
 	@Test
@@ -1121,7 +1120,7 @@ class ConstraintHandlerServiceTests {
 		var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
 		assertThrows(AccessDeniedException.class, () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision,
-				handlerObject, Optional.empty(), null));
+				handlerObject, EMPTY, null));
 
 		verify(handlerObject, times(0)).noHandle();
 	}
@@ -1151,7 +1150,7 @@ class ConstraintHandlerServiceTests {
 		var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
 		assertThrows(AccessDeniedException.class, () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision,
-				handlerObject, Optional.empty(), null));
+				handlerObject, EMPTY, null));
 
 		verify(handlerObject, times(0)).noHandle();
 		verify(handlerObject, times(0)).handle1();
@@ -1182,7 +1181,7 @@ class ConstraintHandlerServiceTests {
 		var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
 		assertThrows(AccessDeniedException.class, () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision,
-				handlerObject, Optional.empty(), null));
+				handlerObject, EMPTY, null));
 
 		verify(handlerObject, times(0)).noHandle();
 		verify(handlerObject, times(0)).handle1();
@@ -1393,9 +1392,9 @@ class ConstraintHandlerServiceTests {
 
 		var obligations = factory.arrayNode().add("obligation");
 		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
+		Optional<ResponseType<?>> updateType = Optional.empty();
 		assertThrows(AccessDeniedException.class,
-				() -> service.buildQueryPreHandlerBundle(decision, null, Optional.empty()));
+				() -> service.buildQueryPreHandlerBundle(decision, null, updateType));
 	}
 
 	@Test
@@ -1582,9 +1581,10 @@ class ConstraintHandlerServiceTests {
 
 		var obligations = factory.arrayNode().add("obligation");
 		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+		Optional<ResponseType<?>> updateType = Optional.empty();
 
 		assertThrows(AccessDeniedException.class,
-				() -> service.buildQueryPreHandlerBundle(decision, null, Optional.empty()));
+				() -> service.buildQueryPreHandlerBundle(decision, null, updateType));
 	}
 
 	@Test
@@ -1749,9 +1749,10 @@ class ConstraintHandlerServiceTests {
 
 		var obligations = factory.arrayNode().add("obligation");
 		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+		Optional<ResponseType<?>> updateType = Optional.empty();
 
 		assertThrows(AccessDeniedException.class,
-				() -> service.buildQueryPreHandlerBundle(decision, null, Optional.empty()));
+				() -> service.buildQueryPreHandlerBundle(decision, null, updateType));
 	}
 
 	@Test
@@ -1934,9 +1935,8 @@ class ConstraintHandlerServiceTests {
 		var obligations = factory.arrayNode().add("obligation");
 		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 		var responseType = ResponseTypes.instanceOf(Object.class);
-
-		assertThrows(AccessDeniedException.class,
-				() -> service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty()));
+		Optional<ResponseType<?>> empty = Optional.empty();
+		assertThrows(AccessDeniedException.class, () -> service.buildQueryPreHandlerBundle(decision, responseType, empty));
 	}
 
 	@Test
@@ -2169,10 +2169,9 @@ class ConstraintHandlerServiceTests {
 		var obligations = factory.arrayNode().add("obligation");
 		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+		Optional<ResponseType<?>> updateType = Optional.of(ResponseTypes.instanceOf(Object.class));
 
-		assertThrows(AccessDeniedException.class,
-				() -> service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType)));
+		assertThrows(AccessDeniedException.class, () -> service.buildQueryPreHandlerBundle(decision, responseType,updateType));
 	}
 
 	@Test
@@ -2418,10 +2417,9 @@ class ConstraintHandlerServiceTests {
 		var obligations = factory.arrayNode().add("obligation");
 		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+		Optional<ResponseType<?>> updateType = Optional.of(ResponseTypes.instanceOf(Object.class));
 
-		assertThrows(AccessDeniedException.class,
-				() -> service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType)));
+		assertThrows(AccessDeniedException.class, () -> service.buildQueryPreHandlerBundle(decision, responseType, updateType));
 	}
 
 	@Test

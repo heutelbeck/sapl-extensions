@@ -16,7 +16,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import java.util.function.UnaryOperator;
 
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.Message;
@@ -65,17 +65,17 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class ConstraintHandlerService {
-	private final static SpelExpressionParser PARSER = new SpelExpressionParser();
+	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
-	private final ObjectMapper mapper;
-	private final ParameterResolverFactory parameterResolverFactory;
-	private final List<OnDecisionConstraintHandlerProvider> globalRunnableProviders;
-	private final List<CommandConstraintHandlerProvider> globalCommandMessageMappingProviders;
-	private final List<QueryConstraintHandlerProvider> globalQueryMessageMappingProviders;
+	private final ObjectMapper                                mapper;
+	private final ParameterResolverFactory                    parameterResolverFactory;
+	private final List<OnDecisionConstraintHandlerProvider>   globalRunnableProviders;
+	private final List<CommandConstraintHandlerProvider>      globalCommandMessageMappingProviders;
+	private final List<QueryConstraintHandlerProvider>        globalQueryMessageMappingProviders;
 	private final List<ErrorMappingConstraintHandlerProvider> globalErrorMappingHandlerProviders;
-	private final List<MappingConstraintHandlerProvider<?>> globalMappingProviders;
+	private final List<MappingConstraintHandlerProvider<?>>   globalMappingProviders;
 	private final List<UpdateFilterConstraintHandlerProvider> updatePredicateProviders;
-	private final List<ResultConstraintHandlerProvider> updateMappingProviders;
+	private final List<ResultConstraintHandlerProvider>       updateMappingProviders;
 
 	/**
 	 * Instantiate the ConstraintHandlerService.
@@ -108,7 +108,7 @@ public class ConstraintHandlerService {
 			List<UpdateFilterConstraintHandlerProvider> globalUpdatePredicateProviders,
 			List<ResultConstraintHandlerProvider> updateMappingProviders) {
 
-		this.mapper = mapper;
+		this.mapper                   = mapper;
 		this.parameterResolverFactory = parameterResolverFactory;
 
 		log.debug("Loading constraint handler providers...");
@@ -181,12 +181,12 @@ public class ConstraintHandlerService {
 				throw new AccessDeniedException("Access Denied");
 			}
 
-			if (!deserialized.isEmpty())
-				if (!type.getExpectedResponseType().isAssignableFrom(deserialized.get(0).getClass())) {
-					log.error("Unsupported entry in resource: " + deserialized.get(0).getClass() + ", expected: "
-							+ type.getExpectedResponseType());
-					throw new AccessDeniedException("Access Denied");
-				}
+			if (!deserialized.isEmpty()
+					&& (!type.getExpectedResponseType().isAssignableFrom(deserialized.get(0).getClass()))) {
+				log.error("Unsupported entry in resource: " + deserialized.get(0).getClass() + ", expected: "
+						+ type.getExpectedResponseType());
+				throw new AccessDeniedException("Access Denied");
+			}
 
 			return deserialized;
 		}
@@ -234,11 +234,11 @@ public class ConstraintHandlerService {
 
 		Class<?> type = returnType.orElse(Object.class);
 
-		var onDecisionHandlers = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
+		var onDecisionHandlers     = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
 		var commandMappingHandlers = constructCommandMessageMappingHandlers(decision, obligationsWithoutHandler);
-		var errorMappingHandlers = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
-		var resultMappingHandlers = constructResultMappingHandlers(decision, obligationsWithoutHandler, type);
-		var handlersOnObject = constructObjectConstraintHandlers(handlerObject, command, decision,
+		var errorMappingHandlers   = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
+		var resultMappingHandlers  = constructResultMappingHandlers(decision, obligationsWithoutHandler, type);
+		var handlersOnObject       = constructObjectConstraintHandlers(handlerObject, command, decision,
 				obligationsWithoutHandler);
 
 		if (!obligationsWithoutHandler.isEmpty()) {
@@ -267,14 +267,14 @@ public class ConstraintHandlerService {
 		decision.getObligations()
 				.ifPresent(obligations -> obligations.forEach(obligationsWithoutHandler::add));
 
-		var onDecisionHandlers = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
-		var queryMappingHandlers = constructQueryMessageMappingHandlers(decision, obligationsWithoutHandler);
-		var errorMappingHandlers = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
+		var onDecisionHandlers    = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
+		var queryMappingHandlers  = constructQueryMessageMappingHandlers(decision, obligationsWithoutHandler);
+		var errorMappingHandlers  = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
 		var resultMappingHandlers = constructResultMessageMappingHandlers(decision, obligationsWithoutHandler,
 				responseType);
 
 		Function<?, ?> updateMappingHandlers = Functions.identity();
-		Predicate<?> updateFilterPredicate = __ -> true;
+		Predicate<?>   updateFilterPredicate = __ -> true;
 
 		if (updateType.isPresent()) {
 			updateMappingHandlers = constructResultMessageMappingHandlers(decision, obligationsWithoutHandler,
@@ -293,12 +293,12 @@ public class ConstraintHandlerService {
 				resultMappingHandlers, updateMappingHandlers, updateFilterPredicate);
 	}
 
-	private <T> Function<Object, Object> constructResultMessageMappingHandlers(AuthorizationDecision decision,
+	private <T> UnaryOperator<Object> constructResultMessageMappingHandlers(AuthorizationDecision decision,
 			HashSet<JsonNode> obligationsWithoutHandler, ResponseType<T> responseType) {
 		var obligationFun = constructResultMessageMappingHandlers(decision.getObligations(),
 				obligationsWithoutHandler::remove, responseType);
-		var adviceFun = constructResultMessageMappingHandlers(decision.getAdvice(), __ -> {
-		}, responseType);
+		var adviceFun     = constructResultMessageMappingHandlers(decision.getAdvice(), __ -> {
+							}, responseType);
 
 		return result -> {
 			var newResult = result;
@@ -341,7 +341,7 @@ public class ConstraintHandlerService {
 	@Data
 	@AllArgsConstructor
 	static class HandlerWithPriority<T> implements Comparable<HandlerWithPriority<T>> {
-		T handler;
+		T   handler;
 		int priority;
 
 		@Override
@@ -354,7 +354,7 @@ public class ConstraintHandlerService {
 			HashSet<JsonNode> obligationsWithoutHandler, ResponseType<T> responseType) {
 		Predicate<T> obligationFilterPredicate = constructPredicate(decision.getObligations(), responseType,
 				obligationsWithoutHandler::remove);
-		Predicate<T> adviceFilterPredicate = constructPredicate(decision.getAdvice(), responseType,
+		Predicate<T> adviceFilterPredicate     = constructPredicate(decision.getAdvice(), responseType,
 				obligationsWithoutHandler::remove);
 		return t -> onErrorFallbackTo(obligationFilterPredicate, false).test(t)
 				&& onErrorFallbackTo(adviceFilterPredicate, true).test(t);
@@ -392,8 +392,8 @@ public class ConstraintHandlerService {
 		decision.getObligations()
 				.ifPresent(obligations -> obligations.forEach(obligationsWithoutHandler::add));
 
-		var onDecisionHandlers = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
-		var errorMappingHandlers = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
+		var onDecisionHandlers    = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
+		var errorMappingHandlers  = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
 		var resultMappingHandlers = constructResultMessageMappingHandlers(decision, obligationsWithoutHandler,
 				responseType);
 
@@ -407,11 +407,11 @@ public class ConstraintHandlerService {
 				resultMappingHandlers, Functions.identity(), __ -> true);
 	}
 
-	private Function<Throwable, Throwable> constructErrorMappingHandlers(AuthorizationDecision decision,
+	private UnaryOperator<Throwable> constructErrorMappingHandlers(AuthorizationDecision decision,
 			HashSet<JsonNode> obligationsWithoutHandler) {
 		var obligationFun = constructErrorMappingHandlers(decision.getObligations(), obligationsWithoutHandler::remove);
-		var adviceFun = constructErrorMappingHandlers(decision.getAdvice(), __ -> {
-		});
+		var adviceFun     = constructErrorMappingHandlers(decision.getAdvice(), __ -> {
+							});
 
 		return error -> {
 			var newError = error;
@@ -450,12 +450,12 @@ public class ConstraintHandlerService {
 		});
 	}
 
-	private Function<CommandMessage<?>, CommandMessage<?>> constructCommandMessageMappingHandlers(
+	private UnaryOperator<CommandMessage<?>> constructCommandMessageMappingHandlers(
 			AuthorizationDecision decision, HashSet<JsonNode> obligationsWithoutHandler) {
 		var obligationFun = constructCommandMessageMappingHandlers(decision.getObligations(),
 				obligationsWithoutHandler::remove);
-		var adviceFun = constructCommandMessageMappingHandlers(decision.getAdvice(), __ -> {
-		});
+		var adviceFun     = constructCommandMessageMappingHandlers(decision.getAdvice(), __ -> {
+							});
 
 		return command -> {
 			var newCommand = command;
@@ -494,12 +494,12 @@ public class ConstraintHandlerService {
 		});
 	}
 
-	private Function<QueryMessage<?, ?>, QueryMessage<?, ?>> constructQueryMessageMappingHandlers(
+	private UnaryOperator<QueryMessage<?, ?>> constructQueryMessageMappingHandlers(
 			AuthorizationDecision decision, HashSet<JsonNode> obligationsWithoutHandler) {
 		var obligationFun = constructQueryMessageMappingHandlers(decision.getObligations(),
 				obligationsWithoutHandler::remove);
-		var adviceFun = constructQueryMessageMappingHandlers(decision.getAdvice(), __ -> {
-		});
+		var adviceFun     = constructQueryMessageMappingHandlers(decision.getAdvice(), __ -> {
+							});
 
 		return query -> {
 			var newQuery = query;
@@ -539,12 +539,12 @@ public class ConstraintHandlerService {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> Function<T, T> constructResultMappingHandlers(AuthorizationDecision decision,
+	private <T> UnaryOperator<T> constructResultMappingHandlers(AuthorizationDecision decision,
 			HashSet<JsonNode> obligationsWithoutHandler, Class<?> type) {
 		var obligationFun = constructResultMappingHandlers(decision.getObligations(), obligationsWithoutHandler::remove,
 				type);
-		var adviceFun = constructResultMappingHandlers(decision.getAdvice(), __ -> {
-		}, type);
+		var adviceFun     = constructResultMappingHandlers(decision.getAdvice(), __ -> {
+							}, type);
 
 		return result -> {
 			var newResult = result;
@@ -588,8 +588,8 @@ public class ConstraintHandlerService {
 			Set<JsonNode> obligationsWithoutHandler) {
 		var onDecisionObligationHandlers = onDecisionHandlers(decision.getObligations(),
 				obligationsWithoutHandler::remove);
-		var onDecisionAdviceHandlers = onDecisionHandlers(decision.getAdvice(), __ -> {
-		});
+		var onDecisionAdviceHandlers     = onDecisionHandlers(decision.getAdvice(), __ -> {
+											});
 
 		return (authzDecision, message) -> {
 			onDecisionObligationHandlers.map(biConsumer -> (Runnable) (() -> biConsumer.accept(authzDecision, message)))
@@ -619,8 +619,9 @@ public class ConstraintHandlerService {
 			AuthorizationDecision decision, Set<JsonNode> obligationsWithoutHandler) {
 		var obligationHandlers = collectConstraintHandlerMethods(decision.getObligations(), aggregate, command,
 				decision, obligationsWithoutHandler::remove);
-		var adviceHandlers = collectConstraintHandlerMethods(decision.getAdvice(), aggregate, command, decision, __ -> {
-		});
+		var adviceHandlers     = collectConstraintHandlerMethods(decision.getAdvice(), aggregate, command, decision,
+				__ -> {
+										});
 
 		return () -> {
 			obligationHandlers.map(this::obligation).ifPresent(Runnable::run);
@@ -657,8 +658,7 @@ public class ConstraintHandlerService {
 			return List.of();
 
 		return Arrays.stream(handlerObject.getClass().getMethods())
-				.filter(method -> isMethodResponsible(method, constraint, command, handlerObject))
-				.collect(Collectors.toList());
+				.filter(method -> isMethodResponsible(method, constraint, command, handlerObject)).toList();
 	}
 
 	private static <U extends CommandMessage<?>, T> boolean isMethodResponsible(Method method, JsonNode constraint,
@@ -688,8 +688,8 @@ public class ConstraintHandlerService {
 			return false;
 		}
 
-		if (value instanceof Boolean)
-			return (Boolean) value;
+		if (value instanceof Boolean bool)
+			return bool;
 
 		log.warn("Expression returned non Boolean ({}). Expression \"{}\" on Class {} Method {}", value,
 				annotationValue, handlerObject.getClass().getName(), method.getName());
@@ -710,8 +710,8 @@ public class ConstraintHandlerService {
 
 	private Object[] resolveArgumentsForMethodParameters(Method method, Message<?> message,
 			AuthorizationDecision decision, JsonNode constraint) {
-		var parameters = method.getParameters();
-		var arguments = new Object[parameters.length];
+		var parameters     = method.getParameters();
+		var arguments      = new Object[parameters.length];
 		var parameterIndex = 0;
 		for (var parameter : parameters) {
 			if (JsonNode.class.isAssignableFrom(parameter.getType())) {

@@ -61,8 +61,6 @@ class EnforceUpdatesTillDeniedPolicyEnforcementPointTests {
 
 	@StandardException
 	private static class TestAccessDeniedException extends AccessDeniedException {
-
-		private static final long serialVersionUID = -5386943564236100249L;
 	}
 
 	private static ConstraintHandlerService constraintHandlerService;

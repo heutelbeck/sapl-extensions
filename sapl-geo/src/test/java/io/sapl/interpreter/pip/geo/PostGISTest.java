@@ -130,8 +130,8 @@ class PostGISTest {
 		when(sMock.executeQuery(anyString())).thenReturn(rsMock);
 
 		when(rsMock.next()).thenReturn(true).thenReturn(false);
-		when(rsMock.getString(eq(1))).thenReturn("name");
-		when(rsMock.getString(eq(2))).thenReturn("POINT (1 1)");
+		when(rsMock.getString(1)).thenReturn("name");
+		when(rsMock.getString(2)).thenReturn("POINT (1 1)");
 
 		PostGISConnection c = new PostGISConnection(configMock);
 		assertEquals(JSON_ANSWER, c.retrieveGeometries().toString(),
@@ -168,7 +168,8 @@ class PostGISTest {
 	void dbException() throws SQLException {
 		PostGISConfig configMock = mock(PostGISConfig.class);
 		when(configMock.getConnection()).thenThrow(new SQLException());
-		assertThrows(PolicyEvaluationException.class, () -> new PostGISConnection(configMock).retrieveGeometries());
+		var connection = new PostGISConnection(configMock);
+		assertThrows(PolicyEvaluationException.class, () -> connection.retrieveGeometries());
 	}
 
 	@Test

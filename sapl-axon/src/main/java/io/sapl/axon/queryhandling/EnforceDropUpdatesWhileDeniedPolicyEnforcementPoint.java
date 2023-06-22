@@ -184,9 +184,6 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
 			bundle.executeOnNextHandlers(value).ifPresent(val -> sink.next((SubscriptionQueryUpdateMessage<U>) val));
 		} catch (Throwable t) {
 			handleNextDecision(AuthorizationDecision.DENY);
-			// Alternative: terminate
-			// sink.error(t);
-			// disposeDecisionsAndResourceAccessPoint();
 		}
 	}
 

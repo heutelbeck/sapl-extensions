@@ -58,7 +58,7 @@ public class PostGISConfig {
 	private String    idColName;
 	private String    geometryColName;
 	private int       from;
-	private final int until = -1;
+	private int until = -1;
 	private boolean   flipCoordinates;
 	private int       projectionSRID;
 	private boolean   ssl;
