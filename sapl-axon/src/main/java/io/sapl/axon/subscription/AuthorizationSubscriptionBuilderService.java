@@ -236,12 +236,12 @@ public class AuthorizationSubscriptionBuilderService {
 		if (expressionNotSet(spelExpression))
 			return messageToJson(message);
 
-		var seplEvaluationContext = new StandardEvaluationContext();
-		seplEvaluationContext.setVariable(MESSAGE, message);
-		seplEvaluationContext.setVariable(QUERY, message.getPayload());
-		seplEvaluationContext.setVariable(METADATA, message.getMetaData());
-		seplEvaluationContext.setVariable(EXECUTABLE, executable);
-		return evaluateSpel((String) spelExpression, seplEvaluationContext);
+		var spelEvaluationContext = new StandardEvaluationContext();
+		spelEvaluationContext.setVariable(MESSAGE, message);
+		spelEvaluationContext.setVariable(QUERY, message.getPayload());
+		spelEvaluationContext.setVariable(METADATA, message.getMetaData());
+		spelEvaluationContext.setVariable(EXECUTABLE, executable);
+		return evaluateSpel((String) spelExpression, spelEvaluationContext);
 	}
 
 	private JsonNode constructQueryHandlingResourceNode(QueryMessage<?, ?> message,
@@ -250,13 +250,13 @@ public class AuthorizationSubscriptionBuilderService {
 		if (expressionNotSet(spelExpression))
 			return constructResourceNode(message, executable, queryResult);
 
-		var seplEvaluationContext = new StandardEvaluationContext();
-		seplEvaluationContext.setVariable(MESSAGE, message);
-		seplEvaluationContext.setVariable(QUERY, message.getPayload());
-		seplEvaluationContext.setVariable(METADATA, message.getMetaData());
-		seplEvaluationContext.setVariable(EXECUTABLE, executable);
-		queryResult.ifPresent(result -> seplEvaluationContext.setVariable(QUERY_RESULT, result));
-		return evaluateSpel((String) spelExpression, seplEvaluationContext);
+		var spelEvaluationContext = new StandardEvaluationContext();
+		spelEvaluationContext.setVariable(MESSAGE, message);
+		spelEvaluationContext.setVariable(QUERY, message.getPayload());
+		spelEvaluationContext.setVariable(METADATA, message.getMetaData());
+		spelEvaluationContext.setVariable(EXECUTABLE, executable);
+		queryResult.ifPresent(result -> spelEvaluationContext.setVariable(QUERY_RESULT, result));
+		return evaluateSpel((String) spelExpression, spelEvaluationContext);
 	}
 
 	private <T> JsonNode constructCommandHandlingResourceNode(Message<?> message, T aggregate,
@@ -266,11 +266,11 @@ public class AuthorizationSubscriptionBuilderService {
 			return constructResourceWithAggregateInformation(message, aggregate);
 		}
 
-		var seplEvaluationContext = new StandardEvaluationContext(aggregate);
-		seplEvaluationContext.setVariable(MESSAGE, message);
-		seplEvaluationContext.setVariable(COMMAND, message.getPayload());
-		seplEvaluationContext.setVariable(METADATA, message.getMetaData());
-		return evaluateSpel((String) spelExpression, seplEvaluationContext);
+		var spelEvaluationContext = new StandardEvaluationContext(aggregate);
+		spelEvaluationContext.setVariable(MESSAGE, message);
+		spelEvaluationContext.setVariable(COMMAND, message.getPayload());
+		spelEvaluationContext.setVariable(METADATA, message.getMetaData());
+		return evaluateSpel((String) spelExpression, spelEvaluationContext);
 	}
 
 	@SneakyThrows
@@ -282,22 +282,22 @@ public class AuthorizationSubscriptionBuilderService {
 		if (expressionNotSet(spelExpression))
 			return mapper.readTree((String) subject);
 
-		var seplEvaluationContext = new StandardEvaluationContext();
-		seplEvaluationContext.setVariable(MESSAGE, message);
-		seplEvaluationContext.setVariable(payloadId, message.getPayload());
-		seplEvaluationContext.setVariable(SUBJECT, subject);
-		seplEvaluationContext.setVariable(METADATA, message.getMetaData());
-		return evaluateSpel((String) spelExpression, seplEvaluationContext);
+		var spelEvaluationContext = new StandardEvaluationContext();
+		spelEvaluationContext.setVariable(MESSAGE, message);
+		spelEvaluationContext.setVariable(payloadId, message.getPayload());
+		spelEvaluationContext.setVariable(SUBJECT, subject);
+		spelEvaluationContext.setVariable(METADATA, message.getMetaData());
+		return evaluateSpel((String) spelExpression, spelEvaluationContext);
 	}
 
-	private JsonNode evaluateSpel(String spelExpression, EvaluationContext seplEvaluationContext) {
+	private JsonNode evaluateSpel(String spelExpression, EvaluationContext spelEvaluationContext) {
 		var expression = SPEL_PARSER.parseExpression(spelExpression);
 		try {
-			var evaluationResult = expression.getValue(seplEvaluationContext);
+			var evaluationResult = expression.getValue(spelEvaluationContext);
 			return mapper.valueToTree(evaluationResult);
 		} catch (SpelEvaluationException | NullPointerException e) {
 			log.error(
-					"Failed to evaluate the SePL expression \"{}\" during"
+					"Failed to evaluate the SpEL expression \"{}\" during"
 							+ " construction of an AuthorizationSubscription. Error: {}",
 					spelExpression, e.getLocalizedMessage());
 			throw e;

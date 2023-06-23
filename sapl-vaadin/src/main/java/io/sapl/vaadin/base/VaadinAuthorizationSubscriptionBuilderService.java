@@ -28,7 +28,7 @@ public class VaadinAuthorizationSubscriptionBuilderService {
 	/**
 	 * Get subject by evaluating the subjectExpression against the provided authentication.
 	 * @param authentication Spring authentication context
-	 * @param expression	SePL Expression that will be evaluated
+	 * @param expression	SpEL Expression that will be evaluated
 	 * @return JSON subject for Authentication Subscription
 	 */
 	public JsonNode retrieveSubject(Authentication authentication, String expression) {
