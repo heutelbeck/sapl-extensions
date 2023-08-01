@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 @ConditionalOnProperty(value = "module.enabled", havingValue = "true", matchIfMissing = true)
 public class LifecycleNavigationConfiguration implements VaadinServiceInitListener {
 
-	private static final long serialVersionUID = 1119604590954774449L;
 	private final VaadinNavigationPepService vaadinNavigationPepService;
 
 	@Override

@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
 
-import lombok.NonNull;
 import org.axonframework.common.Registration;
 import org.axonframework.messaging.GenericMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
@@ -39,9 +38,8 @@ import io.sapl.axon.annotation.EnforceRecoverableUpdatesIfDenied;
 import io.sapl.axon.annotation.PreHandleEnforce;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.util.SinkManyWrapper;
-
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.EmitFailureHandler;
@@ -61,9 +59,9 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
 	private static final String QUERY_UPDATE_TASKS_RESOURCE_KEY = "/update-tasks";
 
-	private final MessageMonitor<? super SubscriptionQueryUpdateMessage<?>> updateMessageMonitor;
-	private final ConstraintHandlerService constraintHandlerService;
-	private final ConcurrentMap<SubscriptionQueryMessage<?, ?, ?>, QueryData<?>> activeQueries = new ConcurrentHashMap<>();
+	private final MessageMonitor<? super SubscriptionQueryUpdateMessage<?>>                   updateMessageMonitor;
+	private final ConstraintHandlerService                                                    constraintHandlerService;
+	private final ConcurrentMap<SubscriptionQueryMessage<?, ?, ?>, QueryData<?>>              activeQueries        = new ConcurrentHashMap<>();
 	private final List<MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>>> dispatchInterceptors = new CopyOnWriteArrayList<>();
 
 	/**
@@ -75,7 +73,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	public SaplQueryUpdateEmitter(
 			Optional<MessageMonitor<? super SubscriptionQueryUpdateMessage<?>>> updateMessageMonitor,
 			ConstraintHandlerService constraintHandlerService) {
-		this.updateMessageMonitor = updateMessageMonitor.orElse(NoOpMessageMonitor.INSTANCE);
+		this.updateMessageMonitor     = updateMessageMonitor.orElse(NoOpMessageMonitor.INSTANCE);
 		this.constraintHandlerService = constraintHandlerService;
 	}
 
@@ -96,7 +94,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	private record QueryEnforcementConfiguration(QueryAuthorizationMode mode, Flux<AuthorizationDecision> decisions) {
 	}
 
-	private record QueryData<U> (QueryAuthorizationMode mode,
+	private record QueryData<U>(QueryAuthorizationMode mode,
 			Sinks.One<QueryEnforcementConfiguration> enforcementConfigurationSink,
 			SinkManyWrapper<SubscriptionQueryUpdateMessage<U>> updateSinkWrapper) {
 
@@ -159,21 +157,23 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public <U> UpdateHandlerRegistration<U> registerUpdateHandler(@NonNull SubscriptionQueryMessage<?, ?, ?> registeredQuery,
-																  int updateBufferSize) {
+	public <U> UpdateHandlerRegistration<U> registerUpdateHandler(
+			@NonNull SubscriptionQueryMessage<?, ?, ?> registeredQuery,
+			int updateBufferSize) {
 
 		var query = reconstructOriginalQuery(registeredQuery);
 
 		Sinks.One<QueryEnforcementConfiguration> enforcementConfigurationSink = Sinks.one();
 
-		Many<SubscriptionQueryUpdateMessage<U>> updateSink = Sinks.many().replay().limit(updateBufferSize);
+		Many<SubscriptionQueryUpdateMessage<U>>            updateSink        = Sinks.many().replay()
+				.limit(updateBufferSize);
 		SinkManyWrapper<SubscriptionQueryUpdateMessage<U>> updateSinkWrapper = new SinkManyWrapper<>(updateSink);
 
-		Runnable removeHandler = () -> activeQueries.remove(query);
-		Registration registration = () -> {
-			removeHandler.run();
-			return true;
-		};
+		Runnable     removeHandler = () -> activeQueries.remove(query);
+		Registration registration  = () -> {
+										removeHandler.run();
+										return true;
+									};
 
 		activeQueries.put(query,
 				new QueryData<>(QueryAuthorizationMode.UNDEFINED, enforcementConfigurationSink, updateSinkWrapper));
@@ -207,7 +207,6 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 						.get(RecoverableResponse.RECOVERABLE_UPDATE_TYPE_KEY);
 				if (originalUpdateResponseType != null) {
 					log.debug("Client requested access denied recoverability.");
-
 					return EnforceRecoverableIfDeniedPolicyEnforcementPoint.of(registeredQuery, authzConfig.decisions(),
 							updateMessageFlux, constraintHandlerService, query.getResponseType(),
 							originalUpdateResponseType);
@@ -222,7 +221,6 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 			}
 			return updateMessageFlux;
 		});
-
 		return (UpdateHandlerRegistration<U>) new UpdateHandlerRegistration(registration, securedUpdates,
 				updateSinkWrapper::complete);
 	}
@@ -241,7 +239,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
 	@Override
 	public <U> void emit(@NonNull Predicate<SubscriptionQueryMessage<?, ?, U>> filter,
-						 @NonNull SubscriptionQueryUpdateMessage<U> update) {
+			@NonNull SubscriptionQueryUpdateMessage<U> update) {
 		runOnAfterCommitOrNow(() -> doEmit(filter, intercept(update)));
 	}
 
@@ -261,7 +259,8 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	}
 
 	@Override
-	public void completeExceptionally(@NonNull Predicate<SubscriptionQueryMessage<?, ?, ?>> filter, @NonNull Throwable cause) {
+	public void completeExceptionally(@NonNull Predicate<SubscriptionQueryMessage<?, ?, ?>> filter,
+			@NonNull Throwable cause) {
 		runOnAfterCommitOrNow(() -> doCompleteExceptionally(filter, cause));
 	}
 
@@ -359,10 +358,10 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 	/**
 	 * Either runs the provided {@link Runnable} immediately or adds it to a
 	 * {@link List} as a resource to the current {@link UnitOfWork} if
-	 * {@link org.axonframework.queryhandling.SimpleQueryUpdateEmitter#inStartedPhaseOfUnitOfWork} returns
-	 * {@code true}. This is done to ensure any emitter calls made from a message
-	 * handling function are executed in the {@link UnitOfWork.Phase#AFTER_COMMIT}
-	 * phase.
+	 * {@link org.axonframework.queryhandling.SimpleQueryUpdateEmitter#inStartedPhaseOfUnitOfWork}
+	 * returns {@code true}. This is done to ensure any emitter calls made from a
+	 * message handling function are executed in the
+	 * {@link UnitOfWork.Phase#AFTER_COMMIT} phase.
 	 * <p>
 	 * The latter check requires the current UnitOfWork's phase to be
 	 * {@link UnitOfWork.Phase#STARTED}. This is done to allow users to circumvent

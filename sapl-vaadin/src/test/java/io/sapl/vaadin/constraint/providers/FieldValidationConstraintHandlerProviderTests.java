@@ -39,7 +39,6 @@ import lombok.Data;
 class FieldValidationConstraintHandlerProviderTests {
 
 	static class TestForm extends VerticalLayout{
-		private static final long serialVersionUID = 5137241773011257250L;
 		private IntegerField integerField;
 		private DateTimePicker dateTimeField;
 		private TimePicker timeField;
@@ -274,7 +273,6 @@ class FieldValidationConstraintHandlerProviderTests {
 		var sut = new FieldValidationConstraintHandlerProvider(binder, form);
 		sut.bindField(form.integerField);
 		binder.bindInstanceFields(form);
-		UI ui = mock(UI.class);
 
 		// constraint
 		ObjectNode constraint = JSON.objectNode();
@@ -289,7 +287,7 @@ class FieldValidationConstraintHandlerProviderTests {
 		);
 
 		// WHEN+THEN
-		assertThrows(AccessDeniedException.class, () -> sut.getHandler(constraint).accept(ui));
+		assertThrows(AccessDeniedException.class, () -> sut.getHandler(constraint));
 	}
 
 	@Test

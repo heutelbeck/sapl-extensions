@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 import static reactor.test.StepVerifier.create;
 
 import java.time.Duration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -32,7 +33,6 @@ import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryHandler;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.hamcrest.Matcher;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -881,19 +881,22 @@ public abstract class QueryTestsuite {
 
 		StepVerifier.create(subscriptionResult.initialResult())
 				.expectNext(List.of(new DataPoint("Al\u2588\u2588", null), new DataPoint("Al\u2588\u2588\u2588", null)))
-
 				.verifyComplete();
+
+		// Attention: Do not use List.of() the returned datatype is not handled
+		// correctly by AxonServer
+		var updateList = new LinkedList<DataPoint>();
+		updateList.addAll(List.of(new DataPoint("Gerald", 22), new DataPoint("Tina", 5)));
 
 		Flux.interval(Duration.ofMillis(emitIntervallMs))
 				.doOnNext(i -> emitter.emit(query -> query.getPayload().toString().equals(queryPayload),
-						List.of(new DataPoint("Gerald", 22), new DataPoint("Tina", 5))))
+						updateList))
 				.take(Duration.ofMillis(emitIntervallMs * numberOfUpdates + emitIntervallMs / 2L)).subscribe();
 
 		StepVerifier.create(subscriptionResult.updates().take(2).timeout(timeout))
 				.expectNext(List.of(new DataPoint("Ge\u2588\u2588\u2588\u2588", null)))
 				.expectNext(List.of(new DataPoint("Ge\u2588\u2588\u2588\u2588", null)))
 				.verifyComplete();
-
 	}
 
 	// @formatter:off
