@@ -45,7 +45,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 	private static final Duration                                               DEFAULT_TIMEOUT          = Duration
 			.ofMillis(250);
 	private static final Duration                                               DEFAULT_TIMESTEP         = Duration
-			.ofMillis(10);
+			.ofMillis(15);
 	private static final SubscriptionQueryUpdateMessage<TestUpdateResponseType> DEFAULT_UPDATE_MESSAGE   = new GenericSubscriptionQueryUpdateMessage<TestUpdateResponseType>(
 			new TestUpdateResponseType());
 

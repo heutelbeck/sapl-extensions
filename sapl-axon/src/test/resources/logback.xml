@@ -14,7 +14,7 @@
     <logger name="org.testcontainers" level="WARN"/>
     <logger name="com.github.dockerjava" level="WARN"/>
     <logger name="io.sapl" level="OFF"/>
-    <logger name="io.axoniq" level="ERROR"/>
+    <logger name="io.axoniq" level="WARN"/>
     <logger name="org.axonframework" level="OFF"/>
     <logger name="org.springframework" level="ERROR"/>
     <logger name="reactor.core" level="OFF"/>

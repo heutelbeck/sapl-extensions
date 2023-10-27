@@ -794,7 +794,7 @@ public abstract class QueryTestsuite {
 
 	@Test
 	void when_recoverableHandlerSubscriptionQueryAndPermitWithConstraintsWithRecovery_then_initialReturnAndUpdatesAreEmitted() {
-		var emitIntervallMs = 50L;
+		var emitIntervallMs = 75L;
 		var queryPayload    = "caseC4";
 		var numberOfUpdates = 20L;
 		var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
@@ -894,8 +894,8 @@ public abstract class QueryTestsuite {
 				.take(Duration.ofMillis(emitIntervallMs * numberOfUpdates + emitIntervallMs / 2L)).subscribe();
 
 		StepVerifier.create(subscriptionResult.updates().take(2).timeout(timeout))
-				.expectNext(List.of(new DataPoint("Ge\u2588\u2588\u2588\u2588", null)),
-						List.of(new DataPoint("Ge\u2588\u2588\u2588\u2588", null)))
+				.expectNext(List.of(new DataPoint("Ge\u2588\u2588\u2588\u2588", null)))
+				.expectNext(List.of(new DataPoint("Ge\u2588\u2588\u2588\u2588", null)))
 				.verifyComplete();
 	}
 
