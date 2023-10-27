@@ -883,8 +883,8 @@ public abstract class QueryTestsuite {
 				.expectNext(List.of(new DataPoint("Al\u2588\u2588", null), new DataPoint("Al\u2588\u2588\u2588", null)))
 				.verifyComplete();
 
-		// Attention: Do not use List.of() the returned datatype is not handled
-		// correctly by AxonServer
+		// Attention: Do not use List.of() the returned data type is sometimes not handled
+		// correctly by XStream Serialization for AxonServer
 		var updateList = new LinkedList<DataPoint>();
 		updateList.addAll(List.of(new DataPoint("Gerald", 22), new DataPoint("Tina", 5)));
 
