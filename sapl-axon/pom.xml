@@ -121,6 +121,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.axonframework</groupId>
+			<artifactId>axon-test</artifactId>
+			<version>${version.axon}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>io.sapl</groupId>
 			<artifactId>sapl-test</artifactId>
 			<scope>test</scope>
