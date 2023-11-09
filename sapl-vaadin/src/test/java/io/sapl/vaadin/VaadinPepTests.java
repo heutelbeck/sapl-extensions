@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.sapl.vaadin;
 
 import static io.sapl.api.interpreter.Val.JSON;
@@ -31,183 +48,172 @@ import reactor.core.publisher.Flux;
 
 class VaadinPepTests {
 
-	private static MockedStatic<SecurityHelper> securityHelperMock;
+    private static MockedStatic<SecurityHelper> securityHelperMock;
 
-	@BeforeAll
-	static void beforeAll() {
-		var subject = JSON.objectNode();
-		subject.put("username", "dummy");
-		securityHelperMock = mockStatic(SecurityHelper.class);
-		securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
-	}
+    @BeforeAll
+    static void beforeAll() {
+        var subject = JSON.objectNode();
+        subject.put("username", "dummy");
+        securityHelperMock = mockStatic(SecurityHelper.class);
+        securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
+    }
 
-	@AfterAll
-	static void afterAll() {
-		securityHelperMock.close();
-	}
+    @AfterAll
+    static void afterAll() {
+        securityHelperMock.close();
+    }
 
-	@Test
-	void when_VaadinPepHandleDecisionIsCalled_then_BiConsumerIsCalled() {
-		// GIVEN
-		Component component = mock(Component.class);
-		@SuppressWarnings("unchecked")
-		VaadinPep.VaadinPepBuilder<Object, Component> vaadinPepBuilder = (VaadinPep.VaadinPepBuilder<Object, Component>)mock(
-				VaadinPep.VaadinPepBuilder.class,
-				withSettings()
-						// useConstructor() -> calls actual constructor which will create a VaadinPep object
-						.useConstructor(
-								mock(PolicyDecisionPoint.class),
-								mock(VaadinConstraintEnforcementService.class),
-								component
-						)
-						// CALLS_REAL_METHODS needed for the onDecisionDo() call, to fill decisionListenerList
-						.defaultAnswer(CALLS_REAL_METHODS)
-		);
-		@SuppressWarnings("unchecked")
-		BiConsumer<AuthorizationDecision, Component> biConsumer = (BiConsumer<AuthorizationDecision, Component>)mock(BiConsumer.class);
-		vaadinPepBuilder.onDecisionDo(biConsumer);
-		AuthorizationDecision ad = mock(AuthorizationDecision.class);
+    @Test
+    void when_VaadinPepHandleDecisionIsCalled_then_BiConsumerIsCalled() {
+        // GIVEN
+        Component                                     component        = mock(Component.class);
+        @SuppressWarnings("unchecked")
+        VaadinPep.VaadinPepBuilder<Object, Component> vaadinPepBuilder = (VaadinPep.VaadinPepBuilder<Object, Component>) mock(
+                VaadinPep.VaadinPepBuilder.class, withSettings()
+                        // useConstructor() -> calls actual constructor which will create a VaadinPep
+                        // object
+                        .useConstructor(mock(PolicyDecisionPoint.class), mock(VaadinConstraintEnforcementService.class),
+                                component)
+                        // CALLS_REAL_METHODS needed for the onDecisionDo() call, to fill
+                        // decisionListenerList
+                        .defaultAnswer(CALLS_REAL_METHODS));
+        @SuppressWarnings("unchecked")
+        BiConsumer<AuthorizationDecision, Component>  biConsumer       = (BiConsumer<AuthorizationDecision, Component>) mock(
+                BiConsumer.class);
+        vaadinPepBuilder.onDecisionDo(biConsumer);
+        AuthorizationDecision ad = mock(AuthorizationDecision.class);
 
-		// WHEN
-		vaadinPepBuilder.vaadinPep.handleDecision(ad);
+        // WHEN
+        vaadinPepBuilder.vaadinPep.handleDecision(ad);
 
-		// THEN
-		verify(biConsumer).accept(ad, component);
-	}
-	
-	@Test
-	void when_VaadinPepUnenforceIsCalled_then_DisposableDisposeIsCalled() {
-		// GIVEN
-		Component component = getComponentMockWithUI();
-		Disposable disposable = mock(Disposable.class);
-		when(disposable.isDisposed()).thenReturn(false);
+        // THEN
+        verify(biConsumer).accept(ad, component);
+    }
 
-		Flux<AuthorizationDecision> flux = getFluxMock(disposable);
-		PolicyDecisionPoint pdp = mock(PolicyDecisionPoint.class);
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(flux);
+    @Test
+    void when_VaadinPepUnenforceIsCalled_then_DisposableDisposeIsCalled() {
+        // GIVEN
+        Component  component  = getComponentMockWithUI();
+        Disposable disposable = mock(Disposable.class);
+        when(disposable.isDisposed()).thenReturn(false);
 
-		@SuppressWarnings("unchecked")
-		VaadinPep.VaadinSinglePepBuilder<Object, Component> vaadinSinglePepBuilder = (VaadinPep.VaadinSinglePepBuilder<Object, Component>)mock(
-				VaadinPep.VaadinSinglePepBuilder.class,
-				withSettings()
-						// useConstructor() -> calls actual constructor which will create a VaadinPep object
-						.useConstructor(
-								pdp,
-								mock(VaadinConstraintEnforcementService.class),
-								component
-						)
-						// CALLS_REAL_METHODS needed for the onDecisionDo() call, to fill decisionListenerList
-						.defaultAnswer(CALLS_REAL_METHODS)
-		);
-		@SuppressWarnings("unchecked")
-		BiConsumer<AuthorizationDecision, Component> biConsumer =
-				(BiConsumer<AuthorizationDecision, Component>)mock(BiConsumer.class);
-		vaadinSinglePepBuilder.onDecisionDo(biConsumer); // Add a consumer because build() doesn't start the subscription if the list is empty
-		vaadinSinglePepBuilder.build();
+        Flux<AuthorizationDecision> flux = getFluxMock(disposable);
+        PolicyDecisionPoint         pdp  = mock(PolicyDecisionPoint.class);
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(flux);
 
-		// WHEN
-		vaadinSinglePepBuilder.vaadinPep.stopSubscription();
+        @SuppressWarnings("unchecked")
+        VaadinPep.VaadinSinglePepBuilder<Object, Component> vaadinSinglePepBuilder = (VaadinPep.VaadinSinglePepBuilder<Object, Component>) mock(
+                VaadinPep.VaadinSinglePepBuilder.class, withSettings()
+                        // useConstructor() -> calls actual constructor which will create a VaadinPep
+                        // object
+                        .useConstructor(pdp, mock(VaadinConstraintEnforcementService.class), component)
+                        // CALLS_REAL_METHODS needed for the onDecisionDo() call, to fill
+                        // decisionListenerList
+                        .defaultAnswer(CALLS_REAL_METHODS));
+        @SuppressWarnings("unchecked")
+        BiConsumer<AuthorizationDecision, Component>        biConsumer             = (BiConsumer<AuthorizationDecision, Component>) mock(
+                BiConsumer.class);
+        vaadinSinglePepBuilder.onDecisionDo(biConsumer); // Add a consumer because build() doesn't start the
+                                                         // subscription if the list is empty
+        vaadinSinglePepBuilder.build();
 
-		// THEN
-		verify(disposable).dispose();
-	}
+        // WHEN
+        vaadinSinglePepBuilder.vaadinPep.stopSubscription();
 
-	@Test
-	void when_VaadinPepUnenforceIsCalledWithDisposedDisposable_then_DisposableDisposeIsNotCalled() {
-		// GIVEN
-		Component component = getComponentMockWithUI();
-		Disposable disposable = mock(Disposable.class);
-		when(disposable.isDisposed()).thenReturn(true);
+        // THEN
+        verify(disposable).dispose();
+    }
 
-		Flux<AuthorizationDecision> flux = getFluxMock(disposable);
-		PolicyDecisionPoint pdp = mock(PolicyDecisionPoint.class);
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(flux);
+    @Test
+    void when_VaadinPepUnenforceIsCalledWithDisposedDisposable_then_DisposableDisposeIsNotCalled() {
+        // GIVEN
+        Component  component  = getComponentMockWithUI();
+        Disposable disposable = mock(Disposable.class);
+        when(disposable.isDisposed()).thenReturn(true);
 
-		@SuppressWarnings("unchecked")
-		VaadinPep.VaadinSinglePepBuilder<Object, Component> vaadinSinglePepBuilder = (VaadinPep.VaadinSinglePepBuilder<Object, Component>)mock(
-				VaadinPep.VaadinSinglePepBuilder.class,
-				withSettings()
-				// useConstructor() -> calls actual constructor which will create a VaadinPep object
-				.useConstructor(
-						pdp,
-						mock(VaadinConstraintEnforcementService.class),
-						component
-						)
-				// CALLS_REAL_METHODS needed for the onDecisionDo() call, to fill decisionListenerList
-				.defaultAnswer(CALLS_REAL_METHODS)
-				);
-		@SuppressWarnings("unchecked")
-		BiConsumer<AuthorizationDecision, Component> biConsumer =
-		(BiConsumer<AuthorizationDecision, Component>)mock(BiConsumer.class);
-		vaadinSinglePepBuilder.onDecisionDo(biConsumer); // Add a consumer because build() doesn't start the subscription if the list is empty
-		vaadinSinglePepBuilder.build();
+        Flux<AuthorizationDecision> flux = getFluxMock(disposable);
+        PolicyDecisionPoint         pdp  = mock(PolicyDecisionPoint.class);
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(flux);
 
-		// WHEN
-		vaadinSinglePepBuilder.vaadinPep.stopSubscription();
+        @SuppressWarnings("unchecked")
+        VaadinPep.VaadinSinglePepBuilder<Object, Component> vaadinSinglePepBuilder = (VaadinPep.VaadinSinglePepBuilder<Object, Component>) mock(
+                VaadinPep.VaadinSinglePepBuilder.class, withSettings()
+                        // useConstructor() -> calls actual constructor which will create a VaadinPep
+                        // object
+                        .useConstructor(pdp, mock(VaadinConstraintEnforcementService.class), component)
+                        // CALLS_REAL_METHODS needed for the onDecisionDo() call, to fill
+                        // decisionListenerList
+                        .defaultAnswer(CALLS_REAL_METHODS));
+        @SuppressWarnings("unchecked")
+        BiConsumer<AuthorizationDecision, Component>        biConsumer             = (BiConsumer<AuthorizationDecision, Component>) mock(
+                BiConsumer.class);
+        vaadinSinglePepBuilder.onDecisionDo(biConsumer); // Add a consumer because build() doesn't start the
+                                                         // subscription if the list is empty
+        vaadinSinglePepBuilder.build();
 
-		// THEN
-		verify(disposable, times(0)).dispose();
-	}
+        // WHEN
+        vaadinSinglePepBuilder.vaadinPep.stopSubscription();
 
-	@Test
-	void when_VaadinPepUnenforceIsCalledWithoutDisposable_then_DisposableDisposeIsNotCalled() {
-		// GIVEN
-		Component component = getComponentMockWithUI();
-		Disposable disposable = mock(Disposable.class);
+        // THEN
+        verify(disposable, times(0)).dispose();
+    }
 
-		Flux<AuthorizationDecision> flux = getFluxMock(null);
-		PolicyDecisionPoint pdp = mock(PolicyDecisionPoint.class);
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(flux);
+    @Test
+    void when_VaadinPepUnenforceIsCalledWithoutDisposable_then_DisposableDisposeIsNotCalled() {
+        // GIVEN
+        Component  component  = getComponentMockWithUI();
+        Disposable disposable = mock(Disposable.class);
 
-		@SuppressWarnings("unchecked")
-		VaadinPep.VaadinSinglePepBuilder<Object, Component> vaadinSinglePepBuilder = (VaadinPep.VaadinSinglePepBuilder<Object, Component>)mock(
-				VaadinPep.VaadinSinglePepBuilder.class,
-				withSettings()
-				// useConstructor() -> calls actual constructor which will create a VaadinPep object
-				.useConstructor(
-						pdp,
-						mock(VaadinConstraintEnforcementService.class),
-						component
-						)
-				// CALLS_REAL_METHODS needed for the onDecisionDo() call, to fill decisionListenerList
-				.defaultAnswer(CALLS_REAL_METHODS)
-				);
-		@SuppressWarnings("unchecked")
-		BiConsumer<AuthorizationDecision, Component> biConsumer =
-		(BiConsumer<AuthorizationDecision, Component>)mock(BiConsumer.class);
-		vaadinSinglePepBuilder.onDecisionDo(biConsumer); // Add a consumer because build() doesn't start the subscription if the list is empty
-		vaadinSinglePepBuilder.build();
+        Flux<AuthorizationDecision> flux = getFluxMock(null);
+        PolicyDecisionPoint         pdp  = mock(PolicyDecisionPoint.class);
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(flux);
 
-		// WHEN
-		vaadinSinglePepBuilder.vaadinPep.stopSubscription();
+        @SuppressWarnings("unchecked")
+        VaadinPep.VaadinSinglePepBuilder<Object, Component> vaadinSinglePepBuilder = (VaadinPep.VaadinSinglePepBuilder<Object, Component>) mock(
+                VaadinPep.VaadinSinglePepBuilder.class, withSettings()
+                        // useConstructor() -> calls actual constructor which will create a VaadinPep
+                        // object
+                        .useConstructor(pdp, mock(VaadinConstraintEnforcementService.class), component)
+                        // CALLS_REAL_METHODS needed for the onDecisionDo() call, to fill
+                        // decisionListenerList
+                        .defaultAnswer(CALLS_REAL_METHODS));
+        @SuppressWarnings("unchecked")
+        BiConsumer<AuthorizationDecision, Component>        biConsumer             = (BiConsumer<AuthorizationDecision, Component>) mock(
+                BiConsumer.class);
+        vaadinSinglePepBuilder.onDecisionDo(biConsumer); // Add a consumer because build() doesn't start the
+                                                         // subscription if the list is empty
+        vaadinSinglePepBuilder.build();
 
-		// THEN
-		verify(disposable, times(0)).dispose();
-	}
+        // WHEN
+        vaadinSinglePepBuilder.vaadinPep.stopSubscription();
 
-	Component getComponentMockWithUI() {
-		Component component = mock(Component.class);
-		UI ui = mock(UI.class);
+        // THEN
+        verify(disposable, times(0)).dispose();
+    }
 
-		// Mock UI access() function to immediately call the lambda that is passed to it
-		when(ui.access(any(Command.class))).thenAnswer(invocation -> {
-			invocation.getArgument(0, Command.class).execute();
-			return null;
-		});
-		Optional<UI> o = Optional.of(ui);
-		when(component.isAttached()).thenReturn(true);
-		when(component.getUI()).thenReturn(o);
-		return component;
-	}
+    Component getComponentMockWithUI() {
+        Component component = mock(Component.class);
+        UI        ui        = mock(UI.class);
 
-	Flux<AuthorizationDecision> getFluxMock(Disposable disposable) {
-		@SuppressWarnings("unchecked")
-		Flux<AuthorizationDecision> f = (Flux<AuthorizationDecision>) mock(Flux.class, invocation -> {
-			if (Disposable.class.equals(invocation.getMethod().getReturnType())) {
-				return disposable;
-			}
-			return invocation.getMock();
-		});
-		return f;
-	}
+        // Mock UI access() function to immediately call the lambda that is passed to it
+        when(ui.access(any(Command.class))).thenAnswer(invocation -> {
+            invocation.getArgument(0, Command.class).execute();
+            return null;
+        });
+        Optional<UI> o = Optional.of(ui);
+        when(component.isAttached()).thenReturn(true);
+        when(component.getUI()).thenReturn(o);
+        return component;
+    }
+
+    Flux<AuthorizationDecision> getFluxMock(Disposable disposable) {
+        @SuppressWarnings("unchecked")
+        Flux<AuthorizationDecision> f = (Flux<AuthorizationDecision>) mock(Flux.class, invocation -> {
+            if (Disposable.class.equals(invocation.getMethod().getReturnType())) {
+                return disposable;
+            }
+            return invocation.getMock();
+        });
+        return f;
+    }
 }

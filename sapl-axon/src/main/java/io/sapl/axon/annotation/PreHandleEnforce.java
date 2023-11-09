@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +24,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-
-
 /**
  * The {@code @PreHandleEnforce} annotation establishes a policy enforcement
  * point (PEP) for Handlers of standard or subscription queries.
  * <p>
- * This annotation can be combined with {@code @PostHandleEnforce} for 
- * non-subscription queries. 
+ * This annotation can be combined with {@code @PostHandleEnforce} for
+ * non-subscription queries.
  * <p>
  * If the {@code @QueryHandler} is invoked using a non-subscription query, the
  * PDP is asked for one decision which is then enforced.
@@ -48,7 +48,7 @@ import java.lang.annotation.Target;
  * <p>
  * On each decision, constraints will be respected and updated.
  * <p>
- * If a following decision is DENY, access to updates is denied and the 
+ * If a following decision is DENY, access to updates is denied and the
  * subscription is cancelled.
  * <p>
  * If a decision contains a resource, the PEP assumes that this is a final
@@ -67,7 +67,7 @@ import java.lang.annotation.Target;
  * To be able to construct reasonable {@code AuthorizationSubscription} objects,
  * the following data is made available to the SpEL expression in its evaluation
  * context:
- * 
+ *
  * <ul>
  * <li>The variable {@code #message} is set to the {@code QueryMessage}.
  * <li>The variable {@code #query} is set to the payload of the
@@ -80,16 +80,19 @@ import java.lang.annotation.Target;
  * {@link java.lang.reflect.Executable} representing the method to be invoked to
  * generate the initial query response.
  * </ul>
- * 
+ *
  * Example:
- * <pre>{@code 
- *	@QueryHandler
- *	@PreHandleEnforce(action = "'Fetch'", resource = "{ 'type':'patient', 'id':#query.id() }")
- *	Optional<PatientDocument> handle(FetchPatient query) {
- *		return patientsRepository.findById(query.patientId());
- *	}
- * }</pre>
- * 
+ *
+ * <pre>
+ * {@code
+ * &#64;QueryHandler
+ * @PreHandleEnforce(action = "'Fetch'", resource = "{ 'type':'patient', 'id':#query.id() }")
+ * Optional<PatientDocument> handle(FetchPatient query) {
+ *     return patientsRepository.findById(query.patientId());
+ * }
+ * }
+ * </pre>
+ *
  * @author Dominic Heutelbeck
  * @since 2.1.0
  */
@@ -99,35 +102,35 @@ import java.lang.annotation.Target;
 @Target({ ElementType.METHOD, ElementType.TYPE, ElementType.CONSTRUCTOR })
 public @interface PreHandleEnforce {
 
-	/**
-	 * @return the Spring-EL expression to whose evaluation result is to be used as
-	 *         the subject in the authorization subscription to the PDP. If empty,
-	 *         the PEP attempts to derive a guess to describe the subject based on
-	 *         the current Principal.
-	 */
-	String subject() default "";
+    /**
+     * @return the Spring-EL expression to whose evaluation result is to be used as
+     *         the subject in the authorization subscription to the PDP. If empty,
+     *         the PEP attempts to derive a guess to describe the subject based on
+     *         the current Principal.
+     */
+    String subject() default "";
 
-	/**
-	 * @return the Spring-EL expression to whose evaluation result is to be used as
-	 *         the action in the authorization subscription to the PDP. If empty,
-	 *         the PEP attempts to derive a guess to describe the action based on
-	 *         reflection.
-	 */
-	String action() default "";
+    /**
+     * @return the Spring-EL expression to whose evaluation result is to be used as
+     *         the action in the authorization subscription to the PDP. If empty,
+     *         the PEP attempts to derive a guess to describe the action based on
+     *         reflection.
+     */
+    String action() default "";
 
-	/**
-	 * @return the Spring-EL expression to whose evaluation result is to be used as
-	 *         the action in the authorization subscription to the PDP. If empty,
-	 *         the PEP attempts to derive a guess to describe the resource based on
-	 *         reflection.
-	 */
-	String resource() default "";
+    /**
+     * @return the Spring-EL expression to whose evaluation result is to be used as
+     *         the action in the authorization subscription to the PDP. If empty,
+     *         the PEP attempts to derive a guess to describe the resource based on
+     *         reflection.
+     */
+    String resource() default "";
 
-	/**
-	 * @return the Spring-EL expression to whose evaluation result is to be used as
-	 *         the action in the authorization subscription to the PDP. If empty, no
-	 *         environment is set in the subscription.
-	 */
-	String environment() default "";
+    /**
+     * @return the Spring-EL expression to whose evaluation result is to be used as
+     *         the action in the authorization subscription to the PDP. If empty, no
+     *         environment is set in the subscription.
+     */
+    String environment() default "";
 
 }

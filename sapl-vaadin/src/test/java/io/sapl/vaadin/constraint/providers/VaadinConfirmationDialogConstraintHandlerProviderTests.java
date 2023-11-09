@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.sapl.vaadin.constraint.providers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,7 +49,8 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
 
     @BeforeEach
     void setUp() {
-        this.vaadinConfirmationDialogConstraintHandlerProvider = spy(VaadinConfirmationDialogConstraintHandlerProvider.class);
+        this.vaadinConfirmationDialogConstraintHandlerProvider = spy(
+                VaadinConfirmationDialogConstraintHandlerProvider.class);
     }
 
     @Test
@@ -136,8 +154,8 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
         doAnswer(invocation -> {
             invocation.getArgument(3, Runnable.class).run();
             return null;
-        }).when(this.vaadinConfirmationDialogConstraintHandlerProvider).openConfirmDialog(anyString(), anyString(), anyString(), any(Runnable.class), anyString(), any(Runnable.class));
-
+        }).when(this.vaadinConfirmationDialogConstraintHandlerProvider).openConfirmDialog(anyString(), anyString(),
+                anyString(), any(Runnable.class), anyString(), any(Runnable.class));
 
         // WHEN
         var getHandler = this.vaadinConfirmationDialogConstraintHandlerProvider.getHandler(node);
@@ -161,7 +179,8 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
         doAnswer(invocation -> {
             invocation.getArgument(3, Runnable.class).run();
             return null;
-        }).when(this.vaadinConfirmationDialogConstraintHandlerProvider).openConfirmDialog(anyString(), anyString(), anyString(), any(Runnable.class), anyString(), any(Runnable.class));
+        }).when(this.vaadinConfirmationDialogConstraintHandlerProvider).openConfirmDialog(anyString(), anyString(),
+                anyString(), any(Runnable.class), anyString(), any(Runnable.class));
 
         // WHEN
         var getHandler = this.vaadinConfirmationDialogConstraintHandlerProvider.getHandler(node);
@@ -181,8 +200,8 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
         doAnswer(invocation -> {
             invocation.getArgument(5, Runnable.class).run();
             return null;
-        }).when(this.vaadinConfirmationDialogConstraintHandlerProvider).openConfirmDialog(anyString(), anyString(), anyString(), any(Runnable.class), anyString(), any(Runnable.class));
-
+        }).when(this.vaadinConfirmationDialogConstraintHandlerProvider).openConfirmDialog(anyString(), anyString(),
+                anyString(), any(Runnable.class), anyString(), any(Runnable.class));
 
         // WHEN
         var getHandler = this.vaadinConfirmationDialogConstraintHandlerProvider.getHandler(node);
@@ -194,10 +213,14 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
     @Test
     void when_openConfirmationDialogIsCalled_then_aNewConfirmDialogIsOpening() {
         // GIVEN
-        try ( var mockedConstructor = mockConstruction(VaadinConfirmationDialog.class, (confirmDialog, context) -> doNothing().when(confirmDialog).open())) {
-            var vaadinConfirmationDialogConstraintHandlerProvider = spy(VaadinConfirmationDialogConstraintHandlerProvider.class);
+        try (var mockedConstructor = mockConstruction(VaadinConfirmationDialog.class,
+                (confirmDialog, context) -> doNothing().when(confirmDialog).open())) {
+            var vaadinConfirmationDialogConstraintHandlerProvider = spy(
+                    VaadinConfirmationDialogConstraintHandlerProvider.class);
             // WHEN
-            vaadinConfirmationDialogConstraintHandlerProvider.openConfirmDialog("header" ,"text", "confirm", () -> {}, "cancel", () -> {});
+            vaadinConfirmationDialogConstraintHandlerProvider.openConfirmDialog("header", "text", "confirm", () -> {
+            }, "cancel", () -> {
+            });
             // THEN
             assertNotNull(mockedConstructor.constructed().get(0));
             verify(mockedConstructor.constructed().get(0), times(1)).open();

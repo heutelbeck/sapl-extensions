@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,60 +35,60 @@ import nl.jqno.equalsverifier.Warning;
 
 class KMLTest {
 
-	static final String TESTFILE = "/sample.kml";
+    static final String TESTFILE = "/sample.kml";
 
-	static final String EXPECTED_RESPONSE = "{\"altitude\":0.0,\"accuracy\":0.0,\"trust\":0.0,"
-			+ "\"geofences\":{\"Sample1\":{\"type\":\"MultiPoint\",\"coordinates\":[[-80,40],[-86,41]]},"
-			+ "\"Sample2\":{\"type\":\"MultiPolygon\",\"coordinates\":"
-			+ "[[[[-1,1],[-2,2],[-3,3],[-4,4],[-5,5],[-1,1]]]]}}}";
+    static final String EXPECTED_RESPONSE = "{\"altitude\":0.0,\"accuracy\":0.0,\"trust\":0.0,"
+            + "\"geofences\":{\"Sample1\":{\"type\":\"MultiPoint\",\"coordinates\":[[-80,40],[-86,41]]},"
+            + "\"Sample2\":{\"type\":\"MultiPolygon\",\"coordinates\":"
+            + "[[[[-1,1],[-2,2],[-3,3],[-4,4],[-5,5],[-1,1]]]]}}}";
 
-	private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
+    private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
-	@Test
-	void importTest() {
-		KMLImport kml = new KMLImport(TESTFILE);
-		assertThat(kml.toGeoPIPResponse().toString(), is(EXPECTED_RESPONSE));
-	}
+    @Test
+    void importTest() {
+        KMLImport kml = new KMLImport(TESTFILE);
+        assertThat(kml.toGeoPIPResponse().toString(), is(EXPECTED_RESPONSE));
+    }
 
-	@Test
-	void constructorTest() {
-		JsonNode jsonFilename = JSON.textNode(TESTFILE);
-		KMLImport stringKml = new KMLImport(TESTFILE);
-		KMLImport jsonKml = new KMLImport(jsonFilename);
-		assertThat(stringKml, is(jsonKml));
-	}
+    @Test
+    void constructorTest() {
+        JsonNode  jsonFilename = JSON.textNode(TESTFILE);
+        KMLImport stringKml    = new KMLImport(TESTFILE);
+        KMLImport jsonKml      = new KMLImport(jsonFilename);
+        assertThat(stringKml, is(jsonKml));
+    }
 
-	@Test
-	void equalsTest() {
-		EqualsVerifier.forClass(KMLImport.class).suppress(Warning.STRICT_INHERITANCE, Warning.NONFINAL_FIELDS).verify();
-	}
+    @Test
+    void equalsTest() {
+        EqualsVerifier.forClass(KMLImport.class).suppress(Warning.STRICT_INHERITANCE, Warning.NONFINAL_FIELDS).verify();
+    }
 
-	@Test
-	void httpIllegalArgTest() {
-		assertThrows(PolicyEvaluationException.class, () -> new KMLImport("https://").toGeoPIPResponse());
-	}
+    @Test
+    void httpIllegalArgTest() {
+        assertThrows(PolicyEvaluationException.class, () -> new KMLImport("https://").toGeoPIPResponse());
+    }
 
-	@Test
-	void invalidJsonInConstructorTest() {
-		assertThrows(PolicyEvaluationException.class, () -> new KMLImport(JSON.booleanNode(false)).toGeoPIPResponse());
-	}
+    @Test
+    void invalidJsonInConstructorTest() {
+        assertThrows(PolicyEvaluationException.class, () -> new KMLImport(JSON.booleanNode(false)).toGeoPIPResponse());
+    }
 
-	@Test
-	void httpNoKmlTest() {
-		assertThrows(PolicyEvaluationException.class, () -> new KMLImport("http://about:blank").toGeoPIPResponse());
-	}
+    @Test
+    void httpNoKmlTest() {
+        assertThrows(PolicyEvaluationException.class, () -> new KMLImport("http://about:blank").toGeoPIPResponse());
+    }
 
-	@Test
-	void invalidFileImportTest() {
-		assertThrows(PolicyEvaluationException.class,
-				() -> new KMLImport("file_that_does_not_exist.kml").toGeoPIPResponse());
-	}
+    @Test
+    void invalidFileImportTest() {
+        assertThrows(PolicyEvaluationException.class,
+                () -> new KMLImport("file_that_does_not_exist.kml").toGeoPIPResponse());
+    }
 
-	@Test
-	void wrongCollection() {
-		Collection<String> coll = new LinkedList<>();
-		coll.add("TestString");
-		assertThrows(PolicyEvaluationException.class, () -> KMLImport.formatCollection(coll));
-	}
+    @Test
+    void wrongCollection() {
+        Collection<String> coll = new LinkedList<>();
+        coll.add("TestString");
+        assertThrows(PolicyEvaluationException.class, () -> KMLImport.formatCollection(coll));
+    }
 
 }

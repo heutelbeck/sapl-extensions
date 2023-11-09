@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +33,7 @@ import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
 import lombok.RequiredArgsConstructor;
 
 /**
- * 
+ *
  * The SaplHandlerEnhancer is responsible for adding Policy Enforcement Points
  * to all command and query handlers in the system.
  * <p>
@@ -40,35 +42,35 @@ import lombok.RequiredArgsConstructor;
  * MessageHandlingMembers and this Service is called for each of them, which
  * then wraps all handlers with the respective CommandPolicyEnforcementPoint or
  * QueryPolicyEnforcementPoint.
- * 
+ *
  * @author Dominic Heutelbeck
  * @since 2.1.0
  */
 @RequiredArgsConstructor
 public class SaplHandlerEnhancer implements HandlerEnhancerDefinition {
 
-	private final PolicyDecisionPoint pdp;
-	private final ConstraintHandlerService axonConstraintEnforcementService;
-	private final SaplQueryUpdateEmitter emitter;
-	private final AuthorizationSubscriptionBuilderService subscriptionBuilder;
-	private final SaplAxonProperties properties;
+    private final PolicyDecisionPoint                     pdp;
+    private final ConstraintHandlerService                axonConstraintEnforcementService;
+    private final SaplQueryUpdateEmitter                  emitter;
+    private final AuthorizationSubscriptionBuilderService subscriptionBuilder;
+    private final SaplAxonProperties                      properties;
 
-	@Override
-	public <T> MessageHandlingMember<T> wrapHandler(MessageHandlingMember<T> original) {
+    @Override
+    public <T> MessageHandlingMember<T> wrapHandler(MessageHandlingMember<T> original) {
 
-		var interfaces = Arrays.asList(original.getClass().getInterfaces());
+        var interfaces = Arrays.asList(original.getClass().getInterfaces());
 
-		if (interfaces.contains(CommandMessageHandlingMember.class)) {
-			return new CommandPolicyEnforcementPoint<>(original, pdp, axonConstraintEnforcementService,
-					subscriptionBuilder);
-		}
+        if (interfaces.contains(CommandMessageHandlingMember.class)) {
+            return new CommandPolicyEnforcementPoint<>(original, pdp, axonConstraintEnforcementService,
+                    subscriptionBuilder);
+        }
 
-		if (interfaces.contains(QueryHandlingMember.class)) {
-			return new QueryPolicyEnforcementPoint<>(original, pdp, axonConstraintEnforcementService, emitter,
-					subscriptionBuilder, properties);
-		}
+        if (interfaces.contains(QueryHandlingMember.class)) {
+            return new QueryPolicyEnforcementPoint<>(original, pdp, axonConstraintEnforcementService, emitter,
+                    subscriptionBuilder, properties);
+        }
 
-		return original;
-	}
+        return original;
+    }
 
 }

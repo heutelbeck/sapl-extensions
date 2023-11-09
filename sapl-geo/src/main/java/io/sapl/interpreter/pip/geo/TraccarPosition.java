@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,48 +27,48 @@ import lombok.Data;
 @JsonInclude(Include.NON_NULL)
 public class TraccarPosition {
 
-	private int id;
+    private int id;
 
-	private JsonNode attributes;
+    private JsonNode attributes;
 
-	private int deviceId;
+    private int deviceId;
 
-	private Object type;
+    private Object type;
 
-	private String protocol;
+    private String protocol;
 
-	private String serverTime;
+    private String serverTime;
 
-	private String deviceTime;
+    private String deviceTime;
 
-	private String fixTime;
+    private String fixTime;
 
-	private boolean outdated;
+    private boolean outdated;
 
-	private boolean valid;
+    private boolean valid;
 
-	private double latitude;
+    private double latitude;
 
-	private double longitude;
+    private double longitude;
 
-	private double altitude;
+    private double altitude;
 
-	private double speed;
+    private double speed;
 
-	private double course;
+    private double course;
 
-	private String address;
+    private String address;
 
-	private double accuracy;
+    private double accuracy;
 
-	private Object network;
+    private Object network;
 
-	public static int compareAscending(TraccarPosition a, TraccarPosition b) {
+    public static int compareAscending(TraccarPosition a, TraccarPosition b) {
         return Integer.compare(a.getId(), b.getId());
-	}
+    }
 
-	public static int compareDescending(TraccarPosition a, TraccarPosition b) {
-		return Integer.compare(b.getId(), a.getId());
-	}
+    public static int compareDescending(TraccarPosition a, TraccarPosition b) {
+        return Integer.compare(b.getId(), a.getId());
+    }
 
 }

@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,42 +29,42 @@ import lombok.Data;
 @JsonInclude(Include.NON_NULL)
 public class TraccarDevice {
 
-	private int id;
+    private int id;
 
-	private JsonNode attributes;
+    private JsonNode attributes;
 
-	private String name;
+    private String name;
 
-	private String uniqueId;
+    private String uniqueId;
 
-	private String status;
+    private String status;
 
-	private String lastUpdate;
+    private String lastUpdate;
 
-	private int positionId;
+    private int positionId;
 
-	private int groupId;
+    private int groupId;
 
-	private int[] geofenceIds;
+    private int[] geofenceIds;
 
-	private String phone;
+    private String phone;
 
-	private String model;
+    private String model;
 
-	private String contact;
+    private String contact;
 
-	private Object category;
+    private Object category;
 
-	// Don't expose the internal representation by storing an externally mutable
-	// object
-	// into geofenceIds
+    // Don't expose the internal representation by storing an externally mutable
+    // object
+    // into geofenceIds
 
-	public int[] getGeofenceIds() {
-		return geofenceIds != null ? Arrays.copyOf(geofenceIds, geofenceIds.length) : null;
-	}
+    public int[] getGeofenceIds() {
+        return geofenceIds != null ? Arrays.copyOf(geofenceIds, geofenceIds.length) : null;
+    }
 
-	public void setGeofenceIds(int[] geofenceIds) {
-		this.geofenceIds = geofenceIds != null ? Arrays.copyOf(geofenceIds, geofenceIds.length) : null;
-	}
+    public void setGeofenceIds(int[] geofenceIds) {
+        this.geofenceIds = geofenceIds != null ? Arrays.copyOf(geofenceIds, geofenceIds.length) : null;
+    }
 
 }

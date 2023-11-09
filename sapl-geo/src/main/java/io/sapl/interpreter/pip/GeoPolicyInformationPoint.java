@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,23 +32,23 @@ import reactor.core.publisher.Flux;
 @PolicyInformationPoint(name = GeoPolicyInformationPoint.NAME, description = GeoPolicyInformationPoint.DESCRIPTION)
 public class GeoPolicyInformationPoint {
 
-	public static final String NAME = "io.sapl.pip.geo";
+    public static final String NAME = "io.sapl.pip.geo";
 
-	public static final String DESCRIPTION = "PIP for geographical data.";
+    public static final String DESCRIPTION = "PIP for geographical data.";
 
-	@Attribute
-	public Flux<Val> traccar(Val leftHandValue, Map<String, JsonNode> variables) {
-		return Flux.from(new TraccarConnection(leftHandValue.get()).toGeoPIPResponse().map(Val::of));
-	}
+    @Attribute
+    public Flux<Val> traccar(Val leftHandValue, Map<String, JsonNode> variables) {
+        return Flux.from(new TraccarConnection(leftHandValue.get()).toGeoPIPResponse().map(Val::of));
+    }
 
-	@Attribute
-	public Flux<Val> postgis(Val leftHandValue, Map<String, JsonNode> variables) {
-		return Flux.just(Val.of(new PostGISConnection(leftHandValue.get()).toGeoPIPResponse()));
-	}
+    @Attribute
+    public Flux<Val> postgis(Val leftHandValue, Map<String, JsonNode> variables) {
+        return Flux.just(Val.of(new PostGISConnection(leftHandValue.get()).toGeoPIPResponse()));
+    }
 
-	@Attribute
-	public Flux<Val> kml(Val leftHandValue, Map<String, JsonNode> variables) {
-		return Flux.just(Val.of(new KMLImport(leftHandValue.get()).toGeoPIPResponse()));
-	}
+    @Attribute
+    public Flux<Val> kml(Val leftHandValue, Map<String, JsonNode> variables) {
+        return Flux.just(Val.of(new KMLImport(leftHandValue.get()).toGeoPIPResponse()));
+    }
 
 }

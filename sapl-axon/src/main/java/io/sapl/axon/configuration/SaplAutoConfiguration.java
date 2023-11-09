@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.sapl.axon.configuration;
 
 import java.util.List;
@@ -50,11 +67,11 @@ import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 
+ *
  * This AutoConfiguration class is registered in META-INF/spring.factories of
  * this project, which ensures, that all Spring Boot applications using this
  * module as a dependency will load this configuration class.
- * 
+ *
  * @author Dominic Heutelbeck
  * @since 2.1.0
  */
@@ -63,230 +80,230 @@ import lombok.extern.slf4j.Slf4j;
 @Import(SaplAxonProperties.class)
 public class SaplAutoConfiguration {
 
-	/**
-	 * For PEPs based on @EnforceRecoverableUpdatesIfDenied, the class @see
-	 * io.sapl.axon.queryhandling.RecoverableResponse must be serializable. XStream
-	 * uses a whitelist for determining which classes may be serialized. This method
-	 * registers the RecoverableResponse.
-	 * 
-	 * @param xStream XStream serialization if present.
-	 */
-	@Autowired
-	void whitelistSaplObjectsInXStream(Optional<XStream> xStream) {
-		xStream.ifPresent(xStr -> log.trace("Allow 'io.sapl.**' classes in XStream "));
-		xStream.ifPresent(xStr -> xStr.allowTypesByWildcard(new String[] { "io.sapl.**" }));
-	}
+    /**
+     * For PEPs based on @EnforceRecoverableUpdatesIfDenied, the class @see
+     * io.sapl.axon.queryhandling.RecoverableResponse must be serializable. XStream
+     * uses a whitelist for determining which classes may be serialized. This method
+     * registers the RecoverableResponse.
+     *
+     * @param xStream XStream serialization if present.
+     */
+    @Autowired
+    void whitelistSaplObjectsInXStream(Optional<XStream> xStream) {
+        xStream.ifPresent(xStr -> log.trace("Allow 'io.sapl.**' classes in XStream "));
+        xStream.ifPresent(xStr -> xStr.allowTypesByWildcard(new String[] { "io.sapl.**" }));
+    }
 
-	/**
-	 * 
-	 * The @see io.sapl.axon.authentication.AuthenticationMetadataProvider is
-	 * responsible for identifying the user triggering a Command or Query and to
-	 * provide matching metadata to be added by dispatch interceptors.
-	 * 
-	 * @param mapper The applications ObjectMapper.
-	 * @return An AuthenticationMetadataProvider.
-	 */
-	@Bean
-	AuthenticationSupplier authenticationMetadataProvider(ObjectMapper mapper) {
-		log.trace("Deploy Spring ServletAuthenticationSupplier");
-		return new ServletAuthenticationSupplier(mapper);
-	}
+    /**
+     *
+     * The @see io.sapl.axon.authentication.AuthenticationMetadataProvider is
+     * responsible for identifying the user triggering a Command or Query and to
+     * provide matching metadata to be added by dispatch interceptors.
+     *
+     * @param mapper The applications ObjectMapper.
+     * @return An AuthenticationMetadataProvider.
+     */
+    @Bean
+    AuthenticationSupplier authenticationMetadataProvider(ObjectMapper mapper) {
+        log.trace("Deploy Spring ServletAuthenticationSupplier");
+        return new ServletAuthenticationSupplier(mapper);
+    }
 
-	/**
-	 * 
-	 * The @see io.sapl.axon.authentication.AuthenticationMetadataProvider is
-	 * responsible for identifying the user triggering a Command or Query and to
-	 * provide matching metadata to be added by dispatch interceptors.
-	 * 
-	 * @param mapper The applications ObjectMapper.
-	 * @return An AuthenticationMetadataProvider.
-	 */
-	@Bean
-	@ConditionalOnClass(ReactorMessageDispatchInterceptor.class)
-	ReactiveAuthenticationSupplier reactiveAuthenticationMetadataProvider(ObjectMapper mapper) {
-		log.trace("Deploy Spring ReactiveAuthenticationSupplier");
-		return new ReactorAuthenticationSupplier(mapper);
-	}
+    /**
+     *
+     * The @see io.sapl.axon.authentication.AuthenticationMetadataProvider is
+     * responsible for identifying the user triggering a Command or Query and to
+     * provide matching metadata to be added by dispatch interceptors.
+     *
+     * @param mapper The applications ObjectMapper.
+     * @return An AuthenticationMetadataProvider.
+     */
+    @Bean
+    @ConditionalOnClass(ReactorMessageDispatchInterceptor.class)
+    ReactiveAuthenticationSupplier reactiveAuthenticationMetadataProvider(ObjectMapper mapper) {
+        log.trace("Deploy Spring ReactiveAuthenticationSupplier");
+        return new ReactorAuthenticationSupplier(mapper);
+    }
 
-	/**
-	 * The default AutoConfiguration of the reactor extension does not automatically
-	 * inject interceptors.
-	 * 
-	 * @param commandBus  the CommandBus
-	 * @param authnSupplier the authn interceptor
-	 * @return ReactorCommandGateway with Authn interceptor
-	 */
-	@Bean
-	@ConditionalOnClass(ReactorMessageDispatchInterceptor.class)
-	ReactorCommandGateway reactiveCommandGateway(CommandBus commandBus, ReactiveAuthenticationSupplier authnSupplier) {
-		return DefaultReactorCommandGateway.builder().commandBus(commandBus)
-				.dispatchInterceptors(new ReactiveAuthenticationCommandDispatchInterceptor(authnSupplier)).build();
-	}
+    /**
+     * The default AutoConfiguration of the reactor extension does not automatically
+     * inject interceptors.
+     *
+     * @param commandBus    the CommandBus
+     * @param authnSupplier the authn interceptor
+     * @return ReactorCommandGateway with Authn interceptor
+     */
+    @Bean
+    @ConditionalOnClass(ReactorMessageDispatchInterceptor.class)
+    ReactorCommandGateway reactiveCommandGateway(CommandBus commandBus, ReactiveAuthenticationSupplier authnSupplier) {
+        return DefaultReactorCommandGateway.builder().commandBus(commandBus)
+                .dispatchInterceptors(new ReactiveAuthenticationCommandDispatchInterceptor(authnSupplier)).build();
+    }
 
-	/**
-	 * The default AutoConfiguration of the reactor extension does not automatically
-	 * inject interceptors.
-	 * 
-	 * @param queryBus    the QueryBus
-	 * @param authnSupplier the authn interceptor
-	 * @return ReactorQueryGateway with Authn interceptor
-	 */
-	@Bean
-	@ConditionalOnClass(ReactorMessageDispatchInterceptor.class)
-	ReactorQueryGateway reactiveQueryGateway(QueryBus queryBus, ReactiveAuthenticationSupplier authnSupplier) {
-		return DefaultReactorQueryGateway.builder().queryBus(queryBus)
-				.dispatchInterceptors(new ReactiveAuthenticationQueryDispatchInterceptor(authnSupplier)).build();
-	}
+    /**
+     * The default AutoConfiguration of the reactor extension does not automatically
+     * inject interceptors.
+     *
+     * @param queryBus      the QueryBus
+     * @param authnSupplier the authn interceptor
+     * @return ReactorQueryGateway with Authn interceptor
+     */
+    @Bean
+    @ConditionalOnClass(ReactorMessageDispatchInterceptor.class)
+    ReactorQueryGateway reactiveQueryGateway(QueryBus queryBus, ReactiveAuthenticationSupplier authnSupplier) {
+        return DefaultReactorQueryGateway.builder().queryBus(queryBus)
+                .dispatchInterceptors(new ReactiveAuthenticationQueryDispatchInterceptor(authnSupplier)).build();
+    }
 
-	/**
-	 * 
-	 * MessageDispatchInterceptor for authenticating command messages.
-	 * 
-	 * @param authnSupplier The applications AuthenticationSupplier.
-	 * @param commandBus    The Axon Command Bus.
-	 * @return A MessageDispatchInterceptor for adding authentication metadata to
-	 *         commands.
-	 */
-	@Bean
-	AuthenticationCommandDispatchInterceptor authenticationCommandDispatchInterceptor(
-			AuthenticationSupplier authnSupplier, CommandBus commandBus) {
-		log.trace("Deploy AuthenticationCommandDispatchInterceptor");
-		var interceptor = new AuthenticationCommandDispatchInterceptor(authnSupplier);
-		commandBus.registerDispatchInterceptor(interceptor);
-		return interceptor;
-	}
+    /**
+     *
+     * MessageDispatchInterceptor for authenticating command messages.
+     *
+     * @param authnSupplier The applications AuthenticationSupplier.
+     * @param commandBus    The Axon Command Bus.
+     * @return A MessageDispatchInterceptor for adding authentication metadata to
+     *         commands.
+     */
+    @Bean
+    AuthenticationCommandDispatchInterceptor authenticationCommandDispatchInterceptor(
+            AuthenticationSupplier authnSupplier, CommandBus commandBus) {
+        log.trace("Deploy AuthenticationCommandDispatchInterceptor");
+        var interceptor = new AuthenticationCommandDispatchInterceptor(authnSupplier);
+        commandBus.registerDispatchInterceptor(interceptor);
+        return interceptor;
+    }
 
-	/**
-	 * 
-	 * MessageDispatchInterceptor for authenticating query messages.
-	 * 
-	 * @param authnSupplier The applications AuthenticationSupplier.
-	 * @param queryBus      The Axon Query Bus.
-	 * @return A MessageDispatchInterceptor for adding authentication metadata to
-	 *         queries.
-	 */
-	@Bean
-	AuthenticationQueryDispatchInterceptor authenticationQueryDispatchInterceptor(AuthenticationSupplier authnSupplier,
-			QueryBus queryBus) {
-		log.trace("Deploy AuthenticationQueryDispatchInterceptor");
-		var interceptor = new AuthenticationQueryDispatchInterceptor(authnSupplier);
-		queryBus.registerDispatchInterceptor(interceptor);
-		return interceptor;
-	}
+    /**
+     *
+     * MessageDispatchInterceptor for authenticating query messages.
+     *
+     * @param authnSupplier The applications AuthenticationSupplier.
+     * @param queryBus      The Axon Query Bus.
+     * @return A MessageDispatchInterceptor for adding authentication metadata to
+     *         queries.
+     */
+    @Bean
+    AuthenticationQueryDispatchInterceptor authenticationQueryDispatchInterceptor(AuthenticationSupplier authnSupplier,
+            QueryBus queryBus) {
+        log.trace("Deploy AuthenticationQueryDispatchInterceptor");
+        var interceptor = new AuthenticationQueryDispatchInterceptor(authnSupplier);
+        queryBus.registerDispatchInterceptor(interceptor);
+        return interceptor;
+    }
 
-	/**
-	 * The ConstraintHandlerService provides functionality to check the application
-	 * for capabilities to enforce constraints (obligations/advice) specified by the
-	 * PDP and to create customized bundles of handlers for individual authorization
-	 * decisions.
-	 * 
-	 * @param mapper                               The applications ObjectMapper.
-	 * @param parameterResolver                    The Axon ParameterResolverFactory
-	 *                                             for injecting arguments in
-	 *                                             command handler methods..
-	 * @param globalRunnableProviders              All
-	 *                                             OnDecisionConstraintHandlerProvider
-	 *                                             implementation in the
-	 *                                             ApplicationContext.
-	 * @param globalCommandMessageMappingProviders All
-	 *                                             CommandConstraintHandlerProvider
-	 *                                             implementation in the
-	 *                                             ApplicationContext.
-	 * @param globalQueryMappingProviders          All
-	 *                                             QueryConstraintHandlerProvider
-	 *                                             implementation in the
-	 *                                             ApplicationContext.
-	 * @param globalErrorMappingHandlerProviders   All
-	 *                                             ErrorMappingConstraintHandlerProvider
-	 *                                             implementation in the
-	 *                                             ApplicationContext.
-	 * @param globalMappingProviders               All
-	 *                                             MappingConstraintHandlerProvider
-	 *                                             implementation in the
-	 *                                             ApplicationContext.
-	 * @param filterPredicateProviders             All
-	 *                                             UpdateFilterConstraintHandlerProvider
-	 *                                             implementation in the
-	 *                                             ApplicationContext.
-	 * @param resultMappingProviders              All
-	 *                                             ResultConstraintHandlerProvider
-	 *                                             implementation in the
-	 *                                             ApplicationContext.
-	 * @return The ConstraintHandlerService.
-	 */
-	@Bean
-	ConstraintHandlerService axonConstraintHandlerService(ObjectMapper mapper,
-			ParameterResolverFactory parameterResolver,
-			List<OnDecisionConstraintHandlerProvider> globalRunnableProviders,
-			List<CommandConstraintHandlerProvider> globalCommandMessageMappingProviders,
-			List<QueryConstraintHandlerProvider> globalQueryMappingProviders,
-			List<ErrorMappingConstraintHandlerProvider> globalErrorMappingHandlerProviders,
-			List<MappingConstraintHandlerProvider<?>> globalMappingProviders,
-			List<UpdateFilterConstraintHandlerProvider> filterPredicateProviders,
-			List<ResultConstraintHandlerProvider> resultMappingProviders) {
-		log.trace("Deploy ConstraintHandlerService");
-		return new ConstraintHandlerService(mapper, parameterResolver, globalRunnableProviders,
-				globalCommandMessageMappingProviders, globalQueryMappingProviders, globalErrorMappingHandlerProviders,
-				globalMappingProviders, filterPredicateProviders, resultMappingProviders);
-	}
+    /**
+     * The ConstraintHandlerService provides functionality to check the application
+     * for capabilities to enforce constraints (obligations/advice) specified by the
+     * PDP and to create customized bundles of handlers for individual authorization
+     * decisions.
+     *
+     * @param mapper                               The applications ObjectMapper.
+     * @param parameterResolver                    The Axon ParameterResolverFactory
+     *                                             for injecting arguments in
+     *                                             command handler methods..
+     * @param globalRunnableProviders              All
+     *                                             OnDecisionConstraintHandlerProvider
+     *                                             implementation in the
+     *                                             ApplicationContext.
+     * @param globalCommandMessageMappingProviders All
+     *                                             CommandConstraintHandlerProvider
+     *                                             implementation in the
+     *                                             ApplicationContext.
+     * @param globalQueryMappingProviders          All
+     *                                             QueryConstraintHandlerProvider
+     *                                             implementation in the
+     *                                             ApplicationContext.
+     * @param globalErrorMappingHandlerProviders   All
+     *                                             ErrorMappingConstraintHandlerProvider
+     *                                             implementation in the
+     *                                             ApplicationContext.
+     * @param globalMappingProviders               All
+     *                                             MappingConstraintHandlerProvider
+     *                                             implementation in the
+     *                                             ApplicationContext.
+     * @param filterPredicateProviders             All
+     *                                             UpdateFilterConstraintHandlerProvider
+     *                                             implementation in the
+     *                                             ApplicationContext.
+     * @param resultMappingProviders               All
+     *                                             ResultConstraintHandlerProvider
+     *                                             implementation in the
+     *                                             ApplicationContext.
+     * @return The ConstraintHandlerService.
+     */
+    @Bean
+    ConstraintHandlerService axonConstraintHandlerService(ObjectMapper mapper,
+            ParameterResolverFactory parameterResolver,
+            List<OnDecisionConstraintHandlerProvider> globalRunnableProviders,
+            List<CommandConstraintHandlerProvider> globalCommandMessageMappingProviders,
+            List<QueryConstraintHandlerProvider> globalQueryMappingProviders,
+            List<ErrorMappingConstraintHandlerProvider> globalErrorMappingHandlerProviders,
+            List<MappingConstraintHandlerProvider<?>> globalMappingProviders,
+            List<UpdateFilterConstraintHandlerProvider> filterPredicateProviders,
+            List<ResultConstraintHandlerProvider> resultMappingProviders) {
+        log.trace("Deploy ConstraintHandlerService");
+        return new ConstraintHandlerService(mapper, parameterResolver, globalRunnableProviders,
+                globalCommandMessageMappingProviders, globalQueryMappingProviders, globalErrorMappingHandlerProviders,
+                globalMappingProviders, filterPredicateProviders, resultMappingProviders);
+    }
 
-	/**
-	 * A specialized QueryGateway offering explicit methods for recoverable
-	 * subscription queries. I.e., subscription queries which can recover from an
-	 * AccessDeniedException and continue to consume updates one access is granted
-	 * again.
-	 * 
-	 * @param queryBus             The Axon QueryBus
-	 * @param dispatchInterceptors All
-	 *                             {@code MessageDispatchInterceptor<QueryMessage>}
-	 *                             in the application context.
-	 * @return A query gateway supporting recoverable subscription queries.
-	 */
-	@Bean
-	SaplQueryGateway queryGateway(QueryBus queryBus,
-			List<MessageDispatchInterceptor<? super QueryMessage<?, ?>>> dispatchInterceptors) {
-		log.trace("Deploy SaplQueryGateway");
-		return new SaplQueryGateway(queryBus, dispatchInterceptors);
-	}
+    /**
+     * A specialized QueryGateway offering explicit methods for recoverable
+     * subscription queries. I.e., subscription queries which can recover from an
+     * AccessDeniedException and continue to consume updates one access is granted
+     * again.
+     *
+     * @param queryBus             The Axon QueryBus
+     * @param dispatchInterceptors All
+     *                             {@code MessageDispatchInterceptor<QueryMessage>}
+     *                             in the application context.
+     * @return A query gateway supporting recoverable subscription queries.
+     */
+    @Bean
+    SaplQueryGateway queryGateway(QueryBus queryBus,
+            List<MessageDispatchInterceptor<? super QueryMessage<?, ?>>> dispatchInterceptors) {
+        log.trace("Deploy SaplQueryGateway");
+        return new SaplQueryGateway(queryBus, dispatchInterceptors);
+    }
 
-	@Bean
-	@Primary
-	QueryUpdateEmitter updateEmitter(ConstraintHandlerService axonConstraintEnforcementService) {
-		log.trace("Deploy SaplQueryUpdateEmitter");
-		return new SaplQueryUpdateEmitter(Optional.empty(), axonConstraintEnforcementService);
-	}
+    @Bean
+    @Primary
+    QueryUpdateEmitter updateEmitter(ConstraintHandlerService axonConstraintEnforcementService) {
+        log.trace("Deploy SaplQueryUpdateEmitter");
+        return new SaplQueryUpdateEmitter(Optional.empty(), axonConstraintEnforcementService);
+    }
 
-	@Bean
-	SaplHandlerEnhancer saplEnhancer(PolicyDecisionPoint pdp, ConstraintHandlerService axonConstraintEnforcementService,
-			SaplQueryUpdateEmitter emitter, AuthorizationSubscriptionBuilderService subscriptionBuilder,
-			ObjectMapper mapper, SaplAxonProperties properties) {
-		log.trace("Deploy SaplHandlerEnhancer");
-		return new SaplHandlerEnhancer(pdp, axonConstraintEnforcementService, emitter, subscriptionBuilder, properties);
-	}
+    @Bean
+    SaplHandlerEnhancer saplEnhancer(PolicyDecisionPoint pdp, ConstraintHandlerService axonConstraintEnforcementService,
+            SaplQueryUpdateEmitter emitter, AuthorizationSubscriptionBuilderService subscriptionBuilder,
+            ObjectMapper mapper, SaplAxonProperties properties) {
+        log.trace("Deploy SaplHandlerEnhancer");
+        return new SaplHandlerEnhancer(pdp, axonConstraintEnforcementService, emitter, subscriptionBuilder, properties);
+    }
 
-	@Bean
-	@ConditionalOnMissingBean
-	AuthorizationSubscriptionBuilderService subscriptionBuilder(ObjectMapper mapper) {
-		log.trace("Deploy AuthorizationSubscriptionBuilderService");
-		return new AuthorizationSubscriptionBuilderService(mapper);
-	}
+    @Bean
+    @ConditionalOnMissingBean
+    AuthorizationSubscriptionBuilderService subscriptionBuilder(ObjectMapper mapper) {
+        log.trace("Deploy AuthorizationSubscriptionBuilderService");
+        return new AuthorizationSubscriptionBuilderService(mapper);
+    }
 
-	/**
-	 * @param mapper The application's ObjectMapper.
-	 * @return ResponseMessagePayloadFilterProvider for filtering obligations.
-	 */
-	@Bean
-	ResponseMessagePayloadFilterProvider responsePayloadFilterProvider(ObjectMapper mapper) {
-		return new ResponseMessagePayloadFilterProvider(mapper);
-	}
+    /**
+     * @param mapper The application's ObjectMapper.
+     * @return ResponseMessagePayloadFilterProvider for filtering obligations.
+     */
+    @Bean
+    ResponseMessagePayloadFilterProvider responsePayloadFilterProvider(ObjectMapper mapper) {
+        return new ResponseMessagePayloadFilterProvider(mapper);
+    }
 
-	/**
-	 * @param mapper The application's ObjectMapper.
-	 * @return ResponseMessagePayloadFilterProvider for filtering obligations.
-	 */
-	@Bean
-	ResponseMessagePayloadFilterPredicateProvider responseMessagePayloadFilterPredicateProvider(ObjectMapper mapper) {
-		return new ResponseMessagePayloadFilterPredicateProvider(mapper);
-	}
+    /**
+     * @param mapper The application's ObjectMapper.
+     * @return ResponseMessagePayloadFilterProvider for filtering obligations.
+     */
+    @Bean
+    ResponseMessagePayloadFilterPredicateProvider responseMessagePayloadFilterPredicateProvider(ObjectMapper mapper) {
+        return new ResponseMessagePayloadFilterPredicateProvider(mapper);
+    }
 
 }

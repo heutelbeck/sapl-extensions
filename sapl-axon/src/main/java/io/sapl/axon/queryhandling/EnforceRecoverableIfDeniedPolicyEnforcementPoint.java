@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,198 +53,199 @@ import reactor.core.publisher.Flux;
  * updated accordingly.
  * <p>
  * The PEP does not permit onErrorContinue() downstream.
- * 
+ *
  * @author Dominic Heutelbeck
  * @since 2.1.0
  *
  * @param <U> type of the update message payload contents
  */
 public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
-		extends Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<U>>> {
+        extends Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<U>>> {
 
-	private final SubscriptionQueryMessage<?, ?, ?> query;
-	private final Flux<AuthorizationDecision>       decisions;
-	private Flux<SubscriptionQueryUpdateMessage<U>> resourceAccessPoint;
-	private final ConstraintHandlerService          constraintHandlerService;
-	private final ResponseType<?>                   resultResponseType;
-	private final ResponseType<U>                   updateResponseType;
+    private final SubscriptionQueryMessage<?, ?, ?> query;
+    private final Flux<AuthorizationDecision>       decisions;
+    private Flux<SubscriptionQueryUpdateMessage<U>> resourceAccessPoint;
+    private final ConstraintHandlerService          constraintHandlerService;
+    private final ResponseType<?>                   resultResponseType;
+    private final ResponseType<U>                   updateResponseType;
 
-	private EnforcementSink<SubscriptionQueryUpdateMessage<RecoverableResponse<U>>> sink;
+    private EnforcementSink<SubscriptionQueryUpdateMessage<RecoverableResponse<U>>> sink;
 
-	final AtomicReference<Disposable>                      decisionsSubscription = new AtomicReference<>();
-	final AtomicReference<Disposable>                      dataSubscription      = new AtomicReference<>();
-	final AtomicReference<AuthorizationDecision>           latestDecision        = new AtomicReference<>();
-	final AtomicReference<QueryConstraintHandlerBundle<?>> constraintHandler     = new AtomicReference<>();
-	final AtomicBoolean                                    stopped               = new AtomicBoolean(false);
+    final AtomicReference<Disposable>                      decisionsSubscription = new AtomicReference<>();
+    final AtomicReference<Disposable>                      dataSubscription      = new AtomicReference<>();
+    final AtomicReference<AuthorizationDecision>           latestDecision        = new AtomicReference<>();
+    final AtomicReference<QueryConstraintHandlerBundle<?>> constraintHandler     = new AtomicReference<>();
+    final AtomicBoolean                                    stopped               = new AtomicBoolean(false);
 
-	private EnforceRecoverableIfDeniedPolicyEnforcementPoint(SubscriptionQueryMessage<?, ?, ?> query,
-			Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<U>> resourceAccessPoint,
-			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
-			ResponseType<U> updateResponseType) {
-		this.query                    = query;
-		this.decisions                = decisions;
-		this.resourceAccessPoint      = resourceAccessPoint;
-		this.constraintHandlerService = constraintHandlerService;
-		this.updateResponseType       = updateResponseType;
-		this.resultResponseType       = resultResponseType;
-	}
+    private EnforceRecoverableIfDeniedPolicyEnforcementPoint(SubscriptionQueryMessage<?, ?, ?> query,
+            Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<U>> resourceAccessPoint,
+            ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
+            ResponseType<U> updateResponseType) {
+        this.query                    = query;
+        this.decisions                = decisions;
+        this.resourceAccessPoint      = resourceAccessPoint;
+        this.constraintHandlerService = constraintHandlerService;
+        this.updateResponseType       = updateResponseType;
+        this.resultResponseType       = resultResponseType;
+    }
 
-	/**
-	 * Wraps the source Flux.
-	 * 
-	 * @param <V>                        Update payload type.
-	 * @param query                      The Query
-	 * @param decisions                  The PDP decision stream.
-	 * @param resourceAccessPoint        The incoming messages.
-	 * @param constraintHandlerService   The ConstraintHandlerService.
-	 * @param resultResponseType         The initial response type.
-	 * @param originalUpdateResponseType The result response type.
-	 * @return A wrapped Flux of SubscriptionQueryUpdateMessage.
-	 */
-	public static <V> Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<V>>> of(
-			SubscriptionQueryMessage<?, ?, ?> query, Flux<AuthorizationDecision> decisions,
-			Flux<SubscriptionQueryUpdateMessage<V>> resourceAccessPoint,
-			ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
-			ResponseType<V> originalUpdateResponseType) {
-		var pep = new EnforceRecoverableIfDeniedPolicyEnforcementPoint<>(query, decisions, resourceAccessPoint,
-				constraintHandlerService, resultResponseType, originalUpdateResponseType);
-		return pep.doOnCancel(pep::handleCancel).onErrorStop();
-	}
+    /**
+     * Wraps the source Flux.
+     *
+     * @param <V>                        Update payload type.
+     * @param query                      The Query
+     * @param decisions                  The PDP decision stream.
+     * @param resourceAccessPoint        The incoming messages.
+     * @param constraintHandlerService   The ConstraintHandlerService.
+     * @param resultResponseType         The initial response type.
+     * @param originalUpdateResponseType The result response type.
+     * @return A wrapped Flux of SubscriptionQueryUpdateMessage.
+     */
+    public static <V> Flux<SubscriptionQueryUpdateMessage<RecoverableResponse<V>>> of(
+            SubscriptionQueryMessage<?, ?, ?> query, Flux<AuthorizationDecision> decisions,
+            Flux<SubscriptionQueryUpdateMessage<V>> resourceAccessPoint,
+            ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
+            ResponseType<V> originalUpdateResponseType) {
+        var pep = new EnforceRecoverableIfDeniedPolicyEnforcementPoint<>(query, decisions, resourceAccessPoint,
+                constraintHandlerService, resultResponseType, originalUpdateResponseType);
+        return pep.doOnCancel(pep::handleCancel).onErrorStop();
+    }
 
-	@Override
-	public void subscribe(@NonNull CoreSubscriber<? super SubscriptionQueryUpdateMessage<RecoverableResponse<U>>> actual) {
-		if (sink != null)
-			throw new IllegalStateException("Operator may only be subscribed once.");
-		var context = actual.currentContext();
-		sink                = new EnforcementSink<>();
-		resourceAccessPoint = resourceAccessPoint.contextWrite(context);
-		Flux.create(sink).subscribe(actual);
-		decisionsSubscription.set(decisions.doOnNext(this::handleNextDecision).contextWrite(context).subscribe());
-	}
+    @Override
+    public void subscribe(
+            @NonNull CoreSubscriber<? super SubscriptionQueryUpdateMessage<RecoverableResponse<U>>> actual) {
+        if (sink != null)
+            throw new IllegalStateException("Operator may only be subscribed once.");
+        var context = actual.currentContext();
+        sink                = new EnforcementSink<>();
+        resourceAccessPoint = resourceAccessPoint.contextWrite(context);
+        Flux.create(sink).subscribe(actual);
+        decisionsSubscription.set(decisions.doOnNext(this::handleNextDecision).contextWrite(context).subscribe());
+    }
 
-	private SubscriptionQueryUpdateMessage<RecoverableResponse<U>> newAccessDeniedUpdate() {
-		return new GenericSubscriptionQueryUpdateMessage<>(RecoverableResponse.accessDenied(updateResponseType));
-	}
+    private SubscriptionQueryUpdateMessage<RecoverableResponse<U>> newAccessDeniedUpdate() {
+        return new GenericSubscriptionQueryUpdateMessage<>(RecoverableResponse.accessDenied(updateResponseType));
+    }
 
-	private SubscriptionQueryUpdateMessage<RecoverableResponse<U>> wrapPayloadInRecoverableResponse(
-			ResultMessage<U> msg) {
-		return GenericSubscriptionQueryUpdateMessage.asUpdateMessage(new GenericResultMessage<>(
-				new RecoverableResponse<>(updateResponseType, msg.getPayload()), msg.getMetaData()));
-	}
+    private SubscriptionQueryUpdateMessage<RecoverableResponse<U>> wrapPayloadInRecoverableResponse(
+            ResultMessage<U> msg) {
+        return GenericSubscriptionQueryUpdateMessage.asUpdateMessage(new GenericResultMessage<>(
+                new RecoverableResponse<>(updateResponseType, msg.getPayload()), msg.getMetaData()));
+    }
 
-	@SuppressWarnings("unchecked")
-	private void handleNextDecision(AuthorizationDecision decision) {
+    @SuppressWarnings("unchecked")
+    private void handleNextDecision(AuthorizationDecision decision) {
 
-		var implicitDecision = decision;
-		var newBundle        = QueryConstraintHandlerBundle.NOOP_BUNDLE;
+        var implicitDecision = decision;
+        var newBundle        = QueryConstraintHandlerBundle.NOOP_BUNDLE;
 
-		try {
-			newBundle = constraintHandlerService.buildQueryPreHandlerBundle(decision, resultResponseType,
-					Optional.of(updateResponseType));
-		} catch (AccessDeniedException e) {
-			sink.next(newAccessDeniedUpdate());
-			// INDETERMINATE -> as long as we cannot handle the obligations of the current
-			// decision, drop data
-			implicitDecision = AuthorizationDecision.INDETERMINATE;
-		}
+        try {
+            newBundle = constraintHandlerService.buildQueryPreHandlerBundle(decision, resultResponseType,
+                    Optional.of(updateResponseType));
+        } catch (AccessDeniedException e) {
+            sink.next(newAccessDeniedUpdate());
+            // INDETERMINATE -> as long as we cannot handle the obligations of the current
+            // decision, drop data
+            implicitDecision = AuthorizationDecision.INDETERMINATE;
+        }
 
-		constraintHandler.set(newBundle);
+        constraintHandler.set(newBundle);
 
-		if (implicitDecision.getDecision() != Decision.PERMIT)
-			sink.next(newAccessDeniedUpdate());
+        if (implicitDecision.getDecision() != Decision.PERMIT)
+            sink.next(newAccessDeniedUpdate());
 
-		try {
-			newBundle.executeOnDecisionHandlers(decision, query);
-		} catch (AccessDeniedException e) {
-			sink.next(newAccessDeniedUpdate());
-			implicitDecision = AuthorizationDecision.INDETERMINATE;
-		}
+        try {
+            newBundle.executeOnDecisionHandlers(decision, query);
+        } catch (AccessDeniedException e) {
+            sink.next(newAccessDeniedUpdate());
+            implicitDecision = AuthorizationDecision.INDETERMINATE;
+        }
 
-		latestDecision.set(implicitDecision);
+        latestDecision.set(implicitDecision);
 
-		if (implicitDecision.getResource().isPresent()) {
-			try {
-				U newResponse = (U) constraintHandlerService.deserializeResource(implicitDecision.getResource().get(),
-						updateResponseType);
-				sink.next(new GenericSubscriptionQueryUpdateMessage<>(
-						new RecoverableResponse<>(updateResponseType, newResponse)));
-				disposeDecisionsAndResourceAccessPoint();
-			} catch (AccessDeniedException e) {
-				sink.next(newAccessDeniedUpdate());
-				implicitDecision = AuthorizationDecision.INDETERMINATE;
-			}
-		}
+        if (implicitDecision.getResource().isPresent()) {
+            try {
+                U newResponse = (U) constraintHandlerService.deserializeResource(implicitDecision.getResource().get(),
+                        updateResponseType);
+                sink.next(new GenericSubscriptionQueryUpdateMessage<>(
+                        new RecoverableResponse<>(updateResponseType, newResponse)));
+                disposeDecisionsAndResourceAccessPoint();
+            } catch (AccessDeniedException e) {
+                sink.next(newAccessDeniedUpdate());
+                implicitDecision = AuthorizationDecision.INDETERMINATE;
+            }
+        }
 
-		if (implicitDecision.getDecision() == Decision.PERMIT && dataSubscription.get() == null)
-			dataSubscription.set(wrapResourceAccessPointAndSubscribe());
-	}
+        if (implicitDecision.getDecision() == Decision.PERMIT && dataSubscription.get() == null)
+            dataSubscription.set(wrapResourceAccessPointAndSubscribe());
+    }
 
-	private Disposable wrapResourceAccessPointAndSubscribe() {
-		return resourceAccessPoint.doOnError(this::handleError).doOnNext(this::handleNext)
-				.doOnComplete(this::handleComplete).subscribe();
-	}
+    private Disposable wrapResourceAccessPointAndSubscribe() {
+        return resourceAccessPoint.doOnError(this::handleError).doOnNext(this::handleNext)
+                .doOnComplete(this::handleComplete).subscribe();
+    }
 
-	@SuppressWarnings("unchecked")
-	private void handleNext(SubscriptionQueryUpdateMessage<U> value) {
-		// the following guard clause makes sure that the constraint handlers do not get
-		// called after downstream consumers cancelled. If the RAP is not consisting of
-		// delayed elements, but something like Flux.just(1,2,3) the handler would be
-		// called for 2 and 3, even if there was a take(1) applied downstream.
-		if (stopped.get())
-			return;
+    @SuppressWarnings("unchecked")
+    private void handleNext(SubscriptionQueryUpdateMessage<U> value) {
+        // the following guard clause makes sure that the constraint handlers do not get
+        // called after downstream consumers cancelled. If the RAP is not consisting of
+        // delayed elements, but something like Flux.just(1,2,3) the handler would be
+        // called for 2 and 3, even if there was a take(1) applied downstream.
+        if (stopped.get())
+            return;
 
-		var decision = latestDecision.get();
+        var decision = latestDecision.get();
 
-		if (decision.getDecision() != Decision.PERMIT)
-			return;
+        if (decision.getDecision() != Decision.PERMIT)
+            return;
 
-		// drop elements while the last decision replaced data with resource
-		if (decision.getResource().isPresent())
-			return;
+        // drop elements while the last decision replaced data with resource
+        if (decision.getResource().isPresent())
+            return;
 
-		try {
-			var bundle = constraintHandler.get();
-			bundle.executeOnNextHandlers(value)
-					.ifPresent(val -> sink.next(wrapPayloadInRecoverableResponse((ResultMessage<U>) val)));
-		} catch (Throwable t) {
-			// Signal error but drop only the element with the failed obligation
-			// doing handleNextDecision(AuthorizationDecision.DENY); would drop all
-			// subsequent messages, even if the constraint handler would succeed on then.
-			// Do not signal original error, as this may leak information in message.
-			sink.error(new AccessDeniedException("Failed to handle onNext obligation."));
-		}
-	}
+        try {
+            var bundle = constraintHandler.get();
+            bundle.executeOnNextHandlers(value)
+                    .ifPresent(val -> sink.next(wrapPayloadInRecoverableResponse((ResultMessage<U>) val)));
+        } catch (Throwable t) {
+            // Signal error but drop only the element with the failed obligation
+            // doing handleNextDecision(AuthorizationDecision.DENY); would drop all
+            // subsequent messages, even if the constraint handler would succeed on then.
+            // Do not signal original error, as this may leak information in message.
+            sink.error(new AccessDeniedException("Failed to handle onNext obligation."));
+        }
+    }
 
-	private void handleComplete() {
-		if (stopped.get())
-			return;
-		sink.complete();
-		disposeDecisionsAndResourceAccessPoint();
-	}
+    private void handleComplete() {
+        if (stopped.get())
+            return;
+        sink.complete();
+        disposeDecisionsAndResourceAccessPoint();
+    }
 
-	private void handleCancel() {
+    private void handleCancel() {
 
-		disposeDecisionsAndResourceAccessPoint();
-	}
+        disposeDecisionsAndResourceAccessPoint();
+    }
 
-	private void handleError(Throwable error) {
-		try {
-			sink.error(constraintHandler.get().executeOnErrorHandlers(error));
-		} catch (Throwable t) {
-			sink.error(t);
-			handleNextDecision(AuthorizationDecision.INDETERMINATE);
-			disposeDecisionsAndResourceAccessPoint();
-		}
-	}
+    private void handleError(Throwable error) {
+        try {
+            sink.error(constraintHandler.get().executeOnErrorHandlers(error));
+        } catch (Throwable t) {
+            sink.error(t);
+            handleNextDecision(AuthorizationDecision.INDETERMINATE);
+            disposeDecisionsAndResourceAccessPoint();
+        }
+    }
 
-	private void disposeDecisionsAndResourceAccessPoint() {
-		stopped.set(true);
-		disposeActiveIfPresent(decisionsSubscription);
-		disposeActiveIfPresent(dataSubscription);
-	}
+    private void disposeDecisionsAndResourceAccessPoint() {
+        stopped.set(true);
+        disposeActiveIfPresent(decisionsSubscription);
+        disposeActiveIfPresent(dataSubscription);
+    }
 
-	private void disposeActiveIfPresent(AtomicReference<Disposable> atomicDisposable) {
-		Optional.ofNullable(atomicDisposable.get()).filter(not(Disposable::isDisposed)).ifPresent(Disposable::dispose);
-	}
+    private void disposeActiveIfPresent(AtomicReference<Disposable> atomicDisposable) {
+        Optional.ofNullable(atomicDisposable.get()).filter(not(Disposable::isDisposed)).ifPresent(Disposable::dispose);
+    }
 
 }

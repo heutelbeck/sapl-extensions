@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,67 +46,67 @@ import reactor.core.publisher.Flux;
 @PolicyInformationPoint(name = HttpPolicyInformationPoint.NAME, description = HttpPolicyInformationPoint.DESCRIPTION)
 public class HttpPolicyInformationPoint {
 
-	static final String NAME = "http";
-	static final String DESCRIPTION = "Policy Information Point and attributes for consuming HTTP services";
-	private static final String GET_DOCS = "Sends an HTTP GET request to the url provided in the value parameter and returns a flux of responses.";
-	private static final String POST_DOCS = "Sends an HTTP POST request to the url provided in the value parameter and returns a flux of responses.";
-	private static final String PUT_DOCS = "Sends an HTTP PUT request to the url provided in the value parameter and returns a flux of responses.";
-	private static final String PATCH_DOCS = "Sends an HTTP PATCH request to the url provided in the value parameter and returns a flux of responses.";
-	private static final String DELETE_DOCS = "Sends an HTTP DELETE request to the url provided in the value parameter and returns a flux of responses.";
+    static final String         NAME        = "http";
+    static final String         DESCRIPTION = "Policy Information Point and attributes for consuming HTTP services";
+    private static final String GET_DOCS    = "Sends an HTTP GET request to the url provided in the value parameter and returns a flux of responses.";
+    private static final String POST_DOCS   = "Sends an HTTP POST request to the url provided in the value parameter and returns a flux of responses.";
+    private static final String PUT_DOCS    = "Sends an HTTP PUT request to the url provided in the value parameter and returns a flux of responses.";
+    private static final String PATCH_DOCS  = "Sends an HTTP PATCH request to the url provided in the value parameter and returns a flux of responses.";
+    private static final String DELETE_DOCS = "Sends an HTTP DELETE request to the url provided in the value parameter and returns a flux of responses.";
 
-	private final WebClientRequestExecutor requestExecutor;
+    private final WebClientRequestExecutor requestExecutor;
 
-	public HttpPolicyInformationPoint(WebClientRequestExecutor requestExecutor) {
-		this.requestExecutor = requestExecutor;
-	}
+    public HttpPolicyInformationPoint(WebClientRequestExecutor requestExecutor) {
+        this.requestExecutor = requestExecutor;
+    }
 
-	@Attribute(docs = GET_DOCS)
-	public Flux<Val> get(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
-		return executeReactiveRequest(leftHandValue, GET);
-	}
+    @Attribute(docs = GET_DOCS)
+    public Flux<Val> get(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
+        return executeReactiveRequest(leftHandValue, GET);
+    }
 
-	@Attribute(docs = POST_DOCS)
-	public Flux<Val> post(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
-		return executeReactiveRequest(leftHandValue, POST);
-	}
+    @Attribute(docs = POST_DOCS)
+    public Flux<Val> post(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
+        return executeReactiveRequest(leftHandValue, POST);
+    }
 
-	@Attribute(docs = PUT_DOCS)
-	public Flux<Val> put(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
-		return executeReactiveRequest(leftHandValue, PUT);
-	}
+    @Attribute(docs = PUT_DOCS)
+    public Flux<Val> put(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
+        return executeReactiveRequest(leftHandValue, PUT);
+    }
 
-	@Attribute(docs = PATCH_DOCS)
-	public Flux<Val> patch(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
-		return executeReactiveRequest(leftHandValue, PATCH);
-	}
+    @Attribute(docs = PATCH_DOCS)
+    public Flux<Val> patch(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
+        return executeReactiveRequest(leftHandValue, PATCH);
+    }
 
-	@Attribute(docs = DELETE_DOCS)
-	public Flux<Val> delete(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
-		return executeReactiveRequest(leftHandValue, DELETE);
-	}
+    @Attribute(docs = DELETE_DOCS)
+    public Flux<Val> delete(@Text @JsonObject Val leftHandValue, Map<String, JsonNode> variables) {
+        return executeReactiveRequest(leftHandValue, DELETE);
+    }
 
-	private Flux<Val> executeReactiveRequest(Val value, HttpMethod httpMethod) {
-		try {
-			final RequestSpecification saplRequest = getRequestSpecification(value.get());
-			return getRequestExecutor().executeReactiveRequest(saplRequest, httpMethod)
-					.onErrorMap(IOException.class, PolicyEvaluationException::new).map(Val::of);
-		} catch (JsonProcessingException e) {
-			return Flux.error(e);
-		}
-	}
+    private Flux<Val> executeReactiveRequest(Val value, HttpMethod httpMethod) {
+        try {
+            final RequestSpecification saplRequest = getRequestSpecification(value.get());
+            return getRequestExecutor().executeReactiveRequest(saplRequest, httpMethod)
+                    .onErrorMap(IOException.class, PolicyEvaluationException::new).map(Val::of);
+        } catch (JsonProcessingException e) {
+            return Flux.error(e);
+        }
+    }
 
-	private RequestSpecification getRequestSpecification(JsonNode value) throws JsonProcessingException {
-		if (value.isTextual()) {
-			final RequestSpecification saplRequest = new RequestSpecification();
-			saplRequest.setUrl(value);
-			return saplRequest;
-		} else {
-			return RequestSpecification.from(value);
-		}
-	}
+    private RequestSpecification getRequestSpecification(JsonNode value) throws JsonProcessingException {
+        if (value.isTextual()) {
+            final RequestSpecification saplRequest = new RequestSpecification();
+            saplRequest.setUrl(value);
+            return saplRequest;
+        } else {
+            return RequestSpecification.from(value);
+        }
+    }
 
-	private WebClientRequestExecutor getRequestExecutor() {
-		return requestExecutor != null ? requestExecutor : new WebClientRequestExecutor();
-	}
+    private WebClientRequestExecutor getRequestExecutor() {
+        return requestExecutor != null ? requestExecutor : new WebClientRequestExecutor();
+    }
 
 }

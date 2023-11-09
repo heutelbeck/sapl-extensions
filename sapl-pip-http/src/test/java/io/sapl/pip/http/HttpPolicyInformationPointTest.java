@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,47 +48,47 @@ import reactor.core.publisher.Flux;
 @ExtendWith(MockitoExtension.class)
 public class HttpPolicyInformationPointTest {
 
-	private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
+    private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
-	private Val actualRequestSpec;
+    private Val actualRequestSpec;
 
-	private JsonNode result;
+    private JsonNode result;
 
-	private RequestSpecification expectedRequestSpec;
+    private RequestSpecification expectedRequestSpec;
 
-	private WebClientRequestExecutor requestExecutor;
+    private WebClientRequestExecutor requestExecutor;
 
-	@BeforeEach
-	public void setUp() throws IOException {
-		final String request = "{ " + "\"url\": \"http://jsonplaceholder.typicode.com/posts\", " + "\"headers\": { "
-				+ "\"" + HttpHeaders.ACCEPT + "\" : \"application/stream+json\", " + "\"" + HttpHeaders.ACCEPT_CHARSET
-				+ "\" : \"" + StandardCharsets.UTF_8 + "\" " + "}, " + "\"rawBody\" : \"hello world\" " + "}";
+    @BeforeEach
+    public void setUp() throws IOException {
+        final String request = "{ " + "\"url\": \"http://jsonplaceholder.typicode.com/posts\", " + "\"headers\": { "
+                + "\"" + HttpHeaders.ACCEPT + "\" : \"application/stream+json\", " + "\"" + HttpHeaders.ACCEPT_CHARSET
+                + "\" : \"" + StandardCharsets.UTF_8 + "\" " + "}, " + "\"rawBody\" : \"hello world\" " + "}";
 
-		actualRequestSpec = Val.ofJson(request);
-		result            = JSON.textNode("result");
-		final Map<String, String> headerProperties = new HashMap<>();
-		headerProperties.put(HttpHeaders.ACCEPT, "application/stream+json");
-		headerProperties.put(HttpHeaders.ACCEPT_CHARSET, StandardCharsets.UTF_8.toString());
+        actualRequestSpec = Val.ofJson(request);
+        result            = JSON.textNode("result");
+        final Map<String, String> headerProperties = new HashMap<>();
+        headerProperties.put(HttpHeaders.ACCEPT, "application/stream+json");
+        headerProperties.put(HttpHeaders.ACCEPT_CHARSET, StandardCharsets.UTF_8.toString());
 
-		expectedRequestSpec = new RequestSpecification();
-		expectedRequestSpec.setUrl(JSON.textNode("http://jsonplaceholder.typicode.com/posts"));
-		expectedRequestSpec.setHeaders(headerProperties);
-		expectedRequestSpec.setRawBody("hello world");
+        expectedRequestSpec = new RequestSpecification();
+        expectedRequestSpec.setUrl(JSON.textNode("http://jsonplaceholder.typicode.com/posts"));
+        expectedRequestSpec.setHeaders(headerProperties);
+        expectedRequestSpec.setRawBody("hello world");
 
-		requestExecutor = Mockito.spy(WebClientRequestExecutor.class);
-		doReturn(Flux.just(result)).when(requestExecutor).executeReactiveRequest(any(RequestSpecification.class),
-				any(HttpMethod.class));
-	}
+        requestExecutor = Mockito.spy(WebClientRequestExecutor.class);
+        doReturn(Flux.just(result)).when(requestExecutor).executeReactiveRequest(any(RequestSpecification.class),
+                any(HttpMethod.class));
+    }
 
-	@Test
-	public void postRequest() throws IOException, InitializationException {
-		var pip          = new HttpPolicyInformationPoint(requestExecutor);
-		var attributeCtx = new AnnotationAttributeContext();
-		attributeCtx.loadPolicyInformationPoint(pip);
-		var returnedAttribute = attributeCtx.evaluateAttribute("http.post", actualRequestSpec, null, new HashMap<>())
-				.blockFirst();
-		assertEquals(Val.of(result), returnedAttribute);
-		verify(requestExecutor).executeReactiveRequest(eq(expectedRequestSpec), eq(POST));
-	}
+    @Test
+    public void postRequest() throws IOException, InitializationException {
+        var pip          = new HttpPolicyInformationPoint(requestExecutor);
+        var attributeCtx = new AnnotationAttributeContext();
+        attributeCtx.loadPolicyInformationPoint(pip);
+        var returnedAttribute = attributeCtx.evaluateAttribute("http.post", actualRequestSpec, null, new HashMap<>())
+                .blockFirst();
+        assertEquals(Val.of(result), returnedAttribute);
+        verify(requestExecutor).executeReactiveRequest(eq(expectedRequestSpec), eq(POST));
+    }
 
 }

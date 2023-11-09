@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.axon.queryhandling;
 
 import org.axonframework.messaging.responsetypes.ResponseType;
@@ -25,52 +26,52 @@ import lombok.Value;
 /**
  * Utility class for wrapping update response payloads, enabling recoverable
  * subscription queries.
- * 
+ *
  * @author Dominic Heutelbeck
  * @since 2.1.0
- * 
+ *
  * @param <U> Payload type.
  */
 @Value
 @RequiredArgsConstructor
 public class RecoverableResponse<U> {
 
-	/**
-	 * Metadata key for the original update response type.
-	 */
-	public static final String RECOVERABLE_UPDATE_TYPE_KEY = "recoverableUpdateType";
+    /**
+     * Metadata key for the original update response type.
+     */
+    public static final String RECOVERABLE_UPDATE_TYPE_KEY = "recoverableUpdateType";
 
-	ResponseType<U> responseType;
-	U               payload;
+    ResponseType<U> responseType;
+    U               payload;
 
-	/**
-	 * Unwraps the wrapped response. No response present implies an AccessDeniedException.
-	 * In a map operation, this enables onErrorContinue.
-	 * 
-	 * @return Unwrapped update, or an AccessDeniedException.
-	 */
-	public U unwrap() {
-		if (payload == null)
-			throw new AccessDeniedException("Access Denied");
+    /**
+     * Unwraps the wrapped response. No response present implies an
+     * AccessDeniedException. In a map operation, this enables onErrorContinue.
+     *
+     * @return Unwrapped update, or an AccessDeniedException.
+     */
+    public U unwrap() {
+        if (payload == null)
+            throw new AccessDeniedException("Access Denied");
 
-		return payload;
-	}
+        return payload;
+    }
 
-	/**
-	 * @return true, if no payload present.
-	 */
-	public boolean isAccessDenied() {
-		return payload == null;
-	}
+    /**
+     * @return true, if no payload present.
+     */
+    public boolean isAccessDenied() {
+        return payload == null;
+    }
 
-	/**
-	 * Utility factory method creating access denied responses.
-	 * 
-	 * @param <T>         The Response type.
-	 * @param responseType The Response type.
-	 * @return An access denied response.
-	 */
-	public static <T> RecoverableResponse<T> accessDenied(ResponseType<T> responseType) {
-		return new RecoverableResponse<>(responseType, null);
-	}
+    /**
+     * Utility factory method creating access denied responses.
+     *
+     * @param <T>          The Response type.
+     * @param responseType The Response type.
+     * @return An access denied response.
+     */
+    public static <T> RecoverableResponse<T> accessDenied(ResponseType<T> responseType) {
+        return new RecoverableResponse<>(responseType, null);
+    }
 }

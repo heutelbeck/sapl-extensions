@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,24 +32,24 @@ import lombok.Getter;
 @JsonInclude(Include.NON_NULL)
 public class GeoPIPResponse {
 
-	private final String identifier;
+    private final String identifier;
 
-	private final JsonNode position;
+    private final JsonNode position;
 
-	private final double altitude;
+    private final double altitude;
 
-	private final String lastUpdate;
+    private final String lastUpdate;
 
-	private final double accuracy;
+    private final double accuracy;
 
-	private final double trust;
+    private final double trust;
 
-	private final ObjectNode geofences;
+    private final ObjectNode geofences;
 
-	private static final ObjectMapper MAPPER = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    private static final ObjectMapper MAPPER = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
-	public JsonNode toJsonNode() {
-		return MAPPER.convertValue(this, JsonNode.class);
-	}
+    public JsonNode toJsonNode() {
+        return MAPPER.convertValue(this, JsonNode.class);
+    }
 
 }

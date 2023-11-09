@@ -4,7 +4,7 @@ import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP
 import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP_CLIENT_SECRET;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import io.sapl.api.pdp.PolicyDecisionPoint;
@@ -19,28 +19,34 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This utility class provides functions for initialization of an embedded or remote PDP.
+ * This utility class provides functions for initialization of an embedded or
+ * remote PDP.
  */
 @Slf4j
 @UtilityClass
 public class PdpInitUtility {
 
     static final String EMBEDDED_PDP_IDENTIFIER = "embedded";
-    static final String REMOTE_PDP_IDENTIFIER = "remote";
+    static final String REMOTE_PDP_IDENTIFIER   = "remote";
 
     /**
      * Builds an embedded or remote sapl policy decision point.
-     * @param saplMqttExtensionConfig contains the configurations of the sapl mqtt pep extension
-     * @param extensionHomeFolder If the {@link SaplMqttExtensionConfig} specifies that the by configuration
-     *                            provided policies path is relative to the extension home folder, use this
-     *                            extension home folder.
-     * @param policiesPath The path to find the specified sapl policies. In case the path is null
-     *                     the {@link SaplMqttExtensionConfig} respectively the extension home folder
-     *                     will be used to extract the policy path from.
+     * 
+     * @param saplMqttExtensionConfig contains the configurations of the sapl mqtt
+     *                                pep extension
+     * @param extensionHomeFolder     If the {@link SaplMqttExtensionConfig}
+     *                                specifies that the by configuration provided
+     *                                policies path is relative to the extension
+     *                                home folder, use this extension home folder.
+     * @param policiesPath            The path to find the specified sapl policies.
+     *                                In case the path is null the
+     *                                {@link SaplMqttExtensionConfig} respectively
+     *                                the extension home folder will be used to
+     *                                extract the policy path from.
      * @return an embedded or remote sapl policy decision point
      */
     public static PolicyDecisionPoint buildPdp(SaplMqttExtensionConfig saplMqttExtensionConfig,
-                                               File extensionHomeFolder, String policiesPath) {
+            File extensionHomeFolder, String policiesPath) {
         String pdpImplementation = saplMqttExtensionConfig.getPdpImplementation();
         if (REMOTE_PDP_IDENTIFIER.equals(pdpImplementation)) {
             return buildRemotePdp(saplMqttExtensionConfig);
@@ -52,13 +58,11 @@ public class PdpInitUtility {
     }
 
     private static EmbeddedPolicyDecisionPoint buildEmbeddedPdp(SaplMqttExtensionConfig saplMqttExtensionConfig,
-                                                         File extensionHomeFolder, String policiesPath) {
+            File extensionHomeFolder, String policiesPath) {
         try {
-            var mqttFunctionLibraryCollection = new ArrayList<>(1);
-            mqttFunctionLibraryCollection.add(new MqttFunctionLibrary());
-            return PolicyDecisionPointFactory.filesystemPolicyDecisionPoint(
-                    getPoliciesPath(saplMqttExtensionConfig, extensionHomeFolder, policiesPath),
-            new ArrayList<>(1), mqttFunctionLibraryCollection);
+            var path = getPoliciesPath(saplMqttExtensionConfig, extensionHomeFolder, policiesPath);
+            return PolicyDecisionPointFactory.filesystemPolicyDecisionPoint(path, () -> List.of(), () -> List.of(),
+                    () -> List.of(), () -> List.of(MqttFunctionLibrary.class));
         } catch (InitializationException e) {
             log.error("Failed to build embedded pdp on extension startup with following reason: {}", e.getMessage());
             return null;
@@ -66,37 +70,35 @@ public class PdpInitUtility {
     }
 
     private static RemoteHttpPolicyDecisionPoint buildRemotePdp(SaplMqttExtensionConfig saplMqttExtensionConfig) {
-        String clientKey = saplMqttExtensionConfig.getRemotePdpClientKey();
+        String clientKey    = saplMqttExtensionConfig.getRemotePdpClientKey();
         String clientSecret = saplMqttExtensionConfig.getRemotePdpClientSecret();
         warnWhenUsingDefaultConfigValuesForRemotePdp(clientKey, clientSecret);
 
-        String baseUrl = saplMqttExtensionConfig.getRemotePdpBaseUrl();
-        var remotePdp = RemotePolicyDecisionPoint.builder()
-                .http().baseUrl(baseUrl)
-                .basicAuth(clientKey, clientSecret)
-                .build();
+        String baseUrl   = saplMqttExtensionConfig.getRemotePdpBaseUrl();
+        var    remotePdp = RemotePolicyDecisionPoint.builder().http().baseUrl(baseUrl)
+                .basicAuth(clientKey, clientSecret).build();
         setRemotePdpBackOff(saplMqttExtensionConfig, remotePdp);
         return remotePdp;
     }
 
     private static String getPoliciesPath(SaplMqttExtensionConfig saplMqttExtensionConfig, File extensionHomeFolder,
-                                         String policiesPath) {
+            String policiesPath) {
         return Objects.requireNonNullElseGet(policiesPath,
                 () -> getPoliciesPathFromConfig(saplMqttExtensionConfig, extensionHomeFolder));
     }
 
     private static String getPoliciesPathFromConfig(SaplMqttExtensionConfig saplMqttExtensionConfig,
-                                                    File extensionHomeFolder) {
+            File extensionHomeFolder) {
         if (saplMqttExtensionConfig.isEmbeddedPdpPoliciesPathRelativeToExtensionHome()) {
-            return extensionHomeFolder + assureLeadingFileSeparator(assureRightFileSeparatorUsage(
-                    saplMqttExtensionConfig.getEmbeddedPdpPoliciesPath()));
+            return extensionHomeFolder + assureLeadingFileSeparator(
+                    assureRightFileSeparatorUsage(saplMqttExtensionConfig.getEmbeddedPdpPoliciesPath()));
         } else {
             return assureRightFileSeparatorUsage(saplMqttExtensionConfig.getEmbeddedPdpPoliciesPath());
         }
     }
 
     private static void setRemotePdpBackOff(SaplMqttExtensionConfig saplMqttExtensionConfig,
-                                           RemoteHttpPolicyDecisionPoint remotePdp) {
+            RemoteHttpPolicyDecisionPoint remotePdp) {
         remotePdp.setFirstBackoffMillis(saplMqttExtensionConfig.getRemotePdpFirstBackOffMillis());
         remotePdp.setMaxBackOffMillis(saplMqttExtensionConfig.getRemotePdpMaxBackOffMillis());
         remotePdp.setBackoffFactor(saplMqttExtensionConfig.getRemotePdpBackOffFactor());
@@ -104,12 +106,12 @@ public class PdpInitUtility {
 
     private static void warnWhenUsingDefaultConfigValuesForRemotePdp(String clientKey, String clientSecret) {
         if (DEFAULT_REMOTE_PDP_CLIENT_KEY.equals(clientKey)) {
-            log.warn("Sapl mqtt extension is using the default key to connect to the remote pdp. " +
-                    "Due to security reason, please change the key.");
+            log.warn("Sapl mqtt extension is using the default key to connect to the remote pdp. "
+                    + "Due to security reason, please change the key.");
         }
         if (DEFAULT_REMOTE_PDP_CLIENT_SECRET.equals(clientSecret)) {
-            log.warn("Sapl mqtt extension is using the default secret to connect to the remote pdp. " +
-                    "Due to security reason, please change the key.");
+            log.warn("Sapl mqtt extension is using the default secret to connect to the remote pdp. "
+                    + "Due to security reason, please change the key.");
         }
     }
 

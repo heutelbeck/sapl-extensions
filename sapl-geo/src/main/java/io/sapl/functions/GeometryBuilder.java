@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,81 +44,81 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class GeometryBuilder {
 
-	private static final String UNABLE_TO_PARSE_GEO_JSON = "Provided GeoJSON-format is not compliant. Unable to parse geometry.";
+    private static final String UNABLE_TO_PARSE_GEO_JSON = "Provided GeoJSON-format is not compliant. Unable to parse geometry.";
 
-	private static final String UNABLE_TO_PARSE_WKT = "Provided WKT-format is not compliant. Unable to parse geometry.";
+    private static final String UNABLE_TO_PARSE_WKT = "Provided WKT-format is not compliant. Unable to parse geometry.";
 
-	private static final String UNABLE_TO_PARSE_GEOMETRY = "Unable to parse geometry to JsonNode.";
+    private static final String UNABLE_TO_PARSE_GEOMETRY = "Unable to parse geometry to JsonNode.";
 
-	public static Geometry fromJsonNode(JsonNode jsonGeometry) {
-		GeometryJSON geoJsonReader = new GeometryJSON();
-		Reader stringReader = new StringReader(jsonGeometry.toString());
+    public static Geometry fromJsonNode(JsonNode jsonGeometry) {
+        GeometryJSON geoJsonReader = new GeometryJSON();
+        Reader       stringReader  = new StringReader(jsonGeometry.toString());
 
-		try {
-			return geoJsonReader.read(stringReader);
-		} catch (IOException e) {
-			throw new PolicyEvaluationException(UNABLE_TO_PARSE_GEO_JSON, e);
-		}
-	}
+        try {
+            return geoJsonReader.read(stringReader);
+        } catch (IOException e) {
+            throw new PolicyEvaluationException(UNABLE_TO_PARSE_GEO_JSON, e);
+        }
+    }
 
-	public static Geometry geoOf(Val jsonGeometry) {
-		return fromJsonNode(jsonGeometry.get());
-	}
+    public static Geometry geoOf(Val jsonGeometry) {
+        return fromJsonNode(jsonGeometry.get());
+    }
 
-	public static Geometry fromWkt(String wktGeometry) {
-		try {
-			WKTReader wkt = new WKTReader();
-			return wkt.read(wktGeometry);
-		} catch (ParseException e) {
-			throw new PolicyEvaluationException(UNABLE_TO_PARSE_WKT, e);
-		}
-	}
+    public static Geometry fromWkt(String wktGeometry) {
+        try {
+            WKTReader wkt = new WKTReader();
+            return wkt.read(wktGeometry);
+        } catch (ParseException e) {
+            throw new PolicyEvaluationException(UNABLE_TO_PARSE_WKT, e);
+        }
+    }
 
-	public static String toWkt(Geometry geometry) {
-		WKTWriter wkt = new WKTWriter();
-		return wkt.write(geometry);
-	}
+    public static String toWkt(Geometry geometry) {
+        WKTWriter wkt = new WKTWriter();
+        return wkt.write(geometry);
+    }
 
-	public static JsonNode toJsonNode(Geometry geometry) {
-		ObjectMapper mapper = new ObjectMapper();
-		GeometryJSON geoJsonWriter = new GeometryJSON();
+    public static JsonNode toJsonNode(Geometry geometry) {
+        ObjectMapper mapper        = new ObjectMapper();
+        GeometryJSON geoJsonWriter = new GeometryJSON();
 
-		try {
-			return mapper.readTree(geoJsonWriter.toString(geometry));
-		} catch (IOException e) {
-			throw new PolicyEvaluationException(UNABLE_TO_PARSE_GEOMETRY, e);
-		}
-	}
+        try {
+            return mapper.readTree(geoJsonWriter.toString(geometry));
+        } catch (IOException e) {
+            throw new PolicyEvaluationException(UNABLE_TO_PARSE_GEOMETRY, e);
+        }
+    }
 
-	public static Val toVal(Geometry geometry) {
-		return Val.of(toJsonNode(geometry));
-	}
+    public static Val toVal(Geometry geometry) {
+        return Val.of(toJsonNode(geometry));
+    }
 
-	public static JsonNode wktToJsonNode(String wktGeometry) {
-		return toJsonNode(fromWkt(wktGeometry));
-	}
+    public static JsonNode wktToJsonNode(String wktGeometry) {
+        return toJsonNode(fromWkt(wktGeometry));
+    }
 
-	public static String jsonNodeToWkt(JsonNode jsonGeometry) {
-		return toWkt(fromJsonNode(jsonGeometry));
-	}
+    public static String jsonNodeToWkt(JsonNode jsonGeometry) {
+        return toWkt(fromJsonNode(jsonGeometry));
+    }
 
-	public static double geodesicDistance(Geometry geometryOne, Geometry geometryTwo) {
-		try {
-			int startingPointIndex = 0;
-			int destinationPointIndex = 1;
+    public static double geodesicDistance(Geometry geometryOne, Geometry geometryTwo) {
+        try {
+            int startingPointIndex    = 0;
+            int destinationPointIndex = 1;
 
-			CoordinateReferenceSystem crs = CRS.decode(GeoProjection.WGS84_CRS);
-			DistanceOp distOp = new DistanceOp(geometryOne, geometryTwo);
-			GeodeticCalculator gc = new GeodeticCalculator(crs);
+            CoordinateReferenceSystem crs    = CRS.decode(GeoProjection.WGS84_CRS);
+            DistanceOp                distOp = new DistanceOp(geometryOne, geometryTwo);
+            GeodeticCalculator        gc     = new GeodeticCalculator(crs);
 
-			gc.setStartingPosition(JTS.toDirectPosition(distOp.nearestPoints()[startingPointIndex], crs));
-			gc.setDestinationPosition(JTS.toDirectPosition(distOp.nearestPoints()[destinationPointIndex], crs));
-			return gc.getOrthodromicDistance();
-		} catch (TransformException e) {
-			throw new PolicyEvaluationException(GeoProjection.UNABLE_TO_TRANSFORM, e);
-		} catch (FactoryException e) {
-			throw new PolicyEvaluationException(GeoProjection.CRS_COULD_NOT_INITIALIZE, e);
-		}
-	}
+            gc.setStartingPosition(JTS.toDirectPosition(distOp.nearestPoints()[startingPointIndex], crs));
+            gc.setDestinationPosition(JTS.toDirectPosition(distOp.nearestPoints()[destinationPointIndex], crs));
+            return gc.getOrthodromicDistance();
+        } catch (TransformException e) {
+            throw new PolicyEvaluationException(GeoProjection.UNABLE_TO_TRANSFORM, e);
+        } catch (FactoryException e) {
+            throw new PolicyEvaluationException(GeoProjection.CRS_COULD_NOT_INITIALIZE, e);
+        }
+    }
 
 }

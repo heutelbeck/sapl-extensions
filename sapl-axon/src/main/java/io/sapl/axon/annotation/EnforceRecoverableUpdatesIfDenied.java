@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +81,7 @@ import java.lang.annotation.Target;
  * To be able to construct reasonable {@code AuthorizationSubscription} objects,
  * the following data is made available to the SpEL expression in its evaluation
  * context:
- * 
+ *
  * <ul>
  * <li>The variable {@code #message} is set to the {@code QueryMessage}.
  * <li>The variable {@code #query} is set to the payload of the
@@ -90,17 +92,19 @@ import java.lang.annotation.Target;
  * {@link java.lang.reflect.Executable} representing the method to be invoked to
  * generate the initial query response.
  * </ul>
- * 
+ *
  * Example:
- * 
- * <pre>{@code
- * @QueryHandler 
+ *
+ * <pre>
+ * {@code
+ * &#64;QueryHandler
  * @EnforceRecoverableUpdatesIfDenied(action = "'Monitor'", resource = "{ 'type':'measurement', 'id':#query.patientId(), 'monitorType':#query.type() }")
  * Optional<VitalSignMeasurement> handle(MonitorVitalSignOfPatient query) {
- * 	return repository.findById(query.patientId()).map(v -> v.lastKnownMeasurements().get(query.type()));
+ *     return repository.findById(query.patientId()).map(v -> v.lastKnownMeasurements().get(query.type()));
  * }
- * }</pre>
- * 
+ * }
+ * </pre>
+ *
  * @author Dominic Heutelbeck
  * @since 2.1.0
  */
@@ -110,35 +114,35 @@ import java.lang.annotation.Target;
 @Target({ ElementType.METHOD, ElementType.TYPE })
 public @interface EnforceRecoverableUpdatesIfDenied {
 
-	/**
-	 * @return the Spring-EL expression to whose evaluation result is to be used as
-	 *         the subject in the authorization subscription to the PDP. If empty,
-	 *         the PEP attempts to derive a guess to describe the subject based on
-	 *         the current Principal.
-	 */
-	String subject() default "";
+    /**
+     * @return the Spring-EL expression to whose evaluation result is to be used as
+     *         the subject in the authorization subscription to the PDP. If empty,
+     *         the PEP attempts to derive a guess to describe the subject based on
+     *         the current Principal.
+     */
+    String subject() default "";
 
-	/**
-	 * @return the Spring-EL expression to whose evaluation result is to be used as
-	 *         the action in the authorization subscription to the PDP. If empty,
-	 *         the PEP attempts to derive a guess to describe the action based on
-	 *         reflection.
-	 */
-	String action() default "";
+    /**
+     * @return the Spring-EL expression to whose evaluation result is to be used as
+     *         the action in the authorization subscription to the PDP. If empty,
+     *         the PEP attempts to derive a guess to describe the action based on
+     *         reflection.
+     */
+    String action() default "";
 
-	/**
-	 * @return the Spring-EL expression to whose evaluation result is to be used as
-	 *         the action in the authorization subscription to the PDP. If empty,
-	 *         the PEP attempts to derive a guess to describe the resource based on
-	 *         reflection.
-	 */
-	String resource() default "";
+    /**
+     * @return the Spring-EL expression to whose evaluation result is to be used as
+     *         the action in the authorization subscription to the PDP. If empty,
+     *         the PEP attempts to derive a guess to describe the resource based on
+     *         reflection.
+     */
+    String resource() default "";
 
-	/**
-	 * @return the Spring-EL expression to whose evaluation result is to be used as
-	 *         the action in the authorization subscription to the PDP. If empty, no
-	 *         environment is set in the subscription.
-	 */
-	String environment() default "";
+    /**
+     * @return the Spring-EL expression to whose evaluation result is to be used as
+     *         the action in the authorization subscription to the PDP. If empty, no
+     *         environment is set in the subscription.
+     */
+    String environment() default "";
 
 }

@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.sapl.axon.commandhandling;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -49,129 +66,128 @@ import reactor.core.publisher.Flux;
 
 public class CommandPolicyEnforcementPointTests {
 
-	private static final String            MAPPER_FILED_NAME            = "mapper";
-	private static final String            COMMAND_MAPPER_FILED_NAME    = "commandMapper";
-	private static final String            RESULT_MAPPER_FILED_NAME     = "resultMapper";
-	private static final String            DEFAULT_AGGREGATE_IDENTIFIER = "defaultIdentifier";
-	private static final TestCommand       DEFAULT_COMMAND              = new TestCommand(DEFAULT_AGGREGATE_IDENTIFIER);
-	private static final CommandMessage<?> DEFAULT_COMMAND_MESSAGE      = new GenericCommandMessage<>(DEFAULT_COMMAND);
-	private static final RuntimeException  DEFAULT_HANDLED_EXCEPTION    = new RuntimeException(
-			"default exception message");
+    private static final String            MAPPER_FILED_NAME            = "mapper";
+    private static final String            COMMAND_MAPPER_FILED_NAME    = "commandMapper";
+    private static final String            RESULT_MAPPER_FILED_NAME     = "resultMapper";
+    private static final String            DEFAULT_AGGREGATE_IDENTIFIER = "defaultIdentifier";
+    private static final TestCommand       DEFAULT_COMMAND              = new TestCommand(DEFAULT_AGGREGATE_IDENTIFIER);
+    private static final CommandMessage<?> DEFAULT_COMMAND_MESSAGE      = new GenericCommandMessage<>(DEFAULT_COMMAND);
+    private static final RuntimeException  DEFAULT_HANDLED_EXCEPTION    = new RuntimeException(
+            "default exception message");
 
-	@Value
-	private static class TestCommand {
-		@TargetAggregateIdentifier
-		String targetAggregateIdentifier;
-		Object someField = "someText";
-	}
+    @Value
+    private static class TestCommand {
+        @TargetAggregateIdentifier
+        String targetAggregateIdentifier;
+        Object someField = "someText";
+    }
 
-	@Aggregate
-	@EqualsAndHashCode
-	@AllArgsConstructor
-	private static class HandlingObject {
+    @Aggregate
+    @EqualsAndHashCode
+    @AllArgsConstructor
+    private static class HandlingObject {
 
-		@AggregateIdentifier
-		String aggregateIdentifier;
+        @AggregateIdentifier
+        String aggregateIdentifier;
 
-		@CommandHandler
-		@PreHandleEnforce
-		public String handle1(TestCommand cmd) {
-			return "defaultResult";
-		}
+        @CommandHandler
+        @PreHandleEnforce
+        public String handle1(TestCommand cmd) {
+            return "defaultResult";
+        }
 
-		@CommandHandler
-		public void handle2(TestCommand cmd) {
-		}
+        @CommandHandler
+        public void handle2(TestCommand cmd) {
+        }
 
-		@CommandHandler
-		@PostHandleEnforce
-		public void handle3(TestCommand cmd) {
-		}
+        @CommandHandler
+        @PostHandleEnforce
+        public void handle3(TestCommand cmd) {
+        }
 
-		@CommandHandler
-		@PreHandleEnforce
-		public void handle4(TestCommand cmd) {
-			throw new RuntimeException("some exception thrown in handler");
-		}
-	}
+        @CommandHandler
+        @PreHandleEnforce
+        public void handle4(TestCommand cmd) {
+            throw new RuntimeException("some exception thrown in handler");
+        }
+    }
 
-	private ParameterResolverFactory factory;
+    private ParameterResolverFactory factory;
 
-	private MessageHandlingMember<HandlingObject>          delegate;
-	private PolicyDecisionPoint                            pdp;
-	private ConstraintHandlerService                       axonConstraintEnforcementService;
-	private AuthorizationSubscriptionBuilderService        subscriptionBuilder;
-	private CommandConstraintHandlerBundle<HandlingObject> commandConstraintHandlerBundle;
+    private MessageHandlingMember<HandlingObject>          delegate;
+    private PolicyDecisionPoint                            pdp;
+    private ConstraintHandlerService                       axonConstraintEnforcementService;
+    private AuthorizationSubscriptionBuilderService        subscriptionBuilder;
+    private CommandConstraintHandlerBundle<HandlingObject> commandConstraintHandlerBundle;
 
-	private HandlingObject                                handlingObject;
-	private CommandPolicyEnforcementPoint<HandlingObject> commandPEP;
+    private HandlingObject                                handlingObject;
+    private CommandPolicyEnforcementPoint<HandlingObject> commandPEP;
 
-	@BeforeEach
-	@SuppressWarnings("unchecked")
-	void beforeEach() throws NoSuchMethodException, SecurityException {
-		var mapper = new ObjectMapper();
-		factory = new DefaultParameterResolverFactory();
-		var executable = HandlingObject.class.getDeclaredMethod("handle1", TestCommand.class);
-		handlingObject = spy(new HandlingObject(DEFAULT_AGGREGATE_IDENTIFIER));
-		delegate       = spy(
-				new AnnotatedMessageHandlingMember<>(executable, CommandMessage.class, TestCommand.class, factory));
-		pdp            = mock(PolicyDecisionPoint.class);
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just());
-		commandConstraintHandlerBundle   = mock(CommandConstraintHandlerBundle.class);
-		axonConstraintEnforcementService = mock(ConstraintHandlerService.class);
-		when(axonConstraintEnforcementService.buildPreEnforceCommandConstraintHandlerBundle(
-				any(AuthorizationDecision.class), eq(handlingObject), any(Optional.class), eq(DEFAULT_COMMAND_MESSAGE)))
-				.thenReturn(commandConstraintHandlerBundle);
-		subscriptionBuilder = mock(AuthorizationSubscriptionBuilderService.class);
-		when(subscriptionBuilder.constructAuthorizationSubscriptionForCommand(eq(DEFAULT_COMMAND_MESSAGE),
-				eq(handlingObject), any(PreHandleEnforce.class))).thenCallRealMethod();
-		setField(subscriptionBuilder, MAPPER_FILED_NAME, mapper);
-		when(commandConstraintHandlerBundle.executeOnErrorHandlers(any(AccessDeniedException.class)))
-				.thenReturn(DEFAULT_HANDLED_EXCEPTION);
-		when(commandConstraintHandlerBundle.executeCommandMappingHandlers(eq(DEFAULT_COMMAND_MESSAGE)))
-				.thenCallRealMethod();
-		when(commandConstraintHandlerBundle.executePostHandlingHandlers(any()))
-				.thenCallRealMethod();
-		setField(commandConstraintHandlerBundle, COMMAND_MAPPER_FILED_NAME, Function.identity());
-		setField(commandConstraintHandlerBundle, RESULT_MAPPER_FILED_NAME, Function.identity());
-		commandPEP = spy(new CommandPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService,
-				subscriptionBuilder));
-	}
+    @BeforeEach
+    @SuppressWarnings("unchecked")
+    void beforeEach() throws NoSuchMethodException, SecurityException {
+        var mapper = new ObjectMapper();
+        factory = new DefaultParameterResolverFactory();
+        var executable = HandlingObject.class.getDeclaredMethod("handle1", TestCommand.class);
+        handlingObject = spy(new HandlingObject(DEFAULT_AGGREGATE_IDENTIFIER));
+        delegate       = spy(
+                new AnnotatedMessageHandlingMember<>(executable, CommandMessage.class, TestCommand.class, factory));
+        pdp            = mock(PolicyDecisionPoint.class);
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just());
+        commandConstraintHandlerBundle   = mock(CommandConstraintHandlerBundle.class);
+        axonConstraintEnforcementService = mock(ConstraintHandlerService.class);
+        when(axonConstraintEnforcementService.buildPreEnforceCommandConstraintHandlerBundle(
+                any(AuthorizationDecision.class), eq(handlingObject), any(Optional.class), eq(DEFAULT_COMMAND_MESSAGE)))
+                .thenReturn(commandConstraintHandlerBundle);
+        subscriptionBuilder = mock(AuthorizationSubscriptionBuilderService.class);
+        when(subscriptionBuilder.constructAuthorizationSubscriptionForCommand(eq(DEFAULT_COMMAND_MESSAGE),
+                eq(handlingObject), any(PreHandleEnforce.class))).thenCallRealMethod();
+        setField(subscriptionBuilder, MAPPER_FILED_NAME, mapper);
+        when(commandConstraintHandlerBundle.executeOnErrorHandlers(any(AccessDeniedException.class)))
+                .thenReturn(DEFAULT_HANDLED_EXCEPTION);
+        when(commandConstraintHandlerBundle.executeCommandMappingHandlers(eq(DEFAULT_COMMAND_MESSAGE)))
+                .thenCallRealMethod();
+        when(commandConstraintHandlerBundle.executePostHandlingHandlers(any())).thenCallRealMethod();
+        setField(commandConstraintHandlerBundle, COMMAND_MAPPER_FILED_NAME, Function.identity());
+        setField(commandConstraintHandlerBundle, RESULT_MAPPER_FILED_NAME, Function.identity());
+        commandPEP = spy(new CommandPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService,
+                subscriptionBuilder));
+    }
 
-	@Test
-	void when_noAnnotation_then_noEnforcement() throws NoSuchMethodException, SecurityException {
-		var executable = HandlingObject.class.getDeclaredMethod("handle2", TestCommand.class);
-		delegate   = spy(
-				new AnnotatedMessageHandlingMember<>(executable, CommandMessage.class, TestCommand.class, factory));
-		commandPEP = spy(new CommandPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService,
-				subscriptionBuilder));
+    @Test
+    void when_noAnnotation_then_noEnforcement() throws NoSuchMethodException, SecurityException {
+        var executable = HandlingObject.class.getDeclaredMethod("handle2", TestCommand.class);
+        delegate   = spy(
+                new AnnotatedMessageHandlingMember<>(executable, CommandMessage.class, TestCommand.class, factory));
+        commandPEP = spy(new CommandPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService,
+                subscriptionBuilder));
 
-		var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-		assertNull(result);
-		assertDoesNotThrow(() -> verify((WrappedMessageHandlingMember<HandlingObject>) commandPEP, times(1))
-				.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-	}
+        var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+        assertNull(result);
+        assertDoesNotThrow(() -> verify((WrappedMessageHandlingMember<HandlingObject>) commandPEP, times(1))
+                .handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+    }
 
-	@Test
-	void when_wrongAnnotation_then_noEnforcement() throws NoSuchMethodException, SecurityException {
-		var executable = HandlingObject.class.getDeclaredMethod("handle3", TestCommand.class);
-		delegate   = spy(
-				new AnnotatedMessageHandlingMember<>(executable, CommandMessage.class, TestCommand.class, factory));
-		commandPEP = spy(new CommandPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService,
-				subscriptionBuilder));
+    @Test
+    void when_wrongAnnotation_then_noEnforcement() throws NoSuchMethodException, SecurityException {
+        var executable = HandlingObject.class.getDeclaredMethod("handle3", TestCommand.class);
+        delegate   = spy(
+                new AnnotatedMessageHandlingMember<>(executable, CommandMessage.class, TestCommand.class, factory));
+        commandPEP = spy(new CommandPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService,
+                subscriptionBuilder));
 
-		var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-		assertNull(result);
-		assertDoesNotThrow(() -> verify((WrappedMessageHandlingMember<HandlingObject>) commandPEP, times(1))
-				.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-	}
+        var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+        assertNull(result);
+        assertDoesNotThrow(() -> verify((WrappedMessageHandlingMember<HandlingObject>) commandPEP, times(1))
+                .handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+    }
 
-	@Test
-	void when_pdpNoDecision_then_accessDenied() {
-		assertThrows(AccessDeniedException.class, () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-	}
+    @Test
+    void when_pdpNoDecision_then_accessDenied() {
+        assertThrows(AccessDeniedException.class, () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+    }
 
-	@Test
+    @Test
 	void when_permit_and_onDecisionHandlersThrow_then_handledException() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 		doThrow(new RuntimeException("some error message")).when(commandConstraintHandlerBundle)
@@ -182,7 +198,7 @@ public class CommandPolicyEnforcementPointTests {
 		assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
 	}
 
-	@Test
+    @Test
 	void when_deny_then_handledException() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 
@@ -191,7 +207,7 @@ public class CommandPolicyEnforcementPointTests {
 		assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
 	}
 
-	@Test
+    @Test
 	void when_permit_and_executeAggregateConstraintHandlerMethodsThrows_then_handledException() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 		doThrow(new RuntimeException("some error message")).when(commandConstraintHandlerBundle)
@@ -202,7 +218,7 @@ public class CommandPolicyEnforcementPointTests {
 		assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
 	}
 
-	@Test
+    @Test
 	void when_permit_and_executeCommandMappingHandlersThrows_then_handledException() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 		when(commandConstraintHandlerBundle.executeCommandMappingHandlers(eq(DEFAULT_COMMAND_MESSAGE)))
@@ -213,7 +229,7 @@ public class CommandPolicyEnforcementPointTests {
 		assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
 	}
 
-	@Test
+    @Test
 	void when_permit_then_mapCommands() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
@@ -222,24 +238,24 @@ public class CommandPolicyEnforcementPointTests {
 		verify(commandConstraintHandlerBundle, times(1)).executeCommandMappingHandlers(eq(DEFAULT_COMMAND_MESSAGE));
 	}
 
-	@Test
-	void when_permit_and_delegateHandleThrows_then_handledException() throws NoSuchMethodException, SecurityException {
-		var executable = HandlingObject.class.getDeclaredMethod("handle4", TestCommand.class);
-		delegate   = spy(
-				new AnnotatedMessageHandlingMember<>(executable, CommandMessage.class, TestCommand.class, factory));
-		commandPEP = spy(new CommandPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService,
-				subscriptionBuilder));
+    @Test
+    void when_permit_and_delegateHandleThrows_then_handledException() throws NoSuchMethodException, SecurityException {
+        var executable = HandlingObject.class.getDeclaredMethod("handle4", TestCommand.class);
+        delegate   = spy(
+                new AnnotatedMessageHandlingMember<>(executable, CommandMessage.class, TestCommand.class, factory));
+        commandPEP = spy(new CommandPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService,
+                subscriptionBuilder));
 
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		when(commandConstraintHandlerBundle.executeOnErrorHandlers(any(RuntimeException.class)))
-				.thenReturn(DEFAULT_HANDLED_EXCEPTION);
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+        when(commandConstraintHandlerBundle.executeOnErrorHandlers(any(RuntimeException.class)))
+                .thenReturn(DEFAULT_HANDLED_EXCEPTION);
 
-		var exception = assertThrows(RuntimeException.class,
-				() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-		assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
-	}
+        var exception = assertThrows(RuntimeException.class,
+                () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+        assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
+    }
 
-	@Test
+    @Test
 	void when_permit_and_executePostHandlingHandlersThrows_then_handledException() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 		when(commandConstraintHandlerBundle.executePostHandlingHandlers(eq("defaultResult")))
@@ -250,7 +266,7 @@ public class CommandPolicyEnforcementPointTests {
 		assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
 	}
 
-	@Test
+    @Test
 	void when_permit_then_mapResult() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 

@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.axon.annotation;
 
 import java.lang.annotation.ElementType;
@@ -40,7 +41,7 @@ import java.lang.annotation.Target;
  * <p>
  * To make a reasonable decision about its responsibility, the following data is
  * made available to the SpEL expression in its evaluation context:
- * 
+ *
  * <ul>
  * <li>The object whose {@code @CommandHandler} method is to be invoked is the
  * root object of the evaluation context. I.e., all methods and members can be
@@ -55,22 +56,24 @@ import java.lang.annotation.Target;
  * </ul>
  *
  * Example:
- * 
- * <pre>{@code 
- * 	@ConstraintHandler("#constraint.get('type').textValue() == 'documentSuspiciousManipulation'")
- * 	public void handleSuspiciousManipulation(JsonNode constraint) {
- * 		apply(new SuspiciousManipulation(id, constraint.get("username").textValue()));
- * 	}
+ *
+ * <pre>{@code
+ *
+ * @ConstraintHandler("#constraint.get('type').textValue() == 'documentSuspiciousManipulation'")
+ * public void handleSuspiciousManipulation(JsonNode constraint) {
+ *     apply(new SuspiciousManipulation(id, constraint.get("username").textValue()));
+ * }
  * }</pre>
- * 
+ *
  * @author Dominic Heutelbeck
  * @since 2.1.0
  */
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ConstraintHandler {
-	/**
-	 * @return SpEL expression that should evaluate to a Boolean value to determine responsibility.
-	 */
-	String value() default ""; 
+    /**
+     * @return SpEL expression that should evaluate to a Boolean value to determine
+     *         responsibility.
+     */
+    String value() default "";
 }

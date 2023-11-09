@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,30 +45,30 @@ import reactor.netty.http.client.HttpClient;
 @Slf4j
 public class WebClientRequestExecutor {
 
-	private static final String BAD_URL_INFORMATION = "Bad URL information.";
-	private static final String NO_URL_PROVIDED = "No URL provided.";
-	private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final String       BAD_URL_INFORMATION = "Bad URL information.";
+    private static final String       NO_URL_PROVIDED     = "No URL provided.";
+    private static final ObjectMapper MAPPER              = new ObjectMapper();
 
-	private final HttpClient httpClient;
+    private final HttpClient httpClient;
 
-	public WebClientRequestExecutor(HttpClient httpClient) {
-		this.httpClient = httpClient;
-	}
+    public WebClientRequestExecutor(HttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
 
-	public WebClientRequestExecutor(SslContext sslContext) {
-		this(HttpClient.create().secure(spec -> spec.sslContext(sslContext)));
-	}
+    public WebClientRequestExecutor(SslContext sslContext) {
+        this(HttpClient.create().secure(spec -> spec.sslContext(sslContext)));
+    }
 
-	public WebClientRequestExecutor() {
-		this(HttpClient.create().secure());
-	}
+    public WebClientRequestExecutor() {
+        this(HttpClient.create().secure());
+    }
 
-	public Flux<JsonNode> executeReactiveRequest(RequestSpecification requestSpec, HttpMethod httpMethod) {
-		log.debug("Executing {} - {}", httpMethod, requestSpec);
-		try {
-			final URLSpecification urlSpec = getURLSpecification(requestSpec);
-			final WebClient webClient = createWebClient(urlSpec.baseUrl());
-			// @formatter:off
+    public Flux<JsonNode> executeReactiveRequest(RequestSpecification requestSpec, HttpMethod httpMethod) {
+        log.debug("Executing {} - {}", httpMethod, requestSpec);
+        try {
+            final URLSpecification urlSpec   = getURLSpecification(requestSpec);
+            final WebClient        webClient = createWebClient(urlSpec.baseUrl());
+            // @formatter:off
 			if (httpMethod == GET) {
 				return webClient.get().uri(urlSpec.pathAndQueryString()).accept(MediaType.APPLICATION_NDJSON)
 						.headers(httpHeaders -> addHeaders(httpHeaders, requestSpec)).retrieve()
@@ -92,57 +94,57 @@ public class WebClientRequestExecutor {
 						.retrieve().bodyToFlux(JsonNode.class);
 			}
 			// @formatter:on
-			else {
-				return Flux.error(new IOException("Unsupported request method " + httpMethod));
-			}
-		} catch (Exception e) {
-			return Flux.error(e);
-		}
-	}
+            else {
+                return Flux.error(new IOException("Unsupported request method " + httpMethod));
+            }
+        } catch (Exception e) {
+            return Flux.error(e);
+        }
+    }
 
-	private WebClient createWebClient(String baseUrl) {
-		return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).baseUrl(baseUrl).build();
-	}
+    private WebClient createWebClient(String baseUrl) {
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).baseUrl(baseUrl).build();
+    }
 
-	private static URLSpecification getURLSpecification(RequestSpecification requestSpec) throws IOException {
-		final JsonNode url = requestSpec.getUrl();
-		if (url == null) {
-			throw new IOException(NO_URL_PROVIDED);
-		} else if (url.isTextual()) {
-			final String urlStr = url.asText();
-			try {
-				return URLSpecification.from(urlStr);
-			} catch (MalformedURLException e) {
-				throw new IOException(BAD_URL_INFORMATION, e);
-			}
-		} else if (url.isObject()) {
-			try {
-				return MAPPER.treeToValue(url, URLSpecification.class);
-			} catch (JsonProcessingException e) {
-				throw new IOException(BAD_URL_INFORMATION, e);
-			}
-		} else {
-			throw new IOException(BAD_URL_INFORMATION);
-		}
-	}
+    private static URLSpecification getURLSpecification(RequestSpecification requestSpec) throws IOException {
+        final JsonNode url = requestSpec.getUrl();
+        if (url == null) {
+            throw new IOException(NO_URL_PROVIDED);
+        } else if (url.isTextual()) {
+            final String urlStr = url.asText();
+            try {
+                return URLSpecification.from(urlStr);
+            } catch (MalformedURLException e) {
+                throw new IOException(BAD_URL_INFORMATION, e);
+            }
+        } else if (url.isObject()) {
+            try {
+                return MAPPER.treeToValue(url, URLSpecification.class);
+            } catch (JsonProcessingException e) {
+                throw new IOException(BAD_URL_INFORMATION, e);
+            }
+        } else {
+            throw new IOException(BAD_URL_INFORMATION);
+        }
+    }
 
-	private static void addHeaders(HttpHeaders httpHeaders, RequestSpecification requestSpec) {
-		final Map<String, String> reqHeaders = requestSpec.getHeaders();
-		if (reqHeaders != null) {
-			for (Map.Entry<String, String> header : reqHeaders.entrySet()) {
-				httpHeaders.set(header.getKey(), header.getValue());
-			}
-		}
-	}
+    private static void addHeaders(HttpHeaders httpHeaders, RequestSpecification requestSpec) {
+        final Map<String, String> reqHeaders = requestSpec.getHeaders();
+        if (reqHeaders != null) {
+            for (Map.Entry<String, String> header : reqHeaders.entrySet()) {
+                httpHeaders.set(header.getKey(), header.getValue());
+            }
+        }
+    }
 
-	private static Object getBody(RequestSpecification requestSpec) throws JsonProcessingException {
-		if (requestSpec.getBody() != null) {
-			return MAPPER.writeValueAsString(requestSpec.getBody());
-		} else if (requestSpec.getRawBody() != null) {
-			return MAPPER.writeValueAsBytes(requestSpec.getRawBody());
-		} else {
-			return "";
-		}
-	}
+    private static Object getBody(RequestSpecification requestSpec) throws JsonProcessingException {
+        if (requestSpec.getBody() != null) {
+            return MAPPER.writeValueAsString(requestSpec.getBody());
+        } else if (requestSpec.getRawBody() != null) {
+            return MAPPER.writeValueAsBytes(requestSpec.getRawBody());
+        } else {
+            return "";
+        }
+    }
 
 }

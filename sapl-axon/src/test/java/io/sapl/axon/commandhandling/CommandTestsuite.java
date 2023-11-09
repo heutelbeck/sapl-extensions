@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.sapl.axon.commandhandling;
 
 import static io.sapl.axon.TestUtilities.isAccessDenied;
@@ -58,329 +75,329 @@ import reactor.core.publisher.Mono;
 @Import(ScenarioConfiguration.class)
 public abstract class CommandTestsuite {
 
-	private static final String MODIFY_ERROR     = "modify error";
-	private static final String MODIFY_RESULT    = "modify result";
-	private static final String MODIFIED_RESULT  = "this is a modified result";
-	private static final String MODIFIED_COMMAND = "modifiedCommand";
-	private static final String MODIFY_COMMAND   = "modifyCommand";
-	private static final String ON_DECISION_DO   = "onDecisionDo";
+    private static final String MODIFY_ERROR     = "modify error";
+    private static final String MODIFY_RESULT    = "modify result";
+    private static final String MODIFIED_RESULT  = "this is a modified result";
+    private static final String MODIFIED_COMMAND = "modifiedCommand";
+    private static final String MODIFY_COMMAND   = "modifyCommand";
+    private static final String ON_DECISION_DO   = "onDecisionDo";
 
-	private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
+    private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
-	private static final long COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS = 500L;
-	protected static boolean  isIntegrationTest                         = false;
-	private static boolean    waitedForCommandHandlerRegistration       = false;
+    private static final long COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS = 500L;
+    protected static boolean  isIntegrationTest                         = false;
+    private static boolean    waitedForCommandHandlerRegistration       = false;
 
-	@MockBean
-	PolicyDecisionPoint pdp;
+    @MockBean
+    PolicyDecisionPoint pdp;
 
-	@Autowired
-	CommandGateway commandGateway;
+    @Autowired
+    CommandGateway commandGateway;
 
-	@Autowired
-	CommandBus commandBus;
+    @Autowired
+    CommandBus commandBus;
 
-	@Autowired
-	CommandHandlingService commandService;
+    @Autowired
+    CommandHandlingService commandService;
 
-	@SpyBean
-	OnDecisionProvider onDecisionProvider;
+    @SpyBean
+    OnDecisionProvider onDecisionProvider;
 
-	@SpyBean
-	CommandMappingProvider querMappingProvider;
+    @SpyBean
+    CommandMappingProvider querMappingProvider;
 
-	@SpyBean
-	ResultMappingProvider resultMappingProvider;
+    @SpyBean
+    ResultMappingProvider resultMappingProvider;
 
-	@SpyBean
-	ErrorMappingProvider errorMappingProvider;
+    @SpyBean
+    ErrorMappingProvider errorMappingProvider;
 
-	@Test
-	void when_securedCommandHandler_and_Permit_then_accessGranted() {
-		waitForCommandHandlerRegistration();
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is("OK (foo)"));
-	}
+    @Test
+    void when_securedCommandHandler_and_Permit_then_accessGranted() {
+        waitForCommandHandlerRegistration();
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+        assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is("OK (foo)"));
+    }
 
-	@Test
-	void when_securedCommandHandler_and_Deny_then_accessDenied() {
-		waitForCommandHandlerRegistration();
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
-		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
-		assertTrue(isAccessDenied().test(thrown));
-	}
+    @Test
+    void when_securedCommandHandler_and_Deny_then_accessDenied() {
+        waitForCommandHandlerRegistration();
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
+        var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
+        assertTrue(isAccessDenied().test(thrown));
+    }
 
-	@Test
-	void when_securedCommandHandler_and_PermitWithUnknownObligation_then_accessDenied() {
-		waitForCommandHandlerRegistration();
-		var obligations = JSON.arrayNode();
-		obligations.add(JSON.textNode("unknown"));
-		when(pdp.decide(any(AuthorizationSubscription.class)))
-				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
-		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
-		assertTrue(isAccessDenied().test(thrown));
-	}
+    @Test
+    void when_securedCommandHandler_and_PermitWithUnknownObligation_then_accessDenied() {
+        waitForCommandHandlerRegistration();
+        var obligations = JSON.arrayNode();
+        obligations.add(JSON.textNode("unknown"));
+        when(pdp.decide(any(AuthorizationSubscription.class)))
+                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+        var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
+        assertTrue(isAccessDenied().test(thrown));
+    }
 
-	@Test
-	void when_securedCommandHandler_and_PermitWithObligations_then_accessGrantedAndObligationsMet() {
-		waitForCommandHandlerRegistration();
-		var obligations = JSON.arrayNode();
-		obligations.add(JSON.textNode(MODIFY_RESULT));
-		obligations.add(JSON.textNode(ON_DECISION_DO));
-		obligations.add(JSON.textNode(MODIFY_COMMAND));
-		when(pdp.decide(any(AuthorizationSubscription.class)))
-				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
-		assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is(MODIFIED_RESULT));
-		verify(resultMappingProvider, times(1)).map(any());
-		verify(onDecisionProvider, times(1)).accept(any(), any());
-		verify(querMappingProvider, times(1)).mapPayload(any(), any(), any());
-	}
+    @Test
+    void when_securedCommandHandler_and_PermitWithObligations_then_accessGrantedAndObligationsMet() {
+        waitForCommandHandlerRegistration();
+        var obligations = JSON.arrayNode();
+        obligations.add(JSON.textNode(MODIFY_RESULT));
+        obligations.add(JSON.textNode(ON_DECISION_DO));
+        obligations.add(JSON.textNode(MODIFY_COMMAND));
+        when(pdp.decide(any(AuthorizationSubscription.class)))
+                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+        assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is(MODIFIED_RESULT));
+        verify(resultMappingProvider, times(1)).map(any());
+        verify(onDecisionProvider, times(1)).accept(any(), any());
+        verify(querMappingProvider, times(1)).mapPayload(any(), any(), any());
+    }
 
-	@Test
-	void when_securedCommandHandler_and_PermitWithErrorMapObligations_then_accessGrantedAndChangedError() {
-		waitForCommandHandlerRegistration();
-		var obligations = JSON.arrayNode();
-		obligations.add(JSON.textNode(MODIFY_ERROR));
-		when(pdp.decide(any(AuthorizationSubscription.class)))
-				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+    @Test
+    void when_securedCommandHandler_and_PermitWithErrorMapObligations_then_accessGrantedAndChangedError() {
+        waitForCommandHandlerRegistration();
+        var obligations = JSON.arrayNode();
+        obligations.add(JSON.textNode(MODIFY_ERROR));
+        when(pdp.decide(any(AuthorizationSubscription.class)))
+                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
 
-		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandTwo("foo")));
-		assertTrue(isCausedBy(IllegalArgumentException.class).test(thrown));
-		verify(errorMappingProvider, times(1)).map(any());
-	}
+        var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandTwo("foo")));
+        assertTrue(isCausedBy(IllegalArgumentException.class).test(thrown));
+        verify(errorMappingProvider, times(1)).map(any());
+    }
 
-	@Test
-	void when_securedAggregateCreationCommand_and_Permit_then_accessGranted() {
-		waitForCommandHandlerRegistration();
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		assertThat(commandGateway.sendAndWait(new CreateAggregate("id2")), is("id2"));
-	}
+    @Test
+    void when_securedAggregateCreationCommand_and_Permit_then_accessGranted() {
+        waitForCommandHandlerRegistration();
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+        assertThat(commandGateway.sendAndWait(new CreateAggregate("id2")), is("id2"));
+    }
 
-	@Test
-	void when_securedAggregateCreationAndFollowUpCommand_and_Permit_then_accessGranted() {
-		waitForCommandHandlerRegistration();
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		assertThat(commandGateway.sendAndWait(new CreateAggregate("id1")), is("id1"));
-		assertThat(commandGateway.sendAndWait(new ModifyAggregate("id1")), is(nullValue()));
-	}
+    @Test
+    void when_securedAggregateCreationAndFollowUpCommand_and_Permit_then_accessGranted() {
+        waitForCommandHandlerRegistration();
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+        assertThat(commandGateway.sendAndWait(new CreateAggregate("id1")), is("id1"));
+        assertThat(commandGateway.sendAndWait(new ModifyAggregate("id1")), is(nullValue()));
+    }
 
-	@SuppressWarnings("unchecked")
-	@Test
-	void when_securedAggregateCreationAndFollowUpCommand_and_PermitWithObligation_then_accessGranted() {
-		waitForCommandHandlerRegistration();
-		var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
-		var obligations        = JSON.arrayNode();
-		obligations.add(JSON.textNode("something"));
-		var decisionsForModify = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForModify);
-		assertThat(commandGateway.sendAndWait(new CreateAggregate("id4")), is("id4"));
-		assertThat(commandGateway.sendAndWait(new ModifyAggregate("id4")), is(nullValue()));
-	}
+    @SuppressWarnings("unchecked")
+    @Test
+    void when_securedAggregateCreationAndFollowUpCommand_and_PermitWithObligation_then_accessGranted() {
+        waitForCommandHandlerRegistration();
+        var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
+        var obligations        = JSON.arrayNode();
+        obligations.add(JSON.textNode("something"));
+        var decisionsForModify = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForModify);
+        assertThat(commandGateway.sendAndWait(new CreateAggregate("id4")), is("id4"));
+        assertThat(commandGateway.sendAndWait(new ModifyAggregate("id4")), is(nullValue()));
+    }
 
-	@Test
-	void when_securedCommandHandler_and_PermitWithObligation_then_accessGranted() {
-		waitForCommandHandlerRegistration();
-		var obligations = JSON.arrayNode();
-		obligations.add(JSON.textNode("serviceConstraint"));
-		var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
-		assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is("OK (foo)"));
-	}
+    @Test
+    void when_securedCommandHandler_and_PermitWithObligation_then_accessGranted() {
+        waitForCommandHandlerRegistration();
+        var obligations = JSON.arrayNode();
+        obligations.add(JSON.textNode("serviceConstraint"));
+        var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
+        assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is("OK (foo)"));
+    }
 
-	@Test
-	void when_securedCommandHandler_and_PermitWithObligationFailing_then_accessDenied() {
-		waitForCommandHandlerRegistration();
-		var obligations = JSON.arrayNode();
-		obligations.add(JSON.textNode("failConstraint"));
-		var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
-		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
-		assertTrue(isAccessDenied().test(thrown));
-	}
+    @Test
+    void when_securedCommandHandler_and_PermitWithObligationFailing_then_accessDenied() {
+        waitForCommandHandlerRegistration();
+        var obligations = JSON.arrayNode();
+        obligations.add(JSON.textNode("failConstraint"));
+        var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
+        var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
+        assertTrue(isAccessDenied().test(thrown));
+    }
 
-	@Test
-	void when_securedAggregateCreationCommand_and_Deny_then_accessDenies() {
-		waitForCommandHandlerRegistration();
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
-		var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CreateAggregate("id3")));
-		assertTrue(isAccessDenied().test(thrown));
-	}
+    @Test
+    void when_securedAggregateCreationCommand_and_Deny_then_accessDenies() {
+        waitForCommandHandlerRegistration();
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
+        var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CreateAggregate("id3")));
+        assertTrue(isAccessDenied().test(thrown));
+    }
 
-	@SuppressWarnings("unchecked")
-	@Test
-	void when_securedAggregateCreationAndFollowUpCommandToEntity_and_Permit_then_accessGranted() {
-		waitForCommandHandlerRegistration();
-		var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
-		var obligations        = JSON.arrayNode();
-		obligations.add(JSON.textNode("somethingWithMember"));
-		var decisionsForMemberAccess = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForMemberAccess);
-		assertThat(commandGateway.sendAndWait(new CreateAggregate("id7")), is("id7"));
-		assertThat(commandGateway.sendAndWait(new UpdateMember("id7", "A")), is(nullValue()));
-		assertThat(commandGateway.sendAndWait(new UpdateMember("id7", "B")), is(nullValue()));
-	}
+    @SuppressWarnings("unchecked")
+    @Test
+    void when_securedAggregateCreationAndFollowUpCommandToEntity_and_Permit_then_accessGranted() {
+        waitForCommandHandlerRegistration();
+        var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
+        var obligations        = JSON.arrayNode();
+        obligations.add(JSON.textNode("somethingWithMember"));
+        var decisionsForMemberAccess = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForMemberAccess);
+        assertThat(commandGateway.sendAndWait(new CreateAggregate("id7")), is("id7"));
+        assertThat(commandGateway.sendAndWait(new UpdateMember("id7", "A")), is(nullValue()));
+        assertThat(commandGateway.sendAndWait(new UpdateMember("id7", "B")), is(nullValue()));
+    }
 
-	static void waitForCommandHandlerRegistration() {
-		if (!isIntegrationTest || waitedForCommandHandlerRegistration)
-			return;
-		log.info("Waiting for " + COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS / 1000f
-				+ "s for Axon Server to register command handlers.");
-		Mono.delay(Duration.ofMillis(COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS)).block();
-		log.info("Waited for " + COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS / 1000f
-				+ "s for Axon Server to register command handlers.");
-		waitedForCommandHandlerRegistration = true;
-	}
+    static void waitForCommandHandlerRegistration() {
+        if (!isIntegrationTest || waitedForCommandHandlerRegistration)
+            return;
+        log.info("Waiting for " + COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS / 1000f
+                + "s for Axon Server to register command handlers.");
+        Mono.delay(Duration.ofMillis(COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS)).block();
+        log.info("Waited for " + COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS / 1000f
+                + "s for Axon Server to register command handlers.");
+        waitedForCommandHandlerRegistration = true;
+    }
 
-	@Value
-	static class CommandOne {
-		final String value;
-	}
+    @Value
+    static class CommandOne {
+        final String value;
+    }
 
-	@Value
-	static class CommandTwo {
-		final String value;
-	}
+    @Value
+    static class CommandTwo {
+        final String value;
+    }
 
-	@Slf4j
-	@Service
-	public static class CommandHandlingService {
+    @Slf4j
+    @Service
+    public static class CommandHandlingService {
 
-		public String data = "service data";
+        public String data = "service data";
 
-		@CommandHandler
-		@PreHandleEnforce
-		public String handle(CommandOne command) {
-			return "OK (" + command.getValue() + ")";
-		}
+        @CommandHandler
+        @PreHandleEnforce
+        public String handle(CommandOne command) {
+            return "OK (" + command.getValue() + ")";
+        }
 
-		@CommandHandler
-		@PreHandleEnforce
-		public String handle(CommandTwo command) {
-			throw new RuntimeException("I was a RuntimeException and now should be an IllegalArgumentException");
-		}
+        @CommandHandler
+        @PreHandleEnforce
+        public String handle(CommandTwo command) {
+            throw new RuntimeException("I was a RuntimeException and now should be an IllegalArgumentException");
+        }
 
-		@ConstraintHandler("#constraint.textValue() == 'serviceConstraint' && data == 'service data'")
-		public void handleConstraint(CommandOne command, JsonNode constraint, AuthorizationDecision decision,
-				CommandBus commandBus, MetaData metaData) {
-			log.trace("ConstraintHandler invoked");
-			log.trace("command: {}", command);
-			log.trace("constraint: {}", constraint);
-			log.trace("decision: {}", decision);
-			log.trace("commandBus: {}", commandBus);
-			log.trace("meta: {}", metaData);
-		}
+        @ConstraintHandler("#constraint.textValue() == 'serviceConstraint' && data == 'service data'")
+        public void handleConstraint(CommandOne command, JsonNode constraint, AuthorizationDecision decision,
+                CommandBus commandBus, MetaData metaData) {
+            log.trace("ConstraintHandler invoked");
+            log.trace("command: {}", command);
+            log.trace("constraint: {}", constraint);
+            log.trace("decision: {}", decision);
+            log.trace("commandBus: {}", commandBus);
+            log.trace("meta: {}", metaData);
+        }
 
-		@ConstraintHandler("#constraint.textValue() == 'failConstraint'")
-		public void handleConstraint() {
-			throw new IllegalStateException("ERROR");
-		}
+        @ConstraintHandler("#constraint.textValue() == 'failConstraint'")
+        public void handleConstraint() {
+            throw new IllegalStateException("ERROR");
+        }
 
-	}
+    }
 
-	static class OnDecisionProvider implements OnDecisionConstraintHandlerProvider {
+    static class OnDecisionProvider implements OnDecisionConstraintHandlerProvider {
 
-		@Override
-		public boolean isResponsible(JsonNode constraint) {
-			return constraint.isTextual() && ON_DECISION_DO.equals(constraint.textValue());
-		}
+        @Override
+        public boolean isResponsible(JsonNode constraint) {
+            return constraint.isTextual() && ON_DECISION_DO.equals(constraint.textValue());
+        }
 
-		@Override
-		public BiConsumer<AuthorizationDecision, Message<?>> getHandler(JsonNode constraint) {
-			return this::accept;
-		}
+        @Override
+        public BiConsumer<AuthorizationDecision, Message<?>> getHandler(JsonNode constraint) {
+            return this::accept;
+        }
 
-		public void accept(AuthorizationDecision decision, Message<?> message) {
-			// NOOP
-		}
+        public void accept(AuthorizationDecision decision, Message<?> message) {
+            // NOOP
+        }
 
-	}
+    }
 
-	static class CommandMappingProvider implements CommandConstraintHandlerProvider {
+    static class CommandMappingProvider implements CommandConstraintHandlerProvider {
 
-		@Override
-		public boolean isResponsible(JsonNode constraint) {
-			return constraint.isTextual() && MODIFY_COMMAND.equals(constraint.textValue());
-		}
+        @Override
+        public boolean isResponsible(JsonNode constraint) {
+            return constraint.isTextual() && MODIFY_COMMAND.equals(constraint.textValue());
+        }
 
-		@Override
-		public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
-			if (payload instanceof CommandOne) {
-				return new CommandOne(MODIFIED_COMMAND);
-			}
-			return payload;
-		}
+        @Override
+        public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
+            if (payload instanceof CommandOne) {
+                return new CommandOne(MODIFIED_COMMAND);
+            }
+            return payload;
+        }
 
-	}
+    }
 
-	public static class ResultMappingProvider implements MappingConstraintHandlerProvider<String> {
+    public static class ResultMappingProvider implements MappingConstraintHandlerProvider<String> {
 
-		@Override
-		public boolean isResponsible(JsonNode constraint) {
-			return constraint.isTextual() && MODIFY_RESULT.equals(constraint.textValue());
-		}
+        @Override
+        public boolean isResponsible(JsonNode constraint) {
+            return constraint.isTextual() && MODIFY_RESULT.equals(constraint.textValue());
+        }
 
-		@Override
-		public Class<String> getSupportedType() {
-			return String.class;
-		}
+        @Override
+        public Class<String> getSupportedType() {
+            return String.class;
+        }
 
-		@Override
-		public UnaryOperator<String> getHandler(JsonNode constraint) {
-			return this::map;
-		}
+        @Override
+        public UnaryOperator<String> getHandler(JsonNode constraint) {
+            return this::map;
+        }
 
-		public String map(String original) {
-			return MODIFIED_RESULT;
-		}
+        public String map(String original) {
+            return MODIFIED_RESULT;
+        }
 
-	}
+    }
 
-	public static class ErrorMappingProvider implements ErrorMappingConstraintHandlerProvider {
+    public static class ErrorMappingProvider implements ErrorMappingConstraintHandlerProvider {
 
-		@Override
-		public boolean isResponsible(JsonNode constraint) {
-			return constraint.isTextual() && MODIFY_ERROR.equals(constraint.textValue());
-		}
+        @Override
+        public boolean isResponsible(JsonNode constraint) {
+            return constraint.isTextual() && MODIFY_ERROR.equals(constraint.textValue());
+        }
 
-		@Override
-		public UnaryOperator<Throwable> getHandler(JsonNode constraint) {
-			return this::map;
-		}
+        @Override
+        public UnaryOperator<Throwable> getHandler(JsonNode constraint) {
+            return this::map;
+        }
 
-		public Throwable map(Throwable original) {
-			return new IllegalArgumentException(original.getMessage(), original.getCause());
-		}
+        public Throwable map(Throwable original) {
+            return new IllegalArgumentException(original.getMessage(), original.getCause());
+        }
 
-	}
+    }
 
-	@Configuration
-	@Import({ SaplAutoConfiguration.class })
-	static class ScenarioConfiguration {
-		@Bean
-		CommandHandlingService CommandHandlingService() {
-			return new CommandHandlingService();
-		}
+    @Configuration
+    @Import({ SaplAutoConfiguration.class })
+    static class ScenarioConfiguration {
+        @Bean
+        CommandHandlingService CommandHandlingService() {
+            return new CommandHandlingService();
+        }
 
-		@Bean
-		OnDecisionProvider onDecisionProvider() {
-			return new OnDecisionProvider();
-		}
+        @Bean
+        OnDecisionProvider onDecisionProvider() {
+            return new OnDecisionProvider();
+        }
 
-		@Bean
-		CommandMappingProvider querMappingProvider() {
-			return new CommandMappingProvider();
-		}
+        @Bean
+        CommandMappingProvider querMappingProvider() {
+            return new CommandMappingProvider();
+        }
 
-		@Bean
-		ResultMappingProvider resultMappingProvider() {
-			return new ResultMappingProvider();
-		}
+        @Bean
+        ResultMappingProvider resultMappingProvider() {
+            return new ResultMappingProvider();
+        }
 
-		@Bean
-		ErrorMappingProvider errorMappingProvider() {
-			return new ErrorMappingProvider();
-		}
+        @Bean
+        ErrorMappingProvider errorMappingProvider() {
+            return new ErrorMappingProvider();
+        }
 
-	}
+    }
 
 }

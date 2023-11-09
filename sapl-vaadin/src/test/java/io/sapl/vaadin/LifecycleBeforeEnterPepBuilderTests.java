@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.sapl.vaadin;
 
 import static io.sapl.api.interpreter.Val.JSON;
@@ -44,161 +61,162 @@ import reactor.core.publisher.Mono;
 
 public class LifecycleBeforeEnterPepBuilderTests {
 
-	private static MockedStatic<SecurityHelper> securityHelperMock;
-	LifecycleBeforeEnterPepBuilder sut;
+    private static MockedStatic<SecurityHelper> securityHelperMock;
+    LifecycleBeforeEnterPepBuilder              sut;
 
-	@BeforeAll
-	static void beforeAll() {
-		var subject = JSON.objectNode();
-		subject.put("username", "dummy");
-		securityHelperMock = mockStatic(SecurityHelper.class);
-		securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
-		List<String> userRoles = new ArrayList<>();	
-		userRoles.add("admin");
-		securityHelperMock.when(SecurityHelper::getUserRoles).thenReturn(userRoles);
-		mockSpringContextHolderAuthentication();
-	}
+    @BeforeAll
+    static void beforeAll() {
+        var subject = JSON.objectNode();
+        subject.put("username", "dummy");
+        securityHelperMock = mockStatic(SecurityHelper.class);
+        securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
+        List<String> userRoles = new ArrayList<>();
+        userRoles.add("admin");
+        securityHelperMock.when(SecurityHelper::getUserRoles).thenReturn(userRoles);
+        mockSpringContextHolderAuthentication();
+    }
 
-	@AfterAll
-	static void afterAll() {
-		securityHelperMock.close();
-	}
+    @AfterAll
+    static void afterAll() {
+        securityHelperMock.close();
+    }
 
-	@BeforeEach
-	void setup() {
-		var pdpMock = mock(PolicyDecisionPoint.class);
-		var enforcementServiceMock = mock(VaadinConstraintEnforcementService.class);
-		sut = new LifecycleBeforeEnterPepBuilder(pdpMock, enforcementServiceMock);
-	}
+    @BeforeEach
+    void setup() {
+        var pdpMock                = mock(PolicyDecisionPoint.class);
+        var enforcementServiceMock = mock(VaadinConstraintEnforcementService.class);
+        sut = new LifecycleBeforeEnterPepBuilder(pdpMock, enforcementServiceMock);
+    }
 
-	@Test
-	void when_newInstance_then_isBuildIsFalse() {
-		// GIVEN
+    @Test
+    void when_newInstance_then_isBuildIsFalse() {
+        // GIVEN
 
-		// WHEN
-		// THEN
-		assertFalse(sut.isBuild);
-	}
+        // WHEN
+        // THEN
+        assertFalse(sut.isBuild);
+    }
 
-	@Test
-	void when_build_then_isBuildIsTrue() {
-		// GIVEN
-		var rolesNode = JSON.arrayNode().add("admin");
-		// WHEN
-		sut.build();
+    @Test
+    void when_build_then_isBuildIsTrue() {
+        // GIVEN
+        var rolesNode = JSON.arrayNode().add("admin");
+        // WHEN
+        sut.build();
 
-		// THEN
-		assertEquals(rolesNode, sut.vaadinPep.getAuthorizationSubscription().getSubject().get("roles"));
-		assertTrue(sut.isBuild);
-	}
+        // THEN
+        assertEquals(rolesNode, sut.vaadinPep.getAuthorizationSubscription().getSubject().get("roles"));
+        assertTrue(sut.isBuild);
+    }
 
-	@Test
-	void when_buildTwice_then_exceptionIsThrown() {
-		// GIVEN
-		// WHEN
-		sut.build();
-		Exception exception = assertThrows(AccessDeniedException.class, sut::build);
+    @Test
+    void when_buildTwice_then_exceptionIsThrown() {
+        // GIVEN
+        // WHEN
+        sut.build();
+        Exception exception = assertThrows(AccessDeniedException.class, sut::build);
 
-		// THEN
-		assertEquals("Builder has already been build. The builder can only be used once.", exception.getMessage());
-	}
-	
+        // THEN
+        assertEquals("Builder has already been build. The builder can only be used once.", exception.getMessage());
+    }
 
-	@Test
-	void when_ResourceIsDefined() {
-		// GIVEN
-		var beforeEnterEventMock = mock(BeforeEnterEvent.class);
-		var beforeEnterEventMock2 = mock(BeforeEnterEvent.class);
-		doReturn(String.class).when(beforeEnterEventMock).getNavigationTarget();
-		doReturn(String.class).when(beforeEnterEventMock2).getNavigationTarget();
-		sut.setResourceByNavigationTargetIfNotDefined(beforeEnterEventMock);
+    @Test
+    void when_ResourceIsDefined() {
+        // GIVEN
+        var beforeEnterEventMock  = mock(BeforeEnterEvent.class);
+        var beforeEnterEventMock2 = mock(BeforeEnterEvent.class);
+        doReturn(String.class).when(beforeEnterEventMock).getNavigationTarget();
+        doReturn(String.class).when(beforeEnterEventMock2).getNavigationTarget();
+        sut.setResourceByNavigationTargetIfNotDefined(beforeEnterEventMock);
 
-		// WHEN
-		sut.setResourceByNavigationTargetIfNotDefined(beforeEnterEventMock2);
+        // WHEN
+        sut.setResourceByNavigationTargetIfNotDefined(beforeEnterEventMock2);
 
-		// THEN
-		verify(beforeEnterEventMock2, times(0)).getNavigationTarget();
-	}
-	@Test
+        // THEN
+        verify(beforeEnterEventMock2, times(0)).getNavigationTarget();
+    }
 
-	void when_ResourceIsDefined_itIsSavedInSubscription() {
-		// GIVEN
-		var resourceNode = JSON.arrayNode().add("Resource");
-		// WHEN
-		sut.resource(resourceNode);
-		
-		// THEN
-		assertEquals(resourceNode, sut.vaadinPep.getAuthorizationSubscription().getResource());
-	}
+    @Test
 
-	@Test
-	void when_beforeEnterWithEmptyDecisionEventListenerList_thenEventGetUIIsNotCalled() {
-		// GIVEN
-		var listener = sut.build();
-		var beforeEnterEventMock = mock(BeforeEnterEvent.class);
+    void when_ResourceIsDefined_itIsSavedInSubscription() {
+        // GIVEN
+        var resourceNode = JSON.arrayNode().add("Resource");
+        // WHEN
+        sut.resource(resourceNode);
 
-		// WHEN
-		listener.beforeEnter(beforeEnterEventMock);
+        // THEN
+        assertEquals(resourceNode, sut.vaadinPep.getAuthorizationSubscription().getResource());
+    }
 
-		// THEN
-		verify(beforeEnterEventMock, times(0)).getUI();
-	}
+    @Test
+    void when_beforeEnterWithEmptyDecisionEventListenerList_thenEventGetUIIsNotCalled() {
+        // GIVEN
+        var listener             = sut.build();
+        var beforeEnterEventMock = mock(BeforeEnterEvent.class);
 
-	@Test
-	void when_onDenyDoWithDeny_thenBiConsumerIsAccepted() {
-		// GIVEN
-		mockSpringContextHolderAuthentication();
-		var pdpMock = mockPdp();
+        // WHEN
+        listener.beforeEnter(beforeEnterEventMock);
 
-		var beforeEnterEventMock = mockBeforeEnterEvent();
-		doReturn(String.class).when(beforeEnterEventMock).getNavigationTarget();
+        // THEN
+        verify(beforeEnterEventMock, times(0)).getUI();
+    }
 
-		var enforcementServiceMock = mockNextVaadinConstraintEnforcementService(Decision.DENY);
+    @Test
+    void when_onDenyDoWithDeny_thenBiConsumerIsAccepted() {
+        // GIVEN
+        mockSpringContextHolderAuthentication();
+        var pdpMock = mockPdp();
 
-		// Methods on SUT
-		var sut = new VaadinPep.LifecycleBeforeEnterPepBuilder(pdpMock, enforcementServiceMock);
-		@SuppressWarnings("unchecked") // suppress mock
-		BiConsumer<AuthorizationDecision, BeforeEvent> biConsumerMock = mock(BiConsumer.class);
-		sut.onDenyDo(biConsumerMock);
-		BeforeEnterListener listener = sut.build();
+        var beforeEnterEventMock = mockBeforeEnterEvent();
+        doReturn(String.class).when(beforeEnterEventMock).getNavigationTarget();
 
-		// WHEN
-		listener.beforeEnter(beforeEnterEventMock);
+        var enforcementServiceMock = mockNextVaadinConstraintEnforcementService(Decision.DENY);
 
-		// THEN
-		verify(beforeEnterEventMock, times(1)).getUI();
-		verify(enforcementServiceMock, times(1)).enforceConstraintsOfDecision(any(), any(), any());
-		verify(biConsumerMock, times(1)).accept(any(AuthorizationDecision.class), any(BeforeEvent.class));
-	}
+        // Methods on SUT
+        var                                            sut            = new VaadinPep.LifecycleBeforeEnterPepBuilder(
+                pdpMock, enforcementServiceMock);
+        @SuppressWarnings("unchecked") // suppress mock
+        BiConsumer<AuthorizationDecision, BeforeEvent> biConsumerMock = mock(BiConsumer.class);
+        sut.onDenyDo(biConsumerMock);
+        BeforeEnterListener listener = sut.build();
 
-	private PolicyDecisionPoint mockPdp() {
-		var pdpMock = mock(PolicyDecisionPoint.class);
-		var authzFlux = Flux.just(new AuthorizationDecision(Decision.PERMIT));
-		when(pdpMock.decide(any(AuthorizationSubscription.class))).thenReturn(authzFlux);
-		return pdpMock;
-	}
+        // WHEN
+        listener.beforeEnter(beforeEnterEventMock);
 
-	private BeforeEnterEvent mockBeforeEnterEvent() {
-		var beforeEnterEventMock = mock(BeforeEnterEvent.class);
-		var locationMock = mock(Location.class);
-		when(locationMock.getFirstSegment()).thenReturn("admin-page");
-		doReturn(locationMock).when(beforeEnterEventMock).getLocation();
-		var mockedUI = UIMock.getMockedUI();
-		when(beforeEnterEventMock.getUI()).thenReturn(mockedUI);
-		return beforeEnterEventMock;
-	}
+        // THEN
+        verify(beforeEnterEventMock, times(1)).getUI();
+        verify(enforcementServiceMock, times(1)).enforceConstraintsOfDecision(any(), any(), any());
+        verify(biConsumerMock, times(1)).accept(any(AuthorizationDecision.class), any(BeforeEvent.class));
+    }
 
-	private static void mockSpringContextHolderAuthentication() {
-		var authentication = Mockito.mock(Authentication.class);
-		var securityContext = Mockito.mock(SecurityContext.class);
-		when(securityContext.getAuthentication()).thenReturn(authentication);
-		SecurityContextHolder.setContext(securityContext);
-	}
+    private PolicyDecisionPoint mockPdp() {
+        var pdpMock   = mock(PolicyDecisionPoint.class);
+        var authzFlux = Flux.just(new AuthorizationDecision(Decision.PERMIT));
+        when(pdpMock.decide(any(AuthorizationSubscription.class))).thenReturn(authzFlux);
+        return pdpMock;
+    }
 
-	private VaadinConstraintEnforcementService mockNextVaadinConstraintEnforcementService(Decision decision) {
-		var enforcementServiceMock = mock(VaadinConstraintEnforcementService.class);
-		var monoMock = Mono.just(new AuthorizationDecision(decision));
-		when(enforcementServiceMock.enforceConstraintsOfDecision(any(), any(), any())).thenReturn(monoMock);
-		return enforcementServiceMock;
-	}
+    private BeforeEnterEvent mockBeforeEnterEvent() {
+        var beforeEnterEventMock = mock(BeforeEnterEvent.class);
+        var locationMock         = mock(Location.class);
+        when(locationMock.getFirstSegment()).thenReturn("admin-page");
+        doReturn(locationMock).when(beforeEnterEventMock).getLocation();
+        var mockedUI = UIMock.getMockedUI();
+        when(beforeEnterEventMock.getUI()).thenReturn(mockedUI);
+        return beforeEnterEventMock;
+    }
+
+    private static void mockSpringContextHolderAuthentication() {
+        var authentication  = Mockito.mock(Authentication.class);
+        var securityContext = Mockito.mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+    }
+
+    private VaadinConstraintEnforcementService mockNextVaadinConstraintEnforcementService(Decision decision) {
+        var enforcementServiceMock = mock(VaadinConstraintEnforcementService.class);
+        var monoMock               = Mono.just(new AuthorizationDecision(decision));
+        when(enforcementServiceMock.enforceConstraintsOfDecision(any(), any(), any())).thenReturn(monoMock);
+        return enforcementServiceMock;
+    }
 }

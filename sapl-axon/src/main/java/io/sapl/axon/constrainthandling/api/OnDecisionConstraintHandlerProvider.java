@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.axon.constrainthandling.api;
 
 import java.util.function.BiConsumer;
@@ -27,19 +28,19 @@ import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
 
 /**
- * 
+ *
  * Base interface for implementing constraint handlers that will be triggered
  * upon receiving a new decision from the PDP.
- * 
+ *
  * @author Dominic Heutelbeck
  * @since 2.1.0
  */
 public interface OnDecisionConstraintHandlerProvider extends Responsible, HasPriority {
-	/**
-	 * Creates the handler.
-	 * 
-	 * @param constraint The constraint.
-	 * @return The handler.
-	 */
-	BiConsumer<AuthorizationDecision, Message<?>> getHandler(JsonNode constraint);
+    /**
+     * Creates the handler.
+     *
+     * @param constraint The constraint.
+     * @return The handler.
+     */
+    BiConsumer<AuthorizationDecision, Message<?>> getHandler(JsonNode constraint);
 }

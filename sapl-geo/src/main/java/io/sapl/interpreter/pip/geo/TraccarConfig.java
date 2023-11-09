@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,18 +30,18 @@ import lombok.NoArgsConstructor;
 @JsonInclude(Include.NON_NULL)
 public class TraccarConfig {
 
-	private static final int DEF_POS_VALIDITY_TIMESPAN = 120;
+    private static final int DEF_POS_VALIDITY_TIMESPAN = 120;
 
-	private String deviceID;
+    private String deviceID;
 
-	private String url;
+    private String url;
 
-	private String credentials; // already Base64-encrypted
+    private String credentials; // already Base64-encrypted
 
-	private String username;
+    private String username;
 
-	private String password;
+    private String password;
 
-	private int posValidityTimespan = DEF_POS_VALIDITY_TIMESPAN;
+    private int posValidityTimespan = DEF_POS_VALIDITY_TIMESPAN;
 
 }

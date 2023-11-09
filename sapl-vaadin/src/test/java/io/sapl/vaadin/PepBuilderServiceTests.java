@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.sapl.vaadin;
 
 import static io.sapl.api.interpreter.Val.JSON;
@@ -27,126 +44,129 @@ import io.sapl.vaadin.base.SecurityHelper;
 
 class PepBuilderServiceTests {
 
-	private PolicyDecisionPoint pdp;
-	private VaadinConstraintEnforcementService vaadinConstraintEnforcementService;
-	private static MockedStatic<SecurityHelper> securityHelperMock;
+    private PolicyDecisionPoint                 pdp;
+    private VaadinConstraintEnforcementService  vaadinConstraintEnforcementService;
+    private static MockedStatic<SecurityHelper> securityHelperMock;
 
-	@BeforeAll
-	static void beforeAll() {
-		var subject = JSON.objectNode();
-		subject.put("username", "dummy");
-		securityHelperMock = mockStatic(SecurityHelper.class);
-		securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
-	}
+    @BeforeAll
+    static void beforeAll() {
+        var subject = JSON.objectNode();
+        subject.put("username", "dummy");
+        securityHelperMock = mockStatic(SecurityHelper.class);
+        securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
+    }
 
-	@AfterAll
-	static void afterAll() {
-		securityHelperMock.close();
-	}
+    @AfterAll
+    static void afterAll() {
+        securityHelperMock.close();
+    }
 
-	@BeforeEach
-	void setupTest() {
-		pdp = mock(PolicyDecisionPoint.class);
-		vaadinConstraintEnforcementService = mock(VaadinConstraintEnforcementService.class);
-	}
-	// *************************************************
-	// *************** Integration tests ***************
-	// *************************************************
-	@Test
-	void when_withComponentIsCalled_then_ComponentIsSetInComponentBuilder() {
-		// GIVEN
-		PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
-		Component component = mock(Component.class);
-		// WHEN + THEN
-		assertEquals(component, pepBuilderService.with(component).component);
-	}
+    @BeforeEach
+    void setupTest() {
+        pdp                                = mock(PolicyDecisionPoint.class);
+        vaadinConstraintEnforcementService = mock(VaadinConstraintEnforcementService.class);
+    }
 
-	@Test
-	void when_withButtonIsCalled_then_ButtonIsSetInButtonBuilder() {
-		// GIVEN
-		PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
-		Button button = mock(Button.class);
-		// WHEN + THEN
-		assertEquals(button, pepBuilderService.with(button).component);
-	}
+    // *************************************************
+    // *************** Integration tests ***************
+    // *************************************************
+    @Test
+    void when_withComponentIsCalled_then_ComponentIsSetInComponentBuilder() {
+        // GIVEN
+        PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
+        Component         component         = mock(Component.class);
+        // WHEN + THEN
+        assertEquals(component, pepBuilderService.with(component).component);
+    }
 
-	@Test
-	void when_withTextFieldIsCalled_then_TextFieldIsSetInTextFieldBuilder() {
-		// GIVEN
-		PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
-		TextField textField = mock(TextField.class);
-		// WHEN + THEN
-		assertEquals(textField, pepBuilderService.with(textField).component);
-	}
+    @Test
+    void when_withButtonIsCalled_then_ButtonIsSetInButtonBuilder() {
+        // GIVEN
+        PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
+        Button            button            = mock(Button.class);
+        // WHEN + THEN
+        assertEquals(button, pepBuilderService.with(button).component);
+    }
 
-	@Test
-	void when_withCheckboxIsCalled_then_CheckboxIsSetInCheckboxBuilder() {
-		// GIVEN
-		PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
-		Checkbox checkbox = mock(Checkbox.class);
-		// WHEN + THEN
-		assertEquals(checkbox, pepBuilderService.with(checkbox).component);
-	}
+    @Test
+    void when_withTextFieldIsCalled_then_TextFieldIsSetInTextFieldBuilder() {
+        // GIVEN
+        PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
+        TextField         textField         = mock(TextField.class);
+        // WHEN + THEN
+        assertEquals(textField, pepBuilderService.with(textField).component);
+    }
 
-	@Test
-	void when_withSpanIsCalled_then_SpanIsSetInSpanBuilder() {
-		// GIVEN
-		PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
-		Span span = mock(Span.class);
-		// WHEN + THEN
-		assertEquals(span, pepBuilderService.with(span).component);
-	}
-	
+    @Test
+    void when_withCheckboxIsCalled_then_CheckboxIsSetInCheckboxBuilder() {
+        // GIVEN
+        PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
+        Checkbox          checkbox          = mock(Checkbox.class);
+        // WHEN + THEN
+        assertEquals(checkbox, pepBuilderService.with(checkbox).component);
+    }
 
-	@Test
-	void when_getMultiBuilder_then_returnMultibuilder() {
-		// GIVEN
-		PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
-		// WHEN
-		MultiBuilder multiBuilder = pepBuilderService.getMultiBuilder();
-		//THEN
-		assertEquals(MultiBuilder.class, multiBuilder.getClass());
-	}
+    @Test
+    void when_withSpanIsCalled_then_SpanIsSetInSpanBuilder() {
+        // GIVEN
+        PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
+        Span              span              = mock(Span.class);
+        // WHEN + THEN
+        assertEquals(span, pepBuilderService.with(span).component);
+    }
 
-	@Test
-	void when_getLifecycleBeforeEnterPepBuilder_then_returnLifecycleBeforeEnterPepBuilder() {
-		// GIVEN
-		PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
-		mockSpringContextHolderAuthentication();
-		//WHEN
-		VaadinPep.LifecycleBeforeEnterPepBuilder lifecycleBeforeEnterPepBuilder = pepBuilderService.getLifecycleBeforeEnterPepBuilder();
-		//THEN
-		assertEquals(VaadinPep.LifecycleBeforeEnterPepBuilder.class, lifecycleBeforeEnterPepBuilder.getClass());
-	}
+    @Test
+    void when_getMultiBuilder_then_returnMultibuilder() {
+        // GIVEN
+        PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
+        // WHEN
+        MultiBuilder multiBuilder = pepBuilderService.getMultiBuilder();
+        // THEN
+        assertEquals(MultiBuilder.class, multiBuilder.getClass());
+    }
 
-	@Test
-	void when_BeforeEnterBuilderBuild_then_isBuildIsTrue() {
-		// GIVEN
-		PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
-		// WHEN
-		mockSpringContextHolderAuthentication();
-		VaadinPep.LifecycleBeforeEnterPepBuilder lifecycleBeforeEnterPepBuilder = pepBuilderService.getLifecycleBeforeEnterPepBuilder();
-		lifecycleBeforeEnterPepBuilder.build();
-		//THEN
-		assertTrue(lifecycleBeforeEnterPepBuilder.isBuild);
-	}
-	
-	@Test
-	void when_BeforeLeaveBuilderBuild_then_isBuildIsTrue() {
-		// GIVEN
-		PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
-		// WHEN
-		mockSpringContextHolderAuthentication();
-		VaadinPep.LifecycleBeforeLeavePepBuilder lifecycleBeforeLeavePepBuilder = pepBuilderService.getLifecycleBeforeLeavePepBuilder();
-		lifecycleBeforeLeavePepBuilder.build();
-		//THEN
-		assertTrue(lifecycleBeforeLeavePepBuilder.isBuild);
-	}
+    @Test
+    void when_getLifecycleBeforeEnterPepBuilder_then_returnLifecycleBeforeEnterPepBuilder() {
+        // GIVEN
+        PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
+        mockSpringContextHolderAuthentication();
+        // WHEN
+        VaadinPep.LifecycleBeforeEnterPepBuilder lifecycleBeforeEnterPepBuilder = pepBuilderService
+                .getLifecycleBeforeEnterPepBuilder();
+        // THEN
+        assertEquals(VaadinPep.LifecycleBeforeEnterPepBuilder.class, lifecycleBeforeEnterPepBuilder.getClass());
+    }
 
-	private void mockSpringContextHolderAuthentication() {
-		Authentication authentication = Mockito.mock(Authentication.class);
-		SecurityContext securityContext = Mockito.mock(SecurityContext.class);
-		Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
-		SecurityContextHolder.setContext(securityContext);
-	}
+    @Test
+    void when_BeforeEnterBuilderBuild_then_isBuildIsTrue() {
+        // GIVEN
+        PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
+        // WHEN
+        mockSpringContextHolderAuthentication();
+        VaadinPep.LifecycleBeforeEnterPepBuilder lifecycleBeforeEnterPepBuilder = pepBuilderService
+                .getLifecycleBeforeEnterPepBuilder();
+        lifecycleBeforeEnterPepBuilder.build();
+        // THEN
+        assertTrue(lifecycleBeforeEnterPepBuilder.isBuild);
+    }
+
+    @Test
+    void when_BeforeLeaveBuilderBuild_then_isBuildIsTrue() {
+        // GIVEN
+        PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
+        // WHEN
+        mockSpringContextHolderAuthentication();
+        VaadinPep.LifecycleBeforeLeavePepBuilder lifecycleBeforeLeavePepBuilder = pepBuilderService
+                .getLifecycleBeforeLeavePepBuilder();
+        lifecycleBeforeLeavePepBuilder.build();
+        // THEN
+        assertTrue(lifecycleBeforeLeavePepBuilder.isBuild);
+    }
+
+    private void mockSpringContextHolderAuthentication() {
+        Authentication  authentication  = Mockito.mock(Authentication.class);
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+    }
 }

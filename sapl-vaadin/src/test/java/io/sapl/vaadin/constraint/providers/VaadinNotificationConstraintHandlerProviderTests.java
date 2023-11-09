@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.sapl.vaadin.constraint.providers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -137,12 +154,13 @@ class VaadinNotificationConstraintHandlerProviderTests {
 
         // mock Notification.show()
         MockedStatic<Notification> notificationMock = mockStatic(Notification.class);
-        notificationMock.when(() -> Notification.show(anyString(), anyInt(), any(Notification.Position.class))).then(invocationOnMock -> {
-            assertEquals(node.get("message").asText(), invocationOnMock.getArgument(0));
-            assertEquals(node.get("duration").asInt(), (Integer) invocationOnMock.getArgument(1));
-            assertEquals(Notification.Position.TOP_START, invocationOnMock.getArgument(2));
-            return null;
-        });
+        notificationMock.when(() -> Notification.show(anyString(), anyInt(), any(Notification.Position.class)))
+                .then(invocationOnMock -> {
+                    assertEquals(node.get("message").asText(), invocationOnMock.getArgument(0));
+                    assertEquals(node.get("duration").asInt(), (Integer) invocationOnMock.getArgument(1));
+                    assertEquals(Notification.Position.TOP_START, invocationOnMock.getArgument(2));
+                    return null;
+                });
 
         // WHEN
         var getHandler = this.vaadinNotificationConstraintHandlerProvider.getHandler(node);
@@ -164,12 +182,13 @@ class VaadinNotificationConstraintHandlerProviderTests {
 
         // mock Notification.show()
         MockedStatic<Notification> notificationMock = mockStatic(Notification.class);
-        notificationMock.when(() -> Notification.show(anyString(), anyInt(), any(Notification.Position.class))).then(invocationOnMock -> {
-            assertEquals(node.get("message").asText(), invocationOnMock.getArgument(0));
-            assertEquals(5000, (Integer) invocationOnMock.getArgument(1));
-            assertEquals(Notification.Position.TOP_STRETCH, invocationOnMock.getArgument(2));
-            return null;
-        });
+        notificationMock.when(() -> Notification.show(anyString(), anyInt(), any(Notification.Position.class)))
+                .then(invocationOnMock -> {
+                    assertEquals(node.get("message").asText(), invocationOnMock.getArgument(0));
+                    assertEquals(5000, (Integer) invocationOnMock.getArgument(1));
+                    assertEquals(Notification.Position.TOP_STRETCH, invocationOnMock.getArgument(2));
+                    return null;
+                });
 
         // WHEN
         var getHandler = this.vaadinNotificationConstraintHandlerProvider.getHandler(node);
@@ -189,11 +208,12 @@ class VaadinNotificationConstraintHandlerProviderTests {
 
         // mock Notification.show()
         MockedStatic<Notification> notificationMock = mockStatic(Notification.class);
-        notificationMock.when(() -> Notification.show(anyString(), anyInt(), any(Notification.Position.class))).then(invocationOnMock -> {
-            assertEquals(5000, (Integer) invocationOnMock.getArgument(1));
-            assertEquals(Notification.Position.TOP_STRETCH, invocationOnMock.getArgument(2));
-            return null;
-        });
+        notificationMock.when(() -> Notification.show(anyString(), anyInt(), any(Notification.Position.class)))
+                .then(invocationOnMock -> {
+                    assertEquals(5000, (Integer) invocationOnMock.getArgument(1));
+                    assertEquals(Notification.Position.TOP_STRETCH, invocationOnMock.getArgument(2));
+                    return null;
+                });
 
         // WHEN
         var getHandler = this.vaadinNotificationConstraintHandlerProvider.getHandler(node);

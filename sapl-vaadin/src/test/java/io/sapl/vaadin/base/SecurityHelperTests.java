@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.sapl.vaadin.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,95 +41,95 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 
 class SecurityHelperTests {
 
-	@Test
-	void test_whenGetSubject_then_UsernameAttributeIsSet() {
-		//GIVEN
-		MockedStatic<SecurityContextHolder> contextHolderMock = mockStatic(SecurityContextHolder.class);
-		SecurityContext contextMock = mock(SecurityContext.class);
-		Authentication authMock = mock(Authentication.class);
+    @Test
+    void test_whenGetSubject_then_UsernameAttributeIsSet() {
+        // GIVEN
+        MockedStatic<SecurityContextHolder> contextHolderMock = mockStatic(SecurityContextHolder.class);
+        SecurityContext                     contextMock       = mock(SecurityContext.class);
+        Authentication                      authMock          = mock(Authentication.class);
 
-		contextHolderMock.when(SecurityContextHolder::getContext).thenReturn(contextMock);
-		when(contextMock.getAuthentication()).thenReturn(authMock);
-		when(authMock.getName()).thenReturn("user");
+        contextHolderMock.when(SecurityContextHolder::getContext).thenReturn(contextMock);
+        when(contextMock.getAuthentication()).thenReturn(authMock);
+        when(authMock.getName()).thenReturn("user");
 
-		//WHEN
-		String username = SecurityHelper.getSubject().get("username").asText();
+        // WHEN
+        String username = SecurityHelper.getSubject().get("username").asText();
 
-		//THEN
-		assertEquals("user", username);
+        // THEN
+        assertEquals("user", username);
 
-		contextHolderMock.close();
-	}
+        contextHolderMock.close();
+    }
 
-	@Test
-	void test_whenGetSubject_then_RolesAttributeIsSet() {
-		//GIVEN
-		MockedStatic<SecurityContextHolder> contextHolderMock = mockStatic(SecurityContextHolder.class);
-		SecurityContext contextMock = mock(SecurityContext.class);
-		Authentication authMock = mock(Authentication.class);
+    @Test
+    void test_whenGetSubject_then_RolesAttributeIsSet() {
+        // GIVEN
+        MockedStatic<SecurityContextHolder> contextHolderMock = mockStatic(SecurityContextHolder.class);
+        SecurityContext                     contextMock       = mock(SecurityContext.class);
+        Authentication                      authMock          = mock(Authentication.class);
 
-		contextHolderMock.when(SecurityContextHolder::getContext).thenReturn(contextMock);
-		when(contextMock.getAuthentication()).thenReturn(authMock);
-		when(authMock.getName()).thenReturn("user");
+        contextHolderMock.when(SecurityContextHolder::getContext).thenReturn(contextMock);
+        when(contextMock.getAuthentication()).thenReturn(authMock);
+        when(authMock.getName()).thenReturn("user");
 
-		when(authMock.getAuthorities()).thenAnswer((invocationOnMock) -> {
-			@SuppressWarnings("unchecked")
-			Collection<? extends GrantedAuthority> collection = (Collection<? extends GrantedAuthority>)mock(Collection.class);
-			@SuppressWarnings("unchecked")
-			Stream<? extends GrantedAuthority> stream = (Stream<? extends GrantedAuthority>)mock(Stream.class);
-			doReturn(stream).when(collection).stream();
-			doReturn(stream).when(stream).map(any());
-			ArrayList<String> roles = new ArrayList<>();
-			roles.add("userRole");
-			when(stream.collect(any())).thenReturn(roles);
-			return collection;
-		});
+        when(authMock.getAuthorities()).thenAnswer((invocationOnMock) -> {
+            @SuppressWarnings("unchecked")
+            Collection<? extends GrantedAuthority> collection = (Collection<? extends GrantedAuthority>) mock(
+                    Collection.class);
+            @SuppressWarnings("unchecked")
+            Stream<? extends GrantedAuthority>     stream     = (Stream<? extends GrantedAuthority>) mock(Stream.class);
+            doReturn(stream).when(collection).stream();
+            doReturn(stream).when(stream).map(any());
+            ArrayList<String> roles = new ArrayList<>();
+            roles.add("userRole");
+            when(stream.collect(any())).thenReturn(roles);
+            return collection;
+        });
 
-		//WHEN
-		ArrayNode roles = (ArrayNode)SecurityHelper.getSubject().get("roles");
+        // WHEN
+        ArrayNode roles = (ArrayNode) SecurityHelper.getSubject().get("roles");
 
-		//THEN
-		assertEquals( "userRole", roles.get(0).asText() );
+        // THEN
+        assertEquals("userRole", roles.get(0).asText());
 
-		contextHolderMock.close();
-	}
+        contextHolderMock.close();
+    }
 
-	@Test
-	void test_whenGetUsernameAndGetAuthenticationReturnsNull_then_NullIsReturned() {
-		//GIVEN
-		MockedStatic<SecurityContextHolder> contextHolderMock = mockStatic(SecurityContextHolder.class);
-		SecurityContext contextMock = mock(SecurityContext.class);
-		Authentication authMock = mock(Authentication.class);
+    @Test
+    void test_whenGetUsernameAndGetAuthenticationReturnsNull_then_NullIsReturned() {
+        // GIVEN
+        MockedStatic<SecurityContextHolder> contextHolderMock = mockStatic(SecurityContextHolder.class);
+        SecurityContext                     contextMock       = mock(SecurityContext.class);
+        Authentication                      authMock          = mock(Authentication.class);
 
-		contextHolderMock.when(SecurityContextHolder::getContext).thenReturn(contextMock);
-		when(contextMock.getAuthentication()).thenReturn(null);
-		when(authMock.getName()).thenReturn("user");
+        contextHolderMock.when(SecurityContextHolder::getContext).thenReturn(contextMock);
+        when(contextMock.getAuthentication()).thenReturn(null);
+        when(authMock.getName()).thenReturn("user");
 
-		//WHEN
-		String username = SecurityHelper.getUsername();
+        // WHEN
+        String username = SecurityHelper.getUsername();
 
-		//THEN
-		assertNull(username);
+        // THEN
+        assertNull(username);
 
-		contextHolderMock.close();
-	}
+        contextHolderMock.close();
+    }
 
+    @Test
+    void test_whenGetUserRolesAndGetAuthenticationReturnsNull_then_EmptyListIsReturned() {
+        // GIVEN
+        MockedStatic<SecurityContextHolder> contextHolderMock = mockStatic(SecurityContextHolder.class);
+        SecurityContext                     contextMock       = mock(SecurityContext.class);
 
-	@Test
-	void test_whenGetUserRolesAndGetAuthenticationReturnsNull_then_EmptyListIsReturned() {
-		//GIVEN
-		MockedStatic<SecurityContextHolder> contextHolderMock = mockStatic(SecurityContextHolder.class);
-		SecurityContext contextMock = mock(SecurityContext.class);
+        contextHolderMock.when(SecurityContextHolder::getContext).thenReturn(contextMock);
+        when(contextMock.getAuthentication()).thenReturn(null);
 
-		contextHolderMock.when(SecurityContextHolder::getContext).thenReturn(contextMock);
-		when(contextMock.getAuthentication()).thenReturn(null);
+        // WHEN
+        List<String> userRoles = SecurityHelper.getUserRoles();
 
-		//WHEN
-		List<String> userRoles = SecurityHelper.getUserRoles();
+        // THEN
+        assertEquals(0, userRoles.size());
 
-		//THEN
-		assertEquals(0, userRoles.size());
-
-		contextHolderMock.close();
-	}
+        contextHolderMock.close();
+    }
 }

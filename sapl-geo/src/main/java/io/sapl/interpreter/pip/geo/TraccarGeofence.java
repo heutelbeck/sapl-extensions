@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,16 +31,16 @@ import lombok.NoArgsConstructor;
 @JsonInclude(Include.NON_NULL)
 public class TraccarGeofence {
 
-	private int id;
+    private int id;
 
-	private JsonNode attributes;
+    private JsonNode attributes;
 
-	private String name;
+    private String name;
 
-	private String description;
+    private String description;
 
-	private String area;
+    private String area;
 
-	private int calendarId;
+    private int calendarId;
 
 }

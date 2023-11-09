@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,25 +29,25 @@ import lombok.Data;
 @Data
 public class RequestSpecification {
 
-	private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
-	private JsonNode url;
+    private JsonNode url;
 
-	private Map<String, String> headers;
+    private Map<String, String> headers;
 
-	private String rawBody;
+    private String rawBody;
 
-	private JsonNode body;
+    private JsonNode body;
 
-	public static RequestSpecification from(JsonNode value) throws JsonProcessingException {
-		return MAPPER.treeToValue(value, RequestSpecification.class);
-	}
+    public static RequestSpecification from(JsonNode value) throws JsonProcessingException {
+        return MAPPER.treeToValue(value, RequestSpecification.class);
+    }
 
-	public void addHeader(String name, String value) {
-		if (headers == null) {
-			headers = new HashMap<>();
-		}
-		headers.put(name, value);
-	}
+    public void addHeader(String name, String value) {
+        if (headers == null) {
+            headers = new HashMap<>();
+        }
+        headers.put(name, value);
+    }
 
 }

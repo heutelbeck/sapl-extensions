@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,18 +33,18 @@ import io.sapl.spring.constraints.api.Responsible;
  * it.
  * <p>
  * TODO: apply filter to initial result.
- * 
+ *
  * @author Dominic Heutelbeck
  * @since 2.1.0
  */
 public interface UpdateFilterConstraintHandlerProvider extends Responsible, ResponseTypeSupport {
 
-	/**
-	 * Create the predicate for the given constraint.
-	 * 
-	 * @param constraint The constraint.
-	 * @return A filter predicate.
-	 */
-	Predicate<ResultMessage<?>> getHandler(JsonNode constraint);
+    /**
+     * Create the predicate for the given constraint.
+     *
+     * @param constraint The constraint.
+     * @return A filter predicate.
+     */
+    Predicate<ResultMessage<?>> getHandler(JsonNode constraint);
 
 }

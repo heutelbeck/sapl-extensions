@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,24 +25,24 @@ import reactor.test.StepVerifier;
 
 class GeoPIPTest {
 
-	private static final GeoPolicyInformationPoint AF = new GeoPolicyInformationPoint();
+    private static final GeoPolicyInformationPoint AF = new GeoPolicyInformationPoint();
 
-	@Test
-	void postgisTest() {
-		StepVerifier.create(AF.traccar(Val.of(TraccarConnection.AF_TEST), null).take(1))
-				.expectNextMatches(v -> TraccarConnection.TEST_OKAY.equals(v.getText())).verifyComplete();
-	}
+    @Test
+    void postgisTest() {
+        StepVerifier.create(AF.traccar(Val.of(TraccarConnection.AF_TEST), null).take(1))
+                .expectNextMatches(v -> TraccarConnection.TEST_OKAY.equals(v.getText())).verifyComplete();
+    }
 
-	@Test
-	void traccarTest() {
-		StepVerifier.create(AF.postgis(Val.of(PostGISConnection.AF_TEST), null).take(1))
-				.expectNextMatches(v -> PostGISConnection.TEST_OKAY.equals(v.getText())).verifyComplete();
-	}
+    @Test
+    void traccarTest() {
+        StepVerifier.create(AF.postgis(Val.of(PostGISConnection.AF_TEST), null).take(1))
+                .expectNextMatches(v -> PostGISConnection.TEST_OKAY.equals(v.getText())).verifyComplete();
+    }
 
-	@Test
-	void kmlTest() {
-		StepVerifier.create(AF.kml(Val.of(""), null).take(1))
-				.expectNextMatches(v -> KMLImport.TEST_OKAY.equals(v.getText())).verifyComplete();
-	}
+    @Test
+    void kmlTest() {
+        StepVerifier.create(AF.kml(Val.of(""), null).take(1))
+                .expectNextMatches(v -> KMLImport.TEST_OKAY.equals(v.getText())).verifyComplete();
+    }
 
 }

@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,46 +38,46 @@ import io.sapl.api.interpreter.PolicyEvaluationException;
 
 class ExceptionHandlingTest {
 
-	private Geometry sampleGeometry;
+    private Geometry sampleGeometry;
 
-	@BeforeEach
-	void setUp() {
-		sampleGeometry = mock(Geometry.class);
-	}
+    @BeforeEach
+    void setUp() {
+        sampleGeometry = mock(Geometry.class);
+    }
 
-	@Test
-	void factoryExceptionInProjectionConstructor() {
-		try (MockedStatic<CRS> crsMock = mockStatic(CRS.class)) {
-			crsMock.when(() -> CRS.findMathTransform(any(), any(), anyBoolean())).thenThrow(new FactoryException());
-			assertThrows(PolicyEvaluationException.class, () -> new GeoProjection());
-		}
-	}
+    @Test
+    void factoryExceptionInProjectionConstructor() {
+        try (MockedStatic<CRS> crsMock = mockStatic(CRS.class)) {
+            crsMock.when(() -> CRS.findMathTransform(any(), any(), anyBoolean())).thenThrow(new FactoryException());
+            assertThrows(PolicyEvaluationException.class, () -> new GeoProjection());
+        }
+    }
 
-	@Test
-	void transformExceptioninProjection() {
-		try (MockedStatic<JTS> jtsMock = mockStatic(JTS.class)) {
-			jtsMock.when(() -> JTS.transform(any(Geometry.class), any())).thenThrow(new TransformException());
-			assertThrows(PolicyEvaluationException.class, () -> new GeoProjection().project(sampleGeometry));
-		}
-	}
+    @Test
+    void transformExceptioninProjection() {
+        try (MockedStatic<JTS> jtsMock = mockStatic(JTS.class)) {
+            jtsMock.when(() -> JTS.transform(any(Geometry.class), any())).thenThrow(new TransformException());
+            assertThrows(PolicyEvaluationException.class, () -> new GeoProjection().project(sampleGeometry));
+        }
+    }
 
-	@Test
-	void mismatchedDimensionExceptioninProjection() {
-		try (MockedStatic<JTS> jtsMock = mockStatic(JTS.class)) {
-			jtsMock.when(() -> JTS.transform(any(Geometry.class), any())).thenThrow(new MismatchedDimensionException());
-			assertThrows(PolicyEvaluationException.class, () -> new GeoProjection().project(sampleGeometry));
-		}
-	}
+    @Test
+    void mismatchedDimensionExceptioninProjection() {
+        try (MockedStatic<JTS> jtsMock = mockStatic(JTS.class)) {
+            jtsMock.when(() -> JTS.transform(any(Geometry.class), any())).thenThrow(new MismatchedDimensionException());
+            assertThrows(PolicyEvaluationException.class, () -> new GeoProjection().project(sampleGeometry));
+        }
+    }
 
-	@Test
-	void factoryExceptionInGeodesicCalculation() {
-		try (MockedStatic<CRS> crsMock = mockStatic(CRS.class)) {
-			crsMock.when(() -> CRS.decode(anyString())).thenThrow(new FactoryException());
-			Geometry geometryOne = GeometryBuilder.fromWkt("POINT (10 10)");
-			Geometry geometryTwo = mock(Geometry.class);
-			assertThrows(PolicyEvaluationException.class,
-					() -> GeometryBuilder.geodesicDistance(geometryOne, geometryTwo));
-		}
-	}
+    @Test
+    void factoryExceptionInGeodesicCalculation() {
+        try (MockedStatic<CRS> crsMock = mockStatic(CRS.class)) {
+            crsMock.when(() -> CRS.decode(anyString())).thenThrow(new FactoryException());
+            Geometry geometryOne = GeometryBuilder.fromWkt("POINT (10 10)");
+            Geometry geometryTwo = mock(Geometry.class);
+            assertThrows(PolicyEvaluationException.class,
+                    () -> GeometryBuilder.geodesicDistance(geometryOne, geometryTwo));
+        }
+    }
 
 }

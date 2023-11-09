@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.sapl.vaadin.constraint.providers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,7 +50,8 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
 
     @BeforeEach
     void setUp() {
-        this.vaadinConfirmationDialogConstraintHandlerProvider = spy(VaadinProConfirmationDialogConstraintHandlerProvider.class);
+        this.vaadinConfirmationDialogConstraintHandlerProvider = spy(
+                VaadinProConfirmationDialogConstraintHandlerProvider.class);
     }
 
     @Test
@@ -126,8 +144,8 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
         assertNull(handler);
     }
 
-	@Test
-	@SuppressWarnings("unchecked")//suppress mock
+    @Test
+    @SuppressWarnings("unchecked") // suppress mock
     void when_constraintHasDefaultValuesAndDialogIsConfirmed_then_getHandlerReturnsTrue() {
         // GIVEN
         ObjectNode node = JsonNodeFactory.instance.objectNode();
@@ -138,8 +156,8 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
         doAnswer(invocation -> {
             invocation.getArgument(3, ComponentEventListener.class).onComponentEvent(null);
             return null;
-        }).when(this.vaadinConfirmationDialogConstraintHandlerProvider).openConfirmDialog(anyString(), anyString(), anyString(), any(), anyString(), any());
-
+        }).when(this.vaadinConfirmationDialogConstraintHandlerProvider).openConfirmDialog(anyString(), anyString(),
+                anyString(), any(), anyString(), any());
 
         // WHEN
         var getHandler = this.vaadinConfirmationDialogConstraintHandlerProvider.getHandler(node);
@@ -149,7 +167,7 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
     }
 
     @Test
-    @SuppressWarnings("unchecked")//suppress mock
+    @SuppressWarnings("unchecked") // suppress mock
     void when_constraintHasCustomValuesAndDialogIsConfirmed_then_getHandlerReturnsTrue() {
         // GIVEN
         ObjectNode node = JsonNodeFactory.instance.objectNode();
@@ -164,7 +182,8 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
         doAnswer(invocation -> {
             invocation.getArgument(3, ComponentEventListener.class).onComponentEvent(null);
             return null;
-        }).when(this.vaadinConfirmationDialogConstraintHandlerProvider).openConfirmDialog(anyString(), anyString(), anyString(), any(), anyString(), any());
+        }).when(this.vaadinConfirmationDialogConstraintHandlerProvider).openConfirmDialog(anyString(), anyString(),
+                anyString(), any(), anyString(), any());
 
         // WHEN
         var getHandler = this.vaadinConfirmationDialogConstraintHandlerProvider.getHandler(node);
@@ -185,8 +204,8 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
         doAnswer(invocation -> {
             invocation.getArgument(5, ComponentEventListener.class).onComponentEvent(null);
             return null;
-        }).when(this.vaadinConfirmationDialogConstraintHandlerProvider).openConfirmDialog(anyString(), anyString(), anyString(), any(), anyString(), any());
-
+        }).when(this.vaadinConfirmationDialogConstraintHandlerProvider).openConfirmDialog(anyString(), anyString(),
+                anyString(), any(), anyString(), any());
 
         // WHEN
         var getHandler = this.vaadinConfirmationDialogConstraintHandlerProvider.getHandler(node);
@@ -198,10 +217,15 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
     @Test
     void when_openConfirmationDialogIsCalled_then_aNewConfirmDialogIsOpening() {
         // GIVEN
-        try ( var mockedConstructor = mockConstruction(ConfirmDialog.class, (confirmDialog, context) -> doNothing().when(confirmDialog).open())) {
-            var vaadinConfirmationDialogConstraintHandlerProvider = spy(VaadinProConfirmationDialogConstraintHandlerProvider.class);
+        try (var mockedConstructor = mockConstruction(ConfirmDialog.class,
+                (confirmDialog, context) -> doNothing().when(confirmDialog).open())) {
+            var vaadinConfirmationDialogConstraintHandlerProvider = spy(
+                    VaadinProConfirmationDialogConstraintHandlerProvider.class);
             // WHEN
-            vaadinConfirmationDialogConstraintHandlerProvider.openConfirmDialog("header" ,"text", "confirm", (event) -> {}, "cancel", (event) -> {});
+            vaadinConfirmationDialogConstraintHandlerProvider.openConfirmDialog("header", "text", "confirm",
+                    (event) -> {
+                    }, "cancel", (event) -> {
+                    });
             // THEN
             assertNotNull(mockedConstructor.constructed().get(0));
             verify(mockedConstructor.constructed().get(0), times(1)).open();

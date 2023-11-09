@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,60 +36,60 @@ import lombok.Getter;
 
 public class PostGISConnection {
 
-	private static final String          NAME_REGEX      = "[^a-zA-Z0-9]+";
-	private static final String          EMPTY_STRING    = "";
-	private static final int             NAME_INDEX      = 1;
-	private static final int             GEOM_INDEX      = 2;
-	private static final JsonNodeFactory JSON            = JsonNodeFactory.instance;
-	private static final ObjectMapper    MAPPER          = new ObjectMapper();
-	private static final Pattern         jsonNamePattern = Pattern.compile(NAME_REGEX);
-	protected static final String        AF_TEST         = "AF_TEST";
-	protected static final String        TEST_OKAY       = "ok";
+    private static final String          NAME_REGEX      = "[^a-zA-Z0-9]+";
+    private static final String          EMPTY_STRING    = "";
+    private static final int             NAME_INDEX      = 1;
+    private static final int             GEOM_INDEX      = 2;
+    private static final JsonNodeFactory JSON            = JsonNodeFactory.instance;
+    private static final ObjectMapper    MAPPER          = new ObjectMapper();
+    private static final Pattern         jsonNamePattern = Pattern.compile(NAME_REGEX);
+    protected static final String        AF_TEST         = "AF_TEST";
+    protected static final String        TEST_OKAY       = "ok";
 
-	@Getter
-	private PostGISConfig config;
+    @Getter
+    private PostGISConfig config;
 
-	public PostGISConnection(PostGISConfig conf) {
-		config = conf;
-	}
+    public PostGISConnection(PostGISConfig conf) {
+        config = conf;
+    }
 
-	public PostGISConnection(JsonNode conf) {
-		if (!AF_TEST.equals(conf.asText())) {
-			config = MAPPER.convertValue(conf, PostGISConfig.class);
-		}
-	}
+    public PostGISConnection(JsonNode conf) {
+        if (!AF_TEST.equals(conf.asText())) {
+            config = MAPPER.convertValue(conf, PostGISConfig.class);
+        }
+    }
 
-	public JsonNode toGeoPIPResponse() {
-		if (config == null) {
-			return JSON.textNode(TEST_OKAY);
-		} else {
-			return GeoPIPResponse.builder().identifier(config.getTable()).geofences(retrieveGeometries()).build()
-					.toJsonNode();
-		}
-	}
+    public JsonNode toGeoPIPResponse() {
+        if (config == null) {
+            return JSON.textNode(TEST_OKAY);
+        } else {
+            return GeoPIPResponse.builder().identifier(config.getTable()).geofences(retrieveGeometries()).build()
+                    .toJsonNode();
+        }
+    }
 
-	public ObjectNode retrieveGeometries() {
-		try (Connection conn = config.getConnection()) {
+    public ObjectNode retrieveGeometries() {
+        try (Connection conn = config.getConnection()) {
 
-			try (Statement s = conn.createStatement()) {
+            try (Statement s = conn.createStatement()) {
 
-				try (ResultSet rs = s.executeQuery(config.buildQuery())) {
-					return formatResultSet(rs);
-				}
-			}
-		} catch (SQLException e) {
-			throw new PolicyEvaluationException(e);
-		}
-	}
+                try (ResultSet rs = s.executeQuery(config.buildQuery())) {
+                    return formatResultSet(rs);
+                }
+            }
+        } catch (SQLException e) {
+            throw new PolicyEvaluationException(e);
+        }
+    }
 
-	private static ObjectNode formatResultSet(ResultSet rs) throws SQLException {
-		ObjectNode geometries = JSON.objectNode();
-		while (rs.next()) {
-			String   name = jsonNamePattern.matcher(rs.getString(NAME_INDEX)).replaceAll(EMPTY_STRING);
-			Geometry geom = GeometryBuilder.fromWkt(rs.getString(GEOM_INDEX));
-			geometries.set(name, GeometryBuilder.toJsonNode(geom));
-		}
-		return geometries;
-	}
+    private static ObjectNode formatResultSet(ResultSet rs) throws SQLException {
+        ObjectNode geometries = JSON.objectNode();
+        while (rs.next()) {
+            String   name = jsonNamePattern.matcher(rs.getString(NAME_INDEX)).replaceAll(EMPTY_STRING);
+            Geometry geom = GeometryBuilder.fromWkt(rs.getString(GEOM_INDEX));
+            geometries.set(name, GeometryBuilder.toJsonNode(geom));
+        }
+        return geometries;
+    }
 
 }

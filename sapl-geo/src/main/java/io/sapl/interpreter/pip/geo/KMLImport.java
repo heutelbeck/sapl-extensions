@@ -1,5 +1,7 @@
 /*
- * Copyright © 2017-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,88 +41,88 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 public class KMLImport {
 
-	private static final String ATT_FEATURE = "Feature";
+    private static final String ATT_FEATURE = "Feature";
 
-	private static final String ATT_NAME = "name";
+    private static final String ATT_NAME = "name";
 
-	private static final String ATT_GEOM = "Geometry";
+    private static final String ATT_GEOM = "Geometry";
 
-	private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
+    private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
-	protected static final String UNABLE_TO_PARSE_KML = "Provided KML-file cannot be found or is not compliant. Unable to parse geometry.";
+    protected static final String UNABLE_TO_PARSE_KML = "Provided KML-file cannot be found or is not compliant. Unable to parse geometry.";
 
-	protected static final String NO_VALID_FILENAME = "Provided filename is not valid or nested in an Json-Object.";
+    protected static final String NO_VALID_FILENAME = "Provided filename is not valid or nested in an Json-Object.";
 
-	protected static final String TEST_OKAY = "ok";
+    protected static final String TEST_OKAY = "ok";
 
-	private final String kmlSource;
+    private final String kmlSource;
 
-	public KMLImport(String source) {
-		kmlSource = source;
-	}
+    public KMLImport(String source) {
+        kmlSource = source;
+    }
 
-	public KMLImport(JsonNode source) {
-		if (source.isTextual()) {
-			kmlSource = source.asText();
-		} else {
-			throw new PolicyEvaluationException(NO_VALID_FILENAME);
-		}
-	}
+    public KMLImport(JsonNode source) {
+        if (source.isTextual()) {
+            kmlSource = source.asText();
+        } else {
+            throw new PolicyEvaluationException(NO_VALID_FILENAME);
+        }
+    }
 
-	public JsonNode toGeoPIPResponse() {
-		if (kmlSource.isEmpty()) {
-			return JSON.textNode(TEST_OKAY);
-		} else {
-			return GeoPIPResponse.builder().geofences(retrieveGeometries()).build().toJsonNode();
-		}
-	}
+    public JsonNode toGeoPIPResponse() {
+        if (kmlSource.isEmpty()) {
+            return JSON.textNode(TEST_OKAY);
+        } else {
+            return GeoPIPResponse.builder().geofences(retrieveGeometries()).build().toJsonNode();
+        }
+    }
 
-	private ObjectNode retrieveGeometries() {
-		if (kmlSource.contains("http://") || kmlSource.contains("https://") || kmlSource.contains("file://")) {
-			return formatCollection((Collection<?>) getKmlFromWeb().getAttribute(ATT_FEATURE));
-		} else {
-			return formatCollection((Collection<?>) getKmlFromFile().getAttribute(ATT_FEATURE));
-		}
-	}
+    private ObjectNode retrieveGeometries() {
+        if (kmlSource.contains("http://") || kmlSource.contains("https://") || kmlSource.contains("file://")) {
+            return formatCollection((Collection<?>) getKmlFromWeb().getAttribute(ATT_FEATURE));
+        } else {
+            return formatCollection((Collection<?>) getKmlFromFile().getAttribute(ATT_FEATURE));
+        }
+    }
 
-	private SimpleFeature getKmlFromWeb() {
-		try (InputStream inputStream = new URL(kmlSource).openStream()) {
+    private SimpleFeature getKmlFromWeb() {
+        try (InputStream inputStream = new URL(kmlSource).openStream()) {
 
-			return parse(inputStream);
+            return parse(inputStream);
 
-		} catch (IllegalArgumentException | IOException | SAXException | ParserConfigurationException e) {
-			throw new PolicyEvaluationException(UNABLE_TO_PARSE_KML, e);
-		}
-	}
+        } catch (IllegalArgumentException | IOException | SAXException | ParserConfigurationException e) {
+            throw new PolicyEvaluationException(UNABLE_TO_PARSE_KML, e);
+        }
+    }
 
-	private SimpleFeature getKmlFromFile() {
-		try (InputStream inputStream = getClass().getResourceAsStream(kmlSource)) {
+    private SimpleFeature getKmlFromFile() {
+        try (InputStream inputStream = getClass().getResourceAsStream(kmlSource)) {
 
-			return parse(inputStream);
+            return parse(inputStream);
 
-		} catch (IOException | ParserConfigurationException | SAXException e) {
-			throw new PolicyEvaluationException(UNABLE_TO_PARSE_KML, e);
-		}
-	}
+        } catch (IOException | ParserConfigurationException | SAXException e) {
+            throw new PolicyEvaluationException(UNABLE_TO_PARSE_KML, e);
+        }
+    }
 
-	private static SimpleFeature parse(InputStream inputStream)
-			throws IOException, SAXException, ParserConfigurationException {
-		Parser parser = new Parser(new KMLConfiguration());
-		return (SimpleFeature) parser.parse(inputStream);
-	}
+    private static SimpleFeature parse(InputStream inputStream)
+            throws IOException, SAXException, ParserConfigurationException {
+        Parser parser = new Parser(new KMLConfiguration());
+        return (SimpleFeature) parser.parse(inputStream);
+    }
 
-	protected static ObjectNode formatCollection(Collection<?> placeMarks) {
-		ObjectNode geometries = JSON.objectNode();
-		for (Object obj : placeMarks) {
+    protected static ObjectNode formatCollection(Collection<?> placeMarks) {
+        ObjectNode geometries = JSON.objectNode();
+        for (Object obj : placeMarks) {
 
-			if (!(obj instanceof SimpleFeature feature)) {
-				throw new PolicyEvaluationException(UNABLE_TO_PARSE_KML);
-			} else {
-				Geometry geom = (Geometry) feature.getAttribute(ATT_GEOM);
-				geometries.set((String) feature.getAttribute(ATT_NAME), GeometryBuilder.toJsonNode(geom));
-			}
-		}
-		return geometries;
-	}
+            if (!(obj instanceof SimpleFeature feature)) {
+                throw new PolicyEvaluationException(UNABLE_TO_PARSE_KML);
+            } else {
+                Geometry geom = (Geometry) feature.getAttribute(ATT_GEOM);
+                geometries.set((String) feature.getAttribute(ATT_NAME), GeometryBuilder.toJsonNode(geom));
+            }
+        }
+        return geometries;
+    }
 
 }
