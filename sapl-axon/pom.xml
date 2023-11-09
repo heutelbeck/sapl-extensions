@@ -36,8 +36,8 @@
 	<description>SAPL Axon Policy Enforcement Points</description>
 
 	<properties>
-		<version.axon>4.8.0</version.axon>
-		<version.testcontainers>1.18.3</version.testcontainers>
+		<version.axon>4.9.0</version.axon>
+		<version.testcontainers>1.19.1</version.testcontainers>
 	</properties>
 
 	<dependencyManagement>
@@ -75,7 +75,7 @@
 		<dependency>
 			<groupId>org.axonframework.extensions.reactor</groupId>
 			<artifactId>axon-reactor</artifactId>
-			<version>4.8.0</version>
+			<version>4.9.0</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -155,14 +155,10 @@
 			<artifactId>spring-boot-configuration-processor</artifactId>
 			<optional>true</optional>
 		</dependency>
-		
-		
 		<dependency>
-		    <groupId>ch.qos.reload4j</groupId>
-		    <artifactId>reload4j</artifactId>
-	    </dependency>
-		
-		
+			<groupId>ch.qos.reload4j</groupId>
+			<artifactId>reload4j</artifactId>
+		</dependency>
 	</dependencies>
 
 	<repositories>
