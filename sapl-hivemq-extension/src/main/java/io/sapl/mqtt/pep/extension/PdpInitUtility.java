@@ -61,8 +61,8 @@ public class PdpInitUtility {
             File extensionHomeFolder, String policiesPath) {
         try {
             var path = getPoliciesPath(saplMqttExtensionConfig, extensionHomeFolder, policiesPath);
-            return PolicyDecisionPointFactory.filesystemPolicyDecisionPoint(path, () -> List.of(), () -> List.of(),
-                    () -> List.of(), () -> List.of(MqttFunctionLibrary.class));
+            return PolicyDecisionPointFactory.filesystemPolicyDecisionPoint(path, List::of, List::of, List::of,
+                    () -> List.of(MqttFunctionLibrary.class));
         } catch (InitializationException e) {
             log.error("Failed to build embedded pdp on extension startup with following reason: {}", e.getMessage());
             return null;

@@ -144,7 +144,7 @@ public class EthereumIntegrationTest {
         File   file         = new File(path);
         String absolutePath = file.getAbsolutePath();
         pdp = PolicyDecisionPointFactory.filesystemPolicyDecisionPoint(absolutePath + "/policies",
-                () -> List.of(ethPip), () -> List.of(), () -> List.of(), () -> List.of());
+                () -> List.of(ethPip), List::of, List::of, List::of);
 
         Credentials credentials = Credentials.create(USER1_PRIVATE_KEY);
         transactionReceiptUser2 = Transfer.sendFunds(web3j, credentials, USER2_ADDRESS,
