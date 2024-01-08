@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
@@ -36,7 +37,8 @@ public class CommandIT extends CommandTestsuite {
 
     @Container
     static final AxonServerContainer AXON_SERVER = new AxonServerContainer(
-            DockerImageName.parse("axoniq/axonserver:latest-dev"));
+            DockerImageName.parse("axoniq/axonserver:latest-dev"))
+            .waitingFor(Wait.forListeningPorts(AXON_SERVER_GRPC_PORT));
 
     @DynamicPropertySource
     static void registerAxonProperties(DynamicPropertyRegistry registry) {

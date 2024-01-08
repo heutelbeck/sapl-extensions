@@ -36,8 +36,8 @@
 	<description>SAPL Axon Policy Enforcement Points</description>
 
 	<properties>
-		<version.axon>4.9.0</version.axon>
-		<version.testcontainers>1.19.1</version.testcontainers>
+		<version.axon>4.9.1</version.axon>
+		<version.testcontainers>1.19.3</version.testcontainers>
 	</properties>
 
 	<dependencyManagement>

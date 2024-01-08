@@ -84,7 +84,7 @@ public abstract class CommandTestsuite {
 
     private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
-    private static final long COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS = 2000L;
+    private static final long COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS = 750L;
     protected static boolean  isIntegrationTest                         = false;
     private static boolean    waitedForCommandHandlerRegistration       = false;
 
@@ -212,7 +212,6 @@ public abstract class CommandTestsuite {
         var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
         var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
-        thrown.printStackTrace();
         assertTrue(isAccessDenied().test(thrown));
     }
 
