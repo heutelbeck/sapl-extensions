@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.sapl.axon.constrainthandling.api.CollectionAndOptionalFilterPredicateProvider;
-import io.sapl.spring.constraints.providers.ContentFilterUtil;
+import io.sapl.spring.constraints.providers.ContentFilter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -35,8 +35,8 @@ import lombok.RequiredArgsConstructor;
  * The constraint must contain the field "type" with value
  * "filterMessagePayloadPredicate".
  * <p>
- * See {@link io.sapl.spring.constraints.providers.ContentFilterUtil} for
- * supported conditions.
+ * See {@link io.sapl.spring.constraints.providers.ContentFilter} for supported
+ * conditions.
  *
  * @author Dominic Heutelbeck
  * @since 2.1.0
@@ -70,7 +70,7 @@ public class ResponseMessagePayloadFilterPredicateProvider
 
     @Override
     public boolean test(Object o, JsonNode constraint) {
-        return ContentFilterUtil.predicateFromConditions(constraint, objectMapper).test(o);
+        return ContentFilter.predicateFromConditions(constraint, objectMapper).test(o);
     }
 
 }

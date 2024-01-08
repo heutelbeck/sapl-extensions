@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
-import io.sapl.spring.constraints.providers.ContentFilterUtil;
+import io.sapl.spring.constraints.providers.ContentFilter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -38,8 +38,8 @@ import lombok.RequiredArgsConstructor;
  * The constraint must contain the field "type" with value
  * "filterMessagePayloadContent".
  * <p>
- * See {@link io.sapl.spring.constraints.providers.ContentFilterUtil} for
- * supported actions.
+ * See {@link io.sapl.spring.constraints.providers.ContentFilter} for supported
+ * actions.
  *
  * @author Dominic Heutelbeck
  * @since 2.1.0
@@ -75,7 +75,7 @@ public class ResponseMessagePayloadFilterProvider implements ResultConstraintHan
 
     @Override
     public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
-        return ContentFilterUtil.getHandler(constraint, objectMapper).apply(payload);
+        return ContentFilter.getHandler(constraint, objectMapper).apply(payload);
     }
 
 }

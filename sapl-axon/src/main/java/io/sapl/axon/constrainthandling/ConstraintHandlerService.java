@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2023 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -321,7 +321,7 @@ public class ConstraintHandlerService {
                 newResult = obligationFun.orElseGet(Functions::identity).apply(result);
             } catch (Throwable t) {
                 log.error("Failed to execute obligation handlers. {}", t.getLocalizedMessage());
-                throw new AccessDeniedException("Access Denied");
+                throw new AccessDeniedException("Access Denied", t);
             }
             try {
                 newResult = adviceFun.orElseGet(Functions::identity).apply(newResult);
