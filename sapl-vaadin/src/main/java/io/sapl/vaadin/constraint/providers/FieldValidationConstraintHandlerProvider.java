@@ -87,7 +87,7 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
     private final Map<String, JsonSchema> jsonValidationSchemaFromFieldName = new HashMap<>();
     private final Map<String, String>     validationMessageFromFieldName    = new HashMap<>();
     private final Map<String, Boolean>    isBoundFromFieldName              = new HashMap<>();
-    final SpecVersion.VersionFlag         DEFAULT_JSON_SCHEMA_VERSION       = SpecVersion.VersionFlag.V7;
+    final SpecVersion.VersionFlag         DEFAULT_JSON_SCHEMA_VERSION       = SpecVersion.VersionFlag.V202012;
 
     public FieldValidationConstraintHandlerProvider(Binder<?> binder, Object objectWithMemberFields) {
         this.binder                 = binder;
