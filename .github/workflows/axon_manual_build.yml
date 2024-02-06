@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# Note: when updating actions version pinning can be done using:
+# https://app.stepsecurity.io/secureworkflow before committing the changes.
+
 name: Axon Manual Build
 
 on:
