@@ -362,9 +362,9 @@ public class EthereumModuleTest {
     // hashrate
     @Test
     public void ethHashrateShouldReturnTheCorrectValue() throws IOException {
-        BigInteger                testValue = BigInteger.valueOf(267L);
-        HashMap<String, JsonNode> map       = new HashMap<>();
-        map.put(ETH_POLLING_INTERVAL, JSON.numberNode(1000L));
+        BigInteger           testValue = BigInteger.valueOf(267L);
+        HashMap<String, Val> map       = new HashMap<>();
+        map.put(ETH_POLLING_INTERVAL, Val.of(1000L));
 
         when(web3j.ethHashrate().send().getHashrate()).thenReturn(testValue);
 

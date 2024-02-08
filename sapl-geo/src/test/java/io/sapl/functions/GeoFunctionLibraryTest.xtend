@@ -20,6 +20,7 @@ package io.sapl.functions
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import io.sapl.api.interpreter.Val
 import io.sapl.api.pdp.AuthorizationSubscription
 import io.sapl.api.pdp.Decision
 import io.sapl.interpreter.DefaultSAPLInterpreter
@@ -40,7 +41,7 @@ class GeoFunctionLibraryTest {
 	static final DefaultSAPLInterpreter INTERPRETER = new DefaultSAPLInterpreter();
 	static final AnnotationAttributeContext ATTRIBUTE_CTX = new AnnotationAttributeContext();
 	static final AnnotationFunctionContext FUNCTION_CTX = new AnnotationFunctionContext();
-	static Map<String, JsonNode> variables = new HashMap<String, JsonNode>();
+	static Map<String, Val> variables = new HashMap<String, Val>();
 	static JsonNode subject;
 	static JsonNode resource;
 
@@ -171,14 +172,14 @@ class GeoFunctionLibraryTest {
 			}
 		}''', JsonNode);
 
-		variables.put("traccarConfig", MAPPER.readValue('''
+		variables.put("traccarConfig", Val.ofJson('''
 		{
 			"deviceID": "866714",
 			"url": "http://localhost:8082/api/",
 			"credentials": "YWRtaW46YWRtaW4=" 
-		}''', JsonNode));
+		}'''));
 
-		variables.put("postGisConfig", MAPPER.readValue('''
+		variables.put("postGisConfig", Val.ofJson('''
 		{
 			"serverAdress": "localhost",
 			"port": "5432",
@@ -191,7 +192,7 @@ class GeoFunctionLibraryTest {
 			"pkColName": "gid",
 			"from": 0,
 			"until": 2
-		}''', JsonNode));
+		}'''));
 	}
 
 	@Test

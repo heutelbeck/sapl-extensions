@@ -19,8 +19,6 @@ package io.sapl.interpreter.pip;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import io.sapl.api.interpreter.Val;
 import io.sapl.api.pip.Attribute;
 import io.sapl.api.pip.PolicyInformationPoint;
@@ -37,17 +35,17 @@ public class GeoPolicyInformationPoint {
     public static final String DESCRIPTION = "PIP for geographical data.";
 
     @Attribute
-    public Flux<Val> traccar(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> traccar(Val leftHandValue, Map<String, Val> variables) {
         return Flux.from(new TraccarConnection(leftHandValue.get()).toGeoPIPResponse().map(Val::of));
     }
 
     @Attribute
-    public Flux<Val> postgis(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> postgis(Val leftHandValue, Map<String, Val> variables) {
         return Flux.just(Val.of(new PostGISConnection(leftHandValue.get()).toGeoPIPResponse()));
     }
 
     @Attribute
-    public Flux<Val> kml(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> kml(Val leftHandValue, Map<String, Val> variables) {
         return Flux.just(Val.of(new KMLImport(leftHandValue.get()).toGeoPIPResponse()));
     }
 

@@ -132,7 +132,7 @@ public class EthereumPolicyInformationPoint {
      *         has taken place and false otherwise @
      */
     @Attribute(name = "transaction", docs = "Returns true, if a transaction has taken place and false otherwise.")
-    public Flux<Val> verifyTransaction(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> verifyTransaction(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withVerifiedTransaction(leftHandValue), variables);
     }
 
@@ -190,7 +190,7 @@ public class EthereumPolicyInformationPoint {
      *         {"value":324,"typeAsString":"uint"}] @
      */
     @Attribute(name = "contract", docs = "Returns the result of a function call of a specified contract.")
-    public Flux<Val> loadContractInformation(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> loadContractInformation(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withInformationFromContract(leftHandValue), variables);
     }
 
@@ -225,7 +225,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of JsonNodes containing a string with the clientVersion
      */
     @Attribute(name = "clientVersion", docs = "Returns the current client version.")
-    public Flux<Val> web3ClientVersion(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> web3ClientVersion(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withWeb3ClientVersion(), variables);
     }
 
@@ -246,7 +246,7 @@ public class EthereumPolicyInformationPoint {
      *         data.
      */
     @Attribute(name = "sha3", docs = "Returns Keccak-256 (not the standardized SHA3-256) of the given data.")
-    public Flux<Val> web3Sha3(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> web3Sha3(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withWeb3Sha3(leftHandValue), variables);
     }
 
@@ -267,7 +267,7 @@ public class EthereumPolicyInformationPoint {
      * @return Flux of JsonNodes containing a string with the current network id.
      */
     @Attribute(name = "netVersion", docs = "Returns the current network id.")
-    public Flux<Val> netVersion(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> netVersion(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withNetVersion(), variables);
     }
 
@@ -287,7 +287,7 @@ public class EthereumPolicyInformationPoint {
      *         otherwise.
      */
     @Attribute(name = "listening", docs = "Returns true if client is actively listening for network connections.")
-    public Flux<Val> netListening(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> netListening(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withNetListening(), variables);
     }
 
@@ -306,7 +306,7 @@ public class EthereumPolicyInformationPoint {
      *         value.
      */
     @Attribute(name = "peerCount", docs = "Returns number of peers currently connected to the client.")
-    public Flux<Val> netPeerCount(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> netPeerCount(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withNetPeerCount(), variables);
     }
 
@@ -324,7 +324,7 @@ public class EthereumPolicyInformationPoint {
      * @return Flux of JsonNodes that contain the protocol version as a String
      */
     @Attribute(name = "protocolVersion", docs = "Returns the current ethereum protocol version.")
-    public Flux<Val> ethProtocolVersion(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethProtocolVersion(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withEthProtocolVersion(), variables);
     }
 
@@ -343,7 +343,7 @@ public class EthereumPolicyInformationPoint {
      *         otherwise.
      */
     @Attribute(name = "syncing", docs = "Returns true if the client is syncing or false otherwise.")
-    public Flux<Val> ethSyncing(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethSyncing(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withEthSyncing(), variables);
     }
 
@@ -362,7 +362,7 @@ public class EthereumPolicyInformationPoint {
      *         String.
      */
     @Attribute(name = "coinbase", docs = "Returns the client coinbase address.")
-    public Flux<Val> ethCoinbase(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethCoinbase(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withEthCoinbase(), variables);
 
     }
@@ -382,7 +382,7 @@ public class EthereumPolicyInformationPoint {
      *         otherwise.
      */
     @Attribute(name = "mining", docs = "Returns true if client is actively mining new blocks.")
-    public Flux<Val> ethMining(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethMining(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withEthMining(), variables);
 
     }
@@ -402,7 +402,7 @@ public class EthereumPolicyInformationPoint {
      * @return Flux of JsonNodes with the hashrate as BigInteger value.
      */
     @Attribute(name = "hashrate", docs = "Returns the number of hashes per second that the node is mining with.")
-    public Flux<Val> ethHashrate(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethHashrate(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withEthHashrate(), variables);
     }
 
@@ -420,7 +420,7 @@ public class EthereumPolicyInformationPoint {
      * @return Flux of JsonNodes containing the gas price as BigInteger value.
      */
     @Attribute(name = "gasPrice", docs = "Returns the current price per gas in wei.")
-    public Flux<Val> ethGasPrice(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGasPrice(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withEthGasPrice(), variables);
     }
 
@@ -438,7 +438,7 @@ public class EthereumPolicyInformationPoint {
      * @return Flux of ArrayNodes that contain the owned addresses as Strings.
      */
     @Attribute(name = "accounts", docs = "Returns a list of addresses owned by client.")
-    public Flux<Val> ethAccounts(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethAccounts(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withEthAccounts(), variables);
     }
 
@@ -456,7 +456,7 @@ public class EthereumPolicyInformationPoint {
      * @return Flux of JsonNodes containing the block number as a BigInteger.
      */
     @Attribute(name = "blockNumber", docs = "Returns the number of most recent block.")
-    public Flux<Val> ethBlockNumber(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethBlockNumber(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withEthBlockNumber(), variables);
     }
 
@@ -479,7 +479,7 @@ public class EthereumPolicyInformationPoint {
      *
      */
     @Attribute(name = "balance", docs = "Returns the balance of the account of given address.")
-    public Flux<Val> ethGetBalance(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetBalance(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withAccountBalance(leftHandValue), variables);
 
     }
@@ -510,7 +510,7 @@ public class EthereumPolicyInformationPoint {
      *         position.
      */
     @Attribute(name = "storage", docs = "Returns the value from a storage position at a given address.")
-    public Flux<Val> ethGetStorageAt(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetStorageAt(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withStorageAt(leftHandValue), variables);
 
     }
@@ -539,7 +539,7 @@ public class EthereumPolicyInformationPoint {
      *         BigInteger value.
      */
     @Attribute(name = "transactionCount", docs = "Returns the number of transactions sent from an address.")
-    public Flux<Val> ethGetTransactionCount(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetTransactionCount(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withTransactionCount(leftHandValue), variables);
 
     }
@@ -564,7 +564,7 @@ public class EthereumPolicyInformationPoint {
      *         BigInteger value.
      */
     @Attribute(name = "blockTransactionCountByHash", docs = "Returns the number of transactions in a block from a block matching the given block hash.")
-    public Flux<Val> ethGetBlockTransactionCountByHash(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetBlockTransactionCountByHash(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withBlockTransactionCountByHash(leftHandValue), variables);
 
     }
@@ -589,7 +589,7 @@ public class EthereumPolicyInformationPoint {
      *         BigInteger value.
      */
     @Attribute(name = "blockTransactionCountByNumber", docs = "Returns the number of transactions in a block matching the given block number.")
-    public Flux<Val> ethGetBlockTransactionCountByNumber(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetBlockTransactionCountByNumber(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withBlockTransactionCountByNumber(leftHandValue), variables);
     }
 
@@ -611,7 +611,7 @@ public class EthereumPolicyInformationPoint {
      *         BigInteger value.
      */
     @Attribute(name = "uncleCountByBlockHash", docs = "Returns the number of uncles in a block from a block matching the given block hash.")
-    public Flux<Val> ethGetUncleCountByBlockHash(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetUncleCountByBlockHash(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withUncleCountByBlockHash(leftHandValue), variables);
     }
 
@@ -634,7 +634,7 @@ public class EthereumPolicyInformationPoint {
      *         BigInteger value.
      */
     @Attribute(name = "uncleCountByBlockNumber", docs = "Returns the number of uncles in a block from a block matching the given block number.")
-    public Flux<Val> ethGetUncleCountByBlockNumber(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetUncleCountByBlockNumber(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withUncleCountByBlockNumber(leftHandValue), variables);
     }
 
@@ -658,7 +658,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of JsonNodes containing the code at the address as String.
      */
     @Attribute(name = "code", docs = "Returns code at a given address.")
-    public Flux<Val> ethGetCode(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetCode(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withCode(leftHandValue), variables);
     }
 
@@ -683,7 +683,7 @@ public class EthereumPolicyInformationPoint {
      *         String.
      */
     @Attribute(name = "sign", docs = "The sign method calculates an Ethereum specific signature.")
-    public Flux<Val> ethSign(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethSign(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withSignature(leftHandValue), variables);
     }
 
@@ -712,7 +712,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of JsonNodes with the result of the call in form of a String.
      */
     @Attribute(name = "call", docs = "Executes a new message call immediately without creating a transaction on the block chain.")
-    public Flux<Val> ethCall(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethCall(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withCallResult(leftHandValue), variables);
     }
 
@@ -739,7 +739,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of JsonNodes containing the estimated gas value as BigInteger.
      */
     @Attribute(name = "estimateGas", docs = "Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.")
-    public Flux<Val> ethEstimateGas(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethEstimateGas(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withEstimatedGas(leftHandValue), variables);
     }
 
@@ -764,7 +764,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of Json nodes containing the returned block mapped to Json.
      */
     @Attribute(name = "blockByHash", docs = "Returns information about a block by hash.")
-    public Flux<Val> ethGetBlockByHash(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetBlockByHash(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withBlockByHash(leftHandValue.get()), variables);
     }
 
@@ -790,7 +790,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of Json nodes containing the returned block mapped to Json.
      */
     @Attribute(name = "blockByNumber", docs = "Returns information about a block by block number.")
-    public Flux<Val> ethGetBlockByNumber(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetBlockByNumber(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withBlockByNumber(leftHandValue.get()), variables);
     }
 
@@ -810,7 +810,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of Json Nodes containing the mapped transaction.
      */
     @Attribute(name = "transactionByHash", docs = "Returns the information about a transaction requested by transaction hash.")
-    public Flux<Val> ethGetTransactionByHash(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetTransactionByHash(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withTransactionByHash(leftHandValue), variables);
     }
 
@@ -833,7 +833,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of Json Nodes containing the mapped transaction.
      */
     @Attribute(name = "transactionByBlockHashAndIndex", docs = "Returns information about a transaction by block hash and transaction index position.")
-    public Flux<Val> ethGetTransactionByBlockHashAndIndex(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetTransactionByBlockHashAndIndex(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withTransactionByBlockHashAndIndex(leftHandValue.get()), variables);
     }
 
@@ -856,7 +856,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of Json Nodes containing the mapped transaction.
      */
     @Attribute(name = "transactionByBlockNumberAndIndex", docs = "Returns information about a transaction by block number and transaction index position.")
-    public Flux<Val> ethGetTransactionByBlockNumberAndIndex(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetTransactionByBlockNumberAndIndex(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withTransactionByBlockNumberAndIndex(leftHandValue.get()), variables);
     }
 
@@ -876,7 +876,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of Json Nodes
      */
     @Attribute(name = "transactionReceipt", docs = "Returns the receipt of a transaction by transaction hash.")
-    public Flux<Val> ethGetTransactionReceipt(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetTransactionReceipt(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withTransactionReceipt(leftHandValue.get()), variables);
     }
 
@@ -894,7 +894,7 @@ public class EthereumPolicyInformationPoint {
      *         transactions.
      */
     @Attribute(name = "pendingTransactions", docs = "Returns the pending transactions list.")
-    public Flux<Val> ethPendingTransactions(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethPendingTransactions(Val leftHandValue, Map<String, Val> variables) {
         return Flux.from(web3j.ethPendingTransactionHashFlowable().map(s -> MAPPER.convertValue(s, JsonNode.class))
                 .map(Val::of));
     }
@@ -911,7 +911,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of Json Nodes containing the mapped uncle.
      */
     @Attribute(name = "uncleByBlockHashAndIndex", docs = "Returns information about a uncle of a block by hash and uncle index position.")
-    public Flux<Val> ethGetUncleByBlockHashAndIndex(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetUncleByBlockHashAndIndex(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withUncleByBlockHashAndIndex(leftHandValue.get()), variables);
     }
 
@@ -933,7 +933,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of Json Nodes containing the mapped uncle.
      */
     @Attribute(name = "uncleByBlockNumberAndIndex", docs = "Returns information about a uncle of a block by number and uncle index position.")
-    public Flux<Val> ethGetUncleByBlockNumberAndIndex(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetUncleByBlockNumberAndIndex(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withUncleByBlockNumberAndIndex(leftHandValue.get()), variables);
     }
 
@@ -955,7 +955,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of Json Nodes containing arrays of new filter logs.
      */
     @Attribute(name = "ethFilterChanges", docs = "Returns an array of logs which occurred since last poll.")
-    public Flux<Val> ethGetFilterChanges(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetFilterChanges(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withFilterChanges(leftHandValue.get()), variables);
     }
 
@@ -976,7 +976,7 @@ public class EthereumPolicyInformationPoint {
      *         given filter.
      */
     @Attribute(name = "ethFilterLogs", docs = "Returns an array of all logs matching filter with given id.")
-    public Flux<Val> ethGetFilterLogs(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetFilterLogs(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withFilterLogs(leftHandValue), variables);
     }
 
@@ -1003,7 +1003,7 @@ public class EthereumPolicyInformationPoint {
      *         given filter object.
      */
     @Attribute(name = "logs", docs = "Returns an array of all logs matching a given filter object.")
-    public Flux<Val> ethGetLogs(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetLogs(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withLogs(leftHandValue), variables);
     }
 
@@ -1022,7 +1022,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of Array Nodes each holding the three values.
      */
     @Attribute(name = "work", docs = "Returns the hash of the current block, the seedHash, and the boundary condition to be met (\"target\").")
-    public Flux<Val> ethGetWork(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> ethGetWork(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withWork(), variables);
     }
 
@@ -1042,7 +1042,7 @@ public class EthereumPolicyInformationPoint {
      *         version.
      */
     @Attribute(name = "shhVersion", docs = "Returns the current whisper protocol version.")
-    public Flux<Val> shhVersion(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> shhVersion(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withShhVersion(), variables);
     }
 
@@ -1061,7 +1061,7 @@ public class EthereumPolicyInformationPoint {
      *         keys and false otherwise.
      */
     @Attribute(name = "hasIdentity", docs = "Checks if the client holds the private keys for a given identity.")
-    public Flux<Val> shhHasIdentity(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> shhHasIdentity(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withHasIdentity(leftHandValue), variables);
     }
 
@@ -1080,7 +1080,7 @@ public class EthereumPolicyInformationPoint {
      * @return A Flux of Json Nodes each containing an array of Messages.
      */
     @Attribute(name = "shhFilterChanges", docs = "Polling method for whisper filters. Returns new messages since the last call of this method.")
-    public Flux<Val> shhGetFilterChanges(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> shhGetFilterChanges(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withShhFilterChanges(leftHandValue), variables);
     }
 
@@ -1099,7 +1099,7 @@ public class EthereumPolicyInformationPoint {
      *         requested filter.
      */
     @Attribute(name = "messages", docs = "Get all messages matching a filter. Unlike shhFilterChanges this returns all messages.")
-    public Flux<Val> shhGetMessages(Val leftHandValue, Map<String, JsonNode> variables) {
+    public Flux<Val> shhGetMessages(Val leftHandValue, Map<String, Val> variables) {
         return scheduledFlux(withShhMessages(leftHandValue), variables);
     }
 
@@ -1107,16 +1107,16 @@ public class EthereumPolicyInformationPoint {
         return () -> toVal(web3j.shhGetMessages(saplObject.get().bigIntegerValue()).send().getMessages());
     }
 
-    private Flux<Val> scheduledFlux(Callable<Val> functionToCall, Map<String, JsonNode> variables) {
+    private Flux<Val> scheduledFlux(Callable<Val> functionToCall, Map<String, Val> variables) {
         Flux<Long> timer = Flux.interval(Duration.ZERO, getPollingInterval(variables));
         return timer.flatMap(i -> Mono.fromCallable(functionToCall)).distinctUntilChanged().onErrorReturn(Val.NULL);
     }
 
-    private static Duration getPollingInterval(Map<String, JsonNode> variables) {
+    private static Duration getPollingInterval(Map<String, Val> variables) {
         if (variables != null) {
-            JsonNode ethPipConfig = variables.get(ETH_PIP_CONFIG);
+            Val ethPipConfig = variables.get(ETH_PIP_CONFIG);
             if (ethPipConfig != null) {
-                JsonNode pollingInterval = variables.get(ETH_POLLING_INTERVAL);
+                JsonNode pollingInterval = ethPipConfig.get().get(ETH_POLLING_INTERVAL);
                 if (pollingInterval != null && pollingInterval.isLong())
                     return Duration.ofMillis(pollingInterval.asLong(DEFAULT_ETH_POLLING_INTERVAL));
             }
