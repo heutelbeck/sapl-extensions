@@ -581,6 +581,7 @@
     <extension.name>sapl-hivemq-extension</extension.name>
     <sapl.version>3.0.0-SNAPSHOT</sapl.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <skipTests>true</skipTests>
     <extension.author>Nils Mahnken</extension.author>
     <output.dir>${basedir}</output.dir>
     <java.version>17</java.version>

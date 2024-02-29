@@ -26,252 +26,33 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>io.sapl</groupId>
-		<artifactId>sapl-policy-engine</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
-		<relativePath />
-	</parent>
-	
+	<groupId>io.sapl</groupId>
 	<artifactId>sapl-extensions</artifactId>
+	<version>3.0.0-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 
 	<name>SAPL Extensions</name>
 
-	<description>Extension libraries for the Streaming Attribute Authorization Engine</description>
-
-	<url>https://sapl.io</url>
-
-	<developers>
-		<developer>
-			<name>Dominic Heutelbeck</name>
-			<email>dominic@heutelbeck.com</email>
-			<roles>
-				<role>Project Owner</role>
-			</roles>
-			<url>https://github.com/heutelbeck</url>
-			<id>heutelbeck</id>
-		</developer>
-	</developers>
-
-	<inceptionYear>2023</inceptionYear>
-
-	<licenses>
-		<license>
-			<name>Apache 2.0</name>
-			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
-		</license>
-	</licenses>
-
-	<scm>
-		<connection>scm:git:git://github.com/heutelbeck/sapl-extensions.git</connection>
-		<developerConnection>scm:git:git@github.com:heutelbeck/sapl-extensions.git</developerConnection>
-		<url>https://github.com/heutelbeck/sapl-extensions</url>
-	</scm>
+	<description>Extension libraries for the Streaming Attribute Authorization
+		Engine</description>
 
 	<properties>
 		<maven.deploy.skip>true</maven.deploy.skip>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<failsafe.version>3.2.3</failsafe.version>
-		<jacoco.version>0.8.11</jacoco.version>
-		<argLine />
 	</properties>
 
 	<modules>
 		<module>sapl-geo</module>
 		<module>sapl-ethereum</module>
+		<module>sapl-demo-ethereum</module>
 		<module>sapl-axon</module>
+		<module>sapl-demo-axon</module>
 		<module>sapl-vaadin</module>
+		<module>sapl-demo-vaadin</module>
 		<module>sapl-hivemq-extension</module>
+		<module>sapl-demo-mqtt-pep</module>
 	</modules>
 
-	<distributionManagement>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
-		<repository>
-			<id>ossrh</id>
-			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>		
-	</distributionManagement>
-	<profiles>
-		<profile>
-			<id>jdk9-or-newer</id>
-			<activation>
-				<jdk>[9,)</jdk>
-			</activation>
-			<properties>
-				<moduleProperties>--add-modules=ALL-SYSTEM</moduleProperties>
-			</properties>
-		</profile>
-		
-		<profile>
-			<id>it</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-failsafe-plugin</artifactId>
-						<version>${failsafe.version}</version>
-						<executions>
-							<execution>
-								<goals>
-									<goal>integration-test</goal>
-									<goal>verify</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>coverage</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.jacoco</groupId>
-						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>${jacoco.version}</version>
-						<executions>
-							<execution>
-								<goals>
-									<goal>prepare-agent</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>report</id>
-								<phase>prepare-package</phase>
-								<goals>
-									<goal>report</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<profile>
-			<id>publish</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-source-plugin</artifactId>
-						<version>3.2.0</version>
-						<executions>
-							<execution>
-								<id>attach-sources</id>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.2.0</version>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<tags>
-								<tag>
-									<name>generated</name>
-									<placement>a</placement>
-									<head>Generated Code</head>
-								</tag>
-								<tag>
-									<name>ordered</name>
-									<placement>a</placement>
-									<head>EMF Ordered</head>
-								</tag>
-								<tag>
-									<name>model</name>
-									<placement>a</placement>
-									<head>EMF Model</head>
-								</tag>
-								<tag>
-									<name>returns</name>
-									<placement>a</placement>
-									<head>EMF Returns:</head>
-								</tag>
-							</tags>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.8</version>
-						<extensions>true</extensions>
-						<configuration>
-							<serverId>ossrh</serverId>
-							<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-							<autoReleaseAfterClose>true</autoReleaseAfterClose>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.6</version>
-						<configuration>
-							<!-- prevent gpg from using PIN entry programs -->
-							<gpgArguments>
-								<arg>--pinentry-mode</arg>
-								<arg>loopback</arg>
-							</gpgArguments>
-						</configuration>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<activation>
-				<jdk>[21,)</jdk>
-			</activation>
-			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-surefire-plugin</artifactId>
-							<version>3.2.3</version>
-							<configuration>
-								<argLine>@{argLine} -Xshare:off
-									-XX:+EnableDynamicAgentLoading</argLine>
-							</configuration>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-			</build>
-		</profile>
-	</profiles>
-	<repositories>
-		<repository>
-			<id>ossrh</id>
-			<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 </project>
