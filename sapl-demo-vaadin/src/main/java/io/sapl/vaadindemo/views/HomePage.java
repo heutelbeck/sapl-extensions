@@ -20,6 +20,9 @@ public class HomePage extends VerticalLayout {
 	private static final String INFOTEXT = "This page shows your current user role. Furthermore it is  used as a " +
 			"landing page for demonstration of navigation functionalities.";
 
+	/**
+	 * Create Home Page
+	 */
 	public HomePage() {
 		var name = SecurityContextHolder.getContext().getAuthentication().getName();
 		String greeting = "Welcome '" + name + "'!";

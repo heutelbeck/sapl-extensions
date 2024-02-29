@@ -12,8 +12,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import lombok.experimental.UtilityClass;
 
+/**
+ * UI Utils
+ */
 @UtilityClass
 public class Utilities {
+    
     public static Component getDefaultHeader(String pageName) {
         var header = new HorizontalLayout();
 

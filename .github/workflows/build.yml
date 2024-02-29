@@ -55,7 +55,10 @@ jobs:
         cp sapl-demo-ethereum/src/main/solc/releases.json ~/.web3j/solc
 
     - name: Run tests
-      run: mvn -B package javadoc:jar
+      run: mvn -B package
+
+    - name: Javadoc on Libraries, Ignoring Demos
+      run: mvn -B package javadoc:jar -DskipTRests -pl !sapl-demo-vaadin,!sapl-demo-ethereum,!sapl-demo-axon
   
     - name: Clean up local repository before caching (Linux/Mac)
       if: ${{ matrix.os != 'windows-latest'}}

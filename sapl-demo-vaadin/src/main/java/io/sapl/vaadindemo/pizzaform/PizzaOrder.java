@@ -11,6 +11,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+/**
+ * Pizza Order with bean validation.
+ */
 @Data
 @Repository
 public class PizzaOrder {

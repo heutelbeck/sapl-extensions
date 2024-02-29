@@ -29,35 +29,11 @@ import io.sapl.vaadindemo.security.SecurityUtils;
  * The main view is a top-level placeholder for other views.
  */
 public class MainLayout extends AppLayout {
-
-	public static class MenuItemInfo {
-
-        private final String text;
-        private final String iconClass;
-        private final Class<? extends Component> view;
-
-        public MenuItemInfo(String text, String iconClass, Class<? extends Component> view) {
-            this.text = text;
-            this.iconClass = iconClass;
-            this.view = view;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public String getIconClass() {
-            return iconClass;
-        }
-
-        public Class<? extends Component> getView() {
-            return view;
-        }
-
-    }
-
     private H1 viewTitle;
 
+    /**
+     * Create main Layout
+     */
     public MainLayout() {
         setPrimarySection(Section.DRAWER);
         addToNavbar(true, createHeaderContent());
@@ -119,16 +95,17 @@ public class MainLayout extends AppLayout {
         return nav;
     }
 
-    public List<RouterLink> createLinks() {
-        String iconClassGlobe = "la la-globe";
-        MainLayout.MenuItemInfo[] menuItems = new MainLayout.MenuItemInfo[]{ //
-                new MainLayout.MenuItemInfo("Home Page", iconClassGlobe, HomePage.class), //
-                new MainLayout.MenuItemInfo("Single- and Multisubscription Page", iconClassGlobe, SingleAndMultisubscriptionPage.class), //
-                new MainLayout.MenuItemInfo("Constraint Handling Page", iconClassGlobe, ConstraintHandlingPage.class), //
-                new MainLayout.MenuItemInfo("Annotation Page", iconClassGlobe, AnnotationPage.class), //
-                new MainLayout.MenuItemInfo("Admin Page", iconClassGlobe, AdminPage.class) //
+    private List<RouterLink> createLinks() {
+        String                    iconClassGlobe = "la la-globe";
+        MainLayout.MenuItemInfo[] menuItems      = new MainLayout.MenuItemInfo[] {                                       //
+                new MainLayout.MenuItemInfo("Home Page", iconClassGlobe, HomePage.class),                                //
+                new MainLayout.MenuItemInfo("Single- and Multisubscription Page", iconClassGlobe,
+                        SingleAndMultisubscriptionPage.class),                                                           //
+                new MainLayout.MenuItemInfo("Constraint Handling Page", iconClassGlobe, ConstraintHandlingPage.class),   //
+                new MainLayout.MenuItemInfo("Annotation Page", iconClassGlobe, AnnotationPage.class),                    //
+                new MainLayout.MenuItemInfo("Admin Page", iconClassGlobe, AdminPage.class)                               //
         };
-        List<RouterLink> links = new ArrayList<>(7);
+        List<RouterLink>          links          = new ArrayList<>(7);
         for (MainLayout.MenuItemInfo menuItemInfo : menuItems) {
             links.add(createLink(menuItemInfo));
 
@@ -171,4 +148,31 @@ public class MainLayout extends AppLayout {
         PageTitle title = getContent().getClass().getAnnotation(PageTitle.class);
         return title == null ? "" : title.value();
     }
+
+    static class MenuItemInfo {
+
+        private final String                     text;
+        private final String                     iconClass;
+        private final Class<? extends Component> view;
+
+        public MenuItemInfo(String text, String iconClass, Class<? extends Component> view) {
+            this.text      = text;
+            this.iconClass = iconClass;
+            this.view      = view;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public String getIconClass() {
+            return iconClass;
+        }
+
+        public Class<? extends Component> getView() {
+            return view;
+        }
+
+    }
+
 }

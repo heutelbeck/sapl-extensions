@@ -15,9 +15,8 @@ import jakarta.annotation.security.PermitAll;
 
 /**
  * The SingleAndMultisubscriptionPage got four buttons. The left one is for
- * singlesubscription using {@link VaadinSingleButtonPepBuilder} and the right
- * three are for multisubscriptions with {@link MultiBuilder}
- *
+ * singlesubscription using VaadinSingleButtonPepBuilder and the right
+ * three are for multisubscriptions with MultiBuilder
  */
 @PermitAll
 @PageTitle("Single- and Multisubscription Page")

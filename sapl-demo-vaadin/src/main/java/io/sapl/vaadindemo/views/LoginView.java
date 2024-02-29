@@ -18,6 +18,9 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
+/**
+ * Login page
+ */
 @AnonymousAllowed
 @Route("login")
 @PageTitle("Login")
@@ -25,6 +28,9 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
 	private final LoginForm login = new LoginForm();
 
+    /**
+     * Create Login Page
+     */
     public LoginView() {
         addClassName("login-view");
         setSizeFull();

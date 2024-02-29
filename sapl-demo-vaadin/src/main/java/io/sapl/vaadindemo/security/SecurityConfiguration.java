@@ -20,6 +20,9 @@ import io.sapl.spring.config.EnableSaplMethodSecurity;
 import io.sapl.vaadin.base.VaadinAuthorizationSubscriptionBuilderService;
 import io.sapl.vaadindemo.views.LoginView;
 
+/**
+ * Setup Security
+ */
 @Configuration
 @EnableWebSecurity
 @EnableSaplMethodSecurity

@@ -52,6 +52,10 @@ public class ConstraintHandlingPage extends VerticalLayout {
     private Integer minPizza = 0;
     private final PepBuilderService pepBuilderService;
 
+    /**
+     * @param pepBuilderService PEP Builder
+     * @param data Pizza Data
+     */
     public ConstraintHandlingPage(PepBuilderService pepBuilderService, PizzaOrder data) {
         add(Utilities.getInfoText("This page demonstrates JSON-Schema-based constraint handling functionality " +
                 "while using a form."));

@@ -17,6 +17,9 @@ import jakarta.annotation.security.PermitAll;
 @Route(value = "annotation-page", layout = MainLayout.class)
 public class AnnotationPage extends VerticalLayout {
 
+    /**
+     * Create annotation page
+     */
     public AnnotationPage() {
         add(Utilities.getInfoText("The \"Annotation Page\" uses the @OnDenyNavigate annotation to secure this site. " +
                 "Only as an admin you will be able to see this site."));

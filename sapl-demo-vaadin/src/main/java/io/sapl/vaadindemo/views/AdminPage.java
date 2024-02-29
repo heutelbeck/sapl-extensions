@@ -26,6 +26,9 @@ public class AdminPage extends VerticalLayout implements BeforeEnterObserver {
 			"constructed via the building pattern beginning with the PepBuilderService.";
 	private final BeforeEnterListener beforeEnterListener;
 
+	/**
+	 * @param builder a PEP builder
+	 */
 	public AdminPage(PepBuilderService builder) {
 		this.beforeEnterListener = builder.getLifecycleBeforeEnterPepBuilder()
 				.onDenyRerouteTo("/")
