@@ -20,22 +20,37 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
+	
 	<parent>
-		<groupId>io.sapl</groupId>
-		<artifactId>sapl-demo-parent</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
-		<relativePath/>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.2.3</version>
+		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
+	<groupId>io.sapl</groupId>
 	<artifactId>sapl-demo-ethereum</artifactId>
+	<version>3.0.0-SNAPSHOT</version>
+
 	<name>SAPL Demo Ethereum</name>
 	<packaging>jar</packaging>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>17</java.version>
+		<sapl.version>3.0.0-SNAPSHOT</sapl.version>
+		<springboot.version>3.2.3</springboot.version>
+		<vaadin.version>24.3.5</vaadin.version>
+		<maven-source-plugin.version>3.0.1</maven-source-plugin.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
+		<version.lombok>1.18.30</version.lombok>
 		<selenium.version>4.8.3</selenium.version>
 		<version.testcontainers>1.18.0</version.testcontainers>
 		<maven.deploy.skip>true</maven.deploy.skip>
+		<argLine />
 	</properties>
 
 	<dependencyManagement>
@@ -44,6 +59,20 @@
 				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers-bom</artifactId>
 				<version>${version.testcontainers}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.sapl</groupId>
+				<artifactId>sapl-bom</artifactId>
+				<version>${sapl.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-bom</artifactId>
+				<version>${vaadin.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -198,7 +227,6 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.9.1</version>
 				<executions>
 					<execution>
 						<?m2e execute onConfiguration,onIncremental?>

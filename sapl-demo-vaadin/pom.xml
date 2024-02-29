@@ -13,10 +13,10 @@
 
 	<groupId>io.sapl</groupId>
 	<artifactId>sapl-demo-vaadin</artifactId>
-	<name>SAPL Demo Vaadin</name>
-
 	<version>3.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
+
+	<name>SAPL Demo Vaadin</name>
 
 	<properties>
 		<java.version>17</java.version>
