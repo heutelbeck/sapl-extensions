@@ -58,7 +58,7 @@ jobs:
       run: mvn -B package
 
     - name: Javadoc on Libraries, Ignoring Demos
-      run: mvn -B package javadoc:jar -DskipTRests -pl !sapl-demo-vaadin,!sapl-demo-ethereum,!sapl-demo-axon
+      run: mvn -B package javadoc:jar -DskipTests -pl !sapl-demo-vaadin,!sapl-demo-ethereum,!sapl-demo-axon,!sapl-demo-mqtt-pep
   
     - name: Clean up local repository before caching (Linux/Mac)
       if: ${{ matrix.os != 'windows-latest'}}
