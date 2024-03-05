@@ -10,7 +10,7 @@ The following features are supported:
 
 ## Getting started
 
-Note: It is also recommended checking out the [SAPL Vaadin demo](https://github.com/heutelbeck/sapl-demos/tree/master/sapl-demo-vaadin) for some basic and easy use cases.
+Note: It is also recommended checking out the [SAPL Vaadin demo](https://github.com/heutelbeck/sapl-extensions/tree/main/sapl-demo-vaadin) for some basic and easy use cases.
 
 The entry point when using the library is the PepBuilderService, it should be autowired.
 
