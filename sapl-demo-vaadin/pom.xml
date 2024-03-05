@@ -21,7 +21,11 @@
 	<properties>
 		<java.version>17</java.version>
 		<vaadin.version>24.3.5</vaadin.version>
-		<maven.deploy.skip>true</maven.deploy.skip>
+		<spotbugs.version>4.7.3.6</spotbugs.version>
+		<sbcontrib.version>7.6.0</sbcontrib.version>
+		<failsafe.version>3.2.5</failsafe.version>
+		<jacoco.version>0.8.11</jacoco.version>
+		<maven.javadoc.skip>true</maven.javadoc.skip>
 		<argLine />
 	</properties>
 
@@ -334,6 +338,37 @@
 			</build>
 		</profile>
 		<profile>
+			<id>coverage</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.jacoco</groupId>
+						<artifactId>jacoco-maven-plugin</artifactId>
+						<version>${jacoco.version}</version>
+						<executions>
+							<execution>
+								<id>prepare-agent</id>
+								<goals>
+									<goal>prepare-agent</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>report</id>
+								<goals>
+									<goal>report</goal>
+								</goals>
+								<configuration>
+									<formats>
+										<format>XML</format>
+									</formats>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
 			<activation>
 				<jdk>[21,)</jdk>
 			</activation>
@@ -361,6 +396,30 @@
 						</plugin>
 					</plugins>
 				</pluginManagement>
+			</build>
+		</profile>
+		<profile>
+			<id>spotbugs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs-maven-plugin</artifactId>
+						<version>${spotbugs.version}</version>
+						<configuration>
+							<excludeFilterFile>spotbugsExcludeFilter.xml</excludeFilterFile>
+							<includeTests>true</includeTests>
+							<addSourceDirs>true</addSourceDirs>
+							<plugins>
+								<plugin>
+									<groupId>com.mebigfatguy.sb-contrib</groupId>
+									<artifactId>sb-contrib</artifactId>
+									<version>${sbcontrib.version}</version>
+								</plugin>
+							</plugins>
+						</configuration>
+					</plugin>
+				</plugins>
 			</build>
 		</profile>
 	</profiles>

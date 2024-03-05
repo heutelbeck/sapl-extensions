@@ -45,7 +45,10 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<vaadin.version>24.3.5</vaadin.version>
 		<selenium.version>4.8.3</selenium.version>
-		<maven.deploy.skip>true</maven.deploy.skip>
+		<spotbugs.version>4.7.3.6</spotbugs.version>
+		<sbcontrib.version>7.6.0</sbcontrib.version>
+		<maven.javadoc.skip>true</maven.javadoc.skip>
+		<skip.tests>true</skip.tests>
 	</properties>
 
 	<repositories>
@@ -171,4 +174,30 @@
 		</plugins>
 	</build>
 
+	<profiles>
+		<profile>
+			<id>spotbugs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs-maven-plugin</artifactId>
+						<version>${spotbugs.version}</version>
+						<configuration>
+							<excludeFilterFile>spotbugsExcludeFilter.xml</excludeFilterFile>
+							<includeTests>true</includeTests>
+							<addSourceDirs>true</addSourceDirs>
+							<plugins>
+								<plugin>
+									<groupId>com.mebigfatguy.sb-contrib</groupId>
+									<artifactId>sb-contrib</artifactId>
+									<version>${sbcontrib.version}</version>
+								</plugin>
+							</plugins>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
