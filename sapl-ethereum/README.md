@@ -1,6 +1,6 @@
 # Sapl-Ethereum Documentation
 
-In this documentation you will find an introduction on how to use the **EthereumPolicyInformationPoint (EthPIP)**. This is a general attribute finder created to facilitate access to information from the Ethereum blockchain environment inside Sapl policies. For more information about using a **Policy Decision Point (PDP)** with an attribute finder in general and on how to access it inside a policy please refer to the [SAPL Documentation](https://github.com/heutelbeck/sapl-policy-engine/blob/master/sapl-documentation/src/asciidoc/sapl-reference.adoc). 
+In this documentation you will find an introduction on how to use the **EthereumPolicyInformationPoint (EthPIP)**. This is a general attribute finder created to facilitate access to information from the Ethereum blockchain environment inside Sapl policies. For more information about using a **Policy Decision Point (PDP)** with an attribute finder in general and on how to access it inside a policy please refer to the [SAPL Documentation](https://sapl.io/docs/latest/). 
 
 ## The EthereumPolicyInformationPoint
 

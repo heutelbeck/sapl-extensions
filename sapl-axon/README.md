@@ -22,7 +22,11 @@ An application performing authorization of an action formulates an authorization
 
 ### The SAPL Attribute-Based Access Control (ABAC) Architecture
 
-SAPL implements its interpretation of ABAC called Attribute Stream-Based Access Control (ASBAC). It uses publish-subscribe as its primary mode of interaction between the individual components. This tutorial will explain the basic ideas. The [SAPL Documentation](https://sapl.io/docs/2.1.0-SNAPSHOT/sapl-reference.html#reference-architecture) provides a complete discussion of the architecture. 
+SAPL implements its interpretation of ABAC called Attribute Stream-Based Access 
+Control (ASBAC). It uses publish-subscribe as its primary mode of interaction between 
+the individual components. This tutorial will explain the basic ideas. The [SAPL 
+Documentation](https://sapl.io/docs/latest/2_1_ReferenceArchitecture/) provides a 
+complete discussion of the architecture. 
 
 ![SAPL ABAC/ASBAC Architecture](assets/sapl-architecture.png)
 
