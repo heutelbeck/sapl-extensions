@@ -43,9 +43,6 @@ public class ConstraintHandlingPage extends VerticalLayout {
     private final IntegerField cheese    = new IntegerField("Cheese Pizza");
     private final IntegerField veggie    = new IntegerField("Veggie Pizza");
     private final IntegerField pepperoni = new IntegerField("Pepperoni Pizza");
-    private final EmailField   email     = new EmailField("E-Mail");
-    private final TimePicker   time      = new TimePicker("Delivery time");
-    private final IntegerField beer      = new IntegerField("+Beer 🍺");
 
     private final Button                           submit        = new Button("Submit order");
     private final BeanValidationBinder<PizzaOrder> binder        = new BeanValidationBinder<>(PizzaOrder.class);
@@ -94,7 +91,8 @@ public class ConstraintHandlingPage extends VerticalLayout {
                 "The number of allowed pizza(s) is controlled by a time-based sapl policy and a local constraint handler provider."));
 
         // minPizza message
-        NativeLabel lblMinPizza = new NativeLabel();
+        NativeLabel  lblMinPizza = new NativeLabel();
+        IntegerField beer        = new IntegerField("+Beer 🍺");
 
         // beer
         beer.setValueChangeMode(ValueChangeMode.EAGER);
@@ -103,6 +101,8 @@ public class ConstraintHandlingPage extends VerticalLayout {
         NativeLabel       lblTime   = new NativeLabel();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm:ss");
         Timer             t         = new Timer();
+        EmailField        email     = new EmailField("E-Mail");
+        TimePicker        time      = new TimePicker("Delivery time");
         t.schedule(new TimerTask() {
             @Override
             public void run() {

@@ -111,7 +111,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
             bundle.executeOnDecisionHandlers(decision, command);
         } catch (Exception t) {
             log.error("command on decision constraint handlers failed: {}", t.getMessage(), t);
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED,t));
         }
 
         if (decision.getDecision() != Decision.PERMIT) {
