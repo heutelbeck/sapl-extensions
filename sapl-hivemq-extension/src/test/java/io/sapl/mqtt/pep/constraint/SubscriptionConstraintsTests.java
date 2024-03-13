@@ -161,7 +161,7 @@ class SubscriptionConstraintsTests {
                 constraint);
 
         // THEN
-        verify(constraintDetailsSpy).setIsResubscribeMqttSubscriptionEnabled(true);
+        verify(constraintDetailsSpy).setIsResubscribeMqttSubscriptionEnabled(Boolean.TRUE);
         assertTrue(wasSuccessfullyHandled);
     }
 
@@ -180,7 +180,7 @@ class SubscriptionConstraintsTests {
                 constraint);
 
         // THEN
-        verify(constraintDetailsSpy).setIsResubscribeMqttSubscriptionEnabled(false);
+        verify(constraintDetailsSpy).setIsResubscribeMqttSubscriptionEnabled(Boolean.FALSE);
         assertTrue(wasSuccessfullyHandled);
     }
 

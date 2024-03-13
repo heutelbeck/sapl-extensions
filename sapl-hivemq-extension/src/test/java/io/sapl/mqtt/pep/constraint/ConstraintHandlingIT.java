@@ -42,6 +42,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.hivemq.embedded.EmbeddedHiveMQ;
+import com.nimbusds.jose.util.StandardCharset;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -77,8 +79,8 @@ class ConstraintHandlingIT {
     @TempDir
     Path extensionFolder;
 
-    private final String subscriptionClientId = "subscriptionClient";
-    private final String topic                = "testTopic";
+    private static final String SUBSCRIPTION_CLIENT_ID = "subscriptionClient";
+    private static final String TOPIC                  = "testTopic";
 
     @Test
     @Timeout(30)
@@ -86,11 +88,11 @@ class ConstraintHandlingIT {
             throws InitializationException, InterruptedException {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
-                .buildSubscriptionId(subscriptionClientId, MqttPep.CONNECT_AUTHZ_ACTION);
+                .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
         String subscriptionClientMqttSubscriptionSaplSubscriptionId = SaplSubscriptionUtility
-                .buildSubscriptionId(subscriptionClientId, MqttPep.SUBSCRIBE_AUTHZ_ACTION, topic);
+                .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.SUBSCRIBE_AUTHZ_ACTION, TOPIC);
         String subscriptionClientMqttPublishSaplSubscriptionId      = SaplSubscriptionUtility
-                .buildSubscriptionId(subscriptionClientId, MqttPep.PUBLISH_AUTHZ_ACTION, topic);
+                .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.PUBLISH_AUTHZ_ACTION, TOPIC);
 
         ArrayNode mqttSubscriptionTimeLimitObligation = JsonNodeFactory.instance.arrayNode()
                 .add(JsonNodeFactory.instance.objectNode()
@@ -119,13 +121,13 @@ class ConstraintHandlingIT {
                 .thenReturn(subscriptionClientMqttSubscriptionDecisionFlux)
                 .thenReturn(subscriptionClientMqttPublishDecisionFlux);
 
-        Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(topic);
-        Mqtt5Publish   publishMessage   = buildMqttPublishMessage(topic, false);
+        Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(TOPIC);
+        Mqtt5Publish   publishMessage   = buildMqttPublishMessage(TOPIC, false);
 
         // WHEN
         EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
 
-        Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
+        Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(SUBSCRIPTION_CLIENT_ID);
         subscribeClient.subscribe(subscribeMessage);
         subscribeClient.publish(publishMessage);
         assertTrue(subscribeClient.publishes(MqttGlobalPublishFilter.SUBSCRIBED).receive(800, TimeUnit.MILLISECONDS)
@@ -149,14 +151,14 @@ class ConstraintHandlingIT {
             throws InitializationException {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
-                .buildSubscriptionId(subscriptionClientId, MqttPep.CONNECT_AUTHZ_ACTION);
+                .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
         String subscriptionClientMqttSubscriptionSaplSubscriptionId = SaplSubscriptionUtility
-                .buildSubscriptionId(subscriptionClientId, MqttPep.SUBSCRIBE_AUTHZ_ACTION, topic);
+                .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.SUBSCRIBE_AUTHZ_ACTION, TOPIC);
         String publishClientId                                      = "publishClient";
         String publishClientMqttConnectionSaplSubscriptionId        = SaplSubscriptionUtility
                 .buildSubscriptionId(publishClientId, MqttPep.CONNECT_AUTHZ_ACTION);
         String publishClientMqttPublishSaplSubscriptionId           = SaplSubscriptionUtility
-                .buildSubscriptionId(publishClientId, MqttPep.PUBLISH_AUTHZ_ACTION, topic);
+                .buildSubscriptionId(publishClientId, MqttPep.PUBLISH_AUTHZ_ACTION, TOPIC);
 
         ArrayNode resubscribeObligation = JsonNodeFactory.instance.arrayNode()
                 .add(JsonNodeFactory.instance.objectNode()
@@ -194,12 +196,12 @@ class ConstraintHandlingIT {
                 .thenReturn(subscriptionClientMqttSubscriptionDecisionFlux)
                 .thenReturn(publishClientMqttPublishDecisionFlux);
 
-        Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(topic);
-        Mqtt5Publish   publishMessage   = buildMqttPublishMessage(topic, false);
+        Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(TOPIC);
+        Mqtt5Publish   publishMessage   = buildMqttPublishMessage(TOPIC, false);
 
         EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
 
-        Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
+        Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(SUBSCRIPTION_CLIENT_ID);
         Mqtt5BlockingClient publishClient   = buildAndStartMqttClient(publishClientId);
 
         // WHEN
@@ -212,7 +214,8 @@ class ConstraintHandlingIT {
             Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(3,
                     TimeUnit.SECONDS);
             assertTrue(receivedMessage.isPresent());
-            assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
+            assertEquals(PUBLISH_MESSAGE_PAYLOAD,
+                    new String(receivedMessage.get().getPayloadAsBytes(), StandardCharset.UTF_8));
         });
 
         verify(pdpMock, times(4)).decide(any(MultiAuthorizationSubscription.class));
@@ -226,9 +229,9 @@ class ConstraintHandlingIT {
     void when_obligationForMqttSubscriptionFailed_then_denyMqttSubscription() throws InitializationException {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
-                .buildSubscriptionId(subscriptionClientId, MqttPep.CONNECT_AUTHZ_ACTION);
+                .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
         String subscriptionClientMqttSubscriptionSaplSubscriptionId = SaplSubscriptionUtility
-                .buildSubscriptionId(subscriptionClientId, MqttPep.SUBSCRIBE_AUTHZ_ACTION, topic);
+                .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.SUBSCRIBE_AUTHZ_ACTION, TOPIC);
 
         ArrayNode illegalConstraint = JsonNodeFactory.instance.arrayNode()
                 .add(JsonNodeFactory.instance.objectNode().put("illegalConstraint", 5));
@@ -247,11 +250,11 @@ class ConstraintHandlingIT {
                 .thenReturn(subscriptionClientConnectionDecisionFlux)
                 .thenReturn(subscriptionClientMqttSubscriptionDecisionFlux);
 
-        Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(topic);
+        Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(TOPIC);
 
         // WHEN
         EmbeddedHiveMQ      mqttBroker      = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
-        Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
+        Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(SUBSCRIPTION_CLIENT_ID);
 
         // THEN
         Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
@@ -268,7 +271,7 @@ class ConstraintHandlingIT {
     void when_obligationForMqttConnectionFailed_then_cancelMqttSubscription() {
         // GIVEN
         String    subscriptionClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility
-                .buildSubscriptionId(subscriptionClientId, MqttPep.CONNECT_AUTHZ_ACTION);
+                .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
         ArrayNode illegalConstraint                                  = JsonNodeFactory.instance.arrayNode()
                 .add(JsonNodeFactory.instance.objectNode().put("illegalConstraint", 5));
 
@@ -280,7 +283,7 @@ class ConstraintHandlingIT {
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class)))
                 .thenReturn(subscriptionClientConnectionDecisionFlux);
 
-        Mqtt5BlockingClient blockingMqttSubscriptionClient = Mqtt5Client.builder().identifier(subscriptionClientId)
+        Mqtt5BlockingClient blockingMqttSubscriptionClient = Mqtt5Client.builder().identifier(SUBSCRIPTION_CLIENT_ID)
                 .serverHost(BROKER_HOST).serverPort(BROKER_PORT).buildBlocking();
 
         // WHEN
@@ -302,9 +305,9 @@ class ConstraintHandlingIT {
             throws InitializationException {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
-                .buildSubscriptionId(subscriptionClientId, MqttPep.CONNECT_AUTHZ_ACTION);
+                .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
         String subscriptionClientMqttSubscriptionSaplSubscriptionId = SaplSubscriptionUtility
-                .buildSubscriptionId(subscriptionClientId, MqttPep.SUBSCRIBE_AUTHZ_ACTION, topic);
+                .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.SUBSCRIBE_AUTHZ_ACTION, TOPIC);
 
         ArrayNode mqttSubscriptionTimeLimitObligation = JsonNodeFactory.instance.arrayNode()
                 .add(JsonNodeFactory.instance.objectNode()
@@ -324,11 +327,11 @@ class ConstraintHandlingIT {
                 .thenReturn(subscriptionClientConnectionDecisionFlux)
                 .thenReturn(emitterUndefined.asFlux().doOnCancel(() -> wasCanceled.set(true)));
 
-        Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(topic);
+        Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(TOPIC);
 
         // WHEN
         EmbeddedHiveMQ       mqttBroker      = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
-        Mqtt5BlockingClient  subscribeClient = buildAndStartMqttClient(subscriptionClientId);
+        Mqtt5BlockingClient  subscribeClient = buildAndStartMqttClient(SUBSCRIPTION_CLIENT_ID);
         Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
                 () -> subscribeClient.subscribe(subscribeMessage));
         assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));

@@ -217,8 +217,8 @@ class ExtensionConfigValidationTests {
     void when_saplExtensionConfigFileIsEmpty_then_useDefaultConfig() {
         // GIVEN
         var fileMock = mock(File.class);
-        when(fileMock.exists()).thenReturn(true);
-        when(fileMock.canRead()).thenReturn(true);
+        when(fileMock.exists()).thenReturn(Boolean.TRUE);
+        when(fileMock.canRead()).thenReturn(Boolean.TRUE);
         when(fileMock.length()).thenReturn(0L);
         var saplExtensionConfiguration = new SaplExtensionConfiguration(fileMock);
 

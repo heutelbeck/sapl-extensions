@@ -148,7 +148,8 @@ class DecisionFluxUtilityTests {
         // GIVEN
         var identAuthzDecisionFlux = Flux.just(IdentifiableAuthorizationDecision.INDETERMINATE);
         var mqttClientState        = spy(new MqttClientState("clientId"));
-        doReturn(Boolean.FALSE).when(mqttClientState).addMqttActionDecisionFluxDisposableToComposite(any(Disposable.class));
+        doReturn(Boolean.FALSE).when(mqttClientState)
+                .addMqttActionDecisionFluxDisposableToComposite(any(Disposable.class));
         mqttClientState.addMqttActionDecisionFluxToMap("id", identAuthzDecisionFlux);
 
         // WHEN
