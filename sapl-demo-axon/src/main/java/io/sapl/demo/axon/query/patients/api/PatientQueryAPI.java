@@ -6,9 +6,9 @@ import lombok.experimental.UtilityClass;
 public class PatientQueryAPI {
 
 	// @formatter:off
-	public record FetchAllPatients () {};
-	public record FetchPatient 	   (String patientId) {};
-	public record MonitorPatient   (String patientId) {};
+	public record FetchAllPatients () {}
+	public record FetchPatient 	   (String patientId) {}
+	public record MonitorPatient   (String patientId) {}
 	// @formatter:on
 
 }

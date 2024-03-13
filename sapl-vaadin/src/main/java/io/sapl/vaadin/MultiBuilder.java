@@ -190,7 +190,7 @@ public class MultiBuilder {
      * This function shall start the multi subscription.
      */
     private void startMultiSubscription() {
-        disposable = pdp.decide(getMultiSubscription()).subscribe((identifiableDecision) -> {
+        disposable = pdp.decide(getMultiSubscription()).subscribe(identifiableDecision -> {
             var id = identifiableDecision.getAuthorizationSubscriptionId();
             if (id != null) {
                 AuthorizationDecision authzDecision = identifiableDecision.getAuthorizationDecision();
@@ -219,7 +219,7 @@ public class MultiBuilder {
                     throw new AccessDeniedException("Unable to start subscription, UI is not present");
                 }
             } else {
-                component.addAttachListener((e) -> {
+                component.addAttachListener(e -> {
                     Optional<UI> optionalUI = component.getUI();
                     if (optionalUI.isPresent()) {
                         this.ui = optionalUI.get();

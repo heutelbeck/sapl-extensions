@@ -7,8 +7,8 @@ import lombok.experimental.UtilityClass;
 public class VitalSignsQueryAPI {
 
 	// @formatter:off
-	public record FetchVitalSignOfPatient 		(String patientId, MonitorType type) {};
-	public record MonitorVitalSignOfPatient 	(String patientId, MonitorType type) {};
+	public record FetchVitalSignOfPatient 		(String patientId, MonitorType type) {}
+	public record MonitorVitalSignOfPatient 	(String patientId, MonitorType type) {}
 	// @formatter:on
 
 }

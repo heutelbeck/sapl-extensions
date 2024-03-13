@@ -139,7 +139,7 @@ public class DemoData implements ApplicationListener<ContextRefreshedEvent> {
 	private void loadPatient(String patientId, String name, List<MonitorType> monitors, Ward ward, String doctor,
 			String icd11, String diagnosis) {
 		log.info(String.format(" %-3.3s | %-20.20s | %s ", patientId, name, ward.getDescription() + " (" + ward + ")"));
-		var creationProcess = commandGateway.send(new RegisterPatient(patientId, name.toString())).cast(String.class);
+		var creationProcess = commandGateway.send(new RegisterPatient(patientId, name)).cast(String.class);
 		creationProcess = creationProcess.then(commandGateway.send(new HospitalisePatient(patientId, ward)));
 		for (var monitor : monitors) {
 			creationProcess = creationProcess
