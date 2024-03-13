@@ -62,7 +62,7 @@ class PdpInitUtilityTests {
         // GIVEN
         var saplMqttExtensionConfigMock = Mockito.mock(SaplMqttExtensionConfig.class);
         when(saplMqttExtensionConfigMock.getPdpImplementation()).thenReturn(PdpInitUtility.EMBEDDED_PDP_IDENTIFIER);
-        when(saplMqttExtensionConfigMock.isEmbeddedPdpPoliciesPathRelativeToExtensionHome()).thenReturn(false);
+        when(saplMqttExtensionConfigMock.isEmbeddedPdpPoliciesPathRelativeToExtensionHome()).thenReturn(Boolean.FALSE);
         when(saplMqttExtensionConfigMock.getEmbeddedPdpPoliciesPath())
                 .thenReturn(new File("src/test/resources/policies").getAbsolutePath());
         var subject  = JSON.objectNode().put(ENVIRONMENT_CLIENT_ID, "MQTT_CLIENT_SUBSCRIBE").put(ENVIRONMENT_USER_NAME,
@@ -85,7 +85,7 @@ class PdpInitUtilityTests {
         // GIVEN
         var saplMqttExtensionConfigMock = Mockito.mock(SaplMqttExtensionConfig.class);
         when(saplMqttExtensionConfigMock.getPdpImplementation()).thenReturn(PdpInitUtility.EMBEDDED_PDP_IDENTIFIER);
-        when(saplMqttExtensionConfigMock.isEmbeddedPdpPoliciesPathRelativeToExtensionHome()).thenReturn(true);
+        when(saplMqttExtensionConfigMock.isEmbeddedPdpPoliciesPathRelativeToExtensionHome()).thenReturn(Boolean.TRUE);
         when(saplMqttExtensionConfigMock.getEmbeddedPdpPoliciesPath()).thenReturn("/resources/policies");
         var subject  = JSON.objectNode().put(ENVIRONMENT_CLIENT_ID, "MQTT_CLIENT_SUBSCRIBE").put(ENVIRONMENT_USER_NAME,
                 "user1");

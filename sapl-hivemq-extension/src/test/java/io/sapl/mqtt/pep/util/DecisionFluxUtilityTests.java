@@ -113,14 +113,14 @@ class DecisionFluxUtilityTests {
     @Test
     void when_calculatingRemainingTimeLimitAndStartTimeIsZero_then_returnTimeLimit() {
         // GIVEN
-        var timeLimit = 50;
+        var timeLimit = 50L;
         var startTime = 0L;
 
         // WHEN
         var remainingTimeLimit = DecisionFluxUtility.getRemainingTimeLimitMillis(timeLimit, startTime);
 
         // THEN
-        assertEquals(timeLimit * 1_000, remainingTimeLimit);
+        assertEquals(timeLimit * 1_000L, remainingTimeLimit);
     }
 
     @Test
@@ -148,7 +148,7 @@ class DecisionFluxUtilityTests {
         // GIVEN
         var identAuthzDecisionFlux = Flux.just(IdentifiableAuthorizationDecision.INDETERMINATE);
         var mqttClientState        = spy(new MqttClientState("clientId"));
-        doReturn(false).when(mqttClientState).addMqttActionDecisionFluxDisposableToComposite(any(Disposable.class));
+        doReturn(Boolean.FALSE).when(mqttClientState).addMqttActionDecisionFluxDisposableToComposite(any(Disposable.class));
         mqttClientState.addMqttActionDecisionFluxToMap("id", identAuthzDecisionFlux);
 
         // WHEN

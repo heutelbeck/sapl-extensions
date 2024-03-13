@@ -58,7 +58,7 @@ class SaplSubscriptionUtilityTests {
         when(willPublishPacketMock.getQos()).thenReturn(Qos.AT_MOST_ONCE);
         var willPublishPacketMockOption = Optional.of(willPublishPacketMock);
         when(connectPacketMock.getWillPublish()).thenReturn(willPublishPacketMockOption);
-        when(connectPacketMock.getCleanStart()).thenReturn(true);
+        when(connectPacketMock.getCleanStart()).thenReturn(Boolean.TRUE);
         when(simpleAuthInputMock.getConnectPacket()).thenReturn(connectPacketMock);
         mockConnectionInformation(simpleAuthInputMock);
 
@@ -90,7 +90,7 @@ class SaplSubscriptionUtilityTests {
         when(willPublishPacketMock.getQos()).thenReturn(Qos.AT_MOST_ONCE);
         var willPublishPacketMockOption = Optional.of(willPublishPacketMock);
         when(connectPacketMock.getWillPublish()).thenReturn(willPublishPacketMockOption);
-        when(connectPacketMock.getCleanStart()).thenReturn(true);
+        when(connectPacketMock.getCleanStart()).thenReturn(Boolean.TRUE);
         when(simpleAuthInputMock.getConnectPacket()).thenReturn(connectPacketMock);
         mockConnectionInformation(simpleAuthInputMock);
 
