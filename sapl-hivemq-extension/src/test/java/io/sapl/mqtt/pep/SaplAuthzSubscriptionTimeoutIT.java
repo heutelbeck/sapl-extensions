@@ -17,7 +17,11 @@
  */
 package io.sapl.mqtt.pep;
 
-import static io.sapl.mqtt.pep.MqttTestUtil.*;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildAndStartBroker;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildAndStartMqttClient;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttPublishMessage;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttSubscribeMessage;
+import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -32,14 +36,15 @@ import static org.mockito.Mockito.when;
 
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
-import com.hivemq.embedded.EmbeddedHiveMQ;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
 import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5PubAckException;
 import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5SubAckException;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
@@ -47,6 +52,7 @@ import com.hivemq.client.mqtt.mqtt5.message.publish.puback.Mqtt5PubAckReasonCode
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCode;
 import com.hivemq.client.mqtt.mqtt5.message.unsubscribe.Mqtt5Unsubscribe;
+import com.hivemq.embedded.EmbeddedHiveMQ;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
@@ -55,7 +61,6 @@ import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.cache.MqttClientState;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
-import org.junit.jupiter.api.io.TempDir;
 import reactor.core.publisher.Flux;
 
 class SaplAuthzSubscriptionTimeoutIT {
@@ -448,8 +453,8 @@ class SaplAuthzSubscriptionTimeoutIT {
         stopBroker(mqttBroker);
     }
 
-    private void assertMqttClientStateWasCleanedUp(ConcurrentHashMap<String, MqttClientState> mqttClientCache,
-            String clientId, String saplSubscriptionId) {
+    private void assertMqttClientStateWasCleanedUp(Map<String, MqttClientState> mqttClientCache, String clientId,
+            String saplSubscriptionId) {
         MqttClientState mqttClientState = mqttClientCache.get(clientId);
         assertNull(mqttClientState.getSaplAuthzSubscriptionFromMultiSubscription(saplSubscriptionId));
         assertFalse(mqttClientState.getIdentAuthzDecisionMap().containsKey(saplSubscriptionId));

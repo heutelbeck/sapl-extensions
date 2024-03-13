@@ -30,6 +30,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import com.hivemq.embedded.EmbeddedHiveMQ;
+import com.nimbusds.jose.util.StandardCharset;
+
 import org.junit.jupiter.api.*;
 
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
@@ -102,7 +104,7 @@ class ConstraintHandling2IT {
         subscribeClient.subscribe(subscribeMessage);
         publishClient.publish(publishMessage);
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
+        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(),StandardCharset.UTF_8));
 
         // THEN
         await().atMost(2500, TimeUnit.MILLISECONDS).untilAsserted(() -> {
@@ -129,7 +131,7 @@ class ConstraintHandling2IT {
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 
         // THEN
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
+        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(),StandardCharset.UTF_8));
         assertTrue(receivedMessage.getContentType().isPresent());
         assertEquals("content",
                 StandardCharsets.UTF_8.decode(receivedMessage.getContentType().get().toByteBuffer()).toString());
