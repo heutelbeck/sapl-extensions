@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-import lombok.NonNull;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**

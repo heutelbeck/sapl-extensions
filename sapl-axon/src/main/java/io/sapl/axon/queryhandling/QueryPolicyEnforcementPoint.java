@@ -28,7 +28,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import lombok.NonNull;
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
 import org.axonframework.messaging.annotation.WrappedMessageHandlingMember;
@@ -50,6 +49,7 @@ import io.sapl.axon.configuration.SaplAxonProperties;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.constrainthandling.QueryConstraintHandlerBundle;
 import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 

@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -203,12 +202,11 @@ class QueryPolicyEnforcementPointTests {
                 any(Annotation.class), any(Executable.class), any(Optional.class)))
                 .thenReturn(new AuthorizationSubscription());
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just());
-        when(queryConstraintHandlerBundle.executePreHandlingHandlers(eq(DEFAULT_QUERY_MESSAGE)))
+        when(queryConstraintHandlerBundle.executePreHandlingHandlers(DEFAULT_QUERY_MESSAGE))
                 .thenReturn(DEFAULT_QUERY_MESSAGE);
-        when(queryConstraintHandlerBundle.executePreHandlingHandlers(eq(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE)))
+        when(queryConstraintHandlerBundle.executePreHandlingHandlers(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE))
                 .thenReturn(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE);
-        when(queryConstraintHandlerBundle.executePostHandlingHandlers(eq(DEFAULT_RESPONSE)))
-                .thenReturn(DEFAULT_RESPONSE);
+        when(queryConstraintHandlerBundle.executePostHandlingHandlers(DEFAULT_RESPONSE)).thenReturn(DEFAULT_RESPONSE);
 
         queryPEP = new QueryPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService, emitter,
                 subscriptionBuilder, properties);
@@ -257,21 +255,21 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-	@SuppressWarnings("unchecked")
-	void when_handle_with_preEnforce_and_buildQueryPreHandlerBundleThrowsAccessDenied_then_accessDenied()
-			throws NoSuchMethodException, SecurityException {
-		when(axonConstraintEnforcementService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class),
-				any(ResponseType.class), any(Optional.class))).thenThrow(ACCESS_DENIED);
+    @SuppressWarnings("unchecked")
+    void when_handle_with_preEnforce_and_buildQueryPreHandlerBundleThrowsAccessDenied_then_accessDenied()
+            throws NoSuchMethodException, SecurityException {
+        when(axonConstraintEnforcementService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class),
+                any(ResponseType.class), any(Optional.class))).thenThrow(ACCESS_DENIED);
 
-		var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-		assertNotNull(response);
-		assertInstanceOf(CompletableFuture.class, response);
-		var future = (CompletableFuture<?>) response;
-		assertTrue(future.isCompletedExceptionally());
-		var exception = assertThrows(ExecutionException.class, () -> future.get());
-		assertNotNull(exception.getCause());
-		assertEquals(AccessDeniedException.class, exception.getCause().getClass());
-	}
+        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
+        assertNotNull(response);
+        assertInstanceOf(CompletableFuture.class, response);
+        var future = (CompletableFuture<?>) response;
+        assertTrue(future.isCompletedExceptionally());
+        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        assertNotNull(exception.getCause());
+        assertEquals(AccessDeniedException.class, exception.getCause().getClass());
+    }
 
     @Test
     @SuppressWarnings("unchecked")
@@ -294,21 +292,21 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-	void when_handle_with_preEnforce_and_decisionNotPermit_then_handledException()
-			throws NoSuchMethodException, SecurityException {
-		when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
-				.thenReturn(new RuntimeException("A very special message!"));
+    void when_handle_with_preEnforce_and_decisionNotPermit_then_handledException()
+            throws NoSuchMethodException, SecurityException {
+        when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
+                .thenReturn(new RuntimeException("A very special message!"));
 
-		var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-		assertNotNull(response);
-		assertInstanceOf(CompletableFuture.class, response);
-		var future = (CompletableFuture<?>) response;
-		assertTrue(future.isCompletedExceptionally());
-		var exception = assertThrows(ExecutionException.class, () -> future.get());
-		assertNotNull(exception.getCause());
-		assertEquals(RuntimeException.class, exception.getCause().getClass());
-		assertEquals("A very special message!", exception.getCause().getLocalizedMessage());
-	}
+        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
+        assertNotNull(response);
+        assertInstanceOf(CompletableFuture.class, response);
+        var future = (CompletableFuture<?>) response;
+        assertTrue(future.isCompletedExceptionally());
+        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        assertNotNull(exception.getCause());
+        assertEquals(RuntimeException.class, exception.getCause().getClass());
+        assertEquals("A very special message!", exception.getCause().getLocalizedMessage());
+    }
 
     @Test
     @SuppressWarnings("unchecked")
@@ -318,7 +316,7 @@ class QueryPolicyEnforcementPointTests {
         @SuppressWarnings("rawtypes")
         QueryMessage specialQueryMessage = new GenericQueryMessage<>(specialPayload,
                 ResponseTypes.instanceOf(TestResponseType.class));
-        when(queryConstraintHandlerBundle.executePreHandlingHandlers(eq(DEFAULT_QUERY_MESSAGE)))
+        when(queryConstraintHandlerBundle.executePreHandlingHandlers(DEFAULT_QUERY_MESSAGE))
                 .thenReturn(specialQueryMessage);
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
                 .thenReturn(new RuntimeException("A very special message!"));
@@ -330,62 +328,62 @@ class QueryPolicyEnforcementPointTests {
         var future          = (CompletableFuture<?>) response;
         var completedResult = assertDoesNotThrow(() -> future.get());
         assertEquals(DEFAULT_RESPONSE, completedResult);
-        verify(handlingInstance, times(1)).handle1(eq(specialPayload));
+        verify(handlingInstance, times(1)).handle1(specialPayload);
     }
 
     @Test
-	@SuppressWarnings("unchecked")
-	void when_handle_with_preEnforce_and_executePreHandlingHandlersThrowsAccessDenied_then_handledException()
-			throws NoSuchMethodException, SecurityException {
-		when(queryConstraintHandlerBundle.executePreHandlingHandlers(any(QueryMessage.class))).thenThrow(ACCESS_DENIED);
-		when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
-				.thenReturn(new RuntimeException("A very special message!"));
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+    @SuppressWarnings("unchecked")
+    void when_handle_with_preEnforce_and_executePreHandlingHandlersThrowsAccessDenied_then_handledException()
+            throws NoSuchMethodException, SecurityException {
+        when(queryConstraintHandlerBundle.executePreHandlingHandlers(any(QueryMessage.class))).thenThrow(ACCESS_DENIED);
+        when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
+                .thenReturn(new RuntimeException("A very special message!"));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-		var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-		assertNotNull(response);
-		assertInstanceOf(CompletableFuture.class, response);
-		var future = (CompletableFuture<?>) response;
-		assertTrue(future.isCompletedExceptionally());
-		var exception = assertThrows(ExecutionException.class, () -> future.get());
-		assertNotNull(exception.getCause());
-		assertEquals(RuntimeException.class, exception.getCause().getClass());
-		assertEquals("A very special message!", exception.getCause().getLocalizedMessage());
-	}
-
-    @Test
-	void when_handle_with_preEnforce_and_delegateReturnsNull_then_empty()
-			throws NoSuchMethodException, SecurityException {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		handlingInstance.setResponse(null);
-
-		var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-		assertNotNull(response);
-		assertInstanceOf(CompletableFuture.class, response);
-		var future = (CompletableFuture<?>) response;
-		var completedResult = assertDoesNotThrow(() -> future.get());
-		assertNull(completedResult);
-	}
+        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
+        assertNotNull(response);
+        assertInstanceOf(CompletableFuture.class, response);
+        var future = (CompletableFuture<?>) response;
+        assertTrue(future.isCompletedExceptionally());
+        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        assertNotNull(exception.getCause());
+        assertEquals(RuntimeException.class, exception.getCause().getClass());
+        assertEquals("A very special message!", exception.getCause().getLocalizedMessage());
+    }
 
     @Test
-	void when_handle_with_preEnforce_and_delegateThrows_then_handledException()
-			throws NoSuchMethodException, SecurityException {
-		when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
-				.thenReturn(new RuntimeException("An even more special message!"));
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		when(handlingInstance.handle1(any(TestQueryPayload.class)))
-				.thenThrow(new RuntimeException("A very special message!"));
+    void when_handle_with_preEnforce_and_delegateReturnsNull_then_empty()
+            throws NoSuchMethodException, SecurityException {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+        handlingInstance.setResponse(null);
 
-		var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-		assertNotNull(response);
-		assertInstanceOf(CompletableFuture.class, response);
-		var future = (CompletableFuture<?>) response;
-		assertTrue(future.isCompletedExceptionally());
-		var exception = assertThrows(ExecutionException.class, () -> future.get());
-		assertNotNull(exception.getCause());
-		assertEquals(RuntimeException.class, exception.getCause().getClass());
-		assertEquals("An even more special message!", exception.getCause().getLocalizedMessage());
-	}
+        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
+        assertNotNull(response);
+        assertInstanceOf(CompletableFuture.class, response);
+        var future          = (CompletableFuture<?>) response;
+        var completedResult = assertDoesNotThrow(() -> future.get());
+        assertNull(completedResult);
+    }
+
+    @Test
+    void when_handle_with_preEnforce_and_delegateThrows_then_handledException()
+            throws NoSuchMethodException, SecurityException {
+        when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
+                .thenReturn(new RuntimeException("An even more special message!"));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+        when(handlingInstance.handle1(any(TestQueryPayload.class)))
+                .thenThrow(new RuntimeException("A very special message!"));
+
+        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
+        assertNotNull(response);
+        assertInstanceOf(CompletableFuture.class, response);
+        var future = (CompletableFuture<?>) response;
+        assertTrue(future.isCompletedExceptionally());
+        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        assertNotNull(exception.getCause());
+        assertEquals(RuntimeException.class, exception.getCause().getClass());
+        assertEquals("An even more special message!", exception.getCause().getLocalizedMessage());
+    }
 
     @Test
     void when_handle_with_preEnforce_and_delegateReturnsCompletableFuture_then_deferResponse()
@@ -412,7 +410,7 @@ class QueryPolicyEnforcementPointTests {
         var resource = new TestResponseType("some special text");
         var decision = AuthorizationDecision.PERMIT.withResource(asTree(resource));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(decision));
-        when(queryConstraintHandlerBundle.executePostHandlingHandlers(eq(resource))).thenReturn(resource);
+        when(queryConstraintHandlerBundle.executePostHandlingHandlers(resource)).thenReturn(resource);
 
         var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
         assertNotNull(response);
@@ -423,19 +421,18 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-	void when_handle_with_preEnforce_and_executePostHandlingHandlersMapResponse_then_handledException()
-			throws NoSuchMethodException, SecurityException {
-		when(queryConstraintHandlerBundle.executePostHandlingHandlers(eq(DEFAULT_RESPONSE)))
-				.thenReturn("special response");
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+    void when_handle_with_preEnforce_and_executePostHandlingHandlersMapResponse_then_handledException()
+            throws NoSuchMethodException, SecurityException {
+        when(queryConstraintHandlerBundle.executePostHandlingHandlers(DEFAULT_RESPONSE)).thenReturn("special response");
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-		var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-		assertNotNull(response);
-		assertInstanceOf(CompletableFuture.class, response);
-		var future = (CompletableFuture<?>) response;
-		var completedResult = assertDoesNotThrow(() -> future.get());
-		assertEquals("special response", completedResult);
-	}
+        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
+        assertNotNull(response);
+        assertInstanceOf(CompletableFuture.class, response);
+        var future          = (CompletableFuture<?>) response;
+        var completedResult = assertDoesNotThrow(() -> future.get());
+        assertEquals("special response", completedResult);
+    }
 
     @Test
     void when_handle_with_enforceDropUpdatesWhileDenied_then_preEnforceInitialResult()
@@ -663,8 +660,7 @@ class QueryPolicyEnforcementPointTests {
         var resourceResponse = new TestResponseType("ResourceText");
         var decision         = new AuthorizationDecision(Decision.PERMIT).withResource(asTree(resourceResponse));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(decision));
-        when(queryConstraintHandlerBundle.executePostHandlingHandlers(eq(resourceResponse)))
-                .thenReturn(resourceResponse);
+        when(queryConstraintHandlerBundle.executePostHandlingHandlers(resourceResponse)).thenReturn(resourceResponse);
 
         var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
         assertNotNull(response);
@@ -769,7 +765,7 @@ class QueryPolicyEnforcementPointTests {
         assertDoesNotThrow(
                 () -> verify(delegate, times(1)).handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance));
         verify(emitter, times(1))
-                .authorizeUpdatesForSubscriptionQueryWithId(eq(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE.getIdentifier()));
+                .authorizeUpdatesForSubscriptionQueryWithId(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE.getIdentifier());
         verify(pdp, times(0)).decide(any(AuthorizationSubscription.class));
     }
 
@@ -786,8 +782,7 @@ class QueryPolicyEnforcementPointTests {
 
         assertThrows(AccessDeniedException.class,
                 () -> queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance));
-        verify(emitter, times(1))
-                .immediatelyDenySubscriptionWithId(eq(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE.getIdentifier()));
+        verify(emitter, times(1)).immediatelyDenySubscriptionWithId(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE.getIdentifier());
     }
 
     @Test

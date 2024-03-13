@@ -17,15 +17,23 @@
  */
 package io.sapl.mqtt.pep;
 
-import static io.sapl.mqtt.pep.MqttTestUtil.*;
+import static io.sapl.mqtt.pep.MqttTestUtil.BROKER_HOST;
+import static io.sapl.mqtt.pep.MqttTestUtil.BROKER_PORT;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildAndStartBroker;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildAndStartMqttClient;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttPublishMessage;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttSubscribeMessage;
+import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.hivemq.embedded.EmbeddedHiveMQ;
+import java.nio.file.Path;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
@@ -37,6 +45,7 @@ import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.publish.puback.Mqtt5PubAckReasonCode;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCode;
+import com.hivemq.embedded.EmbeddedHiveMQ;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
@@ -44,10 +53,7 @@ import io.sapl.api.pdp.MultiAuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
-import org.junit.jupiter.api.io.TempDir;
 import reactor.core.publisher.Flux;
-
-import java.nio.file.Path;
 
 class MqttActionEnforcementTimeoutIT {
 

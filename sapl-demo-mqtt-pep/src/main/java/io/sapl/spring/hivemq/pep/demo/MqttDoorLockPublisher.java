@@ -16,13 +16,14 @@
 
 package io.sapl.spring.hivemq.pep.demo;
 
-import lombok.extern.slf4j.Slf4j;
+import java.time.Duration;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
-
-import java.time.Duration;
 
 @Slf4j
 @Service

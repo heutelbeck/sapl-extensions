@@ -16,20 +16,22 @@
 
 package io.sapl.spring.hivemq.pep.demo;
 
-import com.hivemq.configuration.service.InternalConfigurations;
-import com.hivemq.embedded.EmbeddedExtension;
-import com.hivemq.embedded.EmbeddedHiveMQ;
-import com.hivemq.migration.meta.PersistenceType;
-import io.sapl.mqtt.pep.HivemqPepExtensionMain;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
+
+import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.stereotype.Service;
+
+import com.hivemq.configuration.service.InternalConfigurations;
+import com.hivemq.embedded.EmbeddedExtension;
+import com.hivemq.embedded.EmbeddedHiveMQ;
+import com.hivemq.migration.meta.PersistenceType;
+
+import io.sapl.mqtt.pep.HivemqPepExtensionMain;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service

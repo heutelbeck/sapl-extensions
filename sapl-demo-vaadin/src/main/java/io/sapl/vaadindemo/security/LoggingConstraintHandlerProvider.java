@@ -1,10 +1,12 @@
 package io.sapl.vaadindemo.security;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sapl.spring.constraints.api.RunnableConstraintHandlerProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
+import io.sapl.spring.constraints.api.RunnableConstraintHandlerProvider;
 
 /**
  * This Constraint Handler Provider can be used to log messages based on SAPL Obligations.

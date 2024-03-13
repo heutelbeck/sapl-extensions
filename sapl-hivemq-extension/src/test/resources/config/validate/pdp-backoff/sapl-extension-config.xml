@@ -16,6 +16,6 @@
 -->
 <sapl-extension-config>
 
-    <remote-pdp-first-back-off-millis>200</remote-pdp-first-back-off-millis>
-    <remote-pdp-max-back-off-millis>100</remote-pdp-max-back-off-millis>
+	<remote-pdp-first-back-off-millis>200</remote-pdp-first-back-off-millis>
+	<remote-pdp-max-back-off-millis>100</remote-pdp-max-back-off-millis>
 </sapl-extension-config>

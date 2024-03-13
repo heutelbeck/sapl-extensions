@@ -20,7 +20,6 @@ package io.sapl.axon.commandhandling;
 import java.lang.reflect.Executable;
 import java.util.Optional;
 
-import lombok.NonNull;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
@@ -32,6 +31,7 @@ import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.axon.annotation.PreHandleEnforce;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
 import io.sapl.axon.subscription.AuthorizationSubscriptionBuilderService;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 /**

@@ -17,7 +17,11 @@
  */
 package io.sapl.mqtt.pep;
 
-import static io.sapl.mqtt.pep.MqttTestUtil.*;
+import static io.sapl.mqtt.pep.MqttTestUtil.PUBLISH_MESSAGE_PAYLOAD;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildAndStartMqttClient;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttPublishMessage;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttSubscribeMessage;
+import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -37,9 +41,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
-import lombok.SneakyThrows;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -50,6 +55,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
+import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 import com.hivemq.embedded.EmbeddedExtension;
@@ -57,6 +63,7 @@ import com.hivemq.embedded.EmbeddedHiveMQ;
 
 import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
+import lombok.SneakyThrows;
 
 @Testcontainers
 class RemotePdpUsageIT {

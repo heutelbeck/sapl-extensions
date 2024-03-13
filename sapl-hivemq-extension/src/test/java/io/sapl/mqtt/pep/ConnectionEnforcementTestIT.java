@@ -17,7 +17,10 @@
  */
 package io.sapl.mqtt.pep;
 
-import static io.sapl.mqtt.pep.MqttTestUtil.*;
+import static io.sapl.mqtt.pep.MqttTestUtil.BROKER_HOST;
+import static io.sapl.mqtt.pep.MqttTestUtil.BROKER_PORT;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildAndStartBroker;
+import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -29,8 +32,10 @@ import java.nio.file.Path;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import com.hivemq.embedded.EmbeddedHiveMQ;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
@@ -40,9 +45,9 @@ import com.hivemq.client.mqtt.mqtt5.message.auth.Mqtt5SimpleAuth;
 import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAck;
 import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAckReasonCode;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
+import com.hivemq.embedded.EmbeddedHiveMQ;
 
 import io.sapl.mqtt.pep.cache.MqttClientState;
-import org.junit.jupiter.api.io.TempDir;
 
 class ConnectionEnforcementTestIT {
 

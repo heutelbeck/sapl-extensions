@@ -16,6 +16,10 @@
 
 package io.sapl.spring.hivemq.pep.demo;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.util.Optional;
+
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.UI;
@@ -28,12 +32,9 @@ import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.communication.PushMode;
+
 import reactor.core.Disposable;
 import reactor.core.Disposables;
-
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.util.Optional;
 
 @Route(value = "")
 @PageTitle("SmartHomeMonitor")

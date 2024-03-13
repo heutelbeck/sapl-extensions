@@ -17,7 +17,14 @@
  */
 package io.sapl.mqtt.pep.constraint;
 
-import static io.sapl.mqtt.pep.MqttTestUtil.*;
+import static io.sapl.mqtt.pep.MqttTestUtil.BROKER_HOST;
+import static io.sapl.mqtt.pep.MqttTestUtil.BROKER_PORT;
+import static io.sapl.mqtt.pep.MqttTestUtil.PUBLISH_MESSAGE_PAYLOAD;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildAndStartBroker;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildAndStartMqttClient;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttPublishMessage;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttSubscribeMessage;
+import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
 import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_CONSTRAINT_TYPE;
 import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_ENABLED;
 import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION;
@@ -41,11 +48,9 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.hivemq.embedded.EmbeddedHiveMQ;
-import com.nimbusds.jose.util.StandardCharset;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -58,6 +63,8 @@ import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAckReasonCo
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCode;
+import com.hivemq.embedded.EmbeddedHiveMQ;
+import com.nimbusds.jose.util.StandardCharset;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
@@ -66,7 +73,6 @@ import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.MqttPep;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
-import org.junit.jupiter.api.io.TempDir;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
