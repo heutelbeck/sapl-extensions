@@ -16,31 +16,34 @@ import io.sapl.demo.axon.query.vitals.api.VitalSignMeasurement;
 @Service
 public class VitalSignFilterProvider implements UpdateFilterConstraintHandlerProvider {
 
-	@Override
-	public boolean isResponsible(JsonNode constraint) {
-		if (!constraint.isObject())
-			return false;
+    private static final String CONSTRAINT_TYPE = "constraintType";
+    private static final String BLOCK_TYPE      = "blockType";
 
-		if (!(constraint.has("constraintType") || constraint.has("blockType")))
-			return false;
+    @Override
+    public boolean isResponsible(JsonNode constraint) {
+        if (!constraint.isObject()) {
+            return false;
+        }
+        if (!(constraint.has(CONSTRAINT_TYPE) || constraint.has(BLOCK_TYPE))) {
+            return false;
+        }
+        var constraintType = constraint.get(CONSTRAINT_TYPE);
+        if (!constraintType.isTextual() || !"filter vital sign type".equals(constraintType.textValue())) {
+            return false;
+        }
+        return constraint.get(BLOCK_TYPE).isTextual();
+    }
 
-		var constraintType = constraint.get("constraintType");
-		if (!constraintType.isTextual() || !"filter vital sign type".equals(constraintType.textValue()))
-			return false;
+    @Override
+    public Set<ResponseType<?>> getSupportedResponseTypes() {
+        return Set.of(ResponseTypes.instanceOf(VitalSignMeasurement.class));
+    }
 
-		return constraint.get("blockType").isTextual();
-	}
+    @Override
+    public Predicate<ResultMessage<?>> getHandler(JsonNode constraint) {
+        var blockedType = constraint.get(BLOCK_TYPE).textValue();
 
-	@Override
-	public Set<ResponseType<?>> getSupportedResponseTypes() {
-		return Set.of(ResponseTypes.instanceOf(VitalSignMeasurement.class));
-	}
-
-	@Override
-	public Predicate<ResultMessage<?>> getHandler(JsonNode constraint) {
-		var blockedType = constraint.get("blockType").textValue();
-
-		return measurement -> !blockedType.equals(((VitalSignMeasurement) measurement.getPayload()).type().toString());
-	}
+        return measurement -> !blockedType.equals(((VitalSignMeasurement) measurement.getPayload()).type().toString());
+    }
 
 }

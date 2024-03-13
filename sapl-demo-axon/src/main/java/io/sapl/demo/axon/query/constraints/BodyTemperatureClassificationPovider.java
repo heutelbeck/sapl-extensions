@@ -14,7 +14,9 @@ import io.sapl.demo.axon.query.vitals.api.VitalSignMeasurement;
 @Service
 public class BodyTemperatureClassificationPovider implements ResultConstraintHandlerProvider {
 
-	@Override
+	private static final String BODY_TEMPERATURE_CATEGORY = "Body Temperature Category";
+
+    @Override
 	public boolean isResponsible(JsonNode constraint) {
 		return constraint.isTextual() && "categorise body temperature".equals(constraint.textValue());
 	}
@@ -39,26 +41,26 @@ public class BodyTemperatureClassificationPovider implements ResultConstraintHan
 
 		if (bodyTemperature < 35.0D)
 			return new VitalSignMeasurement(measurement.monitorDeviceId(), measurement.type(), "Hypothermia",
-					"Body Temperature Category", measurement.timestamp());
+					BODY_TEMPERATURE_CATEGORY, measurement.timestamp());
 
 		if (bodyTemperature <= 37.5D)
 			return new VitalSignMeasurement(measurement.monitorDeviceId(), measurement.type(), "Normal",
-					"Body Temperature Category", measurement.timestamp());
+					BODY_TEMPERATURE_CATEGORY, measurement.timestamp());
 
 		if (bodyTemperature <= 38.3D)
 			return new VitalSignMeasurement(measurement.monitorDeviceId(), measurement.type(), "Hyperthermia",
-					"Body Temperature Category", measurement.timestamp());
+					BODY_TEMPERATURE_CATEGORY, measurement.timestamp());
 
 		if (bodyTemperature <= 40.0D)
 			return new VitalSignMeasurement(measurement.monitorDeviceId(), measurement.type(), "Fever",
-					"Body Temperature Category", measurement.timestamp());
+					BODY_TEMPERATURE_CATEGORY, measurement.timestamp());
 
 		if (bodyTemperature <= 41.5D)
 			return new VitalSignMeasurement(measurement.monitorDeviceId(), measurement.type(), "Hyperpyrexia",
-					"Body Temperature Category", measurement.timestamp());
+					BODY_TEMPERATURE_CATEGORY, measurement.timestamp());
 
 		return new VitalSignMeasurement(measurement.monitorDeviceId(), measurement.type(), "Critical Emergency",
-				"Body Temperature Category", measurement.timestamp());
+				BODY_TEMPERATURE_CATEGORY, measurement.timestamp());
 
 	}
 }

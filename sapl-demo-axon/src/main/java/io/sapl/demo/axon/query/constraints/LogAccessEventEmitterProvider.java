@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 public class LogAccessEventEmitterProvider implements OnDecisionConstraintHandlerProvider {
 
 	public record AccessAttempt(String message, AuthorizationDecision decision, Message<?> cause) {
-	};
+	}
 
 	private final ReactorEventGateway eventGateway;
 

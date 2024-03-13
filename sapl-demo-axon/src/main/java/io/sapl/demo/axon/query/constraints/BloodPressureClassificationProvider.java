@@ -14,7 +14,9 @@ import io.sapl.demo.axon.query.vitals.api.VitalSignMeasurement;
 @Service
 public class BloodPressureClassificationProvider implements ResultConstraintHandlerProvider {
 
-	@Override
+	private static final String BLOOD_PRESSURE_CATEGORY = "Blood Pressure Category";
+
+    @Override
 	public boolean isResponsible(JsonNode constraint) {
 		return constraint.isTextual() && "catrgorise blood pressure".equals(constraint.textValue());
 	}
@@ -33,26 +35,26 @@ public class BloodPressureClassificationProvider implements ResultConstraintHand
 
 		if (systolic < 100 || diastolic < 60)
 			return new VitalSignMeasurement(measurement.monitorDeviceId(), measurement.type(), "Hypotension",
-					"Blood Pressure Category", measurement.timestamp());
+					BLOOD_PRESSURE_CATEGORY, measurement.timestamp());
 
 		if (systolic < 120 || diastolic < 80)
 			return new VitalSignMeasurement(measurement.monitorDeviceId(), measurement.type(), "Normal",
-					"Blood Pressure Category", measurement.timestamp());
+					BLOOD_PRESSURE_CATEGORY, measurement.timestamp());
 
 		if (systolic < 140 || diastolic < 90)
 			return new VitalSignMeasurement(measurement.monitorDeviceId(), measurement.type(), "Prehypertension",
-					"Blood Pressure Category", measurement.timestamp());
+					BLOOD_PRESSURE_CATEGORY, measurement.timestamp());
 
 		if (systolic < 160 || diastolic < 100)
 			return new VitalSignMeasurement(measurement.monitorDeviceId(), measurement.type(), "Stage 1 Hypertension",
-					"Blood Pressure Category", measurement.timestamp());
+					BLOOD_PRESSURE_CATEGORY, measurement.timestamp());
 
 		if (systolic < 180 || diastolic < 110)
 			return new VitalSignMeasurement(measurement.monitorDeviceId(), measurement.type(), "Stage 2 Hypertension",
-					"Blood Pressure Category", measurement.timestamp());
+					BLOOD_PRESSURE_CATEGORY, measurement.timestamp());
 
 		return new VitalSignMeasurement(measurement.monitorDeviceId(), measurement.type(),
-				"Hypertension Crisis EMERGENCY", "Blood Pressure Category", measurement.timestamp());
+				"Hypertension Crisis EMERGENCY", BLOOD_PRESSURE_CATEGORY, measurement.timestamp());
 	}
 
 }
