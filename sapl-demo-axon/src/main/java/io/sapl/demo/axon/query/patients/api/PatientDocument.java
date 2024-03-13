@@ -13,8 +13,8 @@ import io.sapl.demo.axon.command.patient.Ward;
 
 @Document
 @JsonInclude(Include.NON_NULL)
-public record PatientDocument (
-     // @formatter:off
+public record PatientDocument(
+// @formatter:off
 	@Id
 	String  id,
 	String  name,
@@ -44,4 +44,4 @@ public record PatientDocument (
         return patient -> new PatientDocument(patient.id, patient.name, patient.latestIcd11Code,
                 patient.latestDiagnosisText, newWard, timestamp);
     }
-};
+}

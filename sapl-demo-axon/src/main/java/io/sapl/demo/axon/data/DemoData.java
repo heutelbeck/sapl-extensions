@@ -41,32 +41,32 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class DemoData implements ApplicationListener<ContextRefreshedEvent> {
 
-	private static final String DONNA = "donna";
-    private static final String DAVID = "david";
-    private static final String ELEANORE = "eleanore";
-    private static final String NEIL = "neil";
-    private static final String PHYLLIS = "phyllis";
-    private static final String CHERYL = "cheryl";
-    private static final String KARL = "karl";
-    private static final String PASSWORD = "pwd";
-	private static final String NOOP = "{noop}";
-	private static final String[] ICD11 = { "1B21.3", "1B95", "1E31", "2A90.7", "6A25.3", "6C73", "6D51", "6E40.2",
-			"9A82", "9A96.2", "9B02.2", "AB11.1", "BD11.1", "BC02.30", "DA20", "DC10", "LB70.1", "LB79.0", "LB99.2",
-			"NA01.3", "NA01.5", "PF13", "PJ00" };
-	private static final String[] DIAGNOSIS = { "Disseminated non-tuberculous mycobacterial infection", "Brucellosis",
-			"Influenza due to identified zoonotic or pandemic influenza virus",
-			"Enteropathy associated T-cell lymphoma", "Manic mood symptoms in primary psychotic disorders",
-			"Intermittent explosive disorder", "Factitious disorder imposed on another",
-			"Personality traits or coping style affecting disorders or diseases classified elsewhere",
-			"Cyst in the anterior chamber of the eye", "Infection-associated anterior uveitis",
-			"Mesencephalic light-near dissociations", "Chronic mastoiditis",
-			"Left ventricular failure with mid range ejection fraction",
-			"Stenosis of the neoaortic valve of pulmonary origin", "Acquired anatomical alterations of the oesophagus",
-			"Acquired anatomical alterations of gallbladder or bile ducts", "Wormian bones", "Fused fingers",
-			"Radial hemimelia", "Laceration with foreign body of head", "Puncture wound with foreign body of head",
-			"Assault by exposure to radiation", "Victim of lightning" };
-	public static final DemoUser[] DEMO_USERS = new DemoUser[] {
-			// @formatter:off
+    private static final String           DONNA         = "donna";
+    private static final String           DAVID         = "david";
+    private static final String           ELEANORE      = "eleanore";
+    private static final String           NEIL          = "neil";
+    private static final String           PHYLLIS       = "phyllis";
+    private static final String           CHERYL        = "cheryl";
+    private static final String           KARL          = "karl";
+    private static final String           PASSWORD      = "pwd";
+    private static final String           NOOP          = "{noop}";
+    private static final String[]         ICD11         = { "1B21.3", "1B95", "1E31", "2A90.7", "6A25.3", "6C73",
+            "6D51", "6E40.2", "9A82", "9A96.2", "9B02.2", "AB11.1", "BD11.1", "BC02.30", "DA20", "DC10", "LB70.1",
+            "LB79.0", "LB99.2", "NA01.3", "NA01.5", "PF13", "PJ00" };
+    private static final String[]         DIAGNOSIS     = { "Disseminated non-tuberculous mycobacterial infection",
+            "Brucellosis", "Influenza due to identified zoonotic or pandemic influenza virus",
+            "Enteropathy associated T-cell lymphoma", "Manic mood symptoms in primary psychotic disorders",
+            "Intermittent explosive disorder", "Factitious disorder imposed on another",
+            "Personality traits or coping style affecting disorders or diseases classified elsewhere",
+            "Cyst in the anterior chamber of the eye", "Infection-associated anterior uveitis",
+            "Mesencephalic light-near dissociations", "Chronic mastoiditis",
+            "Left ventricular failure with mid range ejection fraction",
+            "Stenosis of the neoaortic valve of pulmonary origin", "Acquired anatomical alterations of the oesophagus",
+            "Acquired anatomical alterations of gallbladder or bile ducts", "Wormian bones", "Fused fingers",
+            "Radial hemimelia", "Laceration with foreign body of head", "Puncture wound with foreign body of head",
+            "Assault by exposure to radiation", "Victim of lightning" };
+    public static final List<DemoUser>    DEMO_USERS    = List.of(
+    // @formatter:off
 			new DemoUser(KARL,     PASSWORD, NURSE,         ICCU    ),
 			new DemoUser(CHERYL,   PASSWORD, DOCTOR,        ICCU    ),
 			new DemoUser(PHYLLIS,  PASSWORD, NURSE,         CCU     ),
@@ -74,10 +74,10 @@ public class DemoData implements ApplicationListener<ContextRefreshedEvent> {
 			new DemoUser(ELEANORE, PASSWORD, NURSE,         GENERAL ),
 			new DemoUser(DAVID,    PASSWORD, DOCTOR,        SICU    ),
 			new DemoUser(DONNA,    PASSWORD, ADMINISTRATOR, NONE    )
-			// @formatter:on
-	};
-	public static final DemoPatient[] DEMO_PATIENTS = new DemoPatient[] {
-			// @formatter:off
+	// @formatter:on
+    );
+    public static final List<DemoPatient> DEMO_PATIENTS = List.of(
+    // @formatter:off
 			new DemoPatient("0","Mona Vance",       List.of(HEART_RATE, BLOOD_PRESSURE, BODY_TEMPERATURE, RESPIRATION_RATE), ICCU,    CHERYL, ICD11[ 1], DIAGNOSIS[ 1] ),
 			new DemoPatient("1","Martin Pape",      List.of(HEART_RATE, BLOOD_PRESSURE                                    ), ICCU,    CHERYL, ICD11[ 4], DIAGNOSIS[ 4] ),
 			new DemoPatient("2","Richard Lewis",    List.of(HEART_RATE,                 BODY_TEMPERATURE, RESPIRATION_RATE), CCU,     NEIL,   ICD11[ 6], DIAGNOSIS[ 6] ),
@@ -88,67 +88,67 @@ public class DemoData implements ApplicationListener<ContextRefreshedEvent> {
 			new DemoPatient("7","Louise Colley",    List.of(                                              RESPIRATION_RATE), GENERAL, DAVID,  ICD11[22], DIAGNOSIS[22] ),
 			new DemoPatient("8","Bret Gerson",      List.of(                            BODY_TEMPERATURE                  ), ICCU,    CHERYL, ICD11[ 7], DIAGNOSIS[ 7] ),
 			new DemoPatient("9","Richard Spreer",   List.of(            BLOOD_PRESSURE                                    ), NONE,    CHERYL, ICD11[19], DIAGNOSIS[19] )
-			// @formatter:on
-	};
+	// @formatter:on
+    );
 
-	public static record DemoUser(String userName, String password, Position position, Ward ward) {
-	}
+    public static record DemoUser(String userName, String password, Position position, Ward ward) {
+    }
 
-	public static record DemoPatient(String patientId, String name, List<MonitorType> monitors, Ward ward,
-			String doctor, String icd11, String diagnosis) {
-	}
+    public static record DemoPatient(String patientId, String name, List<MonitorType> monitors, Ward ward,
+            String doctor, String icd11, String diagnosis) {
+    }
 
-	private final ReactorCommandGateway commandGateway;
-	private final HospitalStaffUserDetailsService userDetailsService;
+    private final ReactorCommandGateway           commandGateway;
+    private final HospitalStaffUserDetailsService userDetailsService;
 
-	@Override
-	public void onApplicationEvent(ContextRefreshedEvent event) {
-		generateHospitalStaff();
-		generatePatients();
-	}
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        generateHospitalStaff();
+        generatePatients();
+    }
 
-	private void generateHospitalStaff() {
-		log.info("");
-		log.info("This demo is pre-configured with the following users:");
-		log.info("");
-		log.info(" Username   | Password | Position       | Ward");
-		log.info("------------+----------+----------------+-------------------------------------");
-		for (var demoUser : DEMO_USERS)
-			loadUser(demoUser.userName(), demoUser.password(), demoUser.position(), demoUser.ward());
-		log.info("");
-	}
+    private void generateHospitalStaff() {
+        log.info("");
+        log.info("This demo is pre-configured with the following users:");
+        log.info("");
+        log.info(" Username   | Password | Position       | Ward");
+        log.info("------------+----------+----------------+-------------------------------------");
+        for (var demoUser : DEMO_USERS)
+            loadUser(demoUser.userName(), demoUser.password(), demoUser.position(), demoUser.ward());
+        log.info("");
+    }
 
-	private void loadUser(String username, String rawPassword, Position position, Ward ward) {
-		log.info(String.format(" %-10.10s | %-8.8s | %-14.14s | %s ", username, rawPassword, position,
-				ward.getDescription() + " (" + ward + ")"));
-		userDetailsService.load(new HospitalStaff(username, ward, position, NOOP + rawPassword));
-	}
+    private void loadUser(String username, String rawPassword, Position position, Ward ward) {
+        log.info(String.format(" %-10.10s | %-8.8s | %-14.14s | %s ", username, rawPassword, position,
+                ward.getDescription() + " (" + ward + ")"));
+        userDetailsService.load(new HospitalStaff(username, ward, position, NOOP + rawPassword));
+    }
 
-	private void generatePatients() {
-		log.info("");
-		log.info("This demo is pre-configured with the following patients:");
-		log.info("");
-		log.info(" Id  | Name                 | Ward");
-		log.info("-----+----------------------+-------------------------------------");
-		for (var demoPatient : DEMO_PATIENTS)
-			loadPatient(demoPatient.patientId(), demoPatient.name(), demoPatient.monitors(), demoPatient.ward(),
-					demoPatient.doctor(), demoPatient.icd11(), demoPatient.diagnosis());
-		log.info("");
-	}
+    private void generatePatients() {
+        log.info("");
+        log.info("This demo is pre-configured with the following patients:");
+        log.info("");
+        log.info(" Id  | Name                 | Ward");
+        log.info("-----+----------------------+-------------------------------------");
+        for (var demoPatient : DEMO_PATIENTS)
+            loadPatient(demoPatient.patientId(), demoPatient.name(), demoPatient.monitors(), demoPatient.ward(),
+                    demoPatient.doctor(), demoPatient.icd11(), demoPatient.diagnosis());
+        log.info("");
+    }
 
-	private void loadPatient(String patientId, String name, List<MonitorType> monitors, Ward ward, String doctor,
-			String icd11, String diagnosis) {
-		log.info(String.format(" %-3.3s | %-20.20s | %s ", patientId, name, ward.getDescription() + " (" + ward + ")"));
-		var creationProcess = commandGateway.send(new RegisterPatient(patientId, name)).cast(String.class);
-		creationProcess = creationProcess.then(commandGateway.send(new HospitalisePatient(patientId, ward)));
-		for (var monitor : monitors) {
-			creationProcess = creationProcess
-					.then(commandGateway.send(new ConnectMonitorToPatient(patientId, Base64Id.randomID(), monitor)));
-		}
-		creationProcess = creationProcess
-				.then(commandGateway.send(new MakeDiagnosisForPatient(patientId, doctor, icd11, diagnosis)));
-		creationProcess.contextWrite(ReactiveSecurityContextHolder.withAuthentication(ImpersonationUtil.systemUser()))
-				.subscribe();
-	}
+    private void loadPatient(String patientId, String name, List<MonitorType> monitors, Ward ward, String doctor,
+            String icd11, String diagnosis) {
+        log.info(String.format(" %-3.3s | %-20.20s | %s ", patientId, name, ward.getDescription() + " (" + ward + ")"));
+        var creationProcess = commandGateway.send(new RegisterPatient(patientId, name)).cast(String.class);
+        creationProcess = creationProcess.then(commandGateway.send(new HospitalisePatient(patientId, ward)));
+        for (var monitor : monitors) {
+            creationProcess = creationProcess
+                    .then(commandGateway.send(new ConnectMonitorToPatient(patientId, Base64Id.randomID(), monitor)));
+        }
+        creationProcess = creationProcess
+                .then(commandGateway.send(new MakeDiagnosisForPatient(patientId, doctor, icd11, diagnosis)));
+        creationProcess.contextWrite(ReactiveSecurityContextHolder.withAuthentication(ImpersonationUtil.systemUser()))
+                .subscribe();
+    }
 
 }
