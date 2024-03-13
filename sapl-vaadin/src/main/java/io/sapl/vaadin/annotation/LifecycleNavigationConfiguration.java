@@ -24,14 +24,15 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
-import lombok.RequiredArgsConstructor;
-
 @Configuration
-@RequiredArgsConstructor
 @ConditionalOnProperty(value = "module.enabled", havingValue = "true", matchIfMissing = true)
 public class LifecycleNavigationConfiguration implements VaadinServiceInitListener {
 
-    private final VaadinNavigationPepService vaadinNavigationPepService;
+    private transient VaadinNavigationPepService vaadinNavigationPepService;
+
+    public LifecycleNavigationConfiguration(VaadinNavigationPepService vaadinNavigationPepService) {
+        this.vaadinNavigationPepService = vaadinNavigationPepService;
+    }
 
     @Override
     public void serviceInit(ServiceInitEvent event) {
