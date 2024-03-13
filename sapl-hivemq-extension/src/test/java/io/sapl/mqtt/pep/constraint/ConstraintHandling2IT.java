@@ -85,7 +85,7 @@ class ConstraintHandling2IT {
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 
         // THEN
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
+        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(), StandardCharset.UTF_8));
         assertEquals(2, receivedMessage.getQos().getCode());
 
         // FINALLY
@@ -104,7 +104,7 @@ class ConstraintHandling2IT {
         subscribeClient.subscribe(subscribeMessage);
         publishClient.publish(publishMessage);
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(),StandardCharset.UTF_8));
+        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(), StandardCharset.UTF_8));
 
         // THEN
         await().atMost(2500, TimeUnit.MILLISECONDS).untilAsserted(() -> {
@@ -131,7 +131,7 @@ class ConstraintHandling2IT {
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 
         // THEN
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(),StandardCharset.UTF_8));
+        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(), StandardCharset.UTF_8));
         assertTrue(receivedMessage.getContentType().isPresent());
         assertEquals("content",
                 StandardCharsets.UTF_8.decode(receivedMessage.getContentType().get().toByteBuffer()).toString());
@@ -249,7 +249,7 @@ class ConstraintHandling2IT {
 
         // THEN
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
+        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(), StandardCharset.UTF_8));
 
         // FINALLY
         subscribeClient.unsubscribeWith().topicFilter("illegalAdvice").send();
