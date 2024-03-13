@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 
 import io.sapl.vaadin.annotation.annotations.LifecycleEvent;
 
-public class LifecycleEventTests {
+class LifecycleEventTests {
 
     @Test
     void when_BeforeEnterEvent_isNotNull() {

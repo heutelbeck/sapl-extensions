@@ -82,6 +82,8 @@ public class VaadinPep {
     private Object                                                     resource;
     private Object                                                     environment;
 
+    private static final String BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE = "Builder has already been build. The builder can only be used once.";
+
     /**
      * This function shall execute all decision listener consumers
      *
@@ -518,7 +520,7 @@ public class VaadinPep {
          * @return Current object (=this)
          */
         public T onDecisionDo(BiConsumer<AuthorizationDecision, C> biConsumer) {
-            vaadinPep.decisionListenerList.add((authzDecision) -> biConsumer.accept(authzDecision, component));
+            vaadinPep.decisionListenerList.add(authzDecision -> biConsumer.accept(authzDecision, component));
             denyRuleIsPresent = true;
             return self();
         }
@@ -531,7 +533,7 @@ public class VaadinPep {
          * @return VaadinSingle*PepBuilder or VaadinMulti*PepBuilder
          */
         public T onPermitDo(BiConsumer<AuthorizationDecision, C> biConsumer) {
-            vaadinPep.decisionListenerList.add((authzDecision) -> {
+            vaadinPep.decisionListenerList.add(authzDecision -> {
                 if (authzDecision.getDecision() == Decision.PERMIT) {
                     biConsumer.accept(authzDecision, component);
                 }
@@ -547,7 +549,7 @@ public class VaadinPep {
          * @return VaadinSingle*PepBuilder or VaadinMulti*PepBuilder
          */
         public T onDenyDo(BiConsumer<AuthorizationDecision, C> biConsumer) {
-            vaadinPep.decisionListenerList.add((authzDecision) -> {
+            vaadinPep.decisionListenerList.add(authzDecision -> {
                 if (authzDecision.getDecision() == Decision.DENY) {
                     biConsumer.accept(authzDecision, component);
                 }
@@ -633,7 +635,7 @@ public class VaadinPep {
      *            with T
      */
     public abstract static class VaadinSinglePepBuilder<T, C extends Component> extends VaadinPepBuilder<T, C> {
-        protected boolean isBuild = false;
+        protected boolean isBuilt = false;
 
         protected VaadinSinglePepBuilder(PolicyDecisionPoint pdp,
                 EnforceConstraintsOfDecision enforceConstraintsOfDecision, C component) {
@@ -658,37 +660,35 @@ public class VaadinPep {
          * @return The original vaadin component
          */
         public C build() {
-            if (!isBuild) {
-                // ensure that at least one handler is present for DENY decisions
-                if (!denyRuleIsPresent) {
-                    throw new AccessDeniedException("You need to define at least one handler for DENY decisions.");
+            if (isBuilt) {
+                throw new AccessDeniedException(BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE);
+            }
+            // ensure that at least one handler is present for DENY decisions
+            if (!denyRuleIsPresent) {
+                throw new AccessDeniedException("You need to define at least one handler for DENY decisions.");
+            }
+            component.addDetachListener(event -> vaadinPep.stopSubscription());
+            // start subscription now or later
+            if (component.isAttached()) {
+                Optional<UI> optionalUI = component.getUI();
+                if (optionalUI.isPresent()) {
+                    vaadinPep.enforce(optionalUI.get());
+                } else {
+                    throw new AccessDeniedException("Unable to start subscription, UI is not present");
                 }
-                component.addDetachListener(event -> vaadinPep.stopSubscription());
-                // start subscription now or later
-                if (component.isAttached()) {
+            } else {
+                component.addAttachListener(e -> {
                     Optional<UI> optionalUI = component.getUI();
                     if (optionalUI.isPresent()) {
                         vaadinPep.enforce(optionalUI.get());
                     } else {
                         throw new AccessDeniedException("Unable to start subscription, UI is not present");
                     }
-                } else {
-                    component.addAttachListener((e) -> {
-                        Optional<UI> optionalUI = component.getUI();
-                        if (optionalUI.isPresent()) {
-                            vaadinPep.enforce(optionalUI.get());
-                        } else {
-                            throw new AccessDeniedException("Unable to start subscription, UI is not present");
-                        }
-                    });
-                }
-                isBuild = true;
-                return component;
-            } else {
-                throw new AccessDeniedException("Builder has already been build. The builder can only be used once.");
+                });
             }
+            isBuilt = true;
+            return component;
         }
-
     }
 
     /**
@@ -701,7 +701,7 @@ public class VaadinPep {
      */
     public abstract static class VaadinMultiPepBuilder<T, C extends Component> extends VaadinPepBuilder<T, C> {
         private final MultiBuilder multiBuilder;
-        private boolean            isBuild = false;
+        private boolean            isBuilt = false;
 
         protected VaadinMultiPepBuilder(PolicyDecisionPoint pdp,
                 EnforceConstraintsOfDecision enforceConstraintsOfDecision, MultiBuilder multiBuilder, C component) {
@@ -717,17 +717,16 @@ public class VaadinPep {
          * @return Current multi builder object
          */
         public MultiBuilder and() {
-            if (!isBuild) {
-                // ensure that at least one handler is present for DENY decisions
-                if (!denyRuleIsPresent) {
-                    throw new AccessDeniedException("You need to define at least one handler for DENY decisions.");
-                }
-                multiBuilder.registerPep(vaadinPep);
-                isBuild = true;
-                return multiBuilder;
-            } else {
-                throw new AccessDeniedException("Builder has already been build. The builder can only be used once.");
+            if (isBuilt) {
+                throw new AccessDeniedException(BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE);
             }
+            // ensure that at least one handler is present for DENY decisions
+            if (!denyRuleIsPresent) {
+                throw new AccessDeniedException("You need to define at least one handler for DENY decisions.");
+            }
+            multiBuilder.registerPep(vaadinPep);
+            isBuilt = true;
+            return multiBuilder;
         }
 
         /**
@@ -973,10 +972,10 @@ public class VaadinPep {
          * the username and the user roles
          */
         private void setDefaultSubject() {
-            JsonNodeFactory JSON    = JsonNodeFactory.instance;
-            var             subject = JSON.objectNode();
+            final JsonNodeFactory json    = JsonNodeFactory.instance;
+            var                   subject = json.objectNode();
             subject.put("username", getUsername());
-            var rolesNode = JSON.arrayNode();
+            var rolesNode = json.arrayNode();
             for (String role : getUserRoles()) {
                 rolesNode.add(role);
             }
@@ -1149,8 +1148,7 @@ public class VaadinPep {
          */
         protected void setResourceByNavigationTargetIfNotDefined(BeforeEvent event) {
             if (vaadinPep.resource == null) {
-                JsonNodeFactory JSON     = JsonNodeFactory.instance;
-                var             resource = JSON.objectNode();
+                var resource = JsonNodeFactory.instance.objectNode();
                 resource.put("target", event.getNavigationTarget().getName());
                 vaadinPep.resource = resource;
             }
@@ -1164,7 +1162,7 @@ public class VaadinPep {
     public static class LifecycleBeforeEnterPepBuilder
             extends LifecycleEventHandlerPepBuilder<LifecycleBeforeEnterPepBuilder> {
 
-        protected boolean isBuild = false;
+        protected boolean isBuilt = false;
 
         /**
          * This constructor method sets the action of the subscription.
@@ -1175,7 +1173,7 @@ public class VaadinPep {
         public LifecycleBeforeEnterPepBuilder(PolicyDecisionPoint pdp,
                 EnforceConstraintsOfDecision enforceConstraintsOfDecision) {
             super(pdp, enforceConstraintsOfDecision);
-            action("enter");
+            super.action("enter");
         }
 
         /**
@@ -1200,11 +1198,11 @@ public class VaadinPep {
          * @return {@link BeforeEnterListener}
          */
         public BeforeEnterListener build() {
-            if (!isBuild) {
-                isBuild = true;
+            if (!isBuilt) {
+                isBuilt = true;
                 return this::beforeEnter;
             } else {
-                throw new AccessDeniedException("Builder has already been build. The builder can only be used once.");
+                throw new AccessDeniedException(BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE);
             }
         }
     }
@@ -1216,7 +1214,7 @@ public class VaadinPep {
     public static class LifecycleBeforeLeavePepBuilder
             extends LifecycleEventHandlerPepBuilder<LifecycleBeforeLeavePepBuilder> {
 
-        protected boolean isBuild = false;
+        protected boolean isBuilt = false;
 
         /**
          * This constructor method sets the action of the subscription.
@@ -1227,7 +1225,7 @@ public class VaadinPep {
         protected LifecycleBeforeLeavePepBuilder(PolicyDecisionPoint pdp,
                 EnforceConstraintsOfDecision enforceConstraintsOfDecision) {
             super(pdp, enforceConstraintsOfDecision);
-            action("leave");
+            super.action("leave");
         }
 
         /**
@@ -1252,12 +1250,11 @@ public class VaadinPep {
          * @return {@link BeforeLeaveListener}
          */
         public BeforeLeaveListener build() {
-            if (!isBuild) {
-                isBuild = true;
-                return this::beforeLeave;
-            } else {
-                throw new AccessDeniedException("Builder has already been build. The builder can only be used once.");
+            if (isBuilt) {
+                throw new AccessDeniedException(BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE);
             }
+            isBuilt = true;
+            return this::beforeLeave;
         }
     }
 }

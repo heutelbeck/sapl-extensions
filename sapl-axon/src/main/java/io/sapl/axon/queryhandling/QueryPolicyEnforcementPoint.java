@@ -64,6 +64,8 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember<T> {
 
+    private static final String ACCESS_DENIED = "Access Denied";
+
     private static final Set<Class<?>> SAPL_AXON_ANNOTATIONS = Set.of(PreHandleEnforce.class, PostHandleEnforce.class,
             EnforceDropUpdatesWhileDenied.class, EnforceRecoverableUpdatesIfDenied.class);
 
@@ -215,7 +217,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
                 return Mono.error(constraintHandler.executeOnErrorHandlers(error));
             }
             if (decision.getDecision() != Decision.PERMIT) {
-                var error = new AccessDeniedException("Access Denied");
+                var error = new AccessDeniedException(ACCESS_DENIED);
                 return Mono.error(constraintHandler.executeOnErrorHandlers(error));
             }
             try {
@@ -260,7 +262,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
             }
 
             if (decision.getDecision() != Decision.PERMIT) {
-                var e = new AccessDeniedException("Access Denied");
+                var e = new AccessDeniedException(ACCESS_DENIED);
                 return Mono.error(constraintHandler.executeOnErrorHandlers(e));
             }
 
@@ -289,7 +291,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
             }
 
             if (decision.getDecision() != Decision.PERMIT) {
-                var error = new AccessDeniedException("Access Denied");
+                var error = new AccessDeniedException(ACCESS_DENIED);
                 return Mono.error(constraintHandler.executeOnErrorHandlers(error));
             }
 
@@ -346,7 +348,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
                     + "query handlers for normal queries and subscription queries, if your normal query requires "
                     + "@PostHandleEnforce.");
             emitter.immediatelyDenySubscriptionWithId(message.getIdentifier());
-            throw new AccessDeniedException("Access Denied");
+            throw new AccessDeniedException(ACCESS_DENIED);
         }
 
         var streamingAnnotation = uniqueStreamingEnforcementAnnotation();
@@ -373,7 +375,7 @@ public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember
             throw new IllegalStateException(
                     "The query handler for a streaming query has more than one SAPL annotation which can be used for policy enforcement on subscription queries.");
 
-        return saplAnnotations.stream().findFirst().get();
+        return streamingEnforcementAnnotations.stream().findFirst().get();
     }
 
     private Optional<ResponseType<?>> updateTypeIfSubscriptionQuery(Message<?> message) {

@@ -45,6 +45,7 @@ import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
 
 import io.sapl.spring.constraints.api.ConsumerConstraintHandlerProvider;
+import lombok.SneakyThrows;
 
 /**
  * This Constraint Handler Provider can be used to apply validations on a field
@@ -80,14 +81,14 @@ import io.sapl.spring.constraints.api.ConsumerConstraintHandlerProvider;
  * validator error message.
  */
 public class FieldValidationConstraintHandlerProvider implements ConsumerConstraintHandlerProvider<UI> {
-    private final Binder<?>               binder;
-    private final Object                  objectWithMemberFields;
-    private final JsonNodeFactory         JSON                              = JsonNodeFactory.instance;
-    final ObjectMapper                    objectMapper;
-    private final Map<String, JsonSchema> jsonValidationSchemaFromFieldName = new HashMap<>();
-    private final Map<String, String>     validationMessageFromFieldName    = new HashMap<>();
-    private final Map<String, Boolean>    isBoundFromFieldName              = new HashMap<>();
-    final SpecVersion.VersionFlag         DEFAULT_JSON_SCHEMA_VERSION       = SpecVersion.VersionFlag.V202012;
+    private final Binder<?>                      binder;
+    private final Object                         objectWithMemberFields;
+    private static final JsonNodeFactory         JSON                              = JsonNodeFactory.instance;
+    final ObjectMapper                           objectMapper;
+    private final Map<String, JsonSchema>        jsonValidationSchemaFromFieldName = new HashMap<>();
+    private final Map<String, String>            validationMessageFromFieldName    = new HashMap<>();
+    private final Map<String, Boolean>           isBoundFromFieldName              = new HashMap<>();
+    private static final SpecVersion.VersionFlag DEFAULT_JSON_SCHEMA_VERSION       = SpecVersion.VersionFlag.V202012;
 
     public FieldValidationConstraintHandlerProvider(Binder<?> binder, Object objectWithMemberFields) {
         this.binder                 = binder;
@@ -118,7 +119,7 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
             return null;
         } else {
             updateValidationSchemes(constraint);
-            return (ui) -> ui.access(binder::validate);
+            return ui -> ui.access(binder::validate);
         }
     }
 
@@ -171,11 +172,11 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
     /**
      * This function adds a sapl schema based field validator to the binder.
      *
-     * @param <FIELDVALUE> type of the field value
-     * @param field        requested to bind
+     * @param <F>   type of the field value
+     * @param field requested to bind
      * @return this FieldValidationConstraintHandlerProvider instance
      */
-    public <FIELDVALUE> FieldValidationConstraintHandlerProvider bindField(HasValue<?, FIELDVALUE> field) {
+    public <F> FieldValidationConstraintHandlerProvider bindField(HasValue<?, F> field) {
         getFieldsInDeclareOrder(objectWithMemberFields.getClass()).stream().filter(Objects::nonNull)
                 .filter(memberField -> memberField.getType().isAssignableFrom(field.getClass()))
                 .filter(memberField -> isFieldBound(memberField, field, objectWithMemberFields))
@@ -186,18 +187,18 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
         return this;
     }
 
-    private <FIELDVALUE> Validator<FIELDVALUE> getSchemaBasedFieldValidator(Field memberField) {
+    private <F> Validator<F> getSchemaBasedFieldValidator(Field memberField) {
         return (value, context) -> {
             var fieldName        = memberField.getName();
             var validationSchema = jsonValidationSchemaFromFieldName.get(fieldName);
             if (validationSchema != null) {
                 var convertedValue = objectMapper.convertValue(value, JsonNode.class);
-                if (value instanceof LocalTime) {
-                    convertedValue = objectMapper.convertValue(((LocalTime) value).format(DateTimeFormatter.ISO_TIME),
+                if (value instanceof LocalTime localTime) {
+                    convertedValue = objectMapper.convertValue(localTime.format(DateTimeFormatter.ISO_TIME),
                             JsonNode.class);
-                } else if (value instanceof LocalDateTime) {
-                    convertedValue = objectMapper.convertValue(
-                            ((LocalDateTime) value).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), JsonNode.class);
+                } else if (value instanceof LocalDateTime localDateTime) {
+                    convertedValue = objectMapper
+                            .convertValue(localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), JsonNode.class);
                 }
                 var dataJsonToValidate = JSON.objectNode().set(fieldName, convertedValue);
                 var result             = validationSchema.validate(dataJsonToValidate);
@@ -220,10 +221,10 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
      * @param memberField            from the class
      * @param field                  from the instance
      * @param objectWithMemberFields instance holding field
-     * @param <FIELDVALUE>           the value type of the field
+     * @param <F>           the value type of the field
      * @return returns true of the field is bound
      */
-    <FIELDVALUE> boolean isFieldBound(Field memberField, HasValue<?, FIELDVALUE> field, Object objectWithMemberFields) {
+    <F> boolean isFieldBound(Field memberField, HasValue<?, F> field, Object objectWithMemberFields) {
         try {
             HasValue<?, ?> boundField = (HasValue<?, ?>) getMemberFieldValue(memberField, objectWithMemberFields);
             return boundField.equals(field);
@@ -232,12 +233,11 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
         }
     }
 
+    @SneakyThrows
     private Object getMemberFieldValue(Field memberField, Object objectWithMemberFields) {
         memberField.setAccessible(true);
         try {
             return memberField.get(objectWithMemberFields);
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            throw new RuntimeException(e);
         } finally {
             memberField.setAccessible(false);
         }

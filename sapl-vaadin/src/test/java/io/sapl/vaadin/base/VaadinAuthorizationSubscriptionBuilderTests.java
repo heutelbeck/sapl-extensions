@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
-public class VaadinAuthorizationSubscriptionBuilderTests {
+class VaadinAuthorizationSubscriptionBuilderTests {
 
     MethodSecurityExpressionHandler               methodSecurityExpressionHandlerMock;
     private final ObjectMapper                    mapper = new ObjectMapper();

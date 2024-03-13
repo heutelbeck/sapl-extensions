@@ -59,7 +59,7 @@ import io.sapl.vaadin.base.SecurityHelper;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class LifecycleBeforeEnterPepBuilderTests {
+class LifecycleBeforeEnterPepBuilderTests {
 
     private static MockedStatic<SecurityHelper> securityHelperMock;
     LifecycleBeforeEnterPepBuilder              sut;
@@ -89,16 +89,16 @@ public class LifecycleBeforeEnterPepBuilderTests {
     }
 
     @Test
-    void when_newInstance_then_isBuildIsFalse() {
+    void when_newInstance_then_isBuiltIsFalse() {
         // GIVEN
 
         // WHEN
         // THEN
-        assertFalse(sut.isBuild);
+        assertFalse(sut.isBuilt);
     }
 
     @Test
-    void when_build_then_isBuildIsTrue() {
+    void when_build_then_isBuiltIsTrue() {
         // GIVEN
         var rolesNode = JSON.arrayNode().add("admin");
         // WHEN
@@ -106,7 +106,7 @@ public class LifecycleBeforeEnterPepBuilderTests {
 
         // THEN
         assertEquals(rolesNode, sut.vaadinPep.getAuthorizationSubscription().getSubject().get("roles"));
-        assertTrue(sut.isBuild);
+        assertTrue(sut.isBuilt);
     }
 
     @Test

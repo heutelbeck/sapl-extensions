@@ -138,7 +138,7 @@ class PepBuilderServiceTests {
     }
 
     @Test
-    void when_BeforeEnterBuilderBuild_then_isBuildIsTrue() {
+    void when_BeforeEnterBuilderBuild_then_isBuiltIsTrue() {
         // GIVEN
         PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
         // WHEN
@@ -147,11 +147,11 @@ class PepBuilderServiceTests {
                 .getLifecycleBeforeEnterPepBuilder();
         lifecycleBeforeEnterPepBuilder.build();
         // THEN
-        assertTrue(lifecycleBeforeEnterPepBuilder.isBuild);
+        assertTrue(lifecycleBeforeEnterPepBuilder.isBuilt);
     }
 
     @Test
-    void when_BeforeLeaveBuilderBuild_then_isBuildIsTrue() {
+    void when_BeforeLeaveBuilderBuild_then_isBuiltIsTrue() {
         // GIVEN
         PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
         // WHEN
@@ -160,7 +160,7 @@ class PepBuilderServiceTests {
                 .getLifecycleBeforeLeavePepBuilder();
         lifecycleBeforeLeavePepBuilder.build();
         // THEN
-        assertTrue(lifecycleBeforeLeavePepBuilder.isBuild);
+        assertTrue(lifecycleBeforeLeavePepBuilder.isBuilt);
     }
 
     private void mockSpringContextHolderAuthentication() {

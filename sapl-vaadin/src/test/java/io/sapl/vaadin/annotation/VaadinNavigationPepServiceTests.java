@@ -43,7 +43,7 @@ import io.sapl.vaadin.annotation.annotations.OnDenyNavigate;
 import io.sapl.vaadin.base.VaadinAuthorizationSubscriptionBuilderService;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class VaadinNavigationPepServiceTests {
+class VaadinNavigationPepServiceTests {
     static Authentication authentication;
 
     @BeforeAll

@@ -74,8 +74,8 @@ public class VaadinAuthorizationSubscriptionBuilderService {
         ObjectNode subject = mapper.valueToTree(authentication);
         subject.remove("credentials");
         var principal = subject.get("principal");
-        if (principal instanceof ObjectNode)
-            ((ObjectNode) principal).remove("password");
+        if (principal instanceof ObjectNode objectNode)
+            objectNode.remove("password");
 
         return subject;
     }

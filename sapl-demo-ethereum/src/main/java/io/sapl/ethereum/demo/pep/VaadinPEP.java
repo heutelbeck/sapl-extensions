@@ -25,27 +25,27 @@ import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import reactor.core.Disposable;
 
-public class VaadinPEP<Component> {
+public class VaadinPEP<C> {
 
 	private final PolicyDecisionPoint pdp;
 
 	private AuthorizationSubscription subscription;
 
-	private final Component component;
+	private final C component;
 
 	private final UI ui;
 
-	private BiConsumer<Component, AuthorizationDecision> permitListener;
+	private BiConsumer<C, AuthorizationDecision> permitListener;
 
-	private BiConsumer<Component, AuthorizationDecision> denyListener;
+	private BiConsumer<C, AuthorizationDecision> denyListener;
 
-	private BiConsumer<Component, AuthorizationDecision> notApplicableListener;
+	private BiConsumer<C, AuthorizationDecision> notApplicableListener;
 
-	private BiConsumer<Component, AuthorizationDecision> indeterminateListener;
+	private BiConsumer<C, AuthorizationDecision> indeterminateListener;
 
 	private Disposable decisionFlux;
 
-	public VaadinPEP(Component component, AuthorizationSubscription subscription, PolicyDecisionPoint pdp, UI ui) {
+	public VaadinPEP(C component, AuthorizationSubscription subscription, PolicyDecisionPoint pdp, UI ui) {
 		this.component    = component;
 		this.pdp          = pdp;
 		this.subscription = subscription;
@@ -86,19 +86,19 @@ public class VaadinPEP<Component> {
 		this.decisionFlux.dispose();
 	}
 
-	public void onPermit(BiConsumer<Component, AuthorizationDecision> permitListener) {
+	public void onPermit(BiConsumer<C, AuthorizationDecision> permitListener) {
 		this.permitListener = permitListener;
 	}
 
-	public void onDeny(BiConsumer<Component, AuthorizationDecision> denyListener) {
+	public void onDeny(BiConsumer<C, AuthorizationDecision> denyListener) {
 		this.denyListener = denyListener;
 	}
 
-	public void onIndeterminate(BiConsumer<Component, AuthorizationDecision> indeterminateListener) {
+	public void onIndeterminate(BiConsumer<C, AuthorizationDecision> indeterminateListener) {
 		this.indeterminateListener = indeterminateListener;
 	}
 
-	public void onNotApplicable(BiConsumer<Component, AuthorizationDecision> notApplicableListener) {
+	public void onNotApplicable(BiConsumer<C, AuthorizationDecision> notApplicableListener) {
 		this.notApplicableListener = notApplicableListener;
 	}
 

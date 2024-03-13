@@ -66,7 +66,7 @@ public interface VaadinFunctionConstraintHandlerProvider {
 
             @Override
             public Function<UI, Mono<Boolean>> getHandler(JsonNode constraint) {
-                return (ui) -> {
+                return ui -> {
                     handler.accept(constraint);
                     return Mono.just(Boolean.TRUE);
                 };
@@ -92,7 +92,7 @@ public interface VaadinFunctionConstraintHandlerProvider {
 
             @Override
             public Function<UI, Mono<Boolean>> getHandler(JsonNode constraint) {
-                return (ui) -> handler.apply(constraint);
+                return ui -> handler.apply(constraint);
             }
         };
     }

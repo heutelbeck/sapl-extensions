@@ -43,7 +43,7 @@ import io.sapl.spring.constraints.api.RunnableConstraintHandlerProvider;
 import io.sapl.vaadin.constraint.VaadinFunctionConstraintHandlerProvider;
 import reactor.core.publisher.Mono;
 
-public class VaadinConstraintEnforcementServiceTests {
+class VaadinConstraintEnforcementServiceTests {
 
     List<VaadinFunctionConstraintHandlerProvider> globalVaadinFunctionProvider;
     List<ConsumerConstraintHandlerProvider<UI>>   globalConsumerProviders;

@@ -96,21 +96,21 @@ class LifecycleBeforeLeavePepBuilderTests {
     }
 
     @Test
-    void when_newInstance_then_isBuildIsFalse() {
+    void when_newInstance_then_isBuiltIsFalse() {
         // GIVEN
         // WHEN
         // THEN
-        assertFalse(sut.isBuild);
+        assertFalse(sut.isBuilt);
     }
 
     @Test
-    void when_build_then_isBuildIsTrue() {
+    void when_build_then_isBuiltIsTrue() {
         // GIVEN
         // WHEN
         sut.build();
 
         // THEN
-        assertTrue(sut.isBuild);
+        assertTrue(sut.isBuilt);
     }
 
     @Test
@@ -133,7 +133,7 @@ class LifecycleBeforeLeavePepBuilderTests {
         // WHEN
 
         // THEN
-        assertFalse(sut.isBuild);
+        assertFalse(sut.isBuilt);
     }
 
     @Test

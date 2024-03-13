@@ -32,7 +32,7 @@ import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinService;
 
-public class LifecycleNavigationConfigurationTests {
+class LifecycleNavigationConfigurationTests {
 
     LifecycleNavigationConfiguration sut;
 
