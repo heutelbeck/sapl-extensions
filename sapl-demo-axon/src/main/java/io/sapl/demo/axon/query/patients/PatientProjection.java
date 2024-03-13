@@ -2,8 +2,8 @@ package io.sapl.demo.axon.query.patients;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 import org.axonframework.eventhandling.EventHandler;
 import org.axonframework.eventhandling.Timestamp;
@@ -29,69 +29,72 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PatientProjection {
 
-	private final PatientsRepository patientsRepository;
-	private final QueryUpdateEmitter updateEmitter;
+    private static final String      HANDLE  = "Handle: {}";
+    private static final String      PROJECT = "Project: {}";
+    private final PatientsRepository patientsRepository;
+    private final QueryUpdateEmitter updateEmitter;
 
-	@EventHandler
-	void on(PatientRegistered event, @Timestamp Instant timestamp) {
-		log.trace("Project: {}", event);
-		var patientDocument = new PatientDocument(event.id(), event.name(), null, null, event.ward(), timestamp);
-		saveAndUpdate(patientDocument);
-	}
+    @EventHandler
+    void on(PatientRegistered event, @Timestamp Instant timestamp) {
+        log.trace(PROJECT, event);
+        var patientDocument = new PatientDocument(event.id(), event.name(), null, null, event.ward(), timestamp);
+        saveAndUpdate(patientDocument);
+    }
 
-	@EventHandler
-	void on(PatientHospitalised event, @Timestamp Instant timestamp) {
-		log.trace("Project: {}", event);
-		updatePatient(event.id(), PatientDocument.withWard(event.ward(), timestamp));
-	}
+    @EventHandler
+    void on(PatientHospitalised event, @Timestamp Instant timestamp) {
+        log.trace(PROJECT, event);
+        updatePatient(event.id(), PatientDocument.withWard(event.ward(), timestamp));
+    }
 
-	@EventHandler
-	void on(PatientDischarged event, @Timestamp Instant timestamp) {
-		log.trace("Project: {}", event);
-		updatePatient(event.id(), PatientDocument.withWard(event.ward(), timestamp));
-	}
+    @EventHandler
+    void on(PatientDischarged event, @Timestamp Instant timestamp) {
+        log.trace(PROJECT, event);
+        updatePatient(event.id(), PatientDocument.withWard(event.ward(), timestamp));
+    }
 
-	@EventHandler
-	void on(PatientDiagnosed event, @Timestamp Instant timestamp) {
-		log.trace("Project: {}", event);
-		updatePatient(event.id(), PatientDocument.withIcdAndDisgnosis(event.icd11Code(), event.diagnosisText(), timestamp));
-	}
+    @EventHandler
+    void on(PatientDiagnosed event, @Timestamp Instant timestamp) {
+        log.trace(PROJECT, event);
+        updatePatient(event.id(),
+                PatientDocument.withIcdAndDisgnosis(event.icd11Code(), event.diagnosisText(), timestamp));
+    }
 
-	@QueryHandler
-	@PostHandleEnforce(action = "'Fetch'", resource = "{ 'type':'patient', 'value':#queryResult }")
-	Optional<PatientDocument> handle(FetchPatient query) {
-		log.trace("Handle: {}", query);
-		return patientsRepository.findById(query.patientId());
-	}
+    @QueryHandler
+    @PostHandleEnforce(action = "'Fetch'", resource = "{ 'type':'patient', 'value':#queryResult }")
+    Optional<PatientDocument> handle(FetchPatient query) {
+        log.trace(HANDLE, query);
+        return patientsRepository.findById(query.patientId());
+    }
 
-	@QueryHandler
-	@PreHandleEnforce(action = "'FetchAll'", resource = "{ 'type':'patient' }")
-	Iterable<PatientDocument> handle(FetchAllPatients query) {
-		log.trace("Handle: {}", query);
-		return patientsRepository.findAll();
-	}
+    @QueryHandler
+    @PreHandleEnforce(action = "'FetchAll'", resource = "{ 'type':'patient' }")
+    Iterable<PatientDocument> handle(FetchAllPatients query) {
+        log.trace(HANDLE, query);
+        return patientsRepository.findAll();
+    }
 
-	@QueryHandler
-	@PreHandleEnforce(action = "'Monitor'", resource = "{ 'type':'patient', 'id':#query.patientId() }")
-	Optional<PatientDocument> handle(MonitorPatient query) {
-		log.trace("Handle: {}", query);
-		return patientsRepository.findById(query.patientId());
-	}
+    @QueryHandler
+    @PreHandleEnforce(action = "'Monitor'", resource = "{ 'type':'patient', 'id':#query.patientId() }")
+    Optional<PatientDocument> handle(MonitorPatient query) {
+        log.trace(HANDLE, query);
+        return patientsRepository.findById(query.patientId());
+    }
 
-	private void updatePatient(String id, Function<PatientDocument, PatientDocument> update) {
-		patientsRepository.findById(id).map(update).ifPresentOrElse(this::saveAndUpdate, logNotFound(id));
-	}
+    private void updatePatient(String id, UnaryOperator<PatientDocument> update) {
+        patientsRepository.findById(id).map(update).ifPresentOrElse(this::saveAndUpdate, logNotFound(id));
+    }
 
-	private void saveAndUpdate(PatientDocument patientDocument) {
-		patientsRepository.save(patientDocument);
-		updateEmitter.emit(MonitorPatient.class, idMatches(patientDocument.id()), patientDocument);
-	}
+    private void saveAndUpdate(PatientDocument patientDocument) {
+        patientsRepository.save(patientDocument);
+        updateEmitter.emit(MonitorPatient.class, idMatches(patientDocument.id()), patientDocument);
+    }
 
-	private Predicate<MonitorPatient> idMatches(String id) {
-		return query -> query.patientId().equals(id);
-	}
+    private Predicate<MonitorPatient> idMatches(String id) {
+        return query -> query.patientId().equals(id);
+    }
 
-	private Runnable logNotFound(Object o) {
-		return () -> log.error("Not found: {}", o);
-	}
+    private Runnable logNotFound(Object o) {
+        return () -> log.error("Not found: {}", o);
+    }
 }
