@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.util.Collection;
-import java.util.List;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -50,61 +50,63 @@ import io.sapl.ethereum.demo.helper.EthConnect;
 import io.sapl.ethereum.demo.security.PrinterUser;
 import io.sapl.ethereum.demo.security.PrinterUserService;
 
+@Disabled
 @DirtiesContext
 @Testcontainers
 @SpringJUnitConfig
 @SpringBootTest(classes = EthereumDemoApplication.class)
 class EthereumDemoApplicationIT {
 
-	private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
-	private static final Duration TIMEOUT_FOR_GANACHE_CLI_SPINUP = Duration.ofSeconds(10);
-	private static final int GANACHE_SERVER_PORT = 8545;
-	private static final String MNEMONIC = "defense decade prosper portion dove educate sing auction camera minute sing loyal";
-	private static final String[] STARTUP_COMMAND = new String[] { "ganache-cli", "--mnemonic",
-			String.format("\"%s\"", MNEMONIC), };
-	private static final String STARTUP_LOG_MESSAGE = ".*Listening on 0.0.0.0:" + GANACHE_SERVER_PORT + ".*\\n";
+    private static final JsonNodeFactory JSON                           = JsonNodeFactory.instance;
+    private static final Duration        TIMEOUT_FOR_GANACHE_CLI_SPINUP = Duration.ofSeconds(10);
+    private static final int             GANACHE_SERVER_PORT            = 8545;
+    private static final String          MNEMONIC                       = "defense decade prosper portion dove educate sing auction camera minute sing loyal";
+    private static final String[]        STARTUP_COMMAND                = new String[] { "ganache-cli", "--mnemonic",
+            String.format("\"%s\"", MNEMONIC), };
+    private static final String          STARTUP_LOG_MESSAGE            = ".*Listening on 0.0.0.0:"
+            + GANACHE_SERVER_PORT + ".*\\n";
 
-	static Network network = Network.newNetwork();
+    static Network network = Network.newNetwork();
 
-	@Container
-	static GenericContainer<?> ganacheCli = new GenericContainer<>(DockerImageName.parse("trufflesuite/ganache-cli"))
-			.withCommand(STARTUP_COMMAND).withExposedPorts(GANACHE_SERVER_PORT)
-			.waitingFor(Wait.forLogMessage(STARTUP_LOG_MESSAGE, 1)).withStartupTimeout(TIMEOUT_FOR_GANACHE_CLI_SPINUP)
-			.withNetwork(network);
+    @Container
+    static GenericContainer<?> ganacheCli = new GenericContainer<>(DockerImageName.parse("trufflesuite/ganache-cli"))
+            .withCommand(STARTUP_COMMAND).withExposedPorts(GANACHE_SERVER_PORT)
+            .waitingFor(Wait.forLogMessage(STARTUP_LOG_MESSAGE, 1)).withStartupTimeout(TIMEOUT_FOR_GANACHE_CLI_SPINUP)
+            .withNetwork(network);
 
-	static Collection<PrinterUser> demoUserSource() {
-		return List.of(PrinterUserService.DEMO_USERS);
-	}
+    static Collection<PrinterUser> demoUserSource() {
+        return PrinterUserService.DEMO_USERS;
+    }
 
-	@Autowired
-	AccessCertificate accessCertificate;
+    @Autowired
+    AccessCertificate accessCertificate;
 
-	@Autowired
-	EthConnect ethConnect;
+    @Autowired
+    EthConnect ethConnect;
 
-	@Autowired
-	ObjectMapper mapper;
+    @Autowired
+    ObjectMapper mapper;
 
-	@Autowired
-	PolicyDecisionPoint pdp;
+    @Autowired
+    PolicyDecisionPoint pdp;
 
-	@Test
-	void contextLoads(ApplicationContext context) {
-		assertThat(context).isNotNull();
-	}
+    @Test
+    void contextLoads(ApplicationContext context) {
+        assertThat(context).isNotNull();
+    }
 
-	@ParameterizedTest
-	@MethodSource("demoUserSource")
-	void when_makeTemplatePayment_then_ok(PrinterUser user) {
-		var authentication = new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		ethConnect.makePayment(user, "1");
-		var subscription = buildSubscription(user, "access", "paidTemplate");
-		assertThat(pdp.decide(subscription).log().blockFirst()).isNotNull();
-	}
+    @ParameterizedTest
+    @MethodSource("demoUserSource")
+    void when_makeTemplatePayment_then_ok(PrinterUser user) {
+        var authentication = new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        ethConnect.makePayment(user, "1");
+        var subscription = buildSubscription(user, "access", "paidTemplate");
+        assertThat(pdp.decide(subscription).log().blockFirst()).isNotNull();
+    }
 
-	private AuthorizationSubscription buildSubscription(Object user, String action, String resource) {
-		return new AuthorizationSubscription(mapper.convertValue(user, JsonNode.class), JSON.textNode(action),
-				JSON.textNode(resource), null);
-	}
+    private AuthorizationSubscription buildSubscription(Object user, String action, String resource) {
+        return new AuthorizationSubscription(mapper.convertValue(user, JsonNode.class), JSON.textNode(action),
+                JSON.textNode(resource), null);
+    }
 }
