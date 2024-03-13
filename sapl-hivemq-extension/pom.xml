@@ -32,7 +32,6 @@
 	</parent>
 
 	<artifactId>sapl-hivemq-extension</artifactId>
-	<version>3.0.0-SNAPSHOT</version>
 
 	<name>SAPL HiveMQ Extension</name>
 
@@ -96,7 +95,6 @@
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-resolver</artifactId>
-			<version>4.1.90.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>com.hivemq</groupId>
@@ -117,43 +115,36 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.30</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>2.0.5</version>
 		</dependency>
 		<!-- testing -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.9.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
-			<version>5.9.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.awaitility</groupId>
 			<artifactId>awaitility</artifactId>
-			<version>4.2.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>hivemq</artifactId>
-			<version>1.18.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>[1.4.12,)</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -171,7 +162,6 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
-			<version>1.18.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -189,19 +179,16 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-junit-jupiter</artifactId>
-			<version>5.4.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.projectreactor</groupId>
 			<artifactId>reactor-test</artifactId>
-			<version>3.5.4</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-params</artifactId>
-			<version>5.9.2</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -211,12 +198,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.11.0</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.3.0</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -402,7 +387,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.1.0</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

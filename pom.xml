@@ -22,8 +22,8 @@
 	mvn versions:update-child-modules -N -->
 <!-- correct the license headers of all source files mvn license:format -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.sapl</groupId>
@@ -34,8 +34,7 @@
 
 	<name>SAPL Extensions</name>
 
-	<description>Extension libraries for the Streaming Attribute Authorization
-		Engine</description>
+	<description>Preview extension libraries for the SAPL</description>
 
 	<properties>
 		<maven.deploy.skip>true</maven.deploy.skip>
