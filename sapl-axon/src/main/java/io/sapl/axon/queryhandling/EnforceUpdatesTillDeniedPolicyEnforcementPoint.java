@@ -183,7 +183,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
         try {
             var bundle = constraintHandler.get();
             bundle.executeOnNextHandlers(value).ifPresent(val -> sink.next((SubscriptionQueryUpdateMessage<U>) val));
-        } catch (Throwable t) {
+        } catch (Exception t) {
             sink.error(t);
             disposeDecisionsAndResourceAccessPoint();
         }
@@ -203,7 +203,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
     private void handleError(Throwable error) {
         try {
             sink.error(constraintHandler.get().executeOnErrorHandlers(error));
-        } catch (Throwable t) {
+        } catch (Exception t) {
             sink.error(t);
             disposeDecisionsAndResourceAccessPoint();
         }
@@ -212,7 +212,7 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
     private Throwable handleAccessDenied(Throwable error) {
         try {
             return constraintHandler.get().executeOnErrorHandlers(error);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             disposeDecisionsAndResourceAccessPoint();
             return error;
         }

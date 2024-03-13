@@ -237,8 +237,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
             }
             return updateMessageFlux;
         });
-        return (UpdateHandlerRegistration<U>) new UpdateHandlerRegistration(registration, securedUpdates,
-                updateSinkWrapper::complete);
+        return new UpdateHandlerRegistration(registration, securedUpdates, updateSinkWrapper::complete);
     }
 
     private SubscriptionQueryMessage<?, ?, ?> reconstructOriginalQuery(SubscriptionQueryMessage<?, ?, ?> query) {

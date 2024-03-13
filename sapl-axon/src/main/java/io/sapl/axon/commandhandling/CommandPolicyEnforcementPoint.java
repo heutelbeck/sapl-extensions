@@ -122,7 +122,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
             bundle.executeAggregateConstraintHandlerMethods();
         } catch (Exception t) {
             log.error("command aggregate constraint handlers failed: {}", t.getMessage(), t);
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED, t));
         }
 
         CommandMessage<?> mappedCommand;
@@ -130,7 +130,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
             mappedCommand = bundle.executeCommandMappingHandlers(command);
         } catch (Exception t) {
             log.error("command mapping constraint handlers failed: {}", t.getMessage(), t);
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED, t));
         }
 
         Object result;
@@ -145,7 +145,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
             mappedResult = bundle.executePostHandlingHandlers(result);
         } catch (Exception t) {
             log.error("command result mapping failed: {}", t.getMessage(), t);
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED, t));
         }
 
         return mappedResult;

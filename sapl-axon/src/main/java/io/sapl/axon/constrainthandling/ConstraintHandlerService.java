@@ -189,11 +189,9 @@ public class ConstraintHandlerService {
                 return mapper.treeToValue(resource, (Class<T>) type.getExpectedResponseType());
             } catch (JsonProcessingException | IllegalArgumentException e) {
                 log.error(FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION, e.getLocalizedMessage());
-                throw new AccessDeniedException(ACCESS_DENIED);
+                throw new AccessDeniedException(ACCESS_DENIED, e);
             }
-        }
-
-        else if (MultipleInstancesResponseType.class.isAssignableFrom(type.getClass())) {
+        } else if (MultipleInstancesResponseType.class.isAssignableFrom(type.getClass())) {
 
             if (!ArrayNode.class.isAssignableFrom(resource.getClass())) {
                 log.error("resource is no array, however a MultipleInstancesResponseType was expected!");
@@ -205,7 +203,7 @@ public class ConstraintHandlerService {
                 deserialized = mapper.treeToValue(resource, List.class);
             } catch (JsonProcessingException | IllegalArgumentException e) {
                 log.error(FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION, e.getLocalizedMessage());
-                throw new AccessDeniedException(ACCESS_DENIED);
+                throw new AccessDeniedException(ACCESS_DENIED, e);
             }
 
             if (!deserialized.isEmpty()
@@ -216,18 +214,14 @@ public class ConstraintHandlerService {
             }
 
             return deserialized;
-        }
-
-        else if (OptionalResponseType.class.isAssignableFrom(type.getClass())) {
+        } else if (OptionalResponseType.class.isAssignableFrom(type.getClass())) {
             try {
                 return Optional.ofNullable(mapper.treeToValue(resource, (Class<T>) type.getExpectedResponseType()));
             } catch (JsonProcessingException | IllegalArgumentException e) {
                 log.error(FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION, e.getLocalizedMessage());
-                throw new AccessDeniedException(ACCESS_DENIED);
+                throw new AccessDeniedException(ACCESS_DENIED, e);
             }
-        }
-
-        else {
+        } else {
             log.error("Unsupported ResponseType: {}", type.getClass());
             throw new AccessDeniedException(ACCESS_DENIED);
         }

@@ -163,9 +163,10 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
 
         latestDecision.set(implicitDecision);
 
-        if (implicitDecision.getResource().isPresent()) {
+        var implicitDecisionResource = implicitDecision.getResource();
+        if (implicitDecisionResource.isPresent()) {
             try {
-                U newResponse = (U) constraintHandlerService.deserializeResource(implicitDecision.getResource().get(),
+                U newResponse = (U) constraintHandlerService.deserializeResource(implicitDecisionResource.get(),
                         updateResponseType);
                 sink.next(new GenericSubscriptionQueryUpdateMessage<>(
                         new RecoverableResponse<>(updateResponseType, newResponse)));
@@ -207,7 +208,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
             var bundle = constraintHandler.get();
             bundle.executeOnNextHandlers(value)
                     .ifPresent(val -> sink.next(wrapPayloadInRecoverableResponse((ResultMessage<U>) val)));
-        } catch (Throwable t) {
+        } catch (Exception t) {
             // Signal error but drop only the element with the failed obligation
             // doing handleNextDecision(AuthorizationDecision.DENY); would drop all
             // subsequent messages, even if the constraint handler would succeed on then.
@@ -231,7 +232,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
     private void handleError(Throwable error) {
         try {
             sink.error(constraintHandler.get().executeOnErrorHandlers(error));
-        } catch (Throwable t) {
+        } catch (Exception t) {
             sink.error(t);
             handleNextDecision(AuthorizationDecision.INDETERMINATE);
             disposeDecisionsAndResourceAccessPoint();

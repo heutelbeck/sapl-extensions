@@ -147,9 +147,10 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
             return;
         }
 
-        if (decision.getResource().isPresent()) {
+        var decisionResource = decision.getResource();
+        if (decisionResource.isPresent()) {
             try {
-                var newResponse = constraintHandlerService.deserializeResource(decision.getResource().get(),
+                var newResponse = constraintHandlerService.deserializeResource(decisionResource.get(),
                         updateResponseType);
                 sink.next(new GenericSubscriptionQueryUpdateMessage<>((U) newResponse));
             } catch (AccessDeniedException e) {
@@ -184,7 +185,7 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
         try {
             var bundle = constraintHandler.get();
             bundle.executeOnNextHandlers(value).ifPresent(val -> sink.next((SubscriptionQueryUpdateMessage<U>) val));
-        } catch (Throwable t) {
+        } catch (Exception t) {
             handleNextDecision(AuthorizationDecision.DENY);
         }
     }
@@ -203,7 +204,7 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
     private void handleError(Throwable error) {
         try {
             sink.error(constraintHandler.get().executeOnErrorHandlers(error));
-        } catch (Throwable t) {
+        } catch (Exception t) {
             sink.error(t);
             disposeDecisionsAndResourceAccessPoint();
         }
@@ -214,7 +215,7 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
             if (constraintHandler.get() == null)
                 throw new AccessDeniedException(error.getLocalizedMessage(), error);
             return constraintHandler.get().executeOnErrorHandlers(error);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             disposeDecisionsAndResourceAccessPoint();
             return t;
         }

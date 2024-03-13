@@ -374,7 +374,7 @@ public abstract class CommandTestsuite {
     @Import({ SaplAutoConfiguration.class })
     static class ScenarioConfiguration {
         @Bean
-        CommandHandlingService CommandHandlingService() {
+        CommandHandlingService commandHandlingService() {
             return new CommandHandlingService();
         }
 

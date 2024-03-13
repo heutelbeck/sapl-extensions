@@ -62,9 +62,9 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
             var newQueryName    = mapQueryName(query.getQueryName(), constraint);
             var newResponseType = mapResponseType(query.getResponseType(), constraint);
             var baseMessage     = new GenericMessage(query.getIdentifier(), newPayloadType, newPayload, newMetaData);
-            if (query instanceof SubscriptionQueryMessage) {
-                var newUpdateResponseType = mapUpdateResponseType(
-                        ((SubscriptionQueryMessage) query).getUpdateResponseType(), constraint);
+            if (query instanceof SubscriptionQueryMessage subscriptionQueryMessage) {
+                var newUpdateResponseType = mapUpdateResponseType(subscriptionQueryMessage.getUpdateResponseType(),
+                        constraint);
                 return new GenericSubscriptionQueryMessage(baseMessage, newQueryName, newResponseType,
                         newUpdateResponseType);
 

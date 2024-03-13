@@ -165,9 +165,8 @@ public class AuthorizationSubscriptionBuilderService {
         var aggregateType = message.getMetaData().get(AGGREGATE_TYPE);
         if (aggregateType != null) {
             json.set(AGGREGATE_TYPE, mapper.valueToTree(aggregateType));
-        } else if (aggregate != null) {
-            if (aggregate.getClass().isAnnotationPresent(Aggregate.class))
-                json.put(AGGREGATE_TYPE, aggregate.getClass().getSimpleName());
+        } else if (aggregate != null && aggregate.getClass().isAnnotationPresent(Aggregate.class)) {
+            json.put(AGGREGATE_TYPE, aggregate.getClass().getSimpleName());
         }
 
         aggregateIdFromMessage(message).ifPresent(id -> json.set(AGGREGATE_IDENTIFIER, mapper.valueToTree(id)));
@@ -306,7 +305,7 @@ public class AuthorizationSubscriptionBuilderService {
     }
 
     private boolean expressionNotSet(Object spelExpression) {
-        return !(spelExpression instanceof String) || ((String) spelExpression).isBlank();
+        return !(spelExpression instanceof String aStringExpression) || aStringExpression.isBlank();
     }
 
 }
