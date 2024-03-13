@@ -81,11 +81,12 @@ public class SaplMqttExtensionConfig {
     /**
      * The default client key for communications with the remote PDP.
      */
-    public static final String   DEFAULT_REMOTE_PDP_CLIENT_KEY                                    = "YJi7gyT5mfdKbmL";
+    public static final String   DEFAULT_REMOTE_PDP_CLIENT_KEY                                    = "xwuUaRD65G";
     /**
      * The default client secret for communications with the remote PDP.
+     * This was previously the encoded one. Why?
      */
-    public static final String   DEFAULT_REMOTE_PDP_CLIENT_SECRET                                 = "$2a$10$Ph9bF71xYb0MK8KubWLB7e0Dpl2AfMiEUi9jrKTbFR4kkWABRb9yO";
+    public static final String   DEFAULT_REMOTE_PDP_CLIENT_SECRET                                 = "3j_PK71bjy!hN3*xq.xZqveU)t5hKLR_";
     static final int             DEFAULT_CONNECTION_ENFORCEMENT_TIMEOUT_MILLIS                    = 5000;
     static final int             DEFAULT_SUBSCRIPTION_ENFORCEMENT_TIMEOUT_MILLIS                  = 5000;
     static final int             DEFAULT_PUBLISH_ENFORCEMENT_TIMEOUT_MILLIS                       = 5000;
