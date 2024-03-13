@@ -23,33 +23,32 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-import io.sapl.ethereum.demo.security.PrinterUser;
 import lombok.Getter;
 
 @Getter
 public class PayForm extends VerticalLayout {
 
-	private final Button pay;
+    private final Button pay;
 
-	public PayForm(PrinterUser user) {
+    public PayForm() {
 
-		H2        heading     = new H2("Get additional content");
-		Paragraph explanation = new Paragraph(
-				"If you want to get the cubes template just send us 1 Ether and it will be unlocked for you.");
+        H2        heading     = new H2("Get additional content");
+        Paragraph explanation = new Paragraph(
+                "If you want to get the cubes template just send us 1 Ether and it will be unlocked for you.");
 
-		Input paymentField = new Input();
-		paymentField.setEnabled(false);
-		paymentField.setValue("1 ETH");
+        Input paymentField = new Input();
+        paymentField.setEnabled(false);
+        paymentField.setValue("1 ETH");
 
-		pay = new Button("Pay");
-		pay.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        pay = new Button("Pay");
+        pay.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-		HorizontalLayout payment = new HorizontalLayout(paymentField, pay);
+        HorizontalLayout payment = new HorizontalLayout(paymentField, pay);
 
-		VerticalLayout userShow = new VerticalLayout(heading, explanation, payment);
+        VerticalLayout userShow = new VerticalLayout(heading, explanation, payment);
 
-		add(userShow);
+        add(userShow);
 
-	}
+    }
 
 }

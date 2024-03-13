@@ -177,9 +177,9 @@ class MultiBuilderTests {
         var buttonMock = getButtonMockWithUI();
         var fluxMock   = getFluxMock();
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(fluxMock);
-
+        var sutWithMockButton = sut.with(buttonMock);
         // WHEN+THEN
-        assertThrows(AccessDeniedException.class, () -> sut.with(buttonMock).build());
+        assertThrows(AccessDeniedException.class, () -> sutWithMockButton.build());
     }
 
     @Test
