@@ -19,6 +19,7 @@ package io.sapl.vaadin.base;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -55,7 +56,9 @@ public class SecurityHelper {
     public static List<String> getUserRoles() {
         Authentication userAuthentication = SecurityContextHolder.getContext().getAuthentication();
         if (userAuthentication != null) {
-            return userAuthentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+            // .toList() breaks code, must use .collect
+            return userAuthentication.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
         } else {
             return new ArrayList<>();
         }
