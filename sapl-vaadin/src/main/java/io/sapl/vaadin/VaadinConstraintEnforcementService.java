@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.security.access.AccessDeniedException;
@@ -48,6 +47,7 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 public class VaadinConstraintEnforcementService implements EnforceConstraintsOfDecision {
+    private static final String                                 FAILED_TO_EXECUTE_VAADIN_CONSTRAINT_HANDLER = "Failed to execute VaadinConstraintHandler";
     private final List<VaadinFunctionConstraintHandlerProvider> globalVaadinFunctionProvider;
     private final List<ConsumerConstraintHandlerProvider<UI>>   globalConsumerProviders;
     private final List<RunnableConstraintHandlerProvider>       globalRunnableProviders;
@@ -120,13 +120,13 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
             VaadinPep vaadinPep) {
         VaadinConstraintHandlerBundle vaadinConstraintHandlerBundle = new VaadinConstraintHandlerBundle();
 
-        authorizationDecision.getObligations().ifPresent((obligations) -> {
+        authorizationDecision.getObligations().ifPresent(obligations -> {
             for (JsonNode obligation : obligations) {
                 addConstraintHandlerToHandlerBundle(obligation, vaadinConstraintHandlerBundle, true, vaadinPep);
             }
         });
 
-        authorizationDecision.getAdvice().ifPresent((advices) -> {
+        authorizationDecision.getAdvice().ifPresent(advices -> {
             for (JsonNode advice : advices) {
                 addConstraintHandlerToHandlerBundle(advice, vaadinConstraintHandlerBundle, false, vaadinPep);
             }
@@ -170,7 +170,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
             boolean isObligation, VaadinPep vaadinPep) {
         return Stream.concat(globalVaadinFunctionProvider.stream(), vaadinPep.getLocalVaadinFunctionProvider().stream())
                 .filter(provider -> provider.isResponsible(constraint)).map(provider -> provider.getHandler(constraint))
-                .map(failVaadinFunctionHandlerOnlyIfObligationOrFatal(isObligation)).collect(Collectors.toList());
+                .map(failVaadinFunctionHandlerOnlyIfObligationOrFatal(isObligation)).toList();
     }
 
     /**
@@ -185,7 +185,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
             VaadinPep vaadinPep) {
         return Stream.concat(globalConsumerProviders.stream(), vaadinPep.getLocalConsumerProviders().stream())
                 .filter(provider -> provider.isResponsible(constraint)).map(provider -> provider.getHandler(constraint))
-                .map(failConsumerHandlerOnlyIfObligationOrFatal(isObligation)).collect(Collectors.toList());
+                .map(failConsumerHandlerOnlyIfObligationOrFatal(isObligation)).toList();
     }
 
     /**
@@ -200,7 +200,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
             VaadinPep vaadinPep) {
         return Stream.concat(globalRunnableProviders.stream(), vaadinPep.getLocalRunnableProviders().stream())
                 .filter(provider -> provider.isResponsible(constraint)).map(provider -> provider.getHandler(constraint))
-                .map(failRunnableHandlerOnlyIfObligationOrFatal(isObligation)).collect(Collectors.toList());
+                .map(failRunnableHandlerOnlyIfObligationOrFatal(isObligation)).toList();
     }
 
     /**
@@ -223,7 +223,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
             } catch (Throwable e) {
                 Exceptions.throwIfFatal(e);
                 if (isObligation) {
-                    throw new AccessDeniedException("Failed to execute VaadinConstraintHandler", e);
+                    throw new AccessDeniedException(FAILED_TO_EXECUTE_VAADIN_CONSTRAINT_HANDLER, e);
                 }
                 return Mono.just(Boolean.FALSE);
             }
@@ -247,7 +247,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
             } catch (Throwable e) {
                 Exceptions.throwIfFatal(e);
                 if (isObligation) {
-                    throw new AccessDeniedException("Failed to execute VaadinConstraintHandler", e);
+                    throw new AccessDeniedException(FAILED_TO_EXECUTE_VAADIN_CONSTRAINT_HANDLER, e);
                 }
             }
         };
@@ -270,7 +270,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
             } catch (Throwable e) {
                 Exceptions.throwIfFatal(e);
                 if (isObligation) {
-                    throw new AccessDeniedException("Failed to execute VaadinConstraintHandler", e);
+                    throw new AccessDeniedException(FAILED_TO_EXECUTE_VAADIN_CONSTRAINT_HANDLER, e);
                 }
             }
         };
@@ -329,13 +329,12 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
     private Mono<AuthorizationDecision> executeHandler(Collection<Function<UI, Mono<Boolean>>> handlers,
             AuthorizationDecision authorizationDecision, UI ui) {
         // get responses from constraintHandlers
-        List<Mono<Boolean>> decisionPublishers = handlers.stream().map((handler) -> handler.apply(ui))
-                .collect(Collectors.toList());
+        List<Mono<Boolean>> decisionPublishers = handlers.stream().map(handler -> handler.apply(ui)).toList();
 
         return Mono.zip(decisionPublishers, arr -> {
             boolean allSuccessful = true;
             for (Object result : arr) {
-                if (!(Boolean) result) {
+                if (Boolean.FALSE.equals(result)) {
                     allSuccessful = false;
                     break;
                 }

@@ -30,39 +30,41 @@ import io.sapl.vaadin.constraint.providers.FieldValidationConstraintHandlerProvi
 import io.sapl.vaadindemo.pizzaform.PizzaOrder;
 import io.sapl.vaadindemo.shared.Utilities;
 import jakarta.annotation.security.PermitAll;
+import lombok.NonNull;
 
 /**
- *  This page demonstrates the Vaadin-Sapl constraint handling.
+ * This page demonstrates the Vaadin-Sapl constraint handling.
  */
 @PermitAll
 @PageTitle("Constraint Handling Page")
 @Route(value = "constraint-handling-page", layout = MainLayout.class)
 public class ConstraintHandlingPage extends VerticalLayout {
 
-    private final IntegerField cheese = new IntegerField("Cheese Pizza");
-    private final IntegerField veggie = new IntegerField("Veggie Pizza");
+    private final IntegerField cheese    = new IntegerField("Cheese Pizza");
+    private final IntegerField veggie    = new IntegerField("Veggie Pizza");
     private final IntegerField pepperoni = new IntegerField("Pepperoni Pizza");
-    private final EmailField email = new EmailField("E-Mail");
-    private final TimePicker time = new TimePicker("Delivery time");
-    private final IntegerField beer = new IntegerField("+Beer 🍺");
+    private final EmailField   email     = new EmailField("E-Mail");
+    private final TimePicker   time      = new TimePicker("Delivery time");
+    private final IntegerField beer      = new IntegerField("+Beer 🍺");
 
-    private final Button submit = new Button("Submit order");
-    private final BeanValidationBinder<PizzaOrder> binder = new BeanValidationBinder<>(PizzaOrder.class);
-    private boolean submitAllowed = false;
-    private Integer minPizza = 0;
-    private final PepBuilderService pepBuilderService;
+    private final Button                           submit        = new Button("Submit order");
+    private final BeanValidationBinder<PizzaOrder> binder        = new BeanValidationBinder<>(PizzaOrder.class);
+    private boolean                                submitAllowed = false;
+    private Integer                                minPizza      = 0;
+    private transient PepBuilderService            pepBuilderService;
 
     /**
      * @param pepBuilderService PEP Builder
-     * @param data Pizza Data
+     * @param data              Pizza Data
      */
-    public ConstraintHandlingPage(PepBuilderService pepBuilderService, PizzaOrder data) {
-        add(Utilities.getInfoText("This page demonstrates JSON-Schema-based constraint handling functionality " +
-                "while using a form."));
+    public ConstraintHandlingPage(@NonNull PepBuilderService pepBuilderService, @NonNull PizzaOrder data) {
+        add(Utilities.getInfoText(
+                "This page demonstrates JSON-Schema-based constraint handling functionality " + "while using a form."));
         add(Utilities.getDefaultHeader("Constraint Handling Page"));
 
         this.pepBuilderService = pepBuilderService;
-        // PepBuilderService is used to enforce policy decisions on Vaadin components or events
+        // PepBuilderService is used to enforce policy decisions on Vaadin components or
+        // events
         setWidth(null);
         setHeightFull();
         final var pizzaImageHeight = "140px";
@@ -88,7 +90,8 @@ public class ConstraintHandlingPage extends VerticalLayout {
         var pepperoniLayout = new VerticalLayout(pepperoniImage, pepperoni);
         pepperoniLayout.setAlignItems(Alignment.CENTER);
 
-        add(Utilities.getInfoText("The number of allowed pizza(s) is controlled by a time-based sapl policy and a local constraint handler provider."));
+        add(Utilities.getInfoText(
+                "The number of allowed pizza(s) is controlled by a time-based sapl policy and a local constraint handler provider."));
 
         // minPizza message
         NativeLabel lblMinPizza = new NativeLabel();
@@ -97,9 +100,9 @@ public class ConstraintHandlingPage extends VerticalLayout {
         beer.setValueChangeMode(ValueChangeMode.EAGER);
 
         // current time
-        NativeLabel lblTime = new NativeLabel();
+        NativeLabel       lblTime   = new NativeLabel();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm:ss");
-        Timer t = new Timer();
+        Timer             t         = new Timer();
         t.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -112,7 +115,8 @@ public class ConstraintHandlingPage extends VerticalLayout {
         add(new HorizontalLayout(cheeseLayout, veggieLayout, pepperoniLayout));
         add(lblMinPizza);
         email.setValueChangeMode(ValueChangeMode.EAGER);
-        add(Utilities.getInfoText("Beer is only allowed between 0 seconds and 30 seconds. The beer-field use JSON-schema and SAPL policies for validation."));
+        add(Utilities.getInfoText(
+                "Beer is only allowed between 0 seconds and 30 seconds. The beer-field use JSON-schema and SAPL policies for validation."));
         add(beer);
         add(lblTime);
         add(email);
@@ -122,10 +126,8 @@ public class ConstraintHandlingPage extends VerticalLayout {
         // enable/disable button when valid or not
         submit.setEnabled(false);
         binder.addStatusChangeListener((StatusChangeListener) event -> {
-            boolean minPizzaSelected = (
-                    zeroIfNull(cheese.getValue()) +
-                    zeroIfNull(pepperoni.getValue()) +
-                    zeroIfNull(veggie.getValue())) >= minPizza;
+            boolean minPizzaSelected = (zeroIfNull(cheese.getValue()) + zeroIfNull(pepperoni.getValue())
+                    + zeroIfNull(veggie.getValue())) >= minPizza;
 
             lblMinPizza.setText("You need to order at least " + minPizza + " pizza.");
             lblMinPizza.getStyle().set("color", minPizzaSelected ? "green" : "red");
@@ -134,44 +136,32 @@ public class ConstraintHandlingPage extends VerticalLayout {
         });
 
         // apply sapl field validation constraints for JSON-Schema-based validation
-        pepBuilderService.with(this)
-                .action("display")
-                .resource("pizzaForm")
+        pepBuilderService.with(this).action("display").resource("pizzaForm")
                 .addConsumerConstraintHandlerProvider(
-                        new FieldValidationConstraintHandlerProvider(binder, this)
-                                .bindField(cheese)
-                                .bindField(veggie)
-                                .bindField(pepperoni)
-                                .bindField(email)
-                                .bindField(time)
-                                .bindField(beer)
-                )
-                .addConsumerConstraintHandlerProvider(
-                        new ConsumerConstraintHandlerProvider<>() {
-                            @Override
-                            public Consumer<UI> getHandler(JsonNode constraint) {
-                                return params -> minPizza = constraint.get("min").asInt();
-                            }
+                        new FieldValidationConstraintHandlerProvider(binder, this).bindField(cheese).bindField(veggie)
+                                .bindField(pepperoni).bindField(email).bindField(time).bindField(beer))
+                .addConsumerConstraintHandlerProvider(new ConsumerConstraintHandlerProvider<>() {
+                    @Override
+                    public Consumer<UI> getHandler(JsonNode constraint) {
+                        return params -> minPizza = constraint.get("min").asInt();
+                    }
 
-                            @Override
-                            public boolean isResponsible(JsonNode constraint) {
-                                if (constraint == null) {
-                                    return false;
-                                }
-                                return constraint.has("type") &&
-                                        "saplVaadin".equals(constraint.get("type").asText()) &&
-                                        constraint.has("id") &&
-                                        "minPizza".equals(constraint.get("id").asText());
-                            }
-
-                            @Override
-                            public Class<UI> getSupportedType() {
-                                return null;
-                            }
+                    @Override
+                    public boolean isResponsible(JsonNode constraint) {
+                        if (constraint == null) {
+                            return false;
                         }
-                )
-                .onDecisionDo(authorizationDecision ->
-                        submitAllowed = authorizationDecision.getDecision() == Decision.PERMIT)
+                        return constraint.has("type") && "saplVaadin".equals(constraint.get("type").asText())
+                                && constraint.has("id") && "minPizza".equals(constraint.get("id").asText());
+                    }
+
+                    @Override
+                    public Class<UI> getSupportedType() {
+                        return null;
+                    }
+                })
+                .onDecisionDo(
+                        authorizationDecision -> submitAllowed = authorizationDecision.getDecision() == Decision.PERMIT)
                 .build();
 
         // additional validations need to be added before binding
@@ -184,23 +174,19 @@ public class ConstraintHandlingPage extends VerticalLayout {
     }
 
     /**
-     * Apply the Opening Hours Policy.
-     * Shows a dialog when the site is visited outside opening hours.
+     * Apply the Opening Hours Policy. Shows a dialog when the site is visited
+     * outside opening hours.
      */
     private void enforceOpeningHours() {
         var resourceNode = JsonNodeFactory.instance.objectNode();
         resourceNode.put("startTime", "10:00");
         resourceNode.put("endTime", "16:00");
-        this.pepBuilderService.with(this)
-                .resource(resourceNode)
-                .action("opening_hours_dialog")
-                .onDecisionDo((authorizationDecision, component) -> {})
-                .build();
+        this.pepBuilderService.with(this).resource(resourceNode).action("opening_hours_dialog")
+                .onDecisionDo((authorizationDecision, component) -> {
+                }).build();
     }
 
-    private Integer zeroIfNull(Integer value){
+    private Integer zeroIfNull(Integer value) {
         return value != null ? value : 0;
     }
 }
-
-

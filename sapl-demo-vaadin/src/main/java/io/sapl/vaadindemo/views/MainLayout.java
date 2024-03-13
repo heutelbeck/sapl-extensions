@@ -29,6 +29,7 @@ import io.sapl.vaadindemo.security.SecurityUtils;
  * The main view is a top-level placeholder for other views.
  */
 public class MainLayout extends AppLayout {
+    private static final String ITEMS_CENTER = "items-center";
     private H1 viewTitle;
 
     /**
@@ -59,14 +60,14 @@ public class MainLayout extends AppLayout {
         userRole.getStyle().set("margin-bottom", "18px");
 
         Header header = new Header(toggle, viewTitle, userRole, logoutBtn);
-        header.addClassNames("bg-base", "border-b", "border-contrast-10", "box-border", "flex", "h-xl", "items-center",
+        header.addClassNames("bg-base", "border-b", "border-contrast-10", "box-border", "flex", "h-xl", ITEMS_CENTER,
                 "w-full");
         return header;
     }
 
     private Component createDrawerContent() {
         H2 appName = new H2("SAPL Vaadin Demo");
-        appName.addClassNames("flex", "items-center", "h-xl", "m-0", "px-m", "text-m");
+        appName.addClassNames("flex", ITEMS_CENTER, "h-xl", "m-0", "px-m", "text-m");
 
         com.vaadin.flow.component.html.Section section = new com.vaadin.flow.component.html.Section(appName,
                 createNavigation(), createFooter());
@@ -80,7 +81,7 @@ public class MainLayout extends AppLayout {
         nav.getElement().setAttribute("aria-labelledby", "views");
 
         H3 views = new H3("Views");
-        views.addClassNames("flex", "h-m", "items-center", "mx-m", "my-0", "text-s", "text-tertiary");
+        views.addClassNames("flex", "h-m", ITEMS_CENTER, "mx-m", "my-0", "text-s", "text-tertiary");
         views.setId("views");
 
         // Wrap the links in a list; improves accessibility
@@ -133,7 +134,7 @@ public class MainLayout extends AppLayout {
 
     private Footer createFooter() {
         Footer layout = new Footer();
-        layout.addClassNames("flex", "items-center", "my-s", "px-m", "py-xs");
+        layout.addClassNames("flex", ITEMS_CENTER, "my-s", "px-m", "py-xs");
 
         return layout;
     }

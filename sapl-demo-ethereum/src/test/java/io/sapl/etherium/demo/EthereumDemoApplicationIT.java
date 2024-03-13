@@ -95,12 +95,12 @@ class EthereumDemoApplicationIT {
 
 	@ParameterizedTest
 	@MethodSource("demoUserSource")
-	void when_makeTemplatePayment_then_(PrinterUser user) {
+	void when_makeTemplatePayment_then_ok(PrinterUser user) {
 		var authentication = new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		ethConnect.makePayment(user, "1");
 		var subscription = buildSubscription(user, "access", "paidTemplate");
-		pdp.decide(subscription);
+		assertThat(pdp.decide(subscription).log().blockFirst()).isNotNull();
 	}
 
 	private AuthorizationSubscription buildSubscription(Object user, String action, String resource) {
