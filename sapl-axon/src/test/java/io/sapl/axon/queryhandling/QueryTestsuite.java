@@ -683,7 +683,7 @@ public abstract class QueryTestsuite {
     private void emitUpdates(String queryPayload, long emitIntervallMs, long numberOfEmittedUpdates,
             long initialEmitDelayMs) {
         Mono.delay(Duration.ofMillis(initialEmitDelayMs))
-                .flatMapMany(__ -> Flux.interval(Duration.ofMillis(emitIntervallMs))
+                .flatMapMany(x -> Flux.interval(Duration.ofMillis(emitIntervallMs))
                         .doOnNext(i -> emitter.emit(query -> query.getPayload().toString().equals(queryPayload),
                                 queryPayload + "-" + i))
                         .take(Duration.ofMillis(emitIntervallMs * numberOfEmittedUpdates + emitIntervallMs / 2L)))

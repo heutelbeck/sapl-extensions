@@ -71,8 +71,8 @@ public class SaplMqttExtensionConfig {
     private static final String ENVIRONMENT_REMOTE_PDP_MAX_BACK_OFF_MILLIS                           = "remote-pdp-max-back-off-millis";
     private static final String ENVIRONMENT_REMOTE_PDP_BACK_OFF_FACTOR                               = "remote-pdp-back-off-factor";
 
-    static final String          DEFAULT_PDP_IMPLEMENTATION                                       = "embedded";                                                    // alternatively
-                                                                                                                                                                   // "remote"
+    static final String          DEFAULT_PDP_IMPLEMENTATION                                       = "embedded";                        // alternatively
+                                                                                                                                       // "remote"
     static final String          DEFAULT_EMBEDDED_PDP_POLICIES_PATH                               = "policies";
     /**
      * The default url to reach the remote PDP.
@@ -83,8 +83,8 @@ public class SaplMqttExtensionConfig {
      */
     public static final String   DEFAULT_REMOTE_PDP_CLIENT_KEY                                    = "xwuUaRD65G";
     /**
-     * The default client secret for communications with the remote PDP.
-     * This was previously the encoded one. Why?
+     * The default client secret for communications with the remote PDP. This was
+     * previously the encoded one. Why?
      */
     public static final String   DEFAULT_REMOTE_PDP_CLIENT_SECRET                                 = "3j_PK71bjy!hN3*xq.xZqveU)t5hKLR_";
     static final int             DEFAULT_CONNECTION_ENFORCEMENT_TIMEOUT_MILLIS                    = 5000;

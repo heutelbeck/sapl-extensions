@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 
-public class CommandConstraintHandlerBundleTests {
+class CommandConstraintHandlerBundleTests {
 
     @Test
     void testAllInvokations() {
@@ -46,10 +46,10 @@ public class CommandConstraintHandlerBundleTests {
                                                                             assertEquals(message, messageInternal);
                                                                             onDecisionCounter.getAndIncrement();
                                                                         };
-        Function<Throwable, Throwable>                 errorMapper      = __ -> new Exception("some spectial message");
-        Function<CommandMessage<?>, CommandMessage<?>> commandMapper    = __ -> new GenericCommandMessage<>(
+        Function<Throwable, Throwable>                 errorMapper      = t -> new Exception("some spectial message");
+        Function<CommandMessage<?>, CommandMessage<?>> commandMapper    = c -> new GenericCommandMessage<>(
                 "special payload");
-        Function<String, String>                       resultMapper     = __ -> "special result";
+        Function<String, String>                       resultMapper     = r -> "special result";
         Runnable                                       handlersOnObject = () -> {
                                                                             handlerOnObjectCounter.getAndIncrement();
                                                                         };
@@ -77,11 +77,11 @@ public class CommandConstraintHandlerBundleTests {
 
     @Test
     void when_mappedErrorIsThrowable_convertToRuntimeException() {
-        BiConsumer<AuthorizationDecision, Message<?>>  onDecision       = (__, ___) -> {
+        BiConsumer<AuthorizationDecision, Message<?>>  onDecision       = (decision, message) -> {
                                                                         };
-        Function<Throwable, Throwable>                 errorMapper      = __ -> new Throwable("some spectial message");
-        Function<CommandMessage<?>, CommandMessage<?>> commandMapper    = __ -> null;
-        Function<String, String>                       resultMapper     = __ -> null;
+        Function<Throwable, Throwable>                 errorMapper      = t -> new Throwable("some spectial message");
+        Function<CommandMessage<?>, CommandMessage<?>> commandMapper    = c -> null;
+        Function<String, String>                       resultMapper     = r -> null;
         Runnable                                       handlersOnObject = () -> {
                                                                         };
         var                                            bundle           = new CommandConstraintHandlerBundle<>(

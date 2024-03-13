@@ -54,7 +54,7 @@ public class CommandConstraintHandlerBundle<R> {
      */
     private CommandConstraintHandlerBundle() {
         // @formatter:off
-		this.onDecision = (__,___)->{};
+		this.onDecision = (decision,message)->{};
 		this.commandMapper = Function.identity();
 		this.errorMapper = Function.identity();
 		this.resultMapper = Function.identity();
@@ -80,8 +80,9 @@ public class CommandConstraintHandlerBundle<R> {
      */
     public Exception executeOnErrorHandlers(Exception t) {
         var mapped = errorMapper.apply(t);
-        if (mapped instanceof Exception)
-            return (Exception) mapped;
+        if (mapped instanceof Exception exception) {
+            return exception;
+        }
         return new RuntimeException("Error: " + t.getMessage(), t);
     }
 

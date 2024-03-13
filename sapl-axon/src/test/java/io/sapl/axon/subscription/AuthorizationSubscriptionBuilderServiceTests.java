@@ -46,7 +46,7 @@ import io.sapl.axon.annotation.PreHandleEnforce;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
-public class AuthorizationSubscriptionBuilderServiceTests {
+class AuthorizationSubscriptionBuilderServiceTests {
     private static final String ACTION_TYPE          = "actionType";
     private static final String AGGREGATE_IDENTIFIER = "aggregateIdentifier";
     private static final String AGGREGATE_TYPE       = "aggregateType";

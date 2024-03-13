@@ -96,7 +96,7 @@ public class MonitorFactory {
 	}
 
 	BiFunction<Double, Long, Double> next(double deltaMax, double min, double max) {
-		return (oldValue, __) -> nextVal(oldValue, deltaMax, min, max);
+		return (oldValue, any) -> nextVal(oldValue, deltaMax, min, max);
 	}
 
 	double nextVal(double oldValue, double deltaMax, double min, double max) {

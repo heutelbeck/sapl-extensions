@@ -103,7 +103,7 @@ class MultiBuilderTests {
 
         // WHEN
         sut.subject("subject").with(buttonMock).action("action").resource("resource").environment("environment")
-                .onDenyDo(__ -> {
+                .onDenyDo(x -> {
                 }).build();
 
         // THEN
@@ -128,7 +128,7 @@ class MultiBuilderTests {
 
         // WHEN
         sut.subject("subject").with(buttonMock).action("action").resource("resource").environment("environment")
-                .onDenyDo(__ -> {
+                .onDenyDo(x -> {
                 }).build();
 
         // THEN
@@ -164,7 +164,7 @@ class MultiBuilderTests {
         var buttonMock = getButtonMockWithUI();
         var fluxMock   = getFluxMock();
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(fluxMock);
-        sut.with(buttonMock).onDenyDo(__ -> {
+        sut.with(buttonMock).onDenyDo(x -> {
         }).action("action").resource("resource").build();
 
         // WHEN+THEN
@@ -190,7 +190,7 @@ class MultiBuilderTests {
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(fluxMock);
 
         // WHEN
-        sut.with(button).onDenyDo(__ -> {
+        sut.with(button).onDenyDo(x -> {
         }).build();
 
         // THEN
@@ -206,7 +206,7 @@ class MultiBuilderTests {
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(fluxMock);
 
         // Methods on SUT
-        sut.with(button).onDenyDo(__ -> {
+        sut.with(button).onDenyDo(x -> {
         }).build();
 
         // WHEN
@@ -231,7 +231,7 @@ class MultiBuilderTests {
             listener = invocation.getArgument(0, ComponentEventListener.class);
             return null;
         }).when(buttonMock).addDetachListener(any());
-        sut.with(buttonMock).onDenyDo(__ -> {
+        sut.with(buttonMock).onDenyDo(x -> {
         }).build();
 
         // WHEN
@@ -250,7 +250,7 @@ class MultiBuilderTests {
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(fluxMock);
 
         // Methods on SUT
-        sut.with(buttonMock).onDenyDo(__ -> {
+        sut.with(buttonMock).onDenyDo(x -> {
         }).build();
 
         // WHEN
@@ -272,12 +272,12 @@ class MultiBuilderTests {
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(fluxMock);
 
         // Methods on SUT
-        sut.with(buttonMock).onDenyDo(__ -> {
-        }).and(mock(Span.class)).onDenyDo(__ -> {
-        }).and(mock(TextField.class)).onDenyDo(__ -> {
-        }).and(mock(Checkbox.class)).onDenyDo(__ -> {
-        }).and(mock(Component.class)).onDenyDo(__ -> {
-        }).and(mock(Button.class)).onDenyDo(__ -> {
+        sut.with(buttonMock).onDenyDo(x -> {
+        }).and(mock(Span.class)).onDenyDo(x -> {
+        }).and(mock(TextField.class)).onDenyDo(x -> {
+        }).and(mock(Checkbox.class)).onDenyDo(x -> {
+        }).and(mock(Component.class)).onDenyDo(x -> {
+        }).and(mock(Button.class)).onDenyDo(x -> {
         }).build();
 
         // WHEN
@@ -293,7 +293,7 @@ class MultiBuilderTests {
         var buttonMock = getButtonMockWithUI();
         var fluxMock   = getFluxMock();
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(fluxMock);
-        VaadinMultiButtonPepBuilder pepBuilder = sut.with(buttonMock).onDenyDo(__ -> {
+        VaadinMultiButtonPepBuilder pepBuilder = sut.with(buttonMock).onDenyDo(x -> {
         });
         pepBuilder.and();
 
@@ -319,7 +319,7 @@ class MultiBuilderTests {
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(fluxMock);
 
         // Methods on SUT
-        sut.with(buttonMock).onDenyDo(__ -> {
+        sut.with(buttonMock).onDenyDo(any -> {
         }).build();
 
         // WHEN
@@ -339,7 +339,7 @@ class MultiBuilderTests {
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(fluxMock);
 
         // Methods on SUT
-        sut.with(buttonMock).onDenyDo(__ -> {
+        sut.with(buttonMock).onDenyDo(x -> {
         }).build();
 
         // WHEN
@@ -366,7 +366,7 @@ class MultiBuilderTests {
                 any(UI.class), any(VaadinPep.class))).thenReturn(monoMock);
 
         // Methods on SUT
-        sut.subject("subject").with(buttonMock).onDenyDo(__ -> {
+        sut.subject("subject").with(buttonMock).onDenyDo(x -> {
         }).build();
 
         // WHEN
@@ -400,7 +400,7 @@ class MultiBuilderTests {
                 any(UI.class), any(VaadinPep.class))).thenReturn(monoMock);
 
         // Methods on SUT
-        sut.with(buttonMock).onDenyDo(__ -> {
+        sut.with(buttonMock).onDenyDo(x -> {
         }).build();
 
         // WHEN

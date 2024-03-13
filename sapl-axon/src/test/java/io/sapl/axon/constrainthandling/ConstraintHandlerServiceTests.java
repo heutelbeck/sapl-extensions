@@ -372,164 +372,162 @@ class ConstraintHandlerServiceTests {
     }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_noConstraints_then_noOnDecisionHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_noConstraints_then_noOnDecisionHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
-		var decision = new AuthorizationDecision(Decision.PERMIT);
+        var decision = new AuthorizationDecision(Decision.PERMIT);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeOnDecisionHandlers(null, null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeOnDecisionHandlers(null, null);
 
-		verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_noResponsible_then_accessDenied() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
-		assertThrows(AccessDeniedException.class,
-				() -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
-	}
+        verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_throwingHandler_then_accessDenied() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_noResponsible_then_accessDenied() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		assertThrows(AccessDeniedException.class, () -> bundle.executeOnDecisionHandlers(null, null));
-
-		verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        assertThrows(AccessDeniedException.class,
+                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_oneResponsible_then_oneOnDecisionHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-		});
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_throwingHandler_then_accessDenied() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeOnDecisionHandlers(null, null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        assertThrows(AccessDeniedException.class, () -> bundle.executeOnDecisionHandlers(null, null));
 
-		verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_allResponsible_then_allOnDecisionHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-		});
-		when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-		});
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeOnDecisionHandlers(null, null);
-
-		verify(firstOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_noResponsible_then_noOnDecisionHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_oneResponsible_then_oneOnDecisionHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+        });
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeOnDecisionHandlers(null, null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeOnDecisionHandlers(null, null);
 
-		verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_throwingHandler_then_oneOnDecisionHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		assertDoesNotThrow(() -> bundle.executeOnDecisionHandlers(null, null));
-
-		verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_oneResponsible_then_oneOnDecisionHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-		});
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_allResponsible_then_allOnDecisionHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+        });
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+        });
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeOnDecisionHandlers(null, null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeOnDecisionHandlers(null, null);
 
-		verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_allResponsible_then_allOnDecisionHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-		});
-		when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-		});
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_noResponsible_then_noOnDecisionHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeOnDecisionHandlers(null, null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeOnDecisionHandlers(null, null);
 
-		verify(firstOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
-//================================================================
+    @Test
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_throwingHandler_then_oneOnDecisionHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        assertDoesNotThrow(() -> bundle.executeOnDecisionHandlers(null, null));
+
+        verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_oneResponsible_then_oneOnDecisionHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+        });
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeOnDecisionHandlers(null, null);
+
+        verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_allResponsible_then_allOnDecisionHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+        });
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+        });
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeOnDecisionHandlers(null, null);
+
+        verify(firstOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
     void when_buildPreEnforceCommandConstraintHandlerBundle_with_noGlobalCommandMessageMappingProviders_then_noCommandMessageMappingHandlers() {
@@ -545,152 +543,159 @@ class ConstraintHandlerServiceTests {
     }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_noConstraints_then_noCommandMessageMappingHandlers() {
-		when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_noConstraints_then_noCommandMessageMappingHandlers() {
+        when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
 
-		var decision = new AuthorizationDecision(Decision.PERMIT);
+        var decision = new AuthorizationDecision(Decision.PERMIT);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeCommandMappingHandlers(null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeCommandMappingHandlers(null);
 
-		verify(firstCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_obligation_and_throwingHandler_then_accessDenied() {
-		when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstCommandConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		assertThrows(AccessDeniedException.class, () -> bundle.executeCommandMappingHandlers(null));
-	}
+        verify(firstCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_obligation_and_noResponsible_then_accessDenied() {
-		when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_obligation_and_throwingHandler_then_accessDenied() {
+        when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstCommandConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(any -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		assertThrows(AccessDeniedException.class, () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
-	}
-
-    @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_obligation_and_oneResponsible_then_oneCommandMessageMappingHandlers() {
-		when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondCommandConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeCommandMappingHandlers(null);
-
-		verify(firstCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        assertThrows(AccessDeniedException.class, () -> bundle.executeCommandMappingHandlers(null));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_obligation_and_allResponsible_then_allCommandMessageMappingHandlers() {
-		when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstCommandConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		when(secondCommandConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_obligation_and_noResponsible_then_accessDenied() {
+        when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeCommandMappingHandlers(null);
-
-		verify(firstCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        assertThrows(AccessDeniedException.class,
+                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
-		when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstCommandConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_obligation_and_oneResponsible_then_oneCommandMessageMappingHandlers() {
+        when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondCommandConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeCommandMappingHandlers(null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeCommandMappingHandlers(null);
 
-		verify(firstCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_advice_and_noResponsible_then_noCommandMessageMappingHandlers() {
-		when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeCommandMappingHandlers(null);
-
-		verify(firstCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
+        verify(firstCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_advice_and_oneResponsible_then_oneCommandMessageMappingHandlers() {
-		when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondCommandConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_obligation_and_allResponsible_then_allCommandMessageMappingHandlers() {
+        when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstCommandConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        when(secondCommandConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeCommandMappingHandlers(null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeCommandMappingHandlers(null);
 
-		verify(firstCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_advice_and_allResponsible_then_allCommandMessageMappingHandlers() {
-		when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstCommandConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		when(secondCommandConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
+        when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstCommandConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(any -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeCommandMappingHandlers(null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeCommandMappingHandlers(null);
 
-		verify(firstCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_advice_and_noResponsible_then_noCommandMessageMappingHandlers() {
+        when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeCommandMappingHandlers(null);
+
+        verify(firstCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_advice_and_oneResponsible_then_oneCommandMessageMappingHandlers() {
+        when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondCommandConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeCommandMappingHandlers(null);
+
+        verify(firstCommandConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalCommandMessageMappingProviders_and_advice_and_allResponsible_then_allCommandMessageMappingHandlers() {
+        when(firstCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondCommandConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstCommandConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        when(secondCommandConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 2, 0, 0, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeCommandMappingHandlers(null);
+
+        verify(firstCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondCommandConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
 //================================================================
 
@@ -709,166 +714,167 @@ class ConstraintHandlerServiceTests {
     }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_noConstraints_then_noErrorMappingConstraintHandlers() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_noConstraints_then_noErrorMappingConstraintHandlers() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
 
-		var decision = new AuthorizationDecision(Decision.PERMIT);
+        var decision = new AuthorizationDecision(Decision.PERMIT);
 
-		var error = new Exception("Error");
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeOnErrorHandlers(error);
+        var error  = new Exception("Error");
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeOnErrorHandlers(error);
 
-		verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_throwingHandler_then_accessDenied() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
-		var error = new Exception("Error");
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		assertThrows(AccessDeniedException.class, () -> bundle.executeOnErrorHandlers(error));
-	}
+        verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_noResponsible_then_accessDenied() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_throwingHandler_then_accessDenied() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(any -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		assertThrows(AccessDeniedException.class, () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
-	}
-
-    @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_oneResponsible_then_oneErrorMappingConstraintHandlers() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
-				.thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
-		var error = new Exception("Error");
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeOnErrorHandlers(error);
-
-		verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        var error  = new Exception("Error");
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        assertThrows(AccessDeniedException.class, () -> bundle.executeOnErrorHandlers(error));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_allResponsible_then_allErrorMappingConstraintHandlers() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
-				.thenReturn(UnaryOperator.identity());
-		when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
-				.thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_noResponsible_then_accessDenied() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var error = new Exception("Error");
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeOnErrorHandlers(error);
-
-		verify(firstErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        assertThrows(AccessDeniedException.class,
+                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_oneResponsible_then_oneErrorMappingConstraintHandlers() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var error = new Exception("Error");
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeOnErrorHandlers(error);
+        var error  = new Exception("Error");
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeOnErrorHandlers(error);
 
-		verify(firstErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_noResponsible_then_noErrorMappingConstraintHandlers() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-
-		var error = new Exception("Error");
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeOnErrorHandlers(error);
-
-		verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
+        verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_oneResponsible_then_oneErrorMappingConstraintHandlers() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
-				.thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_allResponsible_then_allErrorMappingConstraintHandlers() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var error = new Exception("Error");
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeOnErrorHandlers(error);
+        var error  = new Exception("Error");
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeOnErrorHandlers(error);
 
-		verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_allResponsible_then_allErrorMappingConstraintHandlers() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
-				.thenReturn(UnaryOperator.identity());
-		when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
-				.thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(any -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
 
-		var error = new Exception("Error");
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executeOnErrorHandlers(error);
+        var error  = new Exception("Error");
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeOnErrorHandlers(error);
 
-		verify(firstErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_noResponsible_then_noErrorMappingConstraintHandlers() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var error  = new Exception("Error");
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeOnErrorHandlers(error);
+
+        verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_oneResponsible_then_oneErrorMappingConstraintHandlers() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var error  = new Exception("Error");
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeOnErrorHandlers(error);
+
+        verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_allResponsible_then_allErrorMappingConstraintHandlers() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var error  = new Exception("Error");
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executeOnErrorHandlers(error);
+
+        verify(firstErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
 //================================================================
 
@@ -886,71 +892,72 @@ class ConstraintHandlerServiceTests {
     }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_noConstraints_then_noResultMappingHandlers() {
-		when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_noConstraints_then_noResultMappingHandlers() {
+        when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
 
-		var decision = new AuthorizationDecision(Decision.PERMIT);
+        var decision = new AuthorizationDecision(Decision.PERMIT);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executePostHandlingHandlers(null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executePostHandlingHandlers(null);
 
-		verify(firstMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_obligation_and_throwingHandler_then_accessDenied() {
-		when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(firstMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		assertThrows(AccessDeniedException.class, () -> bundle.executePostHandlingHandlers(null));
-	}
+        verify(firstMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_obligation_and_noResponsible_then_accessDenied() {
-		when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_obligation_and_throwingHandler_then_accessDenied() {
+        when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(firstMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(any -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		assertThrows(AccessDeniedException.class,
-				() -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
-	}
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        assertThrows(AccessDeniedException.class, () -> bundle.executePostHandlingHandlers(null));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_obligation_and_oneResponsible_then_oneResultMappingHandlers() {
-		when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(secondMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_obligation_and_noResponsible_then_accessDenied() {
+        when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executePostHandlingHandlers(null);
+        assertThrows(AccessDeniedException.class,
+                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
+    }
 
-		verify(firstMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+    @Test
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_obligation_and_oneResponsible_then_oneResultMappingHandlers() {
+        when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(secondMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
+
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executePostHandlingHandlers(null);
+
+        verify(firstMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
     void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_obligation_and_oneSupported_then_oneResultMappingHandlers() {
@@ -991,82 +998,85 @@ class ConstraintHandlerServiceTests {
     }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_obligation_and_allResponsible_then_allResultMappingHandlers() {
-		when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(firstMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		when(secondMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_obligation_and_allResponsible_then_allResultMappingHandlers() {
+        when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(firstMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        when(secondMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executePostHandlingHandlers(null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executePostHandlingHandlers(null);
 
-		verify(firstMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
-		when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(firstMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executePostHandlingHandlers(null);
-
-		verify(firstMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
+        verify(firstMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_advice_and_noResponsible_then_noResultMappingHandlers() {
-		when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
+        when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(firstMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(any -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executePostHandlingHandlers(null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executePostHandlingHandlers(null);
 
-		verify(firstMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
+        verify(firstMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_advice_and_oneResponsible_then_oneResultMappingHandlers() {
-		when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(secondMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_advice_and_noResponsible_then_noResultMappingHandlers() {
+        when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executePostHandlingHandlers(null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executePostHandlingHandlers(null);
 
-		verify(firstMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_advice_and_oneResponsible_then_oneResultMappingHandlers() {
+        when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(secondMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executePostHandlingHandlers(null);
+
+        verify(firstMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
     void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_advice_and_oneSupported_then_oneResultMappingHandlers() {
@@ -1107,24 +1117,26 @@ class ConstraintHandlerServiceTests {
     }
 
     @Test
-	void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_advice_and_allResponsible_then_allResultMappingHandlers() {
-		when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
-		when(firstMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		when(secondMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
+    void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalMappingProviders_and_advice_and_allResponsible_then_allResultMappingHandlers() {
+        when(firstMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(secondMappingConstraintHandlerProvider.getSupportedType()).thenReturn(Object.class);
+        when(firstMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        when(secondMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 0, 2, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
 
-		var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-		bundle.executePostHandlingHandlers(null);
+        var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
+        bundle.executePostHandlingHandlers(null);
 
-		verify(firstMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
 //================================================================
 
@@ -1387,164 +1399,161 @@ class ConstraintHandlerServiceTests {
     }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_noConstraints_then_noOnDecisionConstraintHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_noConstraints_then_noOnDecisionConstraintHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
-		var decision = new AuthorizationDecision(Decision.PERMIT);
+        var decision = new AuthorizationDecision(Decision.PERMIT);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executeOnDecisionHandlers(null, null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executeOnDecisionHandlers(null, null);
 
-		verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_noResponsible_then_accessDenied() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		Optional<ResponseType<?>> updateType = Optional.empty();
-		assertThrows(AccessDeniedException.class,
-				() -> service.buildQueryPreHandlerBundle(decision, null, updateType));
-	}
+        verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_throwingHandler_then_accessDenied() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_noResponsible_then_accessDenied() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		assertThrows(AccessDeniedException.class, () -> bundle.executeOnDecisionHandlers(null, null));
-
-		verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        var                       obligations = factory.arrayNode().add("obligation");
+        var                       decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        Optional<ResponseType<?>> updateType  = Optional.empty();
+        assertThrows(AccessDeniedException.class, () -> service.buildQueryPreHandlerBundle(decision, null, updateType));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_oneResponsible_then_oneOnDecisionHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-		});
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_throwingHandler_then_accessDenied() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executeOnDecisionHandlers(null, null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        assertThrows(AccessDeniedException.class, () -> bundle.executeOnDecisionHandlers(null, null));
 
-		verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_allResponsible_then_allOnDecisionHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-		});
-		when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-		});
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executeOnDecisionHandlers(null, null);
-
-		verify(firstOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_noResponsible_then_noOnDecisionHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_oneResponsible_then_oneOnDecisionHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+        });
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executeOnDecisionHandlers(null, null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executeOnDecisionHandlers(null, null);
 
-		verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_throwingHandler_then_oneOnDecisionHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		assertDoesNotThrow(() -> bundle.executeOnDecisionHandlers(null, null));
-
-		verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_oneResponsible_then_oneOnDecisionHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-		});
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_allResponsible_then_allOnDecisionHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+        });
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+        });
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executeOnDecisionHandlers(null, null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executeOnDecisionHandlers(null, null);
 
-		verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_allResponsible_then_allOnDecisionHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-		});
-		when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__, ___) -> {
-		});
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_noResponsible_then_noOnDecisionHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executeOnDecisionHandlers(null, null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executeOnDecisionHandlers(null, null);
 
-		verify(firstOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
-//================================================================
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_throwingHandler_then_oneOnDecisionHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        assertDoesNotThrow(() -> bundle.executeOnDecisionHandlers(null, null));
+
+        verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_oneResponsible_then_oneOnDecisionHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+        });
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executeOnDecisionHandlers(null, null);
+
+        verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_allResponsible_then_allOnDecisionHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+        });
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
+        });
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executeOnDecisionHandlers(null, null);
+
+        verify(firstOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
     void when_buildQueryPreHandlerBundle_with_noGlobalQueryMessageMappingProviders_then_noQueryConstraintHandlers() {
@@ -1560,154 +1569,153 @@ class ConstraintHandlerServiceTests {
     }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_noConstraints_then_noQueryConstraintHandlers() {
-		when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_noConstraints_then_noQueryConstraintHandlers() {
+        when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
 
-		var decision = new AuthorizationDecision(Decision.PERMIT);
+        var decision = new AuthorizationDecision(Decision.PERMIT);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executePreHandlingHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executePreHandlingHandlers(null);
 
-		verify(firstQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_obligation_and_throwingHandler_then_accessDenied() {
-		when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		assertThrows(AccessDeniedException.class, () -> bundle.executePreHandlingHandlers(null));
-	}
+        verify(firstQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_obligation_and_noResponsible_then_accessDenied() {
-		when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_obligation_and_throwingHandler_then_accessDenied() {
+        when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		Optional<ResponseType<?>> updateType = Optional.empty();
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		assertThrows(AccessDeniedException.class,
-				() -> service.buildQueryPreHandlerBundle(decision, null, updateType));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_obligation_and_oneResponsible_then_oneQueryConstraintHandlers() {
-		when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executePreHandlingHandlers(null);
-
-		verify(firstQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        assertThrows(AccessDeniedException.class, () -> bundle.executePreHandlingHandlers(null));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_obligation_and_allResponsible_then_allQueryConstraintHandlers() {
-		when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		when(secondQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_obligation_and_noResponsible_then_accessDenied() {
+        when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var                       obligations = factory.arrayNode().add("obligation");
+        var                       decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        Optional<ResponseType<?>> updateType  = Optional.empty();
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executePreHandlingHandlers(null);
-
-		verify(firstQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        assertThrows(AccessDeniedException.class, () -> service.buildQueryPreHandlerBundle(decision, null, updateType));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
-		when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_obligation_and_oneResponsible_then_oneQueryConstraintHandlers() {
+        when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executePreHandlingHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executePreHandlingHandlers(null);
 
-		verify(firstQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
+        verify(firstQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_advice_and_noResponsible_then_noQueryConstraintHandlers() {
-		when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_obligation_and_allResponsible_then_allQueryConstraintHandlers() {
+        when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
+        when(secondQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executePreHandlingHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executePreHandlingHandlers(null);
 
-		verify(firstQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_advice_and_oneResponsible_then_oneQueryConstraintHandlers() {
-		when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executePreHandlingHandlers(null);
-
-		verify(firstQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_advice_and_allResponsible_then_allQueryConstraintHandlers() {
-		when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		when(secondQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
+        when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executePreHandlingHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executePreHandlingHandlers(null);
 
-		verify(firstQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_advice_and_noResponsible_then_noQueryConstraintHandlers() {
+        when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executePreHandlingHandlers(null);
+
+        verify(firstQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_advice_and_oneResponsible_then_oneQueryConstraintHandlers() {
+        when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executePreHandlingHandlers(null);
+
+        verify(firstQueryConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentGlobalQueryMessageMappingProviders_and_advice_and_allResponsible_then_allQueryConstraintHandlers() {
+        when(firstQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondQueryConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
+        when(secondQueryConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 2, 0, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executePreHandlingHandlers(null);
+
+        verify(firstQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondQueryConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
 //================================================================
 
@@ -1726,168 +1734,167 @@ class ConstraintHandlerServiceTests {
     }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_noConstraints_then_noErrorMappingConstraintHandlers() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_noConstraints_then_noErrorMappingConstraintHandlers() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
 
-		var decision = new AuthorizationDecision(Decision.PERMIT);
+        var decision = new AuthorizationDecision(Decision.PERMIT);
 
-		var error = new Exception("Error");
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executeOnErrorHandlers(error);
+        var error  = new Exception("Error");
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executeOnErrorHandlers(error);
 
-		verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_throwingHandler_then_accessDenied() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
-		var error = new Exception("Error");
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		assertThrows(AccessDeniedException.class, () -> bundle.executeOnErrorHandlers(error));
-	}
+        verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_noResponsible_then_accessDenied() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_throwingHandler_then_accessDenied() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		Optional<ResponseType<?>> updateType = Optional.empty();
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		assertThrows(AccessDeniedException.class,
-				() -> service.buildQueryPreHandlerBundle(decision, null, updateType));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_oneResponsible_then_oneErrorMappingConstraintHandlers() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
-				.thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-
-		var error = new Exception("Error");
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executeOnErrorHandlers(error);
-
-		verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        var error  = new Exception("Error");
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        assertThrows(AccessDeniedException.class, () -> bundle.executeOnErrorHandlers(error));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_allResponsible_then_allErrorMappingConstraintHandlers() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
-				.thenReturn(UnaryOperator.identity());
-		when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
-				.thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_noResponsible_then_accessDenied() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var                       obligations = factory.arrayNode().add("obligation");
+        var                       decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        Optional<ResponseType<?>> updateType  = Optional.empty();
 
-		var error = new Exception("Error");
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executeOnErrorHandlers(error);
-
-		verify(firstErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        assertThrows(AccessDeniedException.class, () -> service.buildQueryPreHandlerBundle(decision, null, updateType));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_oneResponsible_then_oneErrorMappingConstraintHandlers() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var error = new Exception("Error");
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executeOnErrorHandlers(error);
+        var error  = new Exception("Error");
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executeOnErrorHandlers(error);
 
-		verify(firstErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_noResponsible_then_noErrorMappingConstraintHandlers() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-
-		var error = new Exception("Error");
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executeOnErrorHandlers(error);
-
-		verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
+        verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_oneResponsible_then_oneErrorMappingConstraintHandlers() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
-				.thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_allResponsible_then_allErrorMappingConstraintHandlers() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var obligations = factory.arrayNode().add("obligation");
+        var decision    = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
-		var error = new Exception("Error");
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executeOnErrorHandlers(error);
+        var error  = new Exception("Error");
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executeOnErrorHandlers(error);
 
-		verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_allResponsible_then_allErrorMappingConstraintHandlers() {
-		when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
-				.thenReturn(UnaryOperator.identity());
-		when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
-				.thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
 
-		var error = new Exception("Error");
-		var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-		bundle.executeOnErrorHandlers(error);
+        var error  = new Exception("Error");
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executeOnErrorHandlers(error);
 
-		verify(firstErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_noResponsible_then_noErrorMappingConstraintHandlers() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var error  = new Exception("Error");
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executeOnErrorHandlers(error);
+
+        verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_oneResponsible_then_oneErrorMappingConstraintHandlers() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var error  = new Exception("Error");
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executeOnErrorHandlers(error);
+
+        verify(firstErrorMappingConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_allResponsible_then_allErrorMappingConstraintHandlers() {
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        when(secondErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 2, 0, 0, 0);
+
+        var advices  = factory.arrayNode().add("advice");
+        var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+
+        var error  = new Exception("Error");
+        var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
+        bundle.executeOnErrorHandlers(error);
+
+        verify(firstErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
 //================================================================
 
@@ -1906,221 +1913,229 @@ class ConstraintHandlerServiceTests {
     }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_noConstraints_then_noResultConstraintHandlers() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_noConstraints_then_noResultConstraintHandlers() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
 
-		var decision = new AuthorizationDecision(Decision.PERMIT);
-		var responseType = ResponseTypes.instanceOf(Object.class);
+        var decision     = new AuthorizationDecision(Decision.PERMIT);
+        var responseType = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
-		bundle.executePostHandlingHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
+        bundle.executePostHandlingHandlers(null);
 
-		verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_obligation_and_throwingHandler_then_accessDenied() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
-		assertThrows(AccessDeniedException.class, () -> bundle.executePostHandlingHandlers(null));
-	}
+        verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_obligation_and_noResponsible_then_accessDenied() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_obligation_and_throwingHandler_then_accessDenied() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		Optional<ResponseType<?>> empty = Optional.empty();
-		assertThrows(AccessDeniedException.class, () -> service.buildQueryPreHandlerBundle(decision, responseType, empty));
-	}
+        var obligations  = factory.arrayNode().add("obligation");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var responseType = ResponseTypes.instanceOf(Object.class);
 
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_obligation_and_oneResponsible_then_oneResultConstraintHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
-		bundle.executePostHandlingHandlers(null);
-
-		verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
+        assertThrows(AccessDeniedException.class, () -> bundle.executePostHandlingHandlers(null));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_obligation_and_oneSupported_then_oneResultConstraintHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.FALSE);
-		when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_obligation_and_noResponsible_then_accessDenied() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
-		bundle.executePostHandlingHandlers(null);
-
-		verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        var                       obligations  = factory.arrayNode().add("obligation");
+        var                       decision     = new AuthorizationDecision(Decision.PERMIT)
+                .withObligations(obligations);
+        var                       responseType = ResponseTypes.instanceOf(Object.class);
+        Optional<ResponseType<?>> empty        = Optional.empty();
+        assertThrows(AccessDeniedException.class,
+                () -> service.buildQueryPreHandlerBundle(decision, responseType, empty));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_obligation_and_allResponsible_then_allResultConstraintHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_obligation_and_oneResponsible_then_oneResultConstraintHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.instanceOf(Object.class);
+        var obligations  = factory.arrayNode().add("obligation");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var responseType = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
-		bundle.executePostHandlingHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
+        bundle.executePostHandlingHandlers(null);
 
-		verify(firstResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
-		bundle.executePostHandlingHandlers(null);
-
-		verify(firstResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
+        verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_advice_and_noResponsible_then_noResultConstraintHandlers() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_obligation_and_oneSupported_then_oneResultConstraintHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.FALSE);
+        when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.instanceOf(Object.class);
+        var obligations  = factory.arrayNode().add("obligation");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var responseType = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
-		bundle.executePostHandlingHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
+        bundle.executePostHandlingHandlers(null);
 
-		verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_advice_and_oneResponsible_then_oneResultConstraintHandlers() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
-		bundle.executePostHandlingHandlers(null);
-
-		verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_advice_and_oneSupported_then_oneResultConstraintHandlers() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.FALSE);
-		when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_obligation_and_allResponsible_then_allResultConstraintHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
+        when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.instanceOf(Object.class);
+        var obligations  = factory.arrayNode().add("obligation");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var responseType = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
-		bundle.executePostHandlingHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
+        bundle.executePostHandlingHandlers(null);
 
-		verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_advice_and_allResponsible_then_allResultConstraintHandlers() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.instanceOf(Object.class);
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
-		bundle.executePostHandlingHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
+        bundle.executePostHandlingHandlers(null);
 
-		verify(firstResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_advice_and_noResponsible_then_noResultConstraintHandlers() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
+        bundle.executePostHandlingHandlers(null);
+
+        verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_advice_and_oneResponsible_then_oneResultConstraintHandlers() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
+        bundle.executePostHandlingHandlers(null);
+
+        verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_advice_and_oneSupported_then_oneResultConstraintHandlers() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.FALSE);
+        when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
+        bundle.executePostHandlingHandlers(null);
+
+        verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentInitialMappingProviders_and_advice_and_allResponsible_then_allResultConstraintHandlers() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
+        when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
+        bundle.executePostHandlingHandlers(null);
+
+        verify(firstResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
     void when_buildQueryPreHandlerBundle_with_noUpdateMappingProviders_then_noResultConstraintHandlers() {
@@ -2138,232 +2153,240 @@ class ConstraintHandlerServiceTests {
     }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_noConstraints_then_noResultConstraintHandlers() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_noConstraints_then_noResultConstraintHandlers() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
 
-		var decision = new AuthorizationDecision(Decision.PERMIT);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+        var decision     = new AuthorizationDecision(Decision.PERMIT);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
 
-		verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_obligation_and_throwingHandler_then_accessDenied() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		assertThrows(AccessDeniedException.class, () -> bundle.executeOnNextHandlers(null));
-	}
+        verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_obligation_and_noResponsible_then_accessDenied() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_obligation_and_throwingHandler_then_accessDenied() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		Optional<ResponseType<?>> updateType = Optional.of(ResponseTypes.instanceOf(Object.class));
+        var obligations  = factory.arrayNode().add("obligation");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
 
-		assertThrows(AccessDeniedException.class, () -> service.buildQueryPreHandlerBundle(decision, responseType,updateType));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_obligation_and_oneResponsible_then_oneResultConstraintHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.optionalInstanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
-
-		verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        assertThrows(AccessDeniedException.class, () -> bundle.executeOnNextHandlers(null));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_obligation_and_oneSupported_then_oneResultConstraintHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.FALSE);
-		when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_obligation_and_noResponsible_then_accessDenied() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.optionalInstanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+        var                       obligations  = factory.arrayNode().add("obligation");
+        var                       decision     = new AuthorizationDecision(Decision.PERMIT)
+                .withObligations(obligations);
+        var                       responseType = ResponseTypes.instanceOf(Object.class);
+        Optional<ResponseType<?>> updateType   = Optional.of(ResponseTypes.instanceOf(Object.class));
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
-
-		verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        assertThrows(AccessDeniedException.class,
+                () -> service.buildQueryPreHandlerBundle(decision, responseType, updateType));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_obligation_and_allResponsible_then_allResultConstraintHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_obligation_and_oneResponsible_then_oneResultConstraintHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.optionalInstanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+        var obligations  = factory.arrayNode().add("obligation");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var responseType = ResponseTypes.optionalInstanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
 
-		verify(firstResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.optionalInstanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
-
-		verify(firstResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
+        verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_advice_and_noResponsible_then_noResultConstraintHandlers() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_obligation_and_oneSupported_then_oneResultConstraintHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.FALSE);
+        when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+        var obligations  = factory.arrayNode().add("obligation");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var responseType = ResponseTypes.optionalInstanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
 
-		verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_advice_and_oneResponsible_then_oneResultConstraintHandlers() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.optionalInstanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
-
-		verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_advice_and_oneSupported_then_oneResultConstraintHandlers() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.FALSE);
-		when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_obligation_and_allResponsible_then_allResultConstraintHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
+        when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(1, 0, 0, 0, 0, 0, 2);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.optionalInstanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+        var obligations  = factory.arrayNode().add("obligation");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var responseType = ResponseTypes.optionalInstanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
 
-		verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_advice_and_allResponsible_then_allResultConstraintHandlers() {
-		when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+    void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.optionalInstanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.optionalInstanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
 
-		verify(firstResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_advice_and_noResponsible_then_noResultConstraintHandlers() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
+
+        verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_advice_and_oneResponsible_then_oneResultConstraintHandlers() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.optionalInstanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
+
+        verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_advice_and_oneSupported_then_oneResultConstraintHandlers() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.FALSE);
+        when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.optionalInstanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
+
+        verify(firstResultConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentUpdateMappingProviders_and_advice_and_allResponsible_then_allResultConstraintHandlers() {
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondResultConstraintHandlerProvider.supports(any(InstanceResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(UnaryOperator.identity());
+        when(secondResultConstraintHandlerProvider.getHandler(any(JsonNode.class)))
+                .thenReturn(UnaryOperator.identity());
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 2);
+
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.optionalInstanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
+
+        verify(firstResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
 //================================================================
 
@@ -2383,302 +2406,300 @@ class ConstraintHandlerServiceTests {
     }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_noConstraints_then_noFilters() {
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_noConstraints_then_noFilters() {
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
 
-		var decision = new AuthorizationDecision(Decision.PERMIT);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+        var decision     = new AuthorizationDecision(Decision.PERMIT);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
 
-		verify(firstUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_obligation_and_throwingHandler_then_fallbackFalse() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(1, 0, 0, 0, 0, 2, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		assertDoesNotThrow(() -> bundle.executeOnNextHandlers(null));
-
-		verify(firstUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
+        verify(firstUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_obligation_and_noResponsible_then_accessDenied() {
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_obligation_and_throwingHandler_then_fallbackFalse() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(1, 0, 0, 0, 0, 2, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		Optional<ResponseType<?>> updateType = Optional.of(ResponseTypes.instanceOf(Object.class));
+        var obligations  = factory.arrayNode().add("obligation");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
 
-		assertThrows(AccessDeniedException.class, () -> service.buildQueryPreHandlerBundle(decision, responseType, updateType));
-	}
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        assertDoesNotThrow(() -> bundle.executeOnNextHandlers(null));
 
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_obligation_and_oneResponsible_then_oneUpdatePredicates() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> true);
-		var service = buildServiceForTest(1, 0, 0, 0, 0, 2, 0);
-
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
-
-		verify(firstUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_obligation_and_oneSupported_then_oneUpdatePredicates() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.FALSE);
-		when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> true);
-		var service = buildServiceForTest(1, 0, 0, 0, 0, 2, 0);
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_obligation_and_noResponsible_then_accessDenied() {
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+        var                       obligations  = factory.arrayNode().add("obligation");
+        var                       decision     = new AuthorizationDecision(Decision.PERMIT)
+                .withObligations(obligations);
+        var                       responseType = ResponseTypes.instanceOf(Object.class);
+        Optional<ResponseType<?>> updateType   = Optional.of(ResponseTypes.instanceOf(Object.class));
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
-
-		verify(firstUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        assertThrows(AccessDeniedException.class,
+                () -> service.buildQueryPreHandlerBundle(decision, responseType, updateType));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_obligation_and_allResponsible_then_allUpdatePredicates() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> true);
-		when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> true);
-		var service = buildServiceForTest(1, 0, 0, 0, 0, 2, 0);
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_obligation_and_oneResponsible_then_oneUpdatePredicates() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> true);
+        var service = buildServiceForTest(1, 0, 0, 0, 0, 2, 0);
 
-		var obligations = factory.arrayNode().add("obligation");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+        var obligations  = factory.arrayNode().add("obligation");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
 
-		verify(firstUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_advice_and_throwingHandler_then_fallbackTrue() {
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> {
-			throw new RuntimeException();
-		});
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		assertDoesNotThrow(() -> bundle.executeOnNextHandlers(null));
-
-		verify(firstUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
+        verify(firstUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_advice_and_noResponsible_then_noUpdatePredicates() {
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_obligation_and_oneSupported_then_oneUpdatePredicates() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.FALSE);
+        when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> true);
+        var service = buildServiceForTest(1, 0, 0, 0, 0, 2, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+        var obligations  = factory.arrayNode().add("obligation");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
 
-		verify(firstUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_advice_and_oneResponsible_then_oneUpdatePredicates() {
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> true);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
-
-		verify(firstUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_advice_and_oneSupported_then_oneUpdatePredicates() {
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.FALSE);
-		when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> true);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_obligation_and_allResponsible_then_allUpdatePredicates() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> true);
+        when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> true);
+        var service = buildServiceForTest(1, 0, 0, 0, 0, 2, 0);
 
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+        var obligations  = factory.arrayNode().add("obligation");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
 
-		verify(firstUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_advice_and_allResponsible_then_allUpdatePredicates() {
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> true);
-		when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> true);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
-
-		var advices = factory.arrayNode().add("advice");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		bundle.executeOnNextHandlers(null);
-
-		verify(firstUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-		verify(secondUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
-	}
+        verify(firstUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_someConstraint_and_bothFiltersClosed_then_andAllFalse() {
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> false);
-		when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> false);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_advice_and_throwingHandler_then_fallbackTrue() {
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> {
+            throw new RuntimeException();
+        });
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
 
-		var constraints = factory.arrayNode().add("constraint");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(constraints);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		var filteredResult = bundle.executeOnNextHandlers(new GenericResultMessage<>(new Object()));
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        assertDoesNotThrow(() -> bundle.executeOnNextHandlers(null));
 
-		assertTrue(filteredResult.isEmpty());
-	}
-
-    @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_someConstraint_and_oneFilterClosed_then_andAllFalse() {
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> true);
-		when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> false);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
-
-		var constraints = factory.arrayNode().add("constraint");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(constraints);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
-
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		var filteredResult = bundle.executeOnNextHandlers(new GenericResultMessage<>(new Object()));
-
-		assertTrue(filteredResult.isEmpty());
-	}
+        verify(firstUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
-	void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_someConstraint_and_bothFiltersOpen_then_andAllTrue() {
-		when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
-		when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> true);
-		when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__ -> true);
-		var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_advice_and_noResponsible_then_noUpdatePredicates() {
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
 
-		var constraints = factory.arrayNode().add("constraint");
-		var decision = new AuthorizationDecision(Decision.PERMIT).withAdvice(constraints);
-		var responseType = ResponseTypes.instanceOf(Object.class);
-		var updateType = ResponseTypes.instanceOf(Object.class);
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
 
-		var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-		var filteredResult = bundle.executeOnNextHandlers(new GenericResultMessage<>(new Object()));
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
 
-		assertTrue(filteredResult.isPresent());
-	}
+        verify(firstUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
-//================================================================
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//================================================================
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_advice_and_oneResponsible_then_oneUpdatePredicates() {
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> true);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
+
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
+
+        verify(firstUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_advice_and_oneSupported_then_oneUpdatePredicates() {
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.FALSE);
+        when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> true);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
+
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
+
+        verify(firstUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_advice_and_allResponsible_then_allUpdatePredicates() {
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> true);
+        when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> true);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
+
+        var advices      = factory.arrayNode().add("advice");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
+
+        var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        bundle.executeOnNextHandlers(null);
+
+        verify(firstUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+        verify(secondUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(JsonNode.class));
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_someConstraint_and_bothFiltersClosed_then_andAllFalse() {
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> false);
+        when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> false);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
+
+        var constraints  = factory.arrayNode().add("constraint");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(constraints);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
+
+        var bundle         = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        var filteredResult = bundle.executeOnNextHandlers(new GenericResultMessage<>(new Object()));
+
+        assertTrue(filteredResult.isEmpty());
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_someConstraint_and_oneFilterClosed_then_andAllFalse() {
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> true);
+        when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> false);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
+
+        var constraints  = factory.arrayNode().add("constraint");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(constraints);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
+
+        var bundle         = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        var filteredResult = bundle.executeOnNextHandlers(new GenericResultMessage<>(new Object()));
+
+        assertTrue(filteredResult.isEmpty());
+    }
+
+    @Test
+    void when_buildQueryPreHandlerBundle_with_presentUpdatePredicateProviders_and_someConstraint_and_bothFiltersOpen_then_andAllTrue() {
+        when(firstUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(secondUpdateFilterConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);
+        when(firstUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> true);
+        when(secondUpdateFilterConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x -> true);
+        var service = buildServiceForTest(0, 0, 0, 0, 0, 2, 0);
+
+        var constraints  = factory.arrayNode().add("constraint");
+        var decision     = new AuthorizationDecision(Decision.PERMIT).withAdvice(constraints);
+        var responseType = ResponseTypes.instanceOf(Object.class);
+        var updateType   = ResponseTypes.instanceOf(Object.class);
+
+        var bundle         = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
+        var filteredResult = bundle.executeOnNextHandlers(new GenericResultMessage<>(new Object()));
+
+        assertTrue(filteredResult.isPresent());
+    }
 
     @Test
     void when_buildQueryPostHandlerBundle_with_noGlobalRunnableProviders_then_noOnDecisionConstraintHandlers() {
@@ -2694,19 +2715,19 @@ class ConstraintHandlerServiceTests {
     }
 
     @Test
-	void when_buildQueryPostHandlerBundle_with_presentGlobalRunnableProviders_and_noConstraints_then_noOnDecisionConstraintHandlers() {
-		when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-		var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
+    void when_buildQueryPostHandlerBundle_with_presentGlobalRunnableProviders_and_noConstraints_then_noOnDecisionConstraintHandlers() {
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
+        var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
-		var decision = new AuthorizationDecision(Decision.PERMIT);
+        var decision = new AuthorizationDecision(Decision.PERMIT);
 
-		var bundle = service.buildQueryPostHandlerBundle(decision, null);
-		bundle.executeOnDecisionHandlers(null, null);
+        var bundle = service.buildQueryPostHandlerBundle(decision, null);
+        bundle.executeOnDecisionHandlers(null, null);
 
-		verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-		verify(secondOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
-	}
+        verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+        verify(secondOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(JsonNode.class));
+    }
 
     @Test
     void when_buildQueryPostHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_noResponsible_then_accessDenied() {
@@ -2719,7 +2740,7 @@ class ConstraintHandlerServiceTests {
 
     @Test
     void when_buildQueryPostHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_throwingHandler_then_accessDenied() {
-        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__,___)->{throw new RuntimeException();});var service=buildServiceForTest(2,0,0,0,0,0,0);
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x,y)->{throw new RuntimeException();});var service=buildServiceForTest(2,0,0,0,0,0,0);
 
         var obligations=factory.arrayNode().add("obligation");var decision=new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
@@ -2730,7 +2751,7 @@ class ConstraintHandlerServiceTests {
 
     @Test
     void when_buildQueryPostHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_oneResponsible_then_oneOnDecisionHandlers() {
-        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__,___)->{});var service=buildServiceForTest(2,0,0,0,0,0,0);
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x,y)->{});var service=buildServiceForTest(2,0,0,0,0,0,0);
 
         var obligations=factory.arrayNode().add("obligation");var decision=new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
@@ -2741,7 +2762,7 @@ class ConstraintHandlerServiceTests {
 
     @Test
     void when_buildQueryPostHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_allResponsible_then_allOnDecisionHandlers() {
-        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__,___)->{});when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__,___)->{});var service=buildServiceForTest(2,0,0,0,0,0,0);
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x,y)->{});when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x,y)->{});var service=buildServiceForTest(2,0,0,0,0,0,0);
 
         var obligations=factory.arrayNode().add("obligation");var decision=new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
@@ -2763,7 +2784,7 @@ class ConstraintHandlerServiceTests {
 
     @Test
     void when_buildQueryPostHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_throwingHandler_then_oneOnDecisionHandlers() {
-        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__,___)->{throw new RuntimeException();});var service=buildServiceForTest(2,0,0,0,0,0,0);
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x,y)->{throw new RuntimeException();});var service=buildServiceForTest(2,0,0,0,0,0,0);
 
         var advices=factory.arrayNode().add("advice");var decision=new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
 
@@ -2774,7 +2795,7 @@ class ConstraintHandlerServiceTests {
 
     @Test
     void when_buildQueryPostHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_oneResponsible_then_oneOnDecisionHandlers() {
-        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__,___)->{});var service=buildServiceForTest(2,0,0,0,0,0,0);
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x,y)->{});var service=buildServiceForTest(2,0,0,0,0,0,0);
 
         var advices=factory.arrayNode().add("advice");var decision=new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
 
@@ -2785,7 +2806,7 @@ class ConstraintHandlerServiceTests {
 
     @Test
     void when_buildQueryPostHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_allResponsible_then_allOnDecisionHandlers() {
-        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__,___)->{});when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((__,___)->{});var service=buildServiceForTest(2,0,0,0,0,0,0);
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x,y)->{});when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x,y)->{});var service=buildServiceForTest(2,0,0,0,0,0,0);
 
         var advices=factory.arrayNode().add("advice");var decision=new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
 
@@ -2823,7 +2844,7 @@ class ConstraintHandlerServiceTests {
 
     @Test
     void when_buildQueryPostHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_obligation_and_throwingHandler_then_accessDenied() {
-        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__->{throw new RuntimeException();});var service=buildServiceForTest(0,0,0,2,0,0,0);
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x->{throw new RuntimeException();});var service=buildServiceForTest(0,0,0,2,0,0,0);
 
         var obligations=factory.arrayNode().add("obligation");var decision=new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);
 
@@ -2863,7 +2884,7 @@ class ConstraintHandlerServiceTests {
 
     @Test
     void when_buildQueryPostHandlerBundle_with_presentGlobalErrorMappingHandlerProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
-        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__->{throw new RuntimeException();});var service=buildServiceForTest(0,0,0,2,0,0,0);
+        when(firstErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondErrorMappingConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(firstErrorMappingConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x->{throw new RuntimeException();});var service=buildServiceForTest(0,0,0,2,0,0,0);
 
         var advices=factory.arrayNode().add("advice");var decision=new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);
 
@@ -2934,7 +2955,7 @@ class ConstraintHandlerServiceTests {
 
     @Test
     void when_buildQueryPostHandlerBundle_with_presentInitialMappingProviders_and_obligation_and_throwingHandler_then_accessDenied() {
-        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__->{throw new RuntimeException();});var service=buildServiceForTest(1,0,0,0,0,0,2);
+        when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x->{throw new RuntimeException();});var service=buildServiceForTest(1,0,0,0,0,0,2);
 
         var obligations=factory.arrayNode().add("obligation");var decision=new AuthorizationDecision(Decision.PERMIT).withObligations(obligations);var responseType=ResponseTypes.instanceOf(Object.class);
 
@@ -2985,7 +3006,7 @@ class ConstraintHandlerServiceTests {
 
     @Test
     void when_buildQueryPostHandlerBundle_with_presentInitialMappingProviders_and_advice_and_throwingHandler_then_ignoreHandler() {
-        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(__->{throw new RuntimeException();});var service=buildServiceForTest(0,0,0,0,0,0,2);
+        when(firstResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);when(secondResultConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);when(firstResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);when(secondResultConstraintHandlerProvider.supports(any(ResponseType.class))).thenReturn(Boolean.TRUE);when(firstResultConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn(x->{throw new RuntimeException();});var service=buildServiceForTest(0,0,0,0,0,0,2);
 
         var advices=factory.arrayNode().add("advice");var decision=new AuthorizationDecision(Decision.PERMIT).withAdvice(advices);var responseType=ResponseTypes.instanceOf(Object.class);
 

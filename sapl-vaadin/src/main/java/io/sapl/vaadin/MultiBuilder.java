@@ -209,7 +209,7 @@ public class MultiBuilder {
      */
     protected void build(Component component) {
         if (!isBuild) {
-            component.addDetachListener((__) -> stopMultiSubscription());
+            component.addDetachListener(event -> stopMultiSubscription());
             if (component.isAttached()) {
                 Optional<UI> optionalUI = component.getUI();
                 if (optionalUI.isPresent()) {

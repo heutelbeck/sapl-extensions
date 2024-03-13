@@ -357,7 +357,7 @@ class VaadinPepSinglePepBuilderTests {
                         .useConstructor(pdp, mock(VaadinConstraintEnforcementService.class), component)
                         .defaultAnswer(CALLS_REAL_METHODS));
         // dummy action to avoid error message because of missing DENY handler
-        vaadinSinglePepBuilder.onDenyDo(__ -> {
+        vaadinSinglePepBuilder.onDenyDo(x -> {
         });
         vaadinSinglePepBuilder.build();
 

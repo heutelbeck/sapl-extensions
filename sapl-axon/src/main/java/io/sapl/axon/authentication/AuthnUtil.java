@@ -50,9 +50,9 @@ public class AuthnUtil {
             ((ObjectNode) subject).remove("credentials");
             ((ObjectNode) subject).remove("password");
             var principal = subject.get("principal");
-            if (principal != null)
-                if (principal.isObject())
-                    ((ObjectNode) principal).remove("password");
+            if (principal != null && principal.isObject()) {
+                ((ObjectNode) principal).remove("password");
+            }
         }
         return mapper.writeValueAsString(subject);
     }

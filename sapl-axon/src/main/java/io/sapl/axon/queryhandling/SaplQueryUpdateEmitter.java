@@ -199,7 +199,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
         var securedUpdates = enforcementConfigurationSink.asMono().flatMapMany(authzConfig -> {
             activeQueries.computeIfPresent(query,
-                    (__, originalQueryData) -> originalQueryData.withMode(authzConfig.mode()));
+                    (any, originalQueryData) -> originalQueryData.withMode(authzConfig.mode()));
 
             if (authzConfig.mode() == QueryAuthorizationMode.IMMEDIATE_DENY) {
                 return Flux

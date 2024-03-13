@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 
-public class QueryConstraintHandlerBundleTests {
+class QueryConstraintHandlerBundleTests {
 
     @Test
     void testAllInvokations() {
@@ -56,14 +56,14 @@ public class QueryConstraintHandlerBundleTests {
                                                                                           messageInternal);
                                                                                   onDecisionCounter.getAndIncrement();
                                                                               };
-        Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers         = __ -> new GenericQueryMessage<>(
+        Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers         = x -> new GenericQueryMessage<>(
                 "special payload", ResponseTypes.instanceOf(String.class));
-        Function<Throwable, Throwable>                   errorMapper          = __ -> new Exception(
+        Function<Throwable, Throwable>                   errorMapper          = x -> new Exception(
                 "some spectial message");
-        Function<String, String>                         initialResultMappers = __ -> "spectial initial result";
-        Function<ResultMessage<?>, ResultMessage<?>>     updateMappers        = __ -> new GenericResultMessage<>(
+        Function<String, String>                         initialResultMappers = x -> "spectial initial result";
+        Function<ResultMessage<?>, ResultMessage<?>>     updateMappers        = x -> new GenericResultMessage<>(
                 "special update result");
-        Predicate<ResultMessage<?>>                      filterPredicates     = __ -> filterBehaviour.get();
+        Predicate<ResultMessage<?>>                      filterPredicates     = x -> filterBehaviour.get();
         var                                              bundle               = new QueryConstraintHandlerBundle<>(
                 onDecision, queryMappers, errorMapper, initialResultMappers, updateMappers, filterPredicates);
 
@@ -99,11 +99,11 @@ public class QueryConstraintHandlerBundleTests {
     void whenresultIsCompletableFurute_then_returnMappedCompletableFuture() {
         BiConsumer<AuthorizationDecision, Message<?>>    onDecision           = (decisionInternal, messageInternal) -> {
                                                                               };
-        Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers         = __ -> null;
-        Function<Throwable, Throwable>                   errorMapper          = __ -> null;
-        Function<String, String>                         initialResultMappers = __ -> "spectial initial result";
-        Function<ResultMessage<?>, ResultMessage<?>>     updateMappers        = __ -> null;
-        Predicate<ResultMessage<?>>                      filterPredicates     = __ -> false;
+        Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers         = x -> null;
+        Function<Throwable, Throwable>                   errorMapper          = x -> null;
+        Function<String, String>                         initialResultMappers = x -> "spectial initial result";
+        Function<ResultMessage<?>, ResultMessage<?>>     updateMappers        = x -> null;
+        Predicate<ResultMessage<?>>                      filterPredicates     = x -> false;
         var                                              bundle               = new QueryConstraintHandlerBundle<>(
                 onDecision, queryMappers, errorMapper, initialResultMappers, updateMappers, filterPredicates);
 

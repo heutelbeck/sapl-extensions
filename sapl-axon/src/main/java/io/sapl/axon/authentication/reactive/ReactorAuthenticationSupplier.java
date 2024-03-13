@@ -40,7 +40,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class ReactorAuthenticationSupplier implements ReactiveAuthenticationSupplier {
 
-    private final static String ANONYMOUS = "\"anonymous\"";
+    private static final String ANONYMOUS = "\"anonymous\"";
 
     private final ObjectMapper mapper;
 

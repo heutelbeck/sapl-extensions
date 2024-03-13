@@ -137,7 +137,7 @@ public class FluxOneAndManyTap<T> {
          * if the Flux has not been subscribed to yet, keep the connection alive and
          * cache valid for the given TTL
          */
-        Mono.just(0).delayElement(connectionTtl).doOnNext(__ -> {
+        Mono.just(0).delayElement(connectionTtl).doOnNext(i -> {
             if (manySink.get() == null)
                 dropConnectionAndClearCache();
         }).subscribe();
@@ -187,7 +187,7 @@ public class FluxOneAndManyTap<T> {
          * if the Mono has not been subscribed to yet, keep the connection alive and
          * cache valid for the given TTL
          */
-        Mono.just(0).delayElement(connectionTtl).doOnNext(__ -> {
+        Mono.just(0).delayElement(connectionTtl).doOnNext(i -> {
             if (oneSink.get() == null)
                 dropConnectionAndClearCache();
         }).subscribe();

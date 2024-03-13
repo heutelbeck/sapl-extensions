@@ -64,7 +64,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import reactor.core.publisher.Flux;
 
-public class CommandPolicyEnforcementPointTests {
+class CommandPolicyEnforcementPointTests {
 
     private static final String            MAPPER_FILED_NAME            = "mapper";
     private static final String            COMMAND_MAPPER_FILED_NAME    = "commandMapper";

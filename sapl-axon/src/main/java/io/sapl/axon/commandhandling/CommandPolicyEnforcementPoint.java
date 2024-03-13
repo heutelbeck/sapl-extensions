@@ -45,6 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember<T> {
 
+    private static final String                           ACCESS_DENIED = "Access Denied";
     private final PolicyDecisionPoint                     pdp;
     private final MessageHandlingMember<T>                delegate;
     private final AuthorizationSubscriptionBuilderService subscriptionBuilder;
@@ -100,7 +101,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
 
         if (decision == null) {
             log.error("PDP returned null.");
-            throw new AccessDeniedException("Access Denied");
+            throw new AccessDeniedException(ACCESS_DENIED);
         }
 
         var executable = delegate.unwrap(Executable.class);
@@ -110,18 +111,18 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
             bundle.executeOnDecisionHandlers(decision, command);
         } catch (Exception t) {
             log.error("command on decision constraint handlers failed: {}", t.getMessage(), t);
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException("Access Denied"));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED));
         }
 
         if (decision.getDecision() != Decision.PERMIT) {
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException("Access Denied"));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED));
         }
 
         try {
             bundle.executeAggregateConstraintHandlerMethods();
         } catch (Exception t) {
             log.error("command aggregate constraint handlers failed: {}", t.getMessage(), t);
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException("Access Denied"));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED));
         }
 
         CommandMessage<?> mappedCommand;
@@ -129,7 +130,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
             mappedCommand = bundle.executeCommandMappingHandlers(command);
         } catch (Exception t) {
             log.error("command mapping constraint handlers failed: {}", t.getMessage(), t);
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException("Access Denied"));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED));
         }
 
         Object result;
@@ -144,7 +145,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
             mappedResult = bundle.executePostHandlingHandlers(result);
         } catch (Exception t) {
             log.error("command result mapping failed: {}", t.getMessage(), t);
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException("Access Denied"));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED));
         }
 
         return mappedResult;

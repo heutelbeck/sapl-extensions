@@ -663,7 +663,7 @@ public class VaadinPep {
                 if (!denyRuleIsPresent) {
                     throw new AccessDeniedException("You need to define at least one handler for DENY decisions.");
                 }
-                component.addDetachListener((__) -> vaadinPep.stopSubscription());
+                component.addDetachListener(event -> vaadinPep.stopSubscription());
                 // start subscription now or later
                 if (component.isAttached()) {
                     Optional<UI> optionalUI = component.getUI();

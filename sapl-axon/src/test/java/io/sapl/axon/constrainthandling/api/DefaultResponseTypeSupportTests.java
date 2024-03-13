@@ -32,7 +32,7 @@ import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DefaultResponseTypeSupportTests {
+class DefaultResponseTypeSupportTests {
 
     private ResponseTypeSupport responseTypeSupport;
 

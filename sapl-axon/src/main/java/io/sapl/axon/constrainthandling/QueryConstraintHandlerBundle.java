@@ -59,12 +59,12 @@ public class QueryConstraintHandlerBundle<I> {
      */
     private QueryConstraintHandlerBundle() {
         // @formatter:off
-		this.onDecisionHandlers   = (__,___)->{};
+		this.onDecisionHandlers   = (decision,message)->{};
 		this.queryMappers         = Function.identity();
 		this.errorMappers         = Function.identity();
 		this.initialResultMappers = Function.identity();
 		this.updateMappers        = Function.identity();
-		this.filterPredicates     = __ -> true;
+		this.filterPredicates     = any -> true;
 		// @formatter:on
     }
 
