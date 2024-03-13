@@ -17,7 +17,6 @@ package io.sapl.ethereum.demo.pip;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.web3j.protocol.Web3j;
 
@@ -39,76 +38,88 @@ import reactor.core.publisher.Flux;
 @PolicyInformationPoint(name = "printer", description = "Domain specific PIP for printer usage")
 public class EthereumPrinterPip extends EthereumPolicyInformationPoint {
 
-	private static final String ETH_PIP_CONFIG = "ethPipConfig";
+    private static final String ETH_PIP_CONFIG = "ethPipConfig";
 
-	private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
+    private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
-	private static final String ADDRESS = "address";
+    private static final String ADDRESS = "address";
 
-	private static final String BOOL = "bool";
+    private static final String BOOL = "bool";
 
-	private static final String INPUT_PARAMS = "inputParams";
+    private static final String INPUT_PARAMS = "inputParams";
 
-	private static final String OUTPUT_PARAMS = "outputParams";
+    private static final String OUTPUT_PARAMS = "outputParams";
 
-	@Autowired
-	private CertificateAddressProvider addressProvider;
+    private final CertificateAddressProvider addressProvider;
 
-	public EthereumPrinterPip(Web3j web3j) {
-		super(web3j);
-	}
+    public EthereumPrinterPip(Web3j web3j, CertificateAddressProvider addressProvider) {
+        super(web3j);
+        this.addressProvider = addressProvider;
+    }
 
-	@Attribute(name = "certified", docs = "Checks, if the given address has a valid printer certificate.")
-	public Flux<Val> certified(@JsonObject Val saplObject, Map<String, Val> variables) {
-		String address         = saplObject.get().get("address").textValue();
-		String printer         = saplObject.get().get("printer").textValue();
-		String contractAddress = getContractAddress(printer, variables);
+    @Attribute(name = "certified", docs = "Checks, if the given address has a valid printer certificate.")
+    public Flux<Val> certified(@JsonObject Val saplObject, Map<String, Val> variables) {
+        String address         = saplObject.get().get(ADDRESS).textValue();
+        String printer         = saplObject.get().get("printer").textValue();
+        String contractAddress = getContractAddress(printer, variables);
 
-		ObjectNode requestNode = JSON.objectNode();
-		requestNode.put("contractAddress", contractAddress);
-		requestNode.put("functionName", "hasCertificate");
-		ArrayNode  inputParams = JSON.arrayNode();
-		ObjectNode input1      = JSON.objectNode();
-		input1.put("type", ADDRESS);
-		input1.put("value", address.substring(2));
-		inputParams.add(input1);
-		requestNode.set(INPUT_PARAMS, inputParams);
-		ArrayNode outputParams = JSON.arrayNode();
-		outputParams.add(BOOL);
-		requestNode.set(OUTPUT_PARAMS, outputParams);
-		return loadContractInformation(Val.of(requestNode), variables).map(j -> j.get().get(0).get("value"))
-				.map(Val::of);
-	}
+        ObjectNode requestNode = JSON.objectNode();
+        requestNode.put("contractAddress", contractAddress);
+        requestNode.put("functionName", "hasCertificate");
+        ArrayNode  inputParams = JSON.arrayNode();
+        ObjectNode input1      = JSON.objectNode();
+        input1.put("type", ADDRESS);
+        input1.put("value", address.substring(2));
+        inputParams.add(input1);
+        requestNode.set(INPUT_PARAMS, inputParams);
+        ArrayNode outputParams = JSON.arrayNode();
+        outputParams.add(BOOL);
+        requestNode.set(OUTPUT_PARAMS, outputParams);
+        return loadContractInformation(Val.of(requestNode), variables).map(j -> j.get().get(0).get("value"))
+                .map(Val::of);
+    }
 
-	private String getContractAddress(String printer, Map<String, Val> variables) {
-		if (MainView.ULTIMAKER.equals(printer)) {
-			Val ethPipConfig = variables.get(ETH_PIP_CONFIG);
-			if (ethPipConfig != null) {
-				JsonNode address = ethPipConfig.get().get(MainView.ULTIMAKER);
-				if (address != null)
-					return address.textValue();
-			}
-			return addressProvider.getUltimakerAddress();
-		}
-		if (MainView.GRAFTEN.equals(printer)) {
-			Val ethPipConfig = variables.get(ETH_PIP_CONFIG);
-			if (ethPipConfig != null) {
-				JsonNode address = ethPipConfig.get().get(MainView.GRAFTEN);
-				if (address != null)
-					return address.textValue();
-			}
-			return addressProvider.getGraftenAddress();
-		}
-		if (MainView.ZMORPH.equals(printer)) {
-			Val ethPipConfig = variables.get(ETH_PIP_CONFIG);
-			if (ethPipConfig != null) {
-				JsonNode address = ethPipConfig.get().get(MainView.ZMORPH);
-				if (address != null)
-					return address.textValue();
-			}
-			return addressProvider.getZmorphAddress();
-		}
-		return "";
-	}
+    private String getContractAddress(String printer, Map<String, Val> variables) {
+        if (MainView.ULTIMAKER.equals(printer)) {
+            return getUltimakerAddress(variables);
+        }
+        if (MainView.GRAFTEN.equals(printer)) {
+            return getGraftenAddress(variables);
+        }
+        if (MainView.ZMORPH.equals(printer)) {
+            return getZmorphAddress(variables);
+        }
+        return "";
+    }
+
+    private String getZmorphAddress(Map<String, Val> variables) {
+        Val ethPipConfig = variables.get(ETH_PIP_CONFIG);
+        if (ethPipConfig != null) {
+            JsonNode address = ethPipConfig.get().get(MainView.ZMORPH);
+            if (address != null)
+                return address.textValue();
+        }
+        return addressProvider.getZmorphAddress();
+    }
+
+    private String getGraftenAddress(Map<String, Val> variables) {
+        Val ethPipConfig = variables.get(ETH_PIP_CONFIG);
+        if (ethPipConfig != null) {
+            JsonNode address = ethPipConfig.get().get(MainView.GRAFTEN);
+            if (address != null)
+                return address.textValue();
+        }
+        return addressProvider.getGraftenAddress();
+    }
+
+    private String getUltimakerAddress(Map<String, Val> variables) {
+        Val ethPipConfig = variables.get(ETH_PIP_CONFIG);
+        if (ethPipConfig != null) {
+            JsonNode address = ethPipConfig.get().get(MainView.ULTIMAKER);
+            if (address != null)
+                return address.textValue();
+        }
+        return addressProvider.getUltimakerAddress();
+    }
 
 }

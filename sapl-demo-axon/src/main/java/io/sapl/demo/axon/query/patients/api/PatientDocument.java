@@ -1,7 +1,6 @@
 package io.sapl.demo.axon.query.patients.api;
 
 import java.time.Instant;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import org.springframework.data.annotation.Id;
