@@ -4,8 +4,8 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 import org.axonframework.eventhandling.EventHandler;
 import org.axonframework.eventhandling.Timestamp;
@@ -79,7 +79,7 @@ public class VitalSignsProjection {
 				.flatMap(pVitals -> Optional.ofNullable(pVitals.lastKnownMeasurements().get(query.type())));
 	}
 
-	void updateVitals(String id, Function<VitalSignsDocument, VitalSignsDocument> update) {
+	void updateVitals(String id, UnaryOperator<VitalSignsDocument> update) {
 		repository.findById(id).map(update).ifPresentOrElse(this::saveAndUpdate, logNotFound(id));
 	}
 
