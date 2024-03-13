@@ -1,5 +1,7 @@
 /*
- * Copyright © 2019-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.mqtt.pep.constraint;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,17 +27,17 @@ import io.sapl.mqtt.pep.cache.MqttClientState;
 
 class ConstraintDetailsTests {
 
-	@Test
-	void when_subscriptionIdGetsLookedUp_then_returnSubscriptionId() {
-		// GIVEN
-		var mqttClientState    = new MqttClientState("clientId");
-		var identAuthzDecision = new IdentifiableAuthorizationDecision("subscriptionId", AuthorizationDecision.PERMIT);
-		var constraintDetails  = new ConstraintDetails(mqttClientState.getClientId(), identAuthzDecision);
+    @Test
+    void when_subscriptionIdGetsLookedUp_then_returnSubscriptionId() {
+        // GIVEN
+        var mqttClientState    = new MqttClientState("clientId");
+        var identAuthzDecision = new IdentifiableAuthorizationDecision("subscriptionId", AuthorizationDecision.PERMIT);
+        var constraintDetails  = new ConstraintDetails(mqttClientState.getClientId(), identAuthzDecision);
 
-		// WHEN
-		var subscriptionId = constraintDetails.getSubscriptionId();
+        // WHEN
+        var subscriptionId = constraintDetails.getSubscriptionId();
 
-		// THEN
-		assertEquals("subscriptionId", subscriptionId);
-	}
+        // THEN
+        assertEquals("subscriptionId", subscriptionId);
+    }
 }

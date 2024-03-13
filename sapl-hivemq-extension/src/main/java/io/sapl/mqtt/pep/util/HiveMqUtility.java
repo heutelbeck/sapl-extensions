@@ -1,5 +1,7 @@
 /*
- * Copyright © 2019-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.mqtt.pep.util;
 
 import java.util.Set;
@@ -31,20 +32,22 @@ import io.sapl.mqtt.pep.details.MqttSaplId;
 import lombok.experimental.UtilityClass;
 
 /**
- * This utility class provides functions for HiveMq broker specific interactions or objects.
+ * This utility class provides functions for HiveMq broker specific interactions
+ * or objects.
  */
 @UtilityClass
 public class HiveMqUtility {
 
     /**
      * Evaluates whether a mqtt subscription is existing or not.
+     *
      * @param mqttSaplId the id used to check against
      * @return true if an mqtt subscription exists
      */
     public static boolean isMqttSubscriptionExisting(MqttSaplId mqttSaplId) {
-        var isMqttSubscriptionExisting = new AtomicBoolean(false);
-        Set<TopicSubscription> topicSubscriptions =
-                Services.subscriptionStore().getSubscriptions(mqttSaplId.getMqttClientId()).getNow(Set.of());
+        var                    isMqttSubscriptionExisting = new AtomicBoolean(false);
+        Set<TopicSubscription> topicSubscriptions         = Services.subscriptionStore()
+                .getSubscriptions(mqttSaplId.getMqttClientId()).getNow(Set.of());
         topicSubscriptions.forEach(topicSubscription -> {
             if (topicSubscription.getTopicFilter().equals(mqttSaplId.getTopic())) {
                 isMqttSubscriptionExisting.set(true);
@@ -55,28 +58,29 @@ public class HiveMqUtility {
 
     /**
      * Creates a mqtt topic subscription.
+     *
      * @param subscriptionAuthorizerInput contains mqtt subscription data
      * @return the mqtt topic subscription created from the input
      */
     public static TopicSubscription buildTopicSubscription(SubscriptionAuthorizerInput subscriptionAuthorizerInput) {
-        return Builders
-                .topicSubscription()
-                .fromSubscription(subscriptionAuthorizerInput.getSubscription())
-                .build();
+        return Builders.topicSubscription().fromSubscription(subscriptionAuthorizerInput.getSubscription()).build();
     }
 
     /**
      * Extracts the acknowledgement reason code from a mqtt unsubscribe message.
+     *
      * @param unsubscribeAckOutboundInput the input to extract the reason code from
-     * @param index to specify the right reason code
+     * @param index                       to specify the right reason code
      * @return the acknowledgement reason code of a mqtt unsubscribe message
      */
-    public static UnsubackReasonCode getUnsubackReasonCode(UnsubackOutboundInput unsubscribeAckOutboundInput, int index) {
+    public static UnsubackReasonCode getUnsubackReasonCode(UnsubackOutboundInput unsubscribeAckOutboundInput,
+            int index) {
         return unsubscribeAckOutboundInput.getUnsubackPacket().getReasonCodes().get(index);
     }
 
     /**
      * Extracts the username from the input.
+     *
      * @param authnInput the input to extract the username from
      * @return the extracted username
      */

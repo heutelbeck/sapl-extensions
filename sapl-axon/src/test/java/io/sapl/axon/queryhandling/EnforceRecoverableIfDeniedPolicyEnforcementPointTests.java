@@ -685,22 +685,21 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 
     @Test
     void when_pep_multiplePermit_and_multipleUpdate_and_ressource_then_permitThenDropThePermit() {
-        var                                                          resultResponseType  = ResponseTypes
-                .instanceOf(TestInitialResponse.class);
-        var                                                          updateResponseType  = ResponseTypes
-                .instanceOf(TestUpdateResponseType.class);
-        var                                                          query               = new GenericSubscriptionQueryMessage<>(
-                new TestQueryPayload(), resultResponseType, updateResponseType);
-        var                                                          decisions           = Flux.concat(
+        var resultResponseType = ResponseTypes.instanceOf(TestInitialResponse.class);
+        var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
+        var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
+                updateResponseType);
+        var decisions          = Flux.concat(
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(new AuthorizationDecision(Decision.PERMIT)),
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(1))
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(4))
                         .thenReturn(new AuthorizationDecision(Decision.PERMIT, Optional.of(defaultResource),
                                 Optional.empty(), Optional.empty())),
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(new AuthorizationDecision(Decision.PERMIT)));
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(8)).thenReturn(new AuthorizationDecision(Decision.PERMIT)));
+
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux.concat(
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(DEFAULT_UPDATE_MESSAGE),
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE),
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE));
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(8)).thenReturn(DEFAULT_UPDATE_MESSAGE),
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(8)).thenReturn(DEFAULT_UPDATE_MESSAGE));
 
         var enforcedUpdateMessageFlux = of(query, decisions, resourceAccessPoint, constraintHandlerService,
                 resultResponseType, updateResponseType);

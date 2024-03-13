@@ -1,5 +1,7 @@
 /*
- * Copyright © 2019-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.mqtt.pep.config;
 
 import java.io.File;
@@ -37,7 +38,8 @@ public class ConfigurationXmlParser {
     private final JAXBContext jaxb;
 
     /**
-     * Initializes the xml parser for unmarshalling the sapl mqtt extension configuration file.
+     * Initializes the xml parser for unmarshalling the sapl mqtt extension
+     * configuration file.
      */
     ConfigurationXmlParser() {
         try {
@@ -50,8 +52,10 @@ public class ConfigurationXmlParser {
 
     /**
      * Unmarshal the xml sapl mqtt extension configuration file for further usage.
+     *
      * @param file the sapl mqtt extension configuration file
-     * @return a java object representation of the sapl mqtt extension configuration file
+     * @return a java object representation of the sapl mqtt extension configuration
+     *         file
      * @throws IOException is thrown when unmarshalling does fail
      */
     SaplMqttExtensionConfig unmarshalExtensionConfig(File file) throws IOException {

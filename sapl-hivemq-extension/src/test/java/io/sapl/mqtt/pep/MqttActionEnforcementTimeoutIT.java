@@ -1,5 +1,7 @@
 /*
- * Copyright © 2019-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.mqtt.pep;
 
 import static io.sapl.mqtt.pep.MqttTestUtil.*;
@@ -50,107 +51,100 @@ import java.nio.file.Path;
 
 class MqttActionEnforcementTimeoutIT {
 
-	@TempDir
-	Path dataFolder;
-	@TempDir
-	Path configFolder;
-	@TempDir
-	Path extensionFolder;
+    @TempDir
+    Path dataFolder;
+    @TempDir
+    Path configFolder;
+    @TempDir
+    Path extensionFolder;
 
-	@Test
-	void when_timeoutWhileConnecting_then_denyConnection() {
-		// GIVEN
-		Flux<IdentifiableAuthorizationDecision> mqttConnectionDecisionFlux = Flux.never();
+    @Test
+    void when_timeoutWhileConnecting_then_denyConnection() {
+        // GIVEN
+        Flux<IdentifiableAuthorizationDecision> mqttConnectionDecisionFlux = Flux.never();
 
-		PolicyDecisionPoint pdpMock = mock(PolicyDecisionPoint.class);
-		when(pdpMock.decide(any(MultiAuthorizationSubscription.class)))
-				.thenReturn(mqttConnectionDecisionFlux);
+        PolicyDecisionPoint pdpMock = mock(PolicyDecisionPoint.class);
+        when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(mqttConnectionDecisionFlux);
 
-		String              connectClientId    = "connectClient";
-		Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder()
-				.identifier(connectClientId)
-				.serverHost(BROKER_HOST)
-				.serverPort(BROKER_PORT)
-				.buildBlocking();
+        String              connectClientId    = "connectClient";
+        Mqtt5BlockingClient blockingMqttClient = Mqtt5Client.builder().identifier(connectClientId)
+                .serverHost(BROKER_HOST).serverPort(BROKER_PORT).buildBlocking();
 
-		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
-				"src/test/resources/config/timeout/connection");
+        EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
+                "src/test/resources/config/timeout/connection");
 
-		// THEN
-		Mqtt5ConnAckException connAckException = assertThrowsExactly(Mqtt5ConnAckException.class,
-				blockingMqttClient::connect);
-		assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
+        // THEN
+        Mqtt5ConnAckException connAckException = assertThrowsExactly(Mqtt5ConnAckException.class,
+                blockingMqttClient::connect);
+        assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
 
-		// FINALLY
-		stopBroker(mqttBroker);
-	}
+        // FINALLY
+        stopBroker(mqttBroker);
+    }
 
-	@Test
-	void when_timeoutWhileSubscribing_then_denySubscription() throws InitializationException {
-		// GIVEN
-		String subscriptionClientId                               = "MQTT_CLIENT_SUBSCRIBE";
-		String subscriptionClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility
-				.buildSubscriptionId(subscriptionClientId, MqttPep.CONNECT_AUTHZ_ACTION);
+    @Test
+    void when_timeoutWhileSubscribing_then_denySubscription() throws InitializationException {
+        // GIVEN
+        String subscriptionClientId                               = "MQTT_CLIENT_SUBSCRIBE";
+        String subscriptionClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility
+                .buildSubscriptionId(subscriptionClientId, MqttPep.CONNECT_AUTHZ_ACTION);
 
-		Flux<IdentifiableAuthorizationDecision> mqttConnectionDecisionFlux   = Flux
-				.just(new IdentifiableAuthorizationDecision(
-						subscriptionClientMqttConnectionSaplSubscriptionId, AuthorizationDecision.PERMIT));
-		Flux<IdentifiableAuthorizationDecision> mqttSubscriptionDecisionFlux = Flux.never();
+        Flux<IdentifiableAuthorizationDecision> mqttConnectionDecisionFlux   = Flux
+                .just(new IdentifiableAuthorizationDecision(subscriptionClientMqttConnectionSaplSubscriptionId,
+                        AuthorizationDecision.PERMIT));
+        Flux<IdentifiableAuthorizationDecision> mqttSubscriptionDecisionFlux = Flux.never();
 
-		PolicyDecisionPoint pdpMock = mock(PolicyDecisionPoint.class);
-		when(pdpMock.decide(any(MultiAuthorizationSubscription.class)))
-				.thenReturn(mqttConnectionDecisionFlux)
-				.thenReturn(mqttSubscriptionDecisionFlux);
+        PolicyDecisionPoint pdpMock = mock(PolicyDecisionPoint.class);
+        when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(mqttConnectionDecisionFlux)
+                .thenReturn(mqttSubscriptionDecisionFlux);
 
-		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage("topic");
+        Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage("topic");
 
-		// WHEN
-		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
-				"src/test/resources/config/timeout/subscription");
-		Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
+        // WHEN
+        EmbeddedHiveMQ      mqttBroker      = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
+                "src/test/resources/config/timeout/subscription");
+        Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 
-		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> subscribeClient.subscribe(subscribeMessage));
+        Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
+                () -> subscribeClient.subscribe(subscribeMessage));
 
-		// THEN
-		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
+        // THEN
+        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
-		// FINALLY
-		stopBroker(mqttBroker);
-	}
+        // FINALLY
+        stopBroker(mqttBroker);
+    }
 
-	@Test
-	void when_timeoutWhilePublishing_then_denyPublish() throws InitializationException {
-		// GIVEN
-		String publishClientId                               = "MQTT_CLIENT_PUBLISH";
-		String publishClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility
-				.buildSubscriptionId(publishClientId, MqttPep.CONNECT_AUTHZ_ACTION);
+    @Test
+    void when_timeoutWhilePublishing_then_denyPublish() throws InitializationException {
+        // GIVEN
+        String publishClientId                               = "MQTT_CLIENT_PUBLISH";
+        String publishClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility
+                .buildSubscriptionId(publishClientId, MqttPep.CONNECT_AUTHZ_ACTION);
 
-		Flux<IdentifiableAuthorizationDecision> mqttConnectionDecisionFlux = Flux
-				.just(new IdentifiableAuthorizationDecision(
-						publishClientMqttConnectionSaplSubscriptionId, AuthorizationDecision.PERMIT));
-		Flux<IdentifiableAuthorizationDecision> mqttPublishDecisionFlux    = Flux.never();
+        Flux<IdentifiableAuthorizationDecision> mqttConnectionDecisionFlux = Flux
+                .just(new IdentifiableAuthorizationDecision(publishClientMqttConnectionSaplSubscriptionId,
+                        AuthorizationDecision.PERMIT));
+        Flux<IdentifiableAuthorizationDecision> mqttPublishDecisionFlux    = Flux.never();
 
-		PolicyDecisionPoint pdpMock = mock(PolicyDecisionPoint.class);
-		when(pdpMock.decide(any(MultiAuthorizationSubscription.class)))
-				.thenReturn(mqttConnectionDecisionFlux)
-				.thenReturn(mqttPublishDecisionFlux);
+        PolicyDecisionPoint pdpMock = mock(PolicyDecisionPoint.class);
+        when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(mqttConnectionDecisionFlux)
+                .thenReturn(mqttPublishDecisionFlux);
 
-		Mqtt5Publish publishMessage = buildMqttPublishMessage("denied_publish",
-				1, false);
+        Mqtt5Publish publishMessage = buildMqttPublishMessage("denied_publish", 1, false);
 
-		// WHEN
-		EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
-				"src/test/resources/config/timeout/publish");
-		Mqtt5BlockingClient publishClient = buildAndStartMqttClient(publishClientId);
+        // WHEN
+        EmbeddedHiveMQ      mqttBroker    = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
+                "src/test/resources/config/timeout/publish");
+        Mqtt5BlockingClient publishClient = buildAndStartMqttClient(publishClientId);
 
-		Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-				() -> publishClient.publish(publishMessage));
+        Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
+                () -> publishClient.publish(publishMessage));
 
-		// THEN
-		assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
+        // THEN
+        assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
 
-		// FINALLY
-		stopBroker(mqttBroker);
-	}
+        // FINALLY
+        stopBroker(mqttBroker);
+    }
 }

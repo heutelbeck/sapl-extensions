@@ -34,17 +34,17 @@
 
 	<name>SAPL Extensions</name>
 
-	<description>Extension libraries for the Streaming Attribute Authorization
-		Engine</description>
+	<description>Preview extension libraries for the SAPL</description>
 
 	<properties>
 		<maven.deploy.skip>true</maven.deploy.skip>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<spotbugs.version>4.7.3.6</spotbugs.version>
+		<sbcontrib.version>7.6.0</sbcontrib.version>
 	</properties>
 
 	<modules>
-		<module>sapl-geo</module>
 		<module>sapl-ethereum</module>
 		<module>sapl-demo-ethereum</module>
 		<module>sapl-axon</module>
@@ -54,5 +54,32 @@
 		<module>sapl-hivemq-extension</module>
 		<module>sapl-demo-mqtt-pep</module>
 	</modules>
+
+	<profiles>
+		<profile>
+			<id>spotbugs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs-maven-plugin</artifactId>
+						<version>${spotbugs.version}</version>
+						<configuration>
+							<excludeFilterFile>spotbugsExcludeFilter.xml</excludeFilterFile>
+							<includeTests>true</includeTests>
+							<addSourceDirs>true</addSourceDirs>
+							<plugins>
+								<plugin>
+									<groupId>com.mebigfatguy.sb-contrib</groupId>
+									<artifactId>sb-contrib</artifactId>
+									<version>${sbcontrib.version}</version>
+								</plugin>
+							</plugins>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>

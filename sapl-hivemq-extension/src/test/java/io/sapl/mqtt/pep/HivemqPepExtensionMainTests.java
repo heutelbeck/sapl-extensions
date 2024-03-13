@@ -1,5 +1,7 @@
 /*
- * Copyright © 2019-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.mqtt.pep;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -34,29 +35,28 @@ import io.sapl.mqtt.pep.extension.PdpInitUtility;
 
 class HivemqPepExtensionMainTests {
 
-	@Test
-	void when_noPepIsBuild_then_preventExtensionStartup() {
-		// GIVEN
-		var extensionStartInput      = mock(ExtensionStartInput.class);
-		var extensionStartOutput     = mock(ExtensionStartOutput.class);
-		var extensionInformationMock = mock(ExtensionInformation.class);
-		when(extensionStartInput.getExtensionInformation()).thenReturn(extensionInformationMock);
-		when(extensionInformationMock.getName()).thenReturn("test-extension");
+    @Test
+    void when_noPepIsBuild_then_preventExtensionStartup() {
+        // GIVEN
+        var extensionStartInput      = mock(ExtensionStartInput.class);
+        var extensionStartOutput     = mock(ExtensionStartOutput.class);
+        var extensionInformationMock = mock(ExtensionInformation.class);
+        when(extensionStartInput.getExtensionInformation()).thenReturn(extensionInformationMock);
+        when(extensionInformationMock.getName()).thenReturn("test-extension");
 
-		var hivemqPepExtensionMain = new HivemqPepExtensionMain();
+        var hivemqPepExtensionMain = new HivemqPepExtensionMain();
 
-		try (var configInitHelperMock = Mockito.mockStatic(ConfigInitUtility.class);
-				var pdpInitHelperMock = Mockito.mockStatic(PdpInitUtility.class)) {
-			configInitHelperMock.when(() -> ConfigInitUtility.getSaplMqttExtensionConfig(any(), any()))
-					.thenReturn(null);
-			pdpInitHelperMock.when(() -> PdpInitUtility.buildPdp(any(), any(), any()))
-					.thenReturn(null);
+        try (var configInitHelperMock = Mockito.mockStatic(ConfigInitUtility.class);
+                var pdpInitHelperMock = Mockito.mockStatic(PdpInitUtility.class)) {
+            configInitHelperMock.when(() -> ConfigInitUtility.getSaplMqttExtensionConfig(any(), any()))
+                    .thenReturn(null);
+            pdpInitHelperMock.when(() -> PdpInitUtility.buildPdp(any(), any(), any())).thenReturn(null);
 
-			// WHEN
-			hivemqPepExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
+            // WHEN
+            hivemqPepExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
 
-		}
-		// THEN
-		verify(extensionStartOutput, times(1)).preventExtensionStartup(any());
-	}
+        }
+        // THEN
+        verify(extensionStartOutput, times(1)).preventExtensionStartup(any());
+    }
 }

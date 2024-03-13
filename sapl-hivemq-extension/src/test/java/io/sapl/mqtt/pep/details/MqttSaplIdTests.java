@@ -1,5 +1,7 @@
 /*
- * Copyright © 2019-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.mqtt.pep.details;
 
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
@@ -22,21 +23,18 @@ import org.junit.jupiter.api.Test;
 
 class MqttSaplIdTests {
 
-	@Test
-	void when_mqttSaplIdConstructorIsCalledWithMqttClientIdEqualsNull_then_throwNullPointerException() {
-		assertThrowsExactly(NullPointerException.class,
-				() -> new MqttSaplId(null, "subscriptionId"));
-	}
+    @Test
+    void when_mqttSaplIdConstructorIsCalledWithMqttClientIdEqualsNull_then_throwNullPointerException() {
+        assertThrowsExactly(NullPointerException.class, () -> new MqttSaplId(null, "subscriptionId"));
+    }
 
-	@Test
-	void when_mqttSaplIdConstructorIsCalledWithSubscriptionIdEqualsNull_then_throwNullPointerException() {
-		assertThrowsExactly(NullPointerException.class,
-				() -> new MqttSaplId("clientId", null));
-	}
+    @Test
+    void when_mqttSaplIdConstructorIsCalledWithSubscriptionIdEqualsNull_then_throwNullPointerException() {
+        assertThrowsExactly(NullPointerException.class, () -> new MqttSaplId("clientId", null));
+    }
 
-	@Test
-	void when_mqttSaplIdConstructorIsCalledWithSubscriptionIdAndClientIdEqualsNull_then_throwNullPointerException() {
-		assertThrowsExactly(NullPointerException.class,
-				() -> new MqttSaplId(null, null));
-	}
+    @Test
+    void when_mqttSaplIdConstructorIsCalledWithSubscriptionIdAndClientIdEqualsNull_then_throwNullPointerException() {
+        assertThrowsExactly(NullPointerException.class, () -> new MqttSaplId(null, null));
+    }
 }

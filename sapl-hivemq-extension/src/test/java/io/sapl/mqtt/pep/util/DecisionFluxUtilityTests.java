@@ -1,5 +1,7 @@
 /*
- * Copyright © 2019-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.mqtt.pep.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,117 +45,117 @@ import reactor.core.scheduler.Schedulers;
 
 class DecisionFluxUtilityTests {
 
-	@Test
-	void when_identAuthzDecisionMapContainsIndeterminateDecision_then_getIndeterminateDecision() {
-		// GIVEN
-		var subscriptionId        = "testSubscription";
-		var identAuthzDecisionMap = new HashMap<String, IdentifiableAuthorizationDecision>();
-		identAuthzDecisionMap.put(null,
-				new IdentifiableAuthorizationDecision(null, AuthorizationDecision.INDETERMINATE));
-		identAuthzDecisionMap.put(subscriptionId,
-				new IdentifiableAuthorizationDecision(subscriptionId, AuthorizationDecision.PERMIT));
+    @Test
+    void when_identAuthzDecisionMapContainsIndeterminateDecision_then_getIndeterminateDecision() {
+        // GIVEN
+        var subscriptionId        = "testSubscription";
+        var identAuthzDecisionMap = new HashMap<String, IdentifiableAuthorizationDecision>();
+        identAuthzDecisionMap.put(null,
+                new IdentifiableAuthorizationDecision(null, AuthorizationDecision.INDETERMINATE));
+        identAuthzDecisionMap.put(subscriptionId,
+                new IdentifiableAuthorizationDecision(subscriptionId, AuthorizationDecision.PERMIT));
 
-		// WHEN
-		var identAuthzDecision = DecisionFluxUtility.getIdentAuthzDecision(subscriptionId, identAuthzDecisionMap);
+        // WHEN
+        var identAuthzDecision = DecisionFluxUtility.getIdentAuthzDecision(subscriptionId, identAuthzDecisionMap);
 
-		// THEN
-		assertEquals(Decision.INDETERMINATE, identAuthzDecision.getAuthorizationDecision().getDecision());
-	}
+        // THEN
+        assertEquals(Decision.INDETERMINATE, identAuthzDecision.getAuthorizationDecision().getDecision());
+    }
 
-	@Test
-	void when_mqttActionDecisionFluxesAlreadyDisposed_then_doNotCreateNewDisposable() {
-		// GIVEN
-		var disposablesComposite = Disposables.composite();
-		var disposableMock       = mock(Disposable.class);
-		disposablesComposite.add(disposableMock);
-		disposablesComposite.dispose();
+    @Test
+    void when_mqttActionDecisionFluxesAlreadyDisposed_then_doNotCreateNewDisposable() {
+        // GIVEN
+        var disposablesComposite = Disposables.composite();
+        var disposableMock       = mock(Disposable.class);
+        disposablesComposite.add(disposableMock);
+        disposablesComposite.dispose();
 
-		var mqttClientState = new MqttClientState("testClient");
-		mqttClientState.addMqttActionDecisionFluxDisposableToComposite(disposableMock);
-		mqttClientState.disposeMqttActionDecisionFluxes();
+        var mqttClientState = new MqttClientState("testClient");
+        mqttClientState.addMqttActionDecisionFluxDisposableToComposite(disposableMock);
+        mqttClientState.disposeMqttActionDecisionFluxes();
 
-		// WHEN
-		DecisionFluxUtility.disposeMqttActionDecisionFluxes(mqttClientState);
+        // WHEN
+        DecisionFluxUtility.disposeMqttActionDecisionFluxes(mqttClientState);
 
-		// THEN
-		assertTrue(mqttClientState.areMqttActionDecisionFluxesDisposed());
-	}
+        // THEN
+        assertTrue(mqttClientState.areMqttActionDecisionFluxesDisposed());
+    }
 
-	@Test
-	void when_sharedClientDecisionFluxAlreadyDisposed_then_doNotCreateNewDisposable() {
-		// GIVEN
-		var disposableMock  = mock(Disposable.class);
-		var mqttClientState = new MqttClientState("testClient");
-		mqttClientState.addSharedClientDecisionFluxDisposableToComposite(disposableMock);
-		mqttClientState.disposeSharedClientDecisionFlux();
+    @Test
+    void when_sharedClientDecisionFluxAlreadyDisposed_then_doNotCreateNewDisposable() {
+        // GIVEN
+        var disposableMock  = mock(Disposable.class);
+        var mqttClientState = new MqttClientState("testClient");
+        mqttClientState.addSharedClientDecisionFluxDisposableToComposite(disposableMock);
+        mqttClientState.disposeSharedClientDecisionFlux();
 
-		// WHEN
-		DecisionFluxUtility.disposeSharedClientDecisionFlux(mqttClientState);
+        // WHEN
+        DecisionFluxUtility.disposeSharedClientDecisionFlux(mqttClientState);
 
-		// THEN
-		assertTrue(mqttClientState.isSharedClientDecisionFluxDisposed());
-	}
+        // THEN
+        assertTrue(mqttClientState.isSharedClientDecisionFluxDisposed());
+    }
 
-	@Test
-	void when_remainingTimeLimitIsBelowZero_then_returnZeroAsRemainingTime() {
-		// GIVEN
-		var currentTime = Schedulers.parallel().now(TimeUnit.MILLISECONDS);
-		var startTime   = currentTime - 10000;
-		var timeLimit   = 1;
+    @Test
+    void when_remainingTimeLimitIsBelowZero_then_returnZeroAsRemainingTime() {
+        // GIVEN
+        var currentTime = Schedulers.parallel().now(TimeUnit.MILLISECONDS);
+        var startTime   = currentTime - 10000;
+        var timeLimit   = 1;
 
-		// WHEN
-		var remainingTimeLimit = DecisionFluxUtility.getRemainingTimeLimitMillis(timeLimit, startTime);
+        // WHEN
+        var remainingTimeLimit = DecisionFluxUtility.getRemainingTimeLimitMillis(timeLimit, startTime);
 
-		// THEN
-		assertEquals(0, remainingTimeLimit);
-	}
+        // THEN
+        assertEquals(0, remainingTimeLimit);
+    }
 
-	@Test
-	void when_calculatingRemainingTimeLimitAndStartTimeIsZero_then_returnTimeLimit() {
-		// GIVEN
-		var timeLimit = 50;
-		var startTime = 0L;
+    @Test
+    void when_calculatingRemainingTimeLimitAndStartTimeIsZero_then_returnTimeLimit() {
+        // GIVEN
+        var timeLimit = 50L;
+        var startTime = 0L;
 
-		// WHEN
-		var remainingTimeLimit = DecisionFluxUtility.getRemainingTimeLimitMillis(timeLimit, startTime);
+        // WHEN
+        var remainingTimeLimit = DecisionFluxUtility.getRemainingTimeLimitMillis(timeLimit, startTime);
 
-		// THEN
-		assertEquals(timeLimit * 1_000, remainingTimeLimit);
-	}
+        // THEN
+        assertEquals(timeLimit * 1_000L, remainingTimeLimit);
+    }
 
-	@Test
-	void when_calculatingTimeoutDurationAndLastSignalIsOlderThanTimeoutInterval_then_returnZeroAsTimeoutDuration() {
-		// GIVEN
-		var subscriptionId  = "subscriptionId";
-		var currentTime     = Schedulers.parallel().now(TimeUnit.MILLISECONDS);
-		var lastSignalTime  = currentTime - 100;
-		var mqttClientState = new MqttClientState("clientId");
-		mqttClientState.addLastSignalTimeToMap(subscriptionId, lastSignalTime);
+    @Test
+    void when_calculatingTimeoutDurationAndLastSignalIsOlderThanTimeoutInterval_then_returnZeroAsTimeoutDuration() {
+        // GIVEN
+        var subscriptionId  = "subscriptionId";
+        var currentTime     = Schedulers.parallel().now(TimeUnit.MILLISECONDS);
+        var lastSignalTime  = currentTime - 100;
+        var mqttClientState = new MqttClientState("clientId");
+        mqttClientState.addLastSignalTimeToMap(subscriptionId, lastSignalTime);
 
-		var saplMqttExtensionConfigMock = mock(SaplMqttExtensionConfig.class);
-		when(saplMqttExtensionConfigMock.getAuthzSubscriptionTimeoutMillis()).thenReturn(50);
+        var saplMqttExtensionConfigMock = mock(SaplMqttExtensionConfig.class);
+        when(saplMqttExtensionConfigMock.getAuthzSubscriptionTimeoutMillis()).thenReturn(50);
 
-		// WHEN
-		var timeoutDuration = DecisionFluxUtility.getAuthzSubscriptionTimeoutDuration(saplMqttExtensionConfigMock,
-				mqttClientState, subscriptionId);
+        // WHEN
+        var timeoutDuration = DecisionFluxUtility.getAuthzSubscriptionTimeoutDuration(saplMqttExtensionConfigMock,
+                mqttClientState, subscriptionId);
 
-		// THEN
-		assertEquals(0, timeoutDuration.getNano());
-	}
+        // THEN
+        assertEquals(0, timeoutDuration.getNano());
+    }
 
-	@Test
-	void when_subscribingToMqttActionDecisionFluxesAndDisposableCouldNotBeAddedToCache_then_doNotAddDisposableToMap() {
-		// GIVEN
-		var identAuthzDecisionFlux = Flux.just(IdentifiableAuthorizationDecision.INDETERMINATE);
-		var mqttClientState        = spy(new MqttClientState("clientId"));
-		doReturn(false).when(mqttClientState)
-				.addMqttActionDecisionFluxDisposableToComposite(any(Disposable.class));
-		mqttClientState.addMqttActionDecisionFluxToMap("id", identAuthzDecisionFlux);
+    @Test
+    void when_subscribingToMqttActionDecisionFluxesAndDisposableCouldNotBeAddedToCache_then_doNotAddDisposableToMap() {
+        // GIVEN
+        var identAuthzDecisionFlux = Flux.just(IdentifiableAuthorizationDecision.INDETERMINATE);
+        var mqttClientState        = spy(new MqttClientState("clientId"));
+        doReturn(Boolean.FALSE).when(mqttClientState)
+                .addMqttActionDecisionFluxDisposableToComposite(any(Disposable.class));
+        mqttClientState.addMqttActionDecisionFluxToMap("id", identAuthzDecisionFlux);
 
-		// WHEN
-		DecisionFluxUtility.subscribeToMqttActionDecisionFluxes(mqttClientState);
+        // WHEN
+        DecisionFluxUtility.subscribeToMqttActionDecisionFluxes(mqttClientState);
 
-		// THEN
-		verify(mqttClientState, never()).addMqttActionDecisionFluxDisposableToMap(anyString(), any(Disposable.class));
-	}
+        // THEN
+        verify(mqttClientState, never()).addMqttActionDecisionFluxDisposableToMap(anyString(), any(Disposable.class));
+    }
 }

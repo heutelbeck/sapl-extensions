@@ -1,5 +1,7 @@
 /*
- * Copyright © 2019-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.mqtt.pep.constraint;
 
 /**
- * This class provides common variables used to handle constraints of mqtt action enforcements.
+ * This class provides common variables used to handle constraints of mqtt
+ * action enforcements.
  */
 class Constraints {
-    static final String ENVIRONMENT_STATUS = "status";
-    static final String ENVIRONMENT_ENABLED = "enabled";
-    static final String ENVIRONMENT_DISABLED = "disabled";
-    static final String ENVIRONMENT_CONSTRAINT_TYPE = "type";
+    static final String ENVIRONMENT_STATUS                     = "status";
+    static final String ENVIRONMENT_ENABLED                    = "enabled";
+    static final String ENVIRONMENT_DISABLED                   = "disabled";
+    static final String ENVIRONMENT_CONSTRAINT_TYPE            = "type";
     static final String ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION = "limitMqttActionDuration";
-    static final String ENVIRONMENT_TIME_LIMIT = "timeLimit";
+    static final String ENVIRONMENT_TIME_LIMIT                 = "timeLimit";
 
     /**
-     * This class is not allowed to initialize. In case this method is called a {@link UnsupportedOperationException}
-     * will be thrown.
+     * This class is not allowed to initialize. In case this method is called a
+     * {@link UnsupportedOperationException} will be thrown.
      */
     Constraints() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");

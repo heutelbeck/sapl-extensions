@@ -1,5 +1,7 @@
 /*
- * Copyright © 2019-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.mqtt.pep.mqtt_action;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -33,22 +34,21 @@ import io.sapl.mqtt.pep.details.MqttSaplId;
 
 class HiveMqEnforcementTests {
 
-	@Test
-	void when_enforcingMqttPublishAfterAsyncProcessingTimeout_then_catchException() {
-		// GIVEN
-		var publishInboundOutputMock = mock(PublishInboundOutput.class);
-		doThrow(UnsupportedOperationException.class).when(publishInboundOutputMock)
-				.preventPublishDelivery(any(AckReasonCode.class), anyString());
+    @Test
+    void when_enforcingMqttPublishAfterAsyncProcessingTimeout_then_catchException() {
+        // GIVEN
+        var publishInboundOutputMock = mock(PublishInboundOutput.class);
+        doThrow(UnsupportedOperationException.class).when(publishInboundOutputMock)
+                .preventPublishDelivery(any(AckReasonCode.class), anyString());
 
-		var mqttSaplId = new MqttSaplId("clientId", "subscriptionId");
+        var mqttSaplId = new MqttSaplId("clientId", "subscriptionId");
 
-		// WHEN
-		HiveMqEnforcement.enforceMqttPublishByHiveMqBroker(publishInboundOutputMock, AuthorizationDecision.DENY,
-				false, mqttSaplId);
+        // WHEN
+        HiveMqEnforcement.enforceMqttPublishByHiveMqBroker(publishInboundOutputMock, AuthorizationDecision.DENY, false,
+                mqttSaplId);
 
-		// THEN
-		verify(publishInboundOutputMock, times(1))
-				.preventPublishDelivery(any(AckReasonCode.class), anyString());
+        // THEN
+        verify(publishInboundOutputMock, times(1)).preventPublishDelivery(any(AckReasonCode.class), anyString());
 
-	}
+    }
 }

@@ -1,5 +1,7 @@
 /*
- * Copyright © 2019-2022 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.sapl.mqtt.pep;
 
 import static com.hivemq.extension.sdk.api.async.Async.Status.RUNNING;
@@ -123,31 +124,34 @@ import reactor.core.publisher.Mono;
 public class MqttPep {
 
     /**
-     * References the mqtt activity of establishing a connection between a client and a broker.
+     * References the mqtt activity of establishing a connection between a client
+     * and a broker.
      */
-    public static final String CONNECT_AUTHZ_ACTION = "mqtt.connect";
+    public static final String   CONNECT_AUTHZ_ACTION                             = "mqtt.connect";
     /**
      * References the mqtt activity of establishing a mqtt subscription.
      */
-    public static final String SUBSCRIBE_AUTHZ_ACTION = "mqtt.subscribe";
+    public static final String   SUBSCRIBE_AUTHZ_ACTION                           = "mqtt.subscribe";
     /**
      * References the mqtt activity of publishing a mqtt message.
      */
-    public static final String PUBLISH_AUTHZ_ACTION = "mqtt.publish";
+    public static final String   PUBLISH_AUTHZ_ACTION                             = "mqtt.publish";
     /**
      * This message is used to describe a denial further.
      */
-    public static final String NOT_AUTHORIZED_NOTICE = "Not authorized by SAPL-MQTT-PEP";
-    private static final String TIMEOUT_NOTICE = "Authorization via SAPL-MQTT-PEP timed out";
+    public static final String   NOT_AUTHORIZED_NOTICE                            = "Not authorized by SAPL-MQTT-PEP";
+    private static final String  TIMEOUT_NOTICE                                   = "Authorization via SAPL-MQTT-PEP timed out";
     private static final boolean DEFAULT_IS_RESUBSCRIBE_MQTT_SUBSCRIPTION_ENABLED = false;
 
-    private final PolicyDecisionPoint pdp;
-    private final SaplMqttExtensionConfig saplMqttExtensionConfig;
+    private final PolicyDecisionPoint                    pdp;
+    private final SaplMqttExtensionConfig                saplMqttExtensionConfig;
     private final ConcurrentMap<String, MqttClientState> mqttClientCache;
 
     /**
      * Enforces mqtt specific actions.
-     * @param pdp used by the pep to request authorization decisions
+     *
+     * @param pdp                     used by the pep to request authorization
+     *                                decisions
      * @param saplMqttExtensionConfig contains the configuration params for the pep
      */
     public MqttPep(PolicyDecisionPoint pdp, SaplMqttExtensionConfig saplMqttExtensionConfig) {
@@ -156,19 +160,23 @@ public class MqttPep {
 
     /**
      * Enforces mqtt specific actions.
-     * @param pdp used by the pep to request authorization decisions
+     *
+     * @param pdp                     used by the pep to request authorization
+     *                                decisions
      * @param saplMqttExtensionConfig contains the configuration params for the pep
-     * @param mqttClientCache used to cache the state of different enforcements
+     * @param mqttClientCache         used to cache the state of different
+     *                                enforcements
      */
     public MqttPep(PolicyDecisionPoint pdp, SaplMqttExtensionConfig saplMqttExtensionConfig,
-                   ConcurrentMap<String, MqttClientState> mqttClientCache) {
-        this.pdp = pdp;
+            ConcurrentMap<String, MqttClientState> mqttClientCache) {
+        this.pdp                     = pdp;
         this.saplMqttExtensionConfig = new SaplMqttExtensionConfig(saplMqttExtensionConfig);
-        this.mqttClientCache = Objects.requireNonNullElseGet(mqttClientCache, ConcurrentHashMap::new);
+        this.mqttClientCache         = Objects.requireNonNullElseGet(mqttClientCache, ConcurrentHashMap::new);
     }
 
     /**
-     * Enforces existing MQTT actions and registers interceptors for future MQTT action enforcements.
+     * Enforces existing MQTT actions and registers interceptors for future MQTT
+     * action enforcements.
      */
     public void startEnforcement() {
         initializationAndCleanUpOfSaplMqttEnforcement();
@@ -179,17 +187,17 @@ public class MqttPep {
     }
 
     /**
-     * This method sets a lifecycle listener to initialize and clean up the sapl mqtt enforcement.
+     * This method sets a lifecycle listener to initialize and clean up the sapl
+     * mqtt enforcement.
      */
     private void initializationAndCleanUpOfSaplMqttEnforcement() {
-        Services.eventRegistry()
-                .setClientLifecycleEventListener(clientLifecycleEventListenerProviderInput ->
-                        new SaplMqttClientLifecycleEventListener());
+        Services.eventRegistry().setClientLifecycleEventListener(
+                clientLifecycleEventListenerProviderInput -> new SaplMqttClientLifecycleEventListener());
     }
 
     /**
-     * This method enforces all existing mqtt connections.
-     * Denied mqtt connections will be disconnected.
+     * This method enforces all existing mqtt connections. Denied mqtt connections
+     * will be disconnected.
      */
     private void configureEnforcementForExistingConnections() {
         log.info("Enforcing the authorization of all existing mqtt connections on extension start.");
@@ -201,47 +209,44 @@ public class MqttPep {
     }
 
     /**
-     * This method enforces each mqtt connection to the broker.
-     * Denied clients will be disconnected.
+     * This method enforces each mqtt connection to the broker. Denied clients will
+     * be disconnected.
      */
     private void configureConnectionEnforcement() {
         Services.securityRegistry()
-                .setAuthenticatorProvider(authnProviderInput ->
-                        new SaplMqttClientConnectionHandler());
+                .setAuthenticatorProvider(authnProviderInput -> new SaplMqttClientConnectionHandler());
     }
 
     /**
-     * This method enforces all existing mqtt subscriptions directly.
-     * Please notice that HiveMq broker doesn't support notification of a client when unsubscribing.
+     * This method enforces all existing mqtt subscriptions directly. Please notice
+     * that HiveMq broker doesn't support notification of a client when
+     * unsubscribing.
      */
     private void configureEnforcementForExistingSubscriptions() {
         log.info("Enforcing the authorization of all existing mqtt subscriptions on extension start.");
         // iterate over all mqtt subscriptions
-        Services.subscriptionStore().iterateAllSubscriptions((context, subscriptionsOfClient) ->
-                enforceAllMqttSubscriptionsOfClient(subscriptionsOfClient));
+        Services.subscriptionStore().iterateAllSubscriptions(
+                (context, subscriptionsOfClient) -> enforceAllMqttSubscriptionsOfClient(subscriptionsOfClient));
     }
 
     /**
-     * The method adds an authorizer for mqtt subscription and mqtt publish requests.
-     * The authorizer enforces decisions of whether the mqtt subscription respectively the mqtt publishing
-     * is allowed or not.
-     * Furthermore, unsubscribe requests are intercepted to handle cancellation of subscriptions.
+     * The method adds an authorizer for mqtt subscription and mqtt publish
+     * requests. The authorizer enforces decisions of whether the mqtt subscription
+     * respectively the mqtt publishing is allowed or not. Furthermore, unsubscribe
+     * requests are intercepted to handle cancellation of subscriptions.
      */
     private void configureSubscribeAndPublishEnforcement() {
-        Services.securityRegistry()
-                .setAuthorizerProvider(authorizerProviderInput ->
-                        (SubscriptionAuthorizer) this::buildSubscriptionEnforcementAuthorizer);
-        Services.initializerRegistry()
-                .setClientInitializer((initializerInput, clientContext) -> {
-                    clientContext.addPublishInboundInterceptor(
-                            this::buildPublishEnforcementInterceptor);
-                    clientContext.addUnsubscribeInboundInterceptor(
-                            (unsubscribeInboundInput, unsubscribeInboundOutput) ->
-                                    buildUnsubscribeInterceptorForSaplSubscriptionTimeout(unsubscribeInboundInput));
-                    clientContext.addUnsubackOutboundInterceptor(
-                            (unSubAckOutboundInput, unSubAckOutboundOutput) ->
-                                    buildUnsubscribeAckInterceptorForSaplSubscriptionTimeout(unSubAckOutboundInput));
-                });
+        Services.securityRegistry().setAuthorizerProvider(
+                authorizerProviderInput -> (SubscriptionAuthorizer) this::buildSubscriptionEnforcementAuthorizer);
+        Services.initializerRegistry().setClientInitializer((initializerInput, clientContext) -> {
+            clientContext.addPublishInboundInterceptor(this::buildPublishEnforcementInterceptor);
+            clientContext.addUnsubscribeInboundInterceptor((unsubscribeInboundInput,
+                    unsubscribeInboundOutput) -> buildUnsubscribeInterceptorForSaplSubscriptionTimeout(
+                            unsubscribeInboundInput));
+            clientContext.addUnsubackOutboundInterceptor((unSubAckOutboundInput,
+                    unSubAckOutboundOutput) -> buildUnsubscribeAckInterceptorForSaplSubscriptionTimeout(
+                            unSubAckOutboundInput));
+        });
     }
 
     private void enforceMqttConnection(SessionInformation sessionInformation) {
@@ -251,29 +256,31 @@ public class MqttPep {
     }
 
     private void enforceAllMqttSubscriptionsOfClient(SubscriptionsForClientResult subscriptionsOfClient) {
-        String clientId = subscriptionsOfClient.getClientId();
-        var mqttClientState = mqttClientCache.get(clientId);
+        String clientId        = subscriptionsOfClient.getClientId();
+        var    mqttClientState = mqttClientCache.get(clientId);
 
         Set<TopicSubscription> topicSubscriptions = subscriptionsOfClient.getSubscriptions();
         // build multiSubscription
         topicSubscriptions.iterator().forEachRemaining(topicSubscription -> {
-            String subscriptionId =
-                    buildSubscriptionId(clientId, SUBSCRIBE_AUTHZ_ACTION, topicSubscription.getTopicFilter());
-            AuthorizationSubscription authzSubscription =
-                    buildSaplAuthzSubscriptionForMqttSubscription(mqttClientState, topicSubscription);
+            String                    subscriptionId    = buildSubscriptionId(clientId, SUBSCRIBE_AUTHZ_ACTION,
+                    topicSubscription.getTopicFilter());
+            AuthorizationSubscription authzSubscription = buildSaplAuthzSubscriptionForMqttSubscription(mqttClientState,
+                    topicSubscription);
             addSaplAuthzSubscriptionToMultiSubscription(subscriptionId, mqttClientState, authzSubscription);
             cacheCurrentTimeAsStartTimeOfMqttAction(mqttClientState, subscriptionId);
-            cacheMqttTopicSubscription(mqttClientState, subscriptionId, topicSubscription); // necessary for resubscribe constraint
+            cacheMqttTopicSubscription(mqttClientState, subscriptionId, topicSubscription); // necessary for resubscribe
+                                                                                            // constraint
         });
 
         disposeAllDecisionFluxesOfClientAndSubscribeNewSharedClientDecisionFlux(mqttClientState);
 
         // build mqtt subscription decision fluxes
         topicSubscriptions.iterator().forEachRemaining(topicSubscription -> {
-            String topic = topicSubscription.getTopicFilter();
-            String subscriptionId = buildSubscriptionId(clientId, SUBSCRIBE_AUTHZ_ACTION, topic);
-            Flux<IdentifiableAuthorizationDecision> mqttSubscriptionAuthzFlux  =
-                    buildMqttSubscriptionAuthzFlux(new MqttSaplId(clientId, subscriptionId, topic));
+            String                                  topic                     = topicSubscription.getTopicFilter();
+            String                                  subscriptionId            = buildSubscriptionId(clientId,
+                    SUBSCRIBE_AUTHZ_ACTION, topic);
+            Flux<IdentifiableAuthorizationDecision> mqttSubscriptionAuthzFlux = buildMqttSubscriptionAuthzFlux(
+                    new MqttSaplId(clientId, subscriptionId, topic));
             cacheMqttActionDecisionFlux(mqttClientState, subscriptionId, mqttSubscriptionAuthzFlux);
         });
 
@@ -286,54 +293,54 @@ public class MqttPep {
             String clientId = authnInput.getClientInformation().getClientId();
 
             // Makes the output object async
-            Async<SimpleAuthOutput> asyncOutput = authnOutput
-                    .async(Duration.ofMillis(saplMqttExtensionConfig.getConnectionEnforcementTimeoutMillis()),
-                            TimeoutFallback.FAILURE, ConnackReasonCode.NOT_AUTHORIZED, TIMEOUT_NOTICE);
+            Async<SimpleAuthOutput> asyncOutput = authnOutput.async(
+                    Duration.ofMillis(saplMqttExtensionConfig.getConnectionEnforcementTimeoutMillis()),
+                    TimeoutFallback.FAILURE, ConnackReasonCode.NOT_AUTHORIZED, TIMEOUT_NOTICE);
 
             // Submit task to extension executor service
-            Services.extensionExecutorService().submit(() ->
-                    enforceMqttConnection(clientId, asyncOutput, authnInput));
+            Services.extensionExecutorService().submit(() -> enforceMqttConnection(clientId, asyncOutput, authnInput));
         }
     }
 
     private void buildSubscriptionEnforcementAuthorizer(SubscriptionAuthorizerInput subscriptionAuthorizerInput,
-                                                        SubscriptionAuthorizerOutput subscriptionAuthorizerOutput) {
+            SubscriptionAuthorizerOutput subscriptionAuthorizerOutput) {
         // Makes the output object async
-        Async<SubscriptionAuthorizerOutput> asyncOutput = subscriptionAuthorizerOutput
-                .async(Duration.ofMillis(saplMqttExtensionConfig.getSubscriptionEnforcementTimeoutMillis()),
-                        TimeoutFallback.FAILURE);
+        Async<SubscriptionAuthorizerOutput> asyncOutput = subscriptionAuthorizerOutput.async(
+                Duration.ofMillis(saplMqttExtensionConfig.getSubscriptionEnforcementTimeoutMillis()),
+                TimeoutFallback.FAILURE);
 
         // Submit task to extension executor service
-        Services.extensionExecutorService().submit(() ->
-                enforceMqttSubscription(asyncOutput, subscriptionAuthorizerInput));
+        Services.extensionExecutorService()
+                .submit(() -> enforceMqttSubscription(asyncOutput, subscriptionAuthorizerInput));
     }
 
     private void buildPublishEnforcementInterceptor(PublishInboundInput publishInboundInput,
-                                                    PublishInboundOutput publishInboundOutput) {
+            PublishInboundOutput publishInboundOutput) {
         // Makes the output object async
-        Async<PublishInboundOutput> asyncOutput = publishInboundOutput
-                .async(Duration.ofMillis(saplMqttExtensionConfig.getPublishEnforcementTimeoutMillis()),
-                        TimeoutFallback.FAILURE, AckReasonCode.NOT_AUTHORIZED, TIMEOUT_NOTICE);
+        Async<PublishInboundOutput> asyncOutput = publishInboundOutput.async(
+                Duration.ofMillis(saplMqttExtensionConfig.getPublishEnforcementTimeoutMillis()),
+                TimeoutFallback.FAILURE, AckReasonCode.NOT_AUTHORIZED, TIMEOUT_NOTICE);
 
         // Submit task to extension executor service
-        Services.extensionExecutorService().submit(() ->
-                enforceMqttPublish(asyncOutput, publishInboundInput));
+        Services.extensionExecutorService().submit(() -> enforceMqttPublish(asyncOutput, publishInboundInput));
     }
 
-    private void buildUnsubscribeInterceptorForSaplSubscriptionTimeout(UnsubscribeInboundInput unsubscribeInboundInput) {
-        String clientId = unsubscribeInboundInput.getClientInformation().getClientId();
-        int packetId = unsubscribeInboundInput.getUnsubscribePacket().getPacketIdentifier();
+    private void buildUnsubscribeInterceptorForSaplSubscriptionTimeout(
+            UnsubscribeInboundInput unsubscribeInboundInput) {
+        String       clientId          = unsubscribeInboundInput.getClientInformation().getClientId();
+        int          packetId          = unsubscribeInboundInput.getUnsubscribePacket().getPacketIdentifier();
         List<String> unsubscribeTopics = unsubscribeInboundInput.getUnsubscribePacket().getTopicFilters();
 
-        // cache for usage in unsubscribe ack interceptor method for sapl subscription timeout purposes
+        // cache for usage in unsubscribe ack interceptor method for sapl subscription
+        // timeout purposes
         cacheTopicsOfUnsubscribeMessage(mqttClientCache.get(clientId), packetId, unsubscribeTopics);
     }
 
     private void buildUnsubscribeAckInterceptorForSaplSubscriptionTimeout(UnsubackOutboundInput unsubackOutboundInput) {
-        String clientId = unsubackOutboundInput.getClientInformation().getClientId();
-        var mqttClientState = mqttClientCache.get(clientId);
-        int packetId = unsubackOutboundInput.getUnsubackPacket().getPacketIdentifier();
-        List<String> topics = removeTopicsOfUnsubscribeMessageFromCache(mqttClientState, packetId);
+        String       clientId        = unsubackOutboundInput.getClientInformation().getClientId();
+        var          mqttClientState = mqttClientCache.get(clientId);
+        int          packetId        = unsubackOutboundInput.getUnsubackPacket().getPacketIdentifier();
+        List<String> topics          = removeTopicsOfUnsubscribeMessageFromCache(mqttClientState, packetId);
 
         for (var i = 0; i < topics.size(); i++) { // for every topic
             String topic = topics.get(i);
@@ -343,15 +350,15 @@ public class MqttPep {
                 cacheCurrentTimeAsTimeOfLastSignalEvent(mqttClientState, subscriptionId);
                 removeStartTimeOfMqttActionFromCache(mqttClientState, subscriptionId);
 
-                Flux<IdentifiableAuthorizationDecision> subscriptionAuthzTimeoutFlux =
-                        buildMqttSubscriptionAuthzFlux(new MqttSaplId(clientId, subscriptionId, topic));
+                Flux<IdentifiableAuthorizationDecision> subscriptionAuthzTimeoutFlux = buildMqttSubscriptionAuthzFlux(
+                        new MqttSaplId(clientId, subscriptionId, topic));
                 resubscribeMqttActionDecisionFlux(subscriptionId, mqttClientState, subscriptionAuthzTimeoutFlux);
             }
         }
     }
 
     private void enforceMqttConnection(String clientId, @Nullable Async<SimpleAuthOutput> asyncOutput,
-                                       @Nullable SimpleAuthInput authnInput) {
+            @Nullable SimpleAuthInput authnInput) {
         var mqttClientState = mqttClientCache.get(clientId);
         if (mqttClientState == null) { // client already disconnected
             return;
@@ -360,23 +367,24 @@ public class MqttPep {
         if (authnInput != null) {
             mqttClientState.setUserName(getUserName(authnInput));
         }
-        var mqttSaplId = new MqttSaplId(clientId, buildSubscriptionId(clientId, CONNECT_AUTHZ_ACTION));
-        Flux<IdentifiableAuthorizationDecision> mqttConnectionAuthzFlux =
-                buildMqttConnectionAuthzFlux(mqttSaplId, asyncOutput);
-        AuthorizationSubscription saplAuthzSubscription =
-                buildSaplAuthzSubscriptionForMqttConnection(mqttClientState, authnInput);
+        var                                     mqttSaplId              = new MqttSaplId(clientId,
+                buildSubscriptionId(clientId, CONNECT_AUTHZ_ACTION));
+        Flux<IdentifiableAuthorizationDecision> mqttConnectionAuthzFlux = buildMqttConnectionAuthzFlux(mqttSaplId,
+                asyncOutput);
+        AuthorizationSubscription               saplAuthzSubscription   = buildSaplAuthzSubscriptionForMqttConnection(
+                mqttClientState, authnInput);
         enforceMqttAction(mqttClientState, mqttSaplId, saplAuthzSubscription, mqttConnectionAuthzFlux);
     }
 
     private void enforceMqttSubscription(Async<SubscriptionAuthorizerOutput> asyncOutput,
-                                         SubscriptionAuthorizerInput subscriptionAuthorizerInput) {
-        String clientId = subscriptionAuthorizerInput.getClientInformation().getClientId();
-        var mqttClientState = mqttClientCache.get(clientId);
+            SubscriptionAuthorizerInput subscriptionAuthorizerInput) {
+        String clientId        = subscriptionAuthorizerInput.getClientInformation().getClientId();
+        var    mqttClientState = mqttClientCache.get(clientId);
         if (mqttClientState == null) {
             return;
         }
 
-        String topic = subscriptionAuthorizerInput.getSubscription().getTopicFilter();
+        String topic          = subscriptionAuthorizerInput.getSubscription().getTopicFilter();
         String subscriptionId = buildSubscriptionId(clientId, SUBSCRIBE_AUTHZ_ACTION, topic);
         cacheCurrentTimeAsTimeOfLastSignalEvent(mqttClientState, subscriptionId); // for sapl subscription timeout
         cacheCurrentTimeAsStartTimeOfMqttAction(mqttClientState, subscriptionId);
@@ -386,46 +394,46 @@ public class MqttPep {
         // in case an enforcement doesn't already happen
         var mqttSaplId = new MqttSaplId(clientId, subscriptionId, topic);
         if (getAuthzSubscriptionFromCachedMultiAuthzSubscription(mqttClientState, subscriptionId) == null) {
-            Flux<IdentifiableAuthorizationDecision> mqttSubscriptionAuthzFlux =
-                    buildMqttSubscriptionAuthzFlux(mqttSaplId, asyncOutput);
-            AuthorizationSubscription saplAuthzSubscription =
-                    buildSaplAuthzSubscriptionForMqttSubscription(mqttClientState, subscriptionAuthorizerInput);
+            Flux<IdentifiableAuthorizationDecision> mqttSubscriptionAuthzFlux = buildMqttSubscriptionAuthzFlux(
+                    mqttSaplId, asyncOutput);
+            AuthorizationSubscription               saplAuthzSubscription     = buildSaplAuthzSubscriptionForMqttSubscription(
+                    mqttClientState, subscriptionAuthorizerInput);
             enforceMqttAction(mqttClientState, mqttSaplId, saplAuthzSubscription, mqttSubscriptionAuthzFlux);
         } else { // reset the timeout of the mqttSubscriptionAuthzTimeoutFlux
-            Flux<IdentifiableAuthorizationDecision> subscriptionAuthzTimeoutFlux =
-                    buildMqttSubscriptionAuthzFlux(mqttSaplId, asyncOutput);
+            Flux<IdentifiableAuthorizationDecision> subscriptionAuthzTimeoutFlux = buildMqttSubscriptionAuthzFlux(
+                    mqttSaplId, asyncOutput);
             resubscribeMqttActionDecisionFlux(subscriptionId, mqttClientState, subscriptionAuthzTimeoutFlux);
         }
     }
 
     private void enforceMqttPublish(Async<PublishInboundOutput> asyncOutput, PublishInboundInput publishInboundInput) {
-        String clientId = publishInboundInput.getClientInformation().getClientId();
-        var mqttClientState = mqttClientCache.get(clientId);
+        String clientId        = publishInboundInput.getClientInformation().getClientId();
+        var    mqttClientState = mqttClientCache.get(clientId);
         if (mqttClientState == null) {
             return;
         }
 
-        String topic = publishInboundInput.getPublishPacket().getTopic();
+        String topic          = publishInboundInput.getPublishPacket().getTopic();
         String subscriptionId = buildSubscriptionId(clientId, PUBLISH_AUTHZ_ACTION, topic);
         cacheCurrentTimeAsTimeOfLastSignalEvent(mqttClientState, subscriptionId); // for sapl subscription timeout
 
         // in case an enforcement doesn't already happen
         var mqttSaplId = new MqttSaplId(clientId, subscriptionId, topic);
         if (getAuthzSubscriptionFromCachedMultiAuthzSubscription(mqttClientState, subscriptionId) == null) {
-            Flux<IdentifiableAuthorizationDecision> mqttPublishAuthzFlux =
-                    buildMqttPublishAuthzFlux(mqttSaplId, asyncOutput);
-            AuthorizationSubscription saplAuthzSubscription =
-                    buildSaplAuthzSubscriptionForMqttPublish(mqttClientState, publishInboundInput);
+            Flux<IdentifiableAuthorizationDecision> mqttPublishAuthzFlux  = buildMqttPublishAuthzFlux(mqttSaplId,
+                    asyncOutput);
+            AuthorizationSubscription               saplAuthzSubscription = buildSaplAuthzSubscriptionForMqttPublish(
+                    mqttClientState, publishInboundInput);
             enforceMqttAction(mqttClientState, mqttSaplId, saplAuthzSubscription, mqttPublishAuthzFlux);
         } else { // reset the timeout of the mqttPublishAuthzTimeoutFlux
-            Flux<IdentifiableAuthorizationDecision> publishAuthzTimeoutFlux =
-                    buildMqttPublishAuthzFlux(mqttSaplId, asyncOutput);
+            Flux<IdentifiableAuthorizationDecision> publishAuthzTimeoutFlux = buildMqttPublishAuthzFlux(mqttSaplId,
+                    asyncOutput);
             resubscribeMqttActionDecisionFlux(subscriptionId, mqttClientState, publishAuthzTimeoutFlux);
         }
     }
 
-    private Flux<IdentifiableAuthorizationDecision> buildMqttConnectionAuthzFlux(
-            MqttSaplId mqttSaplId, @Nullable Async<SimpleAuthOutput> asyncOutput) {
+    private Flux<IdentifiableAuthorizationDecision> buildMqttConnectionAuthzFlux(MqttSaplId mqttSaplId,
+            @Nullable Async<SimpleAuthOutput> asyncOutput) {
         var mqttClientState = mqttClientCache.get(mqttSaplId.getMqttClientId());
         if (mqttClientState == null) { // client already disconnected
             return Flux.empty();
@@ -433,22 +441,21 @@ public class MqttPep {
 
         String subscriptionId = mqttSaplId.getSaplSubscriptionId();
         return Flux.defer(mqttClientState::getSharedClientDecisionFlux)
-                .filter(identAuthzDecisionMap ->
-                        containsAuthzDecisionOfSubscriptionIdOrNull(subscriptionId, identAuthzDecisionMap))
+                .filter(identAuthzDecisionMap -> containsAuthzDecisionOfSubscriptionIdOrNull(subscriptionId,
+                        identAuthzDecisionMap))
                 .map(identAuthzDecisionMap -> getIdentAuthzDecision(subscriptionId, identAuthzDecisionMap))
-                .transform(identAuthzDecisionFlux ->
-                        buildMqttConnectionTimeLimitFlux(identAuthzDecisionFlux, mqttClientState, subscriptionId))
-                .transform(identAuthzDecisionFlux ->
-                        buildMqttConnectionEnforcementFlux(identAuthzDecisionFlux, mqttClientState,
-                                mqttSaplId, asyncOutput));
+                .transform(identAuthzDecisionFlux -> buildMqttConnectionTimeLimitFlux(identAuthzDecisionFlux,
+                        mqttClientState, subscriptionId))
+                .transform(identAuthzDecisionFlux -> buildMqttConnectionEnforcementFlux(identAuthzDecisionFlux,
+                        mqttClientState, mqttSaplId, asyncOutput));
     }
 
     private Flux<IdentifiableAuthorizationDecision> buildMqttSubscriptionAuthzFlux(MqttSaplId mqttSaplId) {
         return buildMqttSubscriptionAuthzFlux(mqttSaplId, null);
     }
 
-    private Flux<IdentifiableAuthorizationDecision> buildMqttSubscriptionAuthzFlux(
-            MqttSaplId mqttSaplId, @Nullable Async<SubscriptionAuthorizerOutput> asyncOutput) {
+    private Flux<IdentifiableAuthorizationDecision> buildMqttSubscriptionAuthzFlux(MqttSaplId mqttSaplId,
+            @Nullable Async<SubscriptionAuthorizerOutput> asyncOutput) {
         var mqttClientState = mqttClientCache.get(mqttSaplId.getMqttClientId());
         if (mqttClientState == null) { // client already disconnected
             return Flux.empty();
@@ -456,52 +463,51 @@ public class MqttPep {
 
         String subscriptionId = mqttSaplId.getSaplSubscriptionId();
         return Flux.defer(mqttClientState::getSharedClientDecisionFlux)
-                .filter(identAuthzDecisionMap ->
-                        containsAuthzDecisionOfSubscriptionIdOrNull(subscriptionId, identAuthzDecisionMap))
+                .filter(identAuthzDecisionMap -> containsAuthzDecisionOfSubscriptionIdOrNull(subscriptionId,
+                        identAuthzDecisionMap))
                 .map(identAuthzDecisionMap -> getIdentAuthzDecision(subscriptionId, identAuthzDecisionMap))
-                .transform(identAuthzFlux ->
-                        buildMqttSubscriptionTimeLimitFlux(mqttClientState, mqttSaplId, identAuthzFlux, asyncOutput))
-                .transform(identAuthzDecisionFlux ->
-                        buildSaplSubscriptionTimeoutFlux(identAuthzDecisionFlux, mqttClientState, mqttSaplId))
-                .transform(identAuthzDecisionFlux ->
-                        buildMqttSubscriptionEnforcementFlux(identAuthzDecisionFlux, mqttSaplId, asyncOutput));
+                .transform(identAuthzFlux -> buildMqttSubscriptionTimeLimitFlux(mqttClientState, mqttSaplId,
+                        identAuthzFlux, asyncOutput))
+                .transform(identAuthzDecisionFlux -> buildSaplSubscriptionTimeoutFlux(identAuthzDecisionFlux,
+                        mqttClientState, mqttSaplId))
+                .transform(identAuthzDecisionFlux -> buildMqttSubscriptionEnforcementFlux(identAuthzDecisionFlux,
+                        mqttSaplId, asyncOutput));
     }
 
-    private Flux<IdentifiableAuthorizationDecision> buildMqttPublishAuthzFlux(
-            MqttSaplId mqttSaplId, Async<PublishInboundOutput> asyncOutput) {
+    private Flux<IdentifiableAuthorizationDecision> buildMqttPublishAuthzFlux(MqttSaplId mqttSaplId,
+            Async<PublishInboundOutput> asyncOutput) {
         var mqttClientState = mqttClientCache.get(mqttSaplId.getMqttClientId());
         if (mqttClientState == null) { // client already disconnected
             return Flux.empty();
         }
 
-        String subscriptionId = mqttSaplId.getSaplSubscriptionId();
-        var publishInboundOutput = asyncOutput.getOutput();
+        String subscriptionId       = mqttSaplId.getSaplSubscriptionId();
+        var    publishInboundOutput = asyncOutput.getOutput();
         return Flux.defer(mqttClientState::getSharedClientDecisionFlux)
-                .filter(identAuthzDecisionMap ->
-                        containsAuthzDecisionOfSubscriptionIdOrNull(subscriptionId, identAuthzDecisionMap))
+                .filter(identAuthzDecisionMap -> containsAuthzDecisionOfSubscriptionIdOrNull(subscriptionId,
+                        identAuthzDecisionMap))
                 .map(identAuthzDecisionMap -> getIdentAuthzDecision(subscriptionId, identAuthzDecisionMap))
                 .timeout(getAuthzSubscriptionTimeoutDuration(saplMqttExtensionConfig, mqttClientState, subscriptionId))
-                .doOnError(TimeoutException.class, timeoutException ->
-                        handleSaplAuthzSubscriptionTimeout(mqttClientState, mqttSaplId))
+                .doOnError(TimeoutException.class,
+                        timeoutException -> handleSaplAuthzSubscriptionTimeout(mqttClientState, mqttSaplId))
                 .onErrorResume(TimeoutException.class, timeoutException -> Flux.empty())
-                .transform(identAuthzDecisionFlux ->
-                        buildMqttPublishEnforcementFlux(identAuthzDecisionFlux, publishInboundOutput,
-                                asyncOutput, mqttSaplId));
+                .transform(identAuthzDecisionFlux -> buildMqttPublishEnforcementFlux(identAuthzDecisionFlux,
+                        publishInboundOutput, asyncOutput, mqttSaplId));
     }
 
     private void enforceMqttAction(MqttClientState mqttClientState, MqttSaplId mqttSaplId,
-                                   AuthorizationSubscription saplAuthzSubscription,
-                                   Flux<IdentifiableAuthorizationDecision> mqttActionAuthzFlux) {
+            AuthorizationSubscription saplAuthzSubscription,
+            Flux<IdentifiableAuthorizationDecision> mqttActionAuthzFlux) {
         subscribeToNewSharedClientDecisionFlux(mqttClientState, mqttSaplId, saplAuthzSubscription);
         cacheMqttActionDecisionFlux(mqttClientState, mqttSaplId.getSaplSubscriptionId(), mqttActionAuthzFlux);
         subscribeToMqttActionDecisionFluxes(mqttClientState);
     }
 
     private void resubscribeMqttActionDecisionFlux(String subscriptionId, MqttClientState mqttClientState,
-                                                   Flux<IdentifiableAuthorizationDecision> mqttActionFlux) {
+            Flux<IdentifiableAuthorizationDecision> mqttActionFlux) {
         cacheMqttActionDecisionFlux(mqttClientState, subscriptionId, mqttActionFlux);
         disposeMqttActionDecisionFluxAndRemoveDisposableFromCache(mqttClientState, subscriptionId);
-        subscribeMqttActionDecisionFluxAndCacheDisposable(mqttClientState, subscriptionId,mqttActionFlux);
+        subscribeMqttActionDecisionFluxAndCacheDisposable(mqttClientState, subscriptionId, mqttActionFlux);
     }
 
     private Flux<IdentifiableAuthorizationDecision> buildMqttConnectionTimeLimitFlux(
@@ -510,8 +516,8 @@ public class MqttPep {
         return identAuthzFlux
                 .transformDeferred(identAuthzDecisionFlux -> addMqttConnectionTimeoutBeforeFirstSaplDecision(
                         mqttClientState, subscriptionId, identAuthzDecisionFlux))
-                .transform(identAuthzDecisionFlux -> addMqttConnectionTimeoutOnSaplDecision(
-                        identAuthzDecisionFlux, mqttClientState))
+                .transform(identAuthzDecisionFlux -> addMqttConnectionTimeoutOnSaplDecision(identAuthzDecisionFlux,
+                        mqttClientState))
                 .doOnError(TimeoutException.class, timeoutException -> handleMqttConnectionTimeout(mqttClientState))
                 .onErrorResume(TimeoutException.class, timeoutException -> Flux.empty());
     }
@@ -519,8 +525,9 @@ public class MqttPep {
     private void handleMqttConnectionTimeout(MqttClientState mqttClientState) {
         String clientId = mqttClientState.getClientId();
         log.info("The connection of client '{}' timed out.", clientId);
-        Services.clientService().disconnectClient(clientId, false,
-                NOT_AUTHORIZED, NOT_AUTHORIZED_NOTICE); // does notify client
+        Services.clientService().disconnectClient(clientId, false, NOT_AUTHORIZED, NOT_AUTHORIZED_NOTICE); // does
+                                                                                                           // notify
+                                                                                                           // client
         String subscriptionId = buildSubscriptionId(clientId, CONNECT_AUTHZ_ACTION);
         removeIdentAuthzDecisionFromCache(mqttClientState, subscriptionId);
         log.info("Disconnected client '{}'.", clientId);
@@ -534,8 +541,7 @@ public class MqttPep {
             return identAuthzDecisionFlux
                     .timeout(Duration.ofMillis(getRemainingTimeLimitMillis(constraintDetails.getTimeLimitSec(),
                             getMqttActionStartTimeFromCache(mqttClientState, subscriptionId))))
-                    .takeUntilOther(identAuthzDecisionFlux)
-                    .mergeWith(identAuthzDecisionFlux);
+                    .takeUntilOther(identAuthzDecisionFlux).mergeWith(identAuthzDecisionFlux);
         } else {
             return identAuthzDecisionFlux;
         }
@@ -544,19 +550,17 @@ public class MqttPep {
     private Flux<IdentifiableAuthorizationDecision> addMqttConnectionTimeoutOnSaplDecision(
             Flux<IdentifiableAuthorizationDecision> identAuthzDecisionFlux, MqttClientState mqttClientState) {
         Flux<IdentifiableAuthorizationDecision> sharedFlux = identAuthzDecisionFlux.share();
-        return sharedFlux
-                .switchMap(identAuthzDecision -> buildMqttConnectionTimeoutFluxOfSaplDecision(
-                        mqttClientState, sharedFlux, identAuthzDecision));
+        return sharedFlux.switchMap(identAuthzDecision -> buildMqttConnectionTimeoutFluxOfSaplDecision(mqttClientState,
+                sharedFlux, identAuthzDecision));
     }
 
     private Flux<IdentifiableAuthorizationDecision> buildMqttConnectionTimeoutFluxOfSaplDecision(
             MqttClientState mqttClientState, Flux<IdentifiableAuthorizationDecision> sharedFlux,
             IdentifiableAuthorizationDecision identAuthzDecision) {
-        String subscriptionId = identAuthzDecision.getAuthorizationSubscriptionId();
-        var constraintDetails = getConstraintDetailsFromCache(mqttClientState, subscriptionId);
+        String subscriptionId    = identAuthzDecision.getAuthorizationSubscriptionId();
+        var    constraintDetails = getConstraintDetailsFromCache(mqttClientState, subscriptionId);
         if (constraintDetails != null && constraintDetails.getTimeLimitSec() > 0) {
-            Mono<IdentifiableAuthorizationDecision> timeoutFlux = sharedFlux
-                    .ignoreElements()
+            Mono<IdentifiableAuthorizationDecision> timeoutFlux = sharedFlux.ignoreElements()
                     .timeout(Duration.ofMillis(getRemainingTimeLimitMillis(constraintDetails.getTimeLimitSec(),
                             getMqttActionStartTimeFromCache(mqttClientState, subscriptionId))));
             return Flux.merge(Flux.just(identAuthzDecision), timeoutFlux);
@@ -569,9 +573,8 @@ public class MqttPep {
             Flux<IdentifiableAuthorizationDecision> identAuthzDecisionFlux, MqttClientState mqttClientState,
             MqttSaplId mqttSaplId, @Nullable Async<SimpleAuthOutput> asyncOutput) {
         if (asyncOutput != null) { // on connection event
-            return identAuthzDecisionFlux
-                    .doOnNext(identAuthzDecision ->
-                            enforceMqttConnectionOnDecision(asyncOutput, mqttSaplId, identAuthzDecision));
+            return identAuthzDecisionFlux.doOnNext(
+                    identAuthzDecision -> enforceMqttConnectionOnDecision(asyncOutput, mqttSaplId, identAuthzDecision));
         } else { // existing connection
             cacheCurrentTimeAsStartTimeOfMqttAction(mqttClientState, mqttSaplId.getSaplSubscriptionId());
             return identAuthzDecisionFlux;
@@ -579,7 +582,7 @@ public class MqttPep {
     }
 
     private void enforceMqttConnectionOnDecision(Async<SimpleAuthOutput> asyncOutput, MqttSaplId mqttSaplId,
-                                                 IdentifiableAuthorizationDecision identAuthzDecision) {
+            IdentifiableAuthorizationDecision identAuthzDecision) {
         var mqttClientState = mqttClientCache.get(mqttSaplId.getMqttClientId());
         if (mqttClientState == null) {
             return;
@@ -588,10 +591,10 @@ public class MqttPep {
         log.debug("Enforcing authorization decision of mqtt connection  of client '{}': {}",
                 mqttSaplId.getMqttClientId(), authzDecision);
 
-        String subscriptionId = identAuthzDecision.getAuthorizationSubscriptionId();
+        String  subscriptionId                    = identAuthzDecision.getAuthorizationSubscriptionId();
         boolean hasHandledObligationsSuccessfully = hasHandledObligationsSuccessfully(mqttClientState, subscriptionId);
-        boolean isSuccessfullyGranted = enforceMqttConnectionByHiveMqBroker(asyncOutput.getOutput(), authzDecision,
-                hasHandledObligationsSuccessfully, mqttSaplId);
+        boolean isSuccessfullyGranted             = enforceMqttConnectionByHiveMqBroker(asyncOutput.getOutput(),
+                authzDecision, hasHandledObligationsSuccessfully, mqttSaplId);
         if (isSuccessfullyGranted) {
             cacheCurrentTimeAsStartTimeOfMqttAction(mqttClientState, subscriptionId);
         }
@@ -600,26 +603,23 @@ public class MqttPep {
         asyncOutput.resume();
     }
 
-    private Flux<IdentifiableAuthorizationDecision> buildMqttSubscriptionTimeLimitFlux(
-            MqttClientState mqttClientState, MqttSaplId mqttSaplId,
-            Flux<IdentifiableAuthorizationDecision> identAuthzFlux, Async<SubscriptionAuthorizerOutput> asyncOutput) {
+    private Flux<IdentifiableAuthorizationDecision> buildMqttSubscriptionTimeLimitFlux(MqttClientState mqttClientState,
+            MqttSaplId mqttSaplId, Flux<IdentifiableAuthorizationDecision> identAuthzFlux,
+            Async<SubscriptionAuthorizerOutput> asyncOutput) {
         return identAuthzFlux
-                .transformDeferred(identAuthzDecisionFlux ->
-                        addMqttSubscriptionTimeoutBeforeFirstSaplDecision(identAuthzDecisionFlux, mqttClientState,
-                                mqttSaplId))
-                .transform(identAuthzDecisionFlux ->
-                        addMqttSubscriptionTimeoutOnSaplDecision(identAuthzDecisionFlux, mqttClientState,
-                                asyncOutput, mqttSaplId))
-                .doOnError(TimeoutException.class, timeoutException ->
-                        handleMqttSubscriptionTimeout(mqttClientState, mqttSaplId))
+                .transformDeferred(identAuthzDecisionFlux -> addMqttSubscriptionTimeoutBeforeFirstSaplDecision(
+                        identAuthzDecisionFlux, mqttClientState, mqttSaplId))
+                .transform(identAuthzDecisionFlux -> addMqttSubscriptionTimeoutOnSaplDecision(identAuthzDecisionFlux,
+                        mqttClientState, asyncOutput, mqttSaplId))
+                .doOnError(TimeoutException.class,
+                        timeoutException -> handleMqttSubscriptionTimeout(mqttClientState, mqttSaplId))
                 .onErrorResume(TimeoutException.class, timeoutException -> Flux.empty());
     }
 
     private Flux<IdentifiableAuthorizationDecision> addMqttSubscriptionTimeoutBeforeFirstSaplDecision(
             Flux<IdentifiableAuthorizationDecision> identAuthzDecisionFlux, MqttClientState mqttClientState,
             MqttSaplId mqttSaplId) {
-        var constraintDetails =
-                getConstraintDetailsFromCache(mqttClientState, mqttSaplId.getSaplSubscriptionId());
+        var constraintDetails = getConstraintDetailsFromCache(mqttClientState, mqttSaplId.getSaplSubscriptionId());
         if (constraintDetails != null && constraintDetails.getTimeLimitSec() > 0) {
             if (!isMqttSubscriptionExisting(mqttSaplId)) {
                 return identAuthzDecisionFlux;
@@ -627,8 +627,7 @@ public class MqttPep {
             return identAuthzDecisionFlux
                     .timeout(Duration.ofMillis(getRemainingTimeLimitMillis(constraintDetails.getTimeLimitSec(),
                             getMqttActionStartTimeFromCache(mqttClientState, mqttSaplId.getSaplSubscriptionId()))))
-                    .takeUntilOther(identAuthzDecisionFlux)
-                    .mergeWith(identAuthzDecisionFlux);
+                    .takeUntilOther(identAuthzDecisionFlux).mergeWith(identAuthzDecisionFlux);
         } else {
             return identAuthzDecisionFlux;
         }
@@ -639,24 +638,24 @@ public class MqttPep {
             Async<SubscriptionAuthorizerOutput> asyncOutput, MqttSaplId mqttSaplId) {
         Flux<IdentifiableAuthorizationDecision> sharedFlux = identAuthzDecisionFlux.share();
         return sharedFlux
-                .switchMap(identAuthzDecision -> buildMqttSubscriptionTimeoutFluxOfSaplDecision(
-                        mqttClientState, sharedFlux, identAuthzDecision, asyncOutput, mqttSaplId));
+                .switchMap(identAuthzDecision -> buildMqttSubscriptionTimeoutFluxOfSaplDecision(mqttClientState,
+                        sharedFlux, identAuthzDecision, asyncOutput, mqttSaplId));
     }
 
     private Flux<IdentifiableAuthorizationDecision> buildMqttSubscriptionTimeoutFluxOfSaplDecision(
             MqttClientState mqttClientState, Flux<IdentifiableAuthorizationDecision> sharedFlux,
             IdentifiableAuthorizationDecision identAuthzDecision, Async<SubscriptionAuthorizerOutput> asyncOutput,
             MqttSaplId mqttSaplId) {
-        String subscriptionId = identAuthzDecision.getAuthorizationSubscriptionId();
-        var constraintDetails = getConstraintDetailsFromCache(mqttClientState, subscriptionId);
+        String subscriptionId    = identAuthzDecision.getAuthorizationSubscriptionId();
+        var    constraintDetails = getConstraintDetailsFromCache(mqttClientState, subscriptionId);
         if (constraintDetails != null && constraintDetails.getTimeLimitSec() > 0) {
-            if (!isMqttSubscriptionExisting(mqttSaplId) && (Objects.isNull(asyncOutput) ||
-                    (asyncOutput.getStatus() != RUNNING))) {
-                // in case no mqtt subscription existing and no mqtt subscription is pending to be established
+            if (!isMqttSubscriptionExisting(mqttSaplId)
+                    && (Objects.isNull(asyncOutput) || (asyncOutput.getStatus() != RUNNING))) {
+                // in case no mqtt subscription existing and no mqtt subscription is pending to
+                // be established
                 return Flux.just(identAuthzDecision);
             }
-            Mono<IdentifiableAuthorizationDecision> timeoutFlux = sharedFlux
-                    .ignoreElements()
+            Mono<IdentifiableAuthorizationDecision> timeoutFlux = sharedFlux.ignoreElements()
                     .timeout(Duration.ofMillis(getRemainingTimeLimitMillis(constraintDetails.getTimeLimitSec(),
                             getMqttActionStartTimeFromCache(mqttClientState, subscriptionId))));
             return Flux.merge(Flux.just(identAuthzDecision), timeoutFlux);
@@ -666,31 +665,30 @@ public class MqttPep {
     }
 
     private void handleMqttSubscriptionTimeout(MqttClientState mqttClientState, MqttSaplId mqttSaplId) {
-        log.info("The mqtt subscription of topic '{}' of client '{}' timed out.",
-                mqttSaplId.getTopic(), mqttSaplId.getMqttClientId());
+        log.info("The mqtt subscription of topic '{}' of client '{}' timed out.", mqttSaplId.getTopic(),
+                mqttSaplId.getMqttClientId());
         unsubscribeClientOfTopic(mqttClientState, mqttSaplId);
     }
 
     private Flux<IdentifiableAuthorizationDecision> buildSaplSubscriptionTimeoutFlux(
-            Flux<IdentifiableAuthorizationDecision> identAuthzDecisionFlux,
-            MqttClientState mqttClientState, MqttSaplId mqttSaplId) {
-        Flux<IdentifiableAuthorizationDecision> sharedIdentAuthzDecisionFlux = identAuthzDecisionFlux
-                .publish()
+            Flux<IdentifiableAuthorizationDecision> identAuthzDecisionFlux, MqttClientState mqttClientState,
+            MqttSaplId mqttSaplId) {
+        Flux<IdentifiableAuthorizationDecision> sharedIdentAuthzDecisionFlux = identAuthzDecisionFlux.publish()
                 .refCount(2); // connectable flux is necessary to add cancellable timeout behaviour
 
-        Flux<IdentifiableAuthorizationDecision> timeoutOnSaplSubscriptionStartFlux =
-                Flux.<IdentifiableAuthorizationDecision>never()
-                        .transformDeferred(neverFlux ->
-                                addSaplSubscriptionTimeoutBeforeFirstSaplDecision(mqttSaplId, neverFlux))
-                        .takeUntilOther(sharedIdentAuthzDecisionFlux);
+        Flux<IdentifiableAuthorizationDecision> timeoutOnSaplSubscriptionStartFlux = Flux
+                .<IdentifiableAuthorizationDecision>never()
+                .transformDeferred(
+                        neverFlux -> addSaplSubscriptionTimeoutBeforeFirstSaplDecision(mqttSaplId, neverFlux))
+                .takeUntilOther(sharedIdentAuthzDecisionFlux);
 
         Flux<IdentifiableAuthorizationDecision> timeoutOnDecisionFlux = sharedIdentAuthzDecisionFlux
-                .switchMap(identAuthzDecision -> addSaplSubscriptionTimeoutOnSaplDecision(
-                        mqttSaplId, identAuthzDecision, sharedIdentAuthzDecisionFlux));
+                .switchMap(identAuthzDecision -> addSaplSubscriptionTimeoutOnSaplDecision(mqttSaplId,
+                        identAuthzDecision, sharedIdentAuthzDecisionFlux));
 
         return Flux.merge(timeoutOnSaplSubscriptionStartFlux, timeoutOnDecisionFlux)
-                .doOnError(TimeoutException.class, timeoutException ->
-                        handleSaplAuthzSubscriptionTimeout(mqttClientState, mqttSaplId))
+                .doOnError(TimeoutException.class,
+                        timeoutException -> handleSaplAuthzSubscriptionTimeout(mqttClientState, mqttSaplId))
                 .onErrorResume(TimeoutException.class, timeoutException -> Flux.empty());
     }
 
@@ -703,8 +701,8 @@ public class MqttPep {
         return decisionFlux;
     }
 
-    private Flux<IdentifiableAuthorizationDecision> addSaplSubscriptionTimeoutOnSaplDecision(
-            MqttSaplId mqttSaplId, IdentifiableAuthorizationDecision identAuthzDecision,
+    private Flux<IdentifiableAuthorizationDecision> addSaplSubscriptionTimeoutOnSaplDecision(MqttSaplId mqttSaplId,
+            IdentifiableAuthorizationDecision identAuthzDecision,
             Flux<IdentifiableAuthorizationDecision> sharedIdentAuthzDecisionFlux) {
         String subscriptionId = identAuthzDecision.getAuthorizationSubscriptionId();
         if (identAuthzDecision.getAuthorizationDecision().getDecision() != PERMIT) { // mqtt subscription is denied
@@ -732,30 +730,28 @@ public class MqttPep {
             Flux<IdentifiableAuthorizationDecision> identAuthzDecisionFlux, MqttSaplId mqttSaplId,
             @Nullable Async<SubscriptionAuthorizerOutput> asyncOutput) {
         if (asyncOutput != null) {
-            return identAuthzDecisionFlux
-                    .doOnNext(identAuthzDecision ->
-                            enforceMqttSubscriptionOnDecision(asyncOutput, mqttSaplId, identAuthzDecision));
+            return identAuthzDecisionFlux.doOnNext(identAuthzDecision -> enforceMqttSubscriptionOnDecision(asyncOutput,
+                    mqttSaplId, identAuthzDecision));
         } else {
             return identAuthzDecisionFlux;
         }
     }
 
-    private void enforceMqttSubscriptionOnDecision(
-            Async<SubscriptionAuthorizerOutput> asyncOutput, MqttSaplId mqttSaplId,
-            IdentifiableAuthorizationDecision identAuthzDecision) {
-        String clientId = mqttSaplId.getMqttClientId();
-        var mqttClientState = mqttClientCache.get(clientId);
+    private void enforceMqttSubscriptionOnDecision(Async<SubscriptionAuthorizerOutput> asyncOutput,
+            MqttSaplId mqttSaplId, IdentifiableAuthorizationDecision identAuthzDecision) {
+        String clientId        = mqttSaplId.getMqttClientId();
+        var    mqttClientState = mqttClientCache.get(clientId);
         if (mqttClientState == null) {
             return;
         }
 
         log.debug("Enforcing authorization decision of mqtt subscription of topic '{}' of client '{}': {}",
                 mqttSaplId.getTopic(), clientId, identAuthzDecision.getAuthorizationDecision());
-        boolean hasHandledObligationsSuccessfully = hasHandledObligationsSuccessfully(
-                mqttClientState, mqttSaplId.getSaplSubscriptionId());
-        var subscriptionAuthorizerOutput = asyncOutput.getOutput();
-        enforceMqttSubscriptionByHiveMqBroker(subscriptionAuthorizerOutput, identAuthzDecision.getAuthorizationDecision(),
-                hasHandledObligationsSuccessfully, mqttSaplId);
+        boolean hasHandledObligationsSuccessfully = hasHandledObligationsSuccessfully(mqttClientState,
+                mqttSaplId.getSaplSubscriptionId());
+        var     subscriptionAuthorizerOutput      = asyncOutput.getOutput();
+        enforceMqttSubscriptionByHiveMqBroker(subscriptionAuthorizerOutput,
+                identAuthzDecision.getAuthorizationDecision(), hasHandledObligationsSuccessfully, mqttSaplId);
 
         // Resume output to tell the HiveMQ broker that asynchronous processing is done
         asyncOutput.resume();
@@ -773,17 +769,17 @@ public class MqttPep {
     }
 
     private void enforceMqttPublishOnDecision(Async<PublishInboundOutput> asyncOutput, MqttSaplId mqttSaplId,
-                                              PublishInboundOutput publishInboundOutput,
-                                              IdentifiableAuthorizationDecision identAuthzDecision) {
+            PublishInboundOutput publishInboundOutput, IdentifiableAuthorizationDecision identAuthzDecision) {
         var mqttClientState = mqttClientCache.get(mqttSaplId.getMqttClientId());
         if (mqttClientState == null) {
             return;
         }
 
-        String subscriptionId = identAuthzDecision.getAuthorizationSubscriptionId();
-        var authzDecision = identAuthzDecision.getAuthorizationDecision();
+        String  subscriptionId                    = identAuthzDecision.getAuthorizationSubscriptionId();
+        var     authzDecision                     = identAuthzDecision.getAuthorizationDecision();
         boolean hasHandledObligationsSuccessfully = hasHandledObligationsSuccessfully(mqttClientState, subscriptionId);
-        enforceMqttPublishByHiveMqBroker(publishInboundOutput, authzDecision, hasHandledObligationsSuccessfully, mqttSaplId);
+        enforceMqttPublishByHiveMqBroker(publishInboundOutput, authzDecision, hasHandledObligationsSuccessfully,
+                mqttSaplId);
 
         // Resume output to tell the HiveMQ broker that asynchronous processing is done
         asyncOutput.resume();
@@ -807,13 +803,14 @@ public class MqttPep {
     }
 
     private void subscribeToNewSharedClientDecisionFlux(MqttClientState mqttClientState, MqttSaplId mqttSaplId,
-                                                        AuthorizationSubscription saplAuthzSubscription) {
-        addSaplAuthzSubscriptionToMultiSubscription(mqttSaplId.getSaplSubscriptionId(),
-                mqttClientState, saplAuthzSubscription);
+            AuthorizationSubscription saplAuthzSubscription) {
+        addSaplAuthzSubscriptionToMultiSubscription(mqttSaplId.getSaplSubscriptionId(), mqttClientState,
+                saplAuthzSubscription);
         disposeAllDecisionFluxesOfClientAndSubscribeNewSharedClientDecisionFlux(mqttClientState);
     }
 
-    private void disposeAllDecisionFluxesOfClientAndSubscribeNewSharedClientDecisionFlux(MqttClientState mqttClientState) {
+    private void disposeAllDecisionFluxesOfClientAndSubscribeNewSharedClientDecisionFlux(
+            MqttClientState mqttClientState) {
         disposeAllFluxesOfClient(mqttClientState); // dispose shared client and mqtt action decision fluxes
         buildAndSubscribeNewSharedClientDecisionFlux(mqttClientState);
     }
@@ -824,8 +821,8 @@ public class MqttPep {
     }
 
     private void buildAndSubscribeNewSharedClientDecisionFlux(MqttClientState mqttClientState) {
-        Flux<Map<String, IdentifiableAuthorizationDecision>> sharedClientAuthzDecisionFlux =
-                buildSharedClientAuthzDecisionFlux(mqttClientState.getClientId());
+        Flux<Map<String, IdentifiableAuthorizationDecision>> sharedClientAuthzDecisionFlux = buildSharedClientAuthzDecisionFlux(
+                mqttClientState.getClientId());
         mqttClientState.setSharedClientDecisionFlux(sharedClientAuthzDecisionFlux);
 
         mqttClientState.addSharedClientDecisionFluxDisposableToComposite(
@@ -839,97 +836,96 @@ public class MqttPep {
         }
 
         return pdp.decide(mqttClientState.getMultiAuthzSubscription())
-                .doOnNext(identAuthzDecision->
-                        enforceEstablishedMqttConnectionAndSubscription(
-                                clientId, mqttClientState.getMultiAuthzSubscription(), identAuthzDecision))
+                .doOnNext(identAuthzDecision -> enforceEstablishedMqttConnectionAndSubscription(clientId,
+                        mqttClientState.getMultiAuthzSubscription(), identAuthzDecision))
                 .map(identAuthzDecision -> saveIdentAuthzDecisionAndTransformToMap(mqttClientState, identAuthzDecision))
-                .replay(1)
-                .refCount()
-                .onErrorResume(CancellationException.class, e -> Mono.empty()); // already disconnected
+                .replay(1).refCount().onErrorResume(CancellationException.class, e -> Mono.empty()); // already
+                                                                                                     // disconnected
     }
 
     private void enforceEstablishedMqttConnectionAndSubscription(String clientId,
-                                                                 MultiAuthorizationSubscription multiAuthzSubscription,
-                                                                 IdentifiableAuthorizationDecision identAuthzDecision) {
+            MultiAuthorizationSubscription multiAuthzSubscription,
+            IdentifiableAuthorizationDecision identAuthzDecision) {
         String subscriptionId = identAuthzDecision.getAuthorizationSubscriptionId();
-        var decision = identAuthzDecision.getAuthorizationDecision().getDecision();
+        var    decision       = identAuthzDecision.getAuthorizationDecision().getDecision();
         if ((decision == INDETERMINATE || decision == NOT_APPLICABLE) && subscriptionId == null) {
             log.warn("Received '{}' decision for client '{}'. Denying access.", decision, clientId);
             cancelExistingMqttSubscriptions(clientId);
             disconnectMqttClient(clientId, decision);
 
         } else {
-            var authzSubscription =
-                    multiAuthzSubscription.getAuthorizationSubscriptionWithId(subscriptionId);
+            var authzSubscription = multiAuthzSubscription.getAuthorizationSubscriptionWithId(subscriptionId);
             if (authzSubscription == null) {
                 return;
             }
 
             log.debug("Received authorization decision for mqtt action '{}' of client '{}': {}",
-                    authzSubscription.getAction().get(ENVIRONMENT_AUTHZ_ACTION_TYPE).asText(),
-                    clientId, identAuthzDecision.getAuthorizationDecision());
-            if (CONNECT_AUTHZ_ACTION.equals(
-                    authzSubscription.getAction().get(ENVIRONMENT_AUTHZ_ACTION_TYPE).asText())) {
+                    authzSubscription.getAction().get(ENVIRONMENT_AUTHZ_ACTION_TYPE).asText(), clientId,
+                    identAuthzDecision.getAuthorizationDecision());
+            if (CONNECT_AUTHZ_ACTION
+                    .equals(authzSubscription.getAction().get(ENVIRONMENT_AUTHZ_ACTION_TYPE).asText())) {
                 enforceConnectionConstraints(clientId, subscriptionId, identAuthzDecision);
                 enforceEstablishedMqttConnection(clientId, identAuthzDecision);
             }
-            if (SUBSCRIBE_AUTHZ_ACTION.equals(
-                    authzSubscription.getAction().get(ENVIRONMENT_AUTHZ_ACTION_TYPE).asText())) {
+            if (SUBSCRIBE_AUTHZ_ACTION
+                    .equals(authzSubscription.getAction().get(ENVIRONMENT_AUTHZ_ACTION_TYPE).asText())) {
                 enforceSubscriptionConstraints(clientId, subscriptionId, authzSubscription, identAuthzDecision);
                 enforceEstablishedMqttSubscription(clientId, subscriptionId, decision, authzSubscription);
             }
         }
     }
 
-    private void enforceEstablishedMqttConnection(String clientId, IdentifiableAuthorizationDecision identAuthzDecision) {
+    private void enforceEstablishedMqttConnection(String clientId,
+            IdentifiableAuthorizationDecision identAuthzDecision) {
         var mqttClientState = mqttClientCache.get(clientId);
         if (mqttClientState == null) {
             return;
         }
 
-        String subscriptionId = identAuthzDecision.getAuthorizationSubscriptionId();
-        var decision = identAuthzDecision.getAuthorizationDecision().getDecision();
+        String  subscriptionId                    = identAuthzDecision.getAuthorizationSubscriptionId();
+        var     decision                          = identAuthzDecision.getAuthorizationDecision().getDecision();
         boolean hasHandledObligationsSuccessfully = hasHandledObligationsSuccessfully(mqttClientState, subscriptionId);
         if (decision != PERMIT || !hasHandledObligationsSuccessfully) { // in case access is denied
-            Services.clientService().disconnectClient(clientId, false,
-                    NOT_AUTHORIZED, NOT_AUTHORIZED_NOTICE); // does notify client
+            Services.clientService().disconnectClient(clientId, false, NOT_AUTHORIZED, NOT_AUTHORIZED_NOTICE); // does
+                                                                                                               // notify
+                                                                                                               // client
             removeIdentAuthzDecisionFromCache(mqttClientState, subscriptionId);
             log.info("Disconnected client '{}'.", clientId);
         }
     }
 
     private void enforceEstablishedMqttSubscription(String clientId, String subscriptionId, Decision decision,
-                                                    AuthorizationSubscription authzSubscription) {
+            AuthorizationSubscription authzSubscription) {
         var mqttClientState = mqttClientCache.get(clientId);
         if (mqttClientState == null) {
             return;
         }
 
-        String topic = authzSubscription.getResource().get(ENVIRONMENT_TOPIC).asText();
-        var mqttSaplId = new MqttSaplId(clientId,subscriptionId, topic);
-        boolean hasHandledObligationsSuccessfully =
-                hasHandledObligationsSuccessfully(mqttClientState, mqttSaplId.getSaplSubscriptionId());
+        String  topic                             = authzSubscription.getResource().get(ENVIRONMENT_TOPIC).asText();
+        var     mqttSaplId                        = new MqttSaplId(clientId, subscriptionId, topic);
+        boolean hasHandledObligationsSuccessfully = hasHandledObligationsSuccessfully(mqttClientState,
+                mqttSaplId.getSaplSubscriptionId());
         // unsubscribe in case a mqtt subscription is not allowed
         if (decision != PERMIT || !hasHandledObligationsSuccessfully) {
             unsubscribeClientOfTopic(mqttClientState, mqttSaplId);
         }
 
         // resubscribe in case a mqtt subscription is desired and not existing
-        boolean isResubscribeMqttSubscriptionEnabled = DEFAULT_IS_RESUBSCRIBE_MQTT_SUBSCRIPTION_ENABLED;
-        ConstraintDetails constraintDetails =
-                getConstraintDetailsFromCache(mqttClientState, mqttSaplId.getSaplSubscriptionId());
+        boolean           isResubscribeMqttSubscriptionEnabled = DEFAULT_IS_RESUBSCRIBE_MQTT_SUBSCRIPTION_ENABLED;
+        ConstraintDetails constraintDetails                    = getConstraintDetailsFromCache(mqttClientState,
+                mqttSaplId.getSaplSubscriptionId());
         if (constraintDetails != null && constraintDetails.getIsResubscribeMqttSubscriptionEnabled() != null) {
             isResubscribeMqttSubscriptionEnabled = constraintDetails.getIsResubscribeMqttSubscriptionEnabled();
         }
         boolean isMqttSubscriptionExisting = isMqttSubscriptionExisting(mqttSaplId);
-        if (decision == PERMIT && hasHandledObligationsSuccessfully && !isMqttSubscriptionExisting &&
-                isResubscribeMqttSubscriptionEnabled) {
+        if (decision == PERMIT && hasHandledObligationsSuccessfully && !isMqttSubscriptionExisting
+                && isResubscribeMqttSubscriptionEnabled) {
             resubscribeClientToTopic(mqttClientState, mqttSaplId);
         }
     }
 
     private void enforceConnectionConstraints(String clientId, String subscriptionId,
-                                              IdentifiableAuthorizationDecision identAuthzDecision) {
+            IdentifiableAuthorizationDecision identAuthzDecision) {
         var mqttClientState = mqttClientCache.get(clientId);
         if (mqttClientState == null) {
             return;
@@ -943,31 +939,32 @@ public class MqttPep {
         ConstraintHandler.enforceMqttConnectionConstraints(constraintDetails);
 
         if (!constraintDetails.isHasHandledObligationsSuccessfully()) { // unsuccessful obligation handling
-            log.warn("Handling of obligations of connection authorization decision '{}' failed " +
-                    "for client '{}'. The access will be denied.", authzDecision, clientId);
+            log.warn("Handling of obligations of connection authorization decision '{}' failed "
+                    + "for client '{}'. The access will be denied.", authzDecision, clientId);
         }
-        cacheConstraintDetails(mqttClientState,subscriptionId, constraintDetails);
+        cacheConstraintDetails(mqttClientState, subscriptionId, constraintDetails);
     }
 
     private void enforceSubscriptionConstraints(String clientId, String subscriptionId,
-                                                AuthorizationSubscription authzSubscription,
-                                                IdentifiableAuthorizationDecision identAuthzDecision) {
+            AuthorizationSubscription authzSubscription, IdentifiableAuthorizationDecision identAuthzDecision) {
         var mqttClientState = mqttClientCache.get(clientId);
         if (mqttClientState == null) {
             return;
         }
 
         // handle constraints
-        var authzDecision = identAuthzDecision.getAuthorizationDecision();
-        String topic = authzSubscription.getResource().get(ENVIRONMENT_TOPIC).asText();
-        log.debug("Enforcing constraints of authorization decision for mqtt subscription of topic '{}' of client '{}': {}",
+        var    authzDecision = identAuthzDecision.getAuthorizationDecision();
+        String topic         = authzSubscription.getResource().get(ENVIRONMENT_TOPIC).asText();
+        log.debug(
+                "Enforcing constraints of authorization decision for mqtt subscription of topic '{}' of client '{}': {}",
                 topic, clientId, authzDecision);
         var constraintDetails = new ConstraintDetails(clientId, identAuthzDecision, topic);
         ConstraintHandler.enforceMqttSubscriptionConstraints(constraintDetails);
 
         if (!constraintDetails.isHasHandledObligationsSuccessfully()) { // unsuccessful obligation handling
-            log.warn("Handling of obligations of subscription authorization decision '{}' failed " +
-                            "for topic '{}' for client '{}'. The access will be denied.",
+            log.warn(
+                    "Handling of obligations of subscription authorization decision '{}' failed "
+                            + "for topic '{}' for client '{}'. The access will be denied.",
                     authzDecision, topic, clientId);
         }
         cacheConstraintDetails(mqttClientState, subscriptionId, constraintDetails);
@@ -975,27 +972,27 @@ public class MqttPep {
 
     private void enforcePublishConstraints(MqttSaplId mqttSaplId, PublishInboundOutput publishInboundOutput,
             IdentifiableAuthorizationDecision identAuthzDecision) {
-        String clientId = mqttSaplId.getMqttClientId();
-        var mqttClientState = mqttClientCache.get(clientId);
+        String clientId        = mqttSaplId.getMqttClientId();
+        var    mqttClientState = mqttClientCache.get(clientId);
         if (mqttClientState == null) {
             return;
         }
 
         // handle constraints
-        var authzDecision = identAuthzDecision.getAuthorizationDecision();
-        String topic = publishInboundOutput.getPublishPacket().getTopic();
-        log.debug("Enforcing constraints of authorization decision for publish of topic '{}' of client '{}': {}",
-                topic, clientId, authzDecision);
-        var constraintDetails =
-                new ConstraintDetails(clientId, identAuthzDecision, topic, publishInboundOutput);
+        var    authzDecision = identAuthzDecision.getAuthorizationDecision();
+        String topic         = publishInboundOutput.getPublishPacket().getTopic();
+        log.debug("Enforcing constraints of authorization decision for publish of topic '{}' of client '{}': {}", topic,
+                clientId, authzDecision);
+        var constraintDetails = new ConstraintDetails(clientId, identAuthzDecision, topic, publishInboundOutput);
         ConstraintHandler.enforceMqttPublishConstraints(constraintDetails);
 
         if (!constraintDetails.isHasHandledObligationsSuccessfully()) { // unsuccessful obligation handling
-            log.warn("Handling of obligations of publish authorization decision '{}' failed " +
-                            "for message of topic '{}' for client '{}'. The access will be denied.",
+            log.warn(
+                    "Handling of obligations of publish authorization decision '{}' failed "
+                            + "for message of topic '{}' for client '{}'. The access will be denied.",
                     authzDecision, publishInboundOutput.getPublishPacket().getTopic(), clientId);
         }
-        cacheConstraintDetails( mqttClientState, mqttSaplId.getSaplSubscriptionId(), constraintDetails);
+        cacheConstraintDetails(mqttClientState, mqttSaplId.getSaplSubscriptionId(), constraintDetails);
     }
 
     private void disconnectMqttClient(String clientId, Decision decision) {
@@ -1011,9 +1008,9 @@ public class MqttPep {
 
     private void cancelExistingMqttSubscriptions(String clientId) {
         // iterate over all subscriptions of client
-        Services.subscriptionStore().getSubscriptions(clientId).whenComplete((topicSubscriptions, throwable) ->
-              topicSubscriptions.iterator().forEachRemaining(topicSubscription ->
-                      cancelExistingMqttSubscription(clientId, topicSubscription)));
+        Services.subscriptionStore().getSubscriptions(clientId)
+                .whenComplete((topicSubscriptions, throwable) -> topicSubscriptions.iterator().forEachRemaining(
+                        topicSubscription -> cancelExistingMqttSubscription(clientId, topicSubscription)));
     }
 
     private void cancelExistingMqttSubscription(String clientId, TopicSubscription topicSubscription) {
@@ -1021,37 +1018,39 @@ public class MqttPep {
 
         var mqttClientState = mqttClientCache.get(clientId);
         if (mqttClientState != null) {
-            String subscriptionId =
-                    buildSubscriptionId(clientId, SUBSCRIBE_AUTHZ_ACTION, topicSubscription.getTopicFilter());
+            String subscriptionId = buildSubscriptionId(clientId, SUBSCRIBE_AUTHZ_ACTION,
+                    topicSubscription.getTopicFilter());
             removeIdentAuthzDecisionFromCache(mqttClientState, subscriptionId);
         }
         log.debug("Canceled subscription of topic '{}' of client '{}'", topicSubscription.getTopicFilter(), clientId);
     }
 
     private void unsubscribeClientOfTopic(MqttClientState mqttClientState, MqttSaplId mqttSaplId) {
-        String topic = mqttSaplId.getTopic();
+        String topic    = mqttSaplId.getTopic();
         String clientId = mqttSaplId.getMqttClientId();
         log.info("Unsubscribing client '{}' from topic '{}'.", clientId, topic);
-        Services.subscriptionStore().removeSubscription(clientId, topic); // note that hivemq broker doesn't notify client
+        Services.subscriptionStore().removeSubscription(clientId, topic); // note that hivemq broker doesn't notify
+                                                                          // client
 
         String subscriptionId = mqttSaplId.getSaplSubscriptionId();
         removeStartTimeOfMqttActionFromCache(mqttClientState, subscriptionId);
         cacheCurrentTimeAsTimeOfLastSignalEvent(mqttClientState, subscriptionId);
 
-        Flux<IdentifiableAuthorizationDecision> subscriptionAuthzTimeoutFlux =
-                buildMqttSubscriptionAuthzFlux(mqttSaplId);
+        Flux<IdentifiableAuthorizationDecision> subscriptionAuthzTimeoutFlux = buildMqttSubscriptionAuthzFlux(
+                mqttSaplId);
         resubscribeMqttActionDecisionFlux(subscriptionId, mqttClientState, subscriptionAuthzTimeoutFlux);
     }
 
     private void resubscribeClientToTopic(MqttClientState mqttClientState, MqttSaplId mqttSaplId) {
-        var mqttTopicSubscription =
-                getMqttTopicSubscriptionFromCache(mqttClientState, mqttSaplId.getSaplSubscriptionId());
+        var mqttTopicSubscription = getMqttTopicSubscriptionFromCache(mqttClientState,
+                mqttSaplId.getSaplSubscriptionId());
         Services.subscriptionStore().addSubscription(mqttSaplId.getMqttClientId(), mqttTopicSubscription);
         log.info("Resubscribed client '{}' to topic '{}'", mqttSaplId.getMqttClientId(), mqttSaplId.getTopic());
 
-        Flux<IdentifiableAuthorizationDecision> subscriptionAuthzTimeoutFlux =
-                buildMqttSubscriptionAuthzFlux(mqttSaplId);
-        resubscribeMqttActionDecisionFlux(mqttSaplId.getSaplSubscriptionId(), mqttClientState, subscriptionAuthzTimeoutFlux);
+        Flux<IdentifiableAuthorizationDecision> subscriptionAuthzTimeoutFlux = buildMqttSubscriptionAuthzFlux(
+                mqttSaplId);
+        resubscribeMqttActionDecisionFlux(mqttSaplId.getSaplSubscriptionId(), mqttClientState,
+                subscriptionAuthzTimeoutFlux);
     }
 
     private void initializeClientCache(String clientId) {
@@ -1077,8 +1076,8 @@ public class MqttPep {
         @Override
         public void onDisconnect(@NotNull DisconnectEventInput disconnectEventInput) {
             // Dispose existing enforcement when disconnecting client
-            String clientId = disconnectEventInput.getClientInformation().getClientId();
-            var mqttClientState = mqttClientCache.get(clientId);
+            String clientId        = disconnectEventInput.getClientInformation().getClientId();
+            var    mqttClientState = mqttClientCache.get(clientId);
 
             if (mqttClientState != null) {
                 mqttClientCache.remove(clientId);
