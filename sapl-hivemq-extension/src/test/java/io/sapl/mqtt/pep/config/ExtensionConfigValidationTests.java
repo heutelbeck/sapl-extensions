@@ -202,8 +202,8 @@ class ExtensionConfigValidationTests {
     void when_saplExtensionConfigFileIsNotReadable_then_useDefaultConfig() {
         // GIVEN
         var fileMock = mock(File.class);
-        when(fileMock.exists()).thenReturn(true);
-        when(fileMock.canRead()).thenReturn(false);
+        when(fileMock.exists()).thenReturn(Boolean.TRUE);
+        when(fileMock.canRead()).thenReturn(Boolean.FALSE);
         var saplExtensionConfiguration = new SaplExtensionConfiguration(fileMock);
 
         // WHEN

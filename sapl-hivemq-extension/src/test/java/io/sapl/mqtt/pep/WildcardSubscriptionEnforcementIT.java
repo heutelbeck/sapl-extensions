@@ -17,7 +17,12 @@
  */
 package io.sapl.mqtt.pep;
 
-import static io.sapl.mqtt.pep.MqttTestUtil.*;
+import static io.sapl.mqtt.pep.MqttTestUtil.PUBLISH_MESSAGE_PAYLOAD;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildAndStartBroker;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildAndStartMqttClient;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttPublishMessage;
+import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttSubscribeMessage;
+import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
@@ -27,19 +32,23 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
-import com.hivemq.embedded.EmbeddedHiveMQ;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
+import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
 import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5SubAckException;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscription;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCode;
+import com.hivemq.embedded.EmbeddedHiveMQ;
+import com.nimbusds.jose.util.StandardCharset;
 
 import io.sapl.interpreter.InitializationException;
-import org.junit.jupiter.api.io.TempDir;
 
 class WildcardSubscriptionEnforcementIT {
 
@@ -85,7 +94,8 @@ class WildcardSubscriptionEnforcementIT {
             Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
                     TimeUnit.SECONDS);
             assertTrue(receivedMessage.isPresent());
-            assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
+            assertEquals(PUBLISH_MESSAGE_PAYLOAD,
+                    new String(receivedMessage.get().getPayloadAsBytes(), StandardCharset.UTF_8));
         });
 
         // FINALLY
@@ -109,7 +119,8 @@ class WildcardSubscriptionEnforcementIT {
             Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
                     TimeUnit.SECONDS);
             assertTrue(receivedMessage.isPresent());
-            assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
+            assertEquals(PUBLISH_MESSAGE_PAYLOAD,
+                    new String(receivedMessage.get().getPayloadAsBytes(), StandardCharset.UTF_8));
         });
 
         // FINALLY
@@ -140,7 +151,8 @@ class WildcardSubscriptionEnforcementIT {
             Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
                     TimeUnit.SECONDS);
             assertTrue(receivedMessage.isPresent());
-            assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
+            assertEquals(PUBLISH_MESSAGE_PAYLOAD,
+                    new String(receivedMessage.get().getPayloadAsBytes(), StandardCharset.UTF_8));
         });
 
         // FINALLY
@@ -172,7 +184,8 @@ class WildcardSubscriptionEnforcementIT {
             Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
                     TimeUnit.SECONDS);
             assertTrue(receivedMessage.isPresent());
-            assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
+            assertEquals(PUBLISH_MESSAGE_PAYLOAD,
+                    new String(receivedMessage.get().getPayloadAsBytes(), StandardCharset.UTF_8));
         });
 
         // FINALLY

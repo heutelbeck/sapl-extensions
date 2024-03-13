@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -73,7 +74,7 @@ class RemotePdpUsageIT {
     private Mqtt5BlockingClient publishClient;
     private Mqtt5BlockingClient subscribeClient;
 
-    private final String extensionConfigFileName = "sapl-extension-config.xml";
+    private static final String EXTENSIONS_CONFIG_FILE_NAME = "sapl-extension-config.xml";
 
     @Container
     static final GenericContainer<?> SAPL_SERVER_LT = new GenericContainer<>(
@@ -122,7 +123,7 @@ class RemotePdpUsageIT {
         // THEN
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes()));
+        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(), StandardCharsets.UTF_8));
 
         // FINALLY
         subscribeClient.unsubscribeWith().topicFilter("topic").send();
@@ -211,7 +212,7 @@ class RemotePdpUsageIT {
         Transformer        transformer        = transformerFactory.newTransformer();
         DOMSource          domSource          = new DOMSource(document);
         StreamResult       streamResult       = new StreamResult(
-                new File(Path.of(extensionConfigDir.toString(), extensionConfigFileName).toString()));
+                new File(Path.of(extensionConfigDir.toString(), EXTENSIONS_CONFIG_FILE_NAME).toString()));
 
         transformer.transform(domSource, streamResult);
     }

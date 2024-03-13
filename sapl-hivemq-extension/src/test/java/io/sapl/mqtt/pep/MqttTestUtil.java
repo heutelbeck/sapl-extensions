@@ -111,7 +111,7 @@ public class MqttTestUtil {
     }
 
     private static EmbeddedHiveMQ buildBrokerWithExtension(Path configDir, Path dataDir, Path extensionsDir,
-            HivemqPepExtensionMain hiveMqPepExtensionMain) {
+            ExtensionMain hiveMqPepExtensionMain) {
         return buildBroker(configDir, dataDir, extensionsDir, buildExtension(hiveMqPepExtensionMain));
     }
 
