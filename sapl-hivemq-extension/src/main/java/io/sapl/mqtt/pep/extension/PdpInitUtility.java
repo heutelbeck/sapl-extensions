@@ -48,7 +48,7 @@ public class PdpInitUtility {
 
     /**
      * Builds an embedded or remote sapl policy decision point.
-     * 
+     *
      * @param saplMqttExtensionConfig contains the configurations of the sapl mqtt
      *                                pep extension
      * @param extensionHomeFolder     If the {@link SaplMqttExtensionConfig}

@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Test;
 
 class ConstraintsTests {
 
-	@Test
-	void when_constructorOfConstraintsIsCalled_then_throwUnsupportedOperationException() {
-		assertThrowsExactly(UnsupportedOperationException.class, Constraints::new);
-	}
+    @Test
+    void when_constructorOfConstraintsIsCalled_then_throwUnsupportedOperationException() {
+        assertThrowsExactly(UnsupportedOperationException.class, Constraints::new);
+    }
 }

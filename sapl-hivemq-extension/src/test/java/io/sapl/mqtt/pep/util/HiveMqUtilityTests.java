@@ -36,22 +36,22 @@ import io.sapl.mqtt.pep.details.MqttSaplId;
 
 class HiveMqUtilityTests {
 
-	@Test
-	void whenNoMqttSubscriptionExisting_then_returnFalse() {
-		// GIVEN
-		var mqttSaplId                            = new MqttSaplId("clientId", "subscriptionId");
-		var subscriptionStoreMock                 = mock(SubscriptionStore.class);
-		var setCompletableFutureTopicSubscription = CompletableFuture.<Set<TopicSubscription>>completedFuture(Set.of());
-		when(subscriptionStoreMock.getSubscriptions(anyString())).thenReturn(setCompletableFutureTopicSubscription);
+    @Test
+    void whenNoMqttSubscriptionExisting_then_returnFalse() {
+        // GIVEN
+        var mqttSaplId                            = new MqttSaplId("clientId", "subscriptionId");
+        var subscriptionStoreMock                 = mock(SubscriptionStore.class);
+        var setCompletableFutureTopicSubscription = CompletableFuture.<Set<TopicSubscription>>completedFuture(Set.of());
+        when(subscriptionStoreMock.getSubscriptions(anyString())).thenReturn(setCompletableFutureTopicSubscription);
 
-		try (var servicesMockedStatic = mockStatic(Services.class)) {
-			servicesMockedStatic.when(Services::subscriptionStore).thenReturn(subscriptionStoreMock);
+        try (var servicesMockedStatic = mockStatic(Services.class)) {
+            servicesMockedStatic.when(Services::subscriptionStore).thenReturn(subscriptionStoreMock);
 
-			// WHEN
-			var isMqttSubscriptionExisting = HiveMqUtility.isMqttSubscriptionExisting(mqttSaplId);
+            // WHEN
+            var isMqttSubscriptionExisting = HiveMqUtility.isMqttSubscriptionExisting(mqttSaplId);
 
-			// THEN
-			assertFalse(isMqttSubscriptionExisting);
-		}
-	}
+            // THEN
+            assertFalse(isMqttSubscriptionExisting);
+        }
+    }
 }

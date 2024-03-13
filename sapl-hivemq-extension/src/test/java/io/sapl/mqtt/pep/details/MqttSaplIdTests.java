@@ -23,21 +23,18 @@ import org.junit.jupiter.api.Test;
 
 class MqttSaplIdTests {
 
-	@Test
-	void when_mqttSaplIdConstructorIsCalledWithMqttClientIdEqualsNull_then_throwNullPointerException() {
-		assertThrowsExactly(NullPointerException.class,
-				() -> new MqttSaplId(null, "subscriptionId"));
-	}
+    @Test
+    void when_mqttSaplIdConstructorIsCalledWithMqttClientIdEqualsNull_then_throwNullPointerException() {
+        assertThrowsExactly(NullPointerException.class, () -> new MqttSaplId(null, "subscriptionId"));
+    }
 
-	@Test
-	void when_mqttSaplIdConstructorIsCalledWithSubscriptionIdEqualsNull_then_throwNullPointerException() {
-		assertThrowsExactly(NullPointerException.class,
-				() -> new MqttSaplId("clientId", null));
-	}
+    @Test
+    void when_mqttSaplIdConstructorIsCalledWithSubscriptionIdEqualsNull_then_throwNullPointerException() {
+        assertThrowsExactly(NullPointerException.class, () -> new MqttSaplId("clientId", null));
+    }
 
-	@Test
-	void when_mqttSaplIdConstructorIsCalledWithSubscriptionIdAndClientIdEqualsNull_then_throwNullPointerException() {
-		assertThrowsExactly(NullPointerException.class,
-				() -> new MqttSaplId(null, null));
-	}
+    @Test
+    void when_mqttSaplIdConstructorIsCalledWithSubscriptionIdAndClientIdEqualsNull_then_throwNullPointerException() {
+        assertThrowsExactly(NullPointerException.class, () -> new MqttSaplId(null, null));
+    }
 }

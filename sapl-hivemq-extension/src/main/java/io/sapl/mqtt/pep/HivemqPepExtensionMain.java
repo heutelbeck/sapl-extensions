@@ -42,9 +42,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HivemqPepExtensionMain implements ExtensionMain {
 
-    private String policiesPath;
-    private PolicyDecisionPoint pdp;
-    private final String saplExtensionConfigPath;
+    private String                                       policiesPath;
+    private PolicyDecisionPoint                          pdp;
+    private final String                                 saplExtensionConfigPath;
     private final ConcurrentMap<String, MqttClientState> mqttClientCache;
 
     /**
@@ -56,6 +56,7 @@ public class HivemqPepExtensionMain implements ExtensionMain {
 
     /**
      * Initialize the HiveMq extension for startup and enforcement.
+     *
      * @param saplExtensionConfigPath path to the extension configuration file
      */
     public HivemqPepExtensionMain(String saplExtensionConfigPath) {
@@ -64,7 +65,9 @@ public class HivemqPepExtensionMain implements ExtensionMain {
 
     /**
      * Initialize the HiveMq extension for startup and enforcement.
-     * @param policiesPath path to the policy files to evaluate by the pdp
+     *
+     * @param policiesPath            path to the policy files to evaluate by the
+     *                                pdp
      * @param saplExtensionConfigPath path to the extension configuration file
      */
     public HivemqPepExtensionMain(String policiesPath, String saplExtensionConfigPath) {
@@ -73,21 +76,26 @@ public class HivemqPepExtensionMain implements ExtensionMain {
 
     /**
      * Initialize the HiveMq extension for startup and enforcement.
-     * @param policiesPath path to the policy files to evaluate by the pdp
+     *
+     * @param policiesPath            path to the policy files to evaluate by the
+     *                                pdp
      * @param saplExtensionConfigPath path to the extension configuration file
-     * @param mqttClientCache used to cache the state of different enforcements
+     * @param mqttClientCache         used to cache the state of different
+     *                                enforcements
      */
     public HivemqPepExtensionMain(String policiesPath, String saplExtensionConfigPath,
-                                  ConcurrentMap<String, MqttClientState> mqttClientCache) {
-        this.policiesPath = policiesPath;
+            ConcurrentMap<String, MqttClientState> mqttClientCache) {
+        this.policiesPath            = policiesPath;
         this.saplExtensionConfigPath = saplExtensionConfigPath;
-        this.mqttClientCache = Objects.requireNonNullElseGet(mqttClientCache, ConcurrentHashMap::new);
+        this.mqttClientCache         = Objects.requireNonNullElseGet(mqttClientCache, ConcurrentHashMap::new);
     }
 
     /**
      * Initialize the HiveMq extension for startup and enforcement.
+     *
      * @param saplExtensionConfigPath path to the extension configuration file
-     * @param pdp used by the pep to request authorization decisions
+     * @param pdp                     used by the pep to request authorization
+     *                                decisions
      */
     public HivemqPepExtensionMain(String saplExtensionConfigPath, PolicyDecisionPoint pdp) {
         this(saplExtensionConfigPath, pdp, null);
@@ -95,24 +103,27 @@ public class HivemqPepExtensionMain implements ExtensionMain {
 
     /**
      * Initialize the HiveMq extension for startup and enforcement.
+     *
      * @param saplExtensionConfigPath path to the extension configuration file
-     * @param pdp used by the pep to request authorization decisions
-     * @param mqttClientCache used to cache the state of different enforcements
+     * @param pdp                     used by the pep to request authorization
+     *                                decisions
+     * @param mqttClientCache         used to cache the state of different
+     *                                enforcements
      */
     public HivemqPepExtensionMain(String saplExtensionConfigPath, PolicyDecisionPoint pdp,
-                                  ConcurrentMap<String, MqttClientState> mqttClientCache) {
-        this.pdp = pdp;
+            ConcurrentMap<String, MqttClientState> mqttClientCache) {
+        this.pdp                     = pdp;
         this.saplExtensionConfigPath = saplExtensionConfigPath;
-        this.mqttClientCache = Objects.requireNonNullElseGet(mqttClientCache, ConcurrentHashMap::new);
+        this.mqttClientCache         = Objects.requireNonNullElseGet(mqttClientCache, ConcurrentHashMap::new);
     }
 
     /**
-     * This method is used by the hivemq broker for extension startup.
-     * The sapl mqtt pep will be started.
+     * This method is used by the hivemq broker for extension startup. The sapl mqtt
+     * pep will be started.
      */
     @Override
     public void extensionStart(@NotNull ExtensionStartInput extensionStartInput,
-                               @NotNull ExtensionStartOutput extensionStartOutput) {
+            @NotNull ExtensionStartOutput extensionStartOutput) {
         log.info("Starting extension '{}'", extensionStartInput.getExtensionInformation().getName());
 
         startMqttPep(extensionStartInput, extensionStartOutput);
@@ -123,24 +134,24 @@ public class HivemqPepExtensionMain implements ExtensionMain {
      */
     @Override
     public void extensionStop(@NotNull ExtensionStopInput extensionStopInput,
-                              @NotNull ExtensionStopOutput extensionStopOutput) {
+            @NotNull ExtensionStopOutput extensionStopOutput) {
         log.info("Shut down extension '{}'", extensionStopInput.getExtensionInformation().getName());
     }
 
     private void startMqttPep(ExtensionStartInput extensionStartInput, ExtensionStartOutput extensionStartOutput) {
         File extensionHomeFolder = extensionStartInput.getExtensionInformation().getExtensionHomeFolder();
         try {
-            var saplMqttExtensionConfig =
-                    getSaplMqttExtensionConfig(extensionHomeFolder, saplExtensionConfigPath);
-            PolicyDecisionPoint constructedPdp = Objects.requireNonNullElse(this.pdp,
+            var                 saplMqttExtensionConfig = getSaplMqttExtensionConfig(extensionHomeFolder,
+                    saplExtensionConfigPath);
+            PolicyDecisionPoint constructedPdp          = Objects.requireNonNullElse(this.pdp,
                     buildPdp(saplMqttExtensionConfig, extensionHomeFolder, policiesPath));
 
             log.info("Using following sapl mqtt extension config: {}", saplMqttExtensionConfig);
             MqttPep mqttPep = new MqttPep(constructedPdp, saplMqttExtensionConfig, mqttClientCache);
             mqttPep.startEnforcement();
         } catch (Exception e) {
-            extensionStartOutput.preventExtensionStartup("A critical failure during extension startup occurred. " +
-                            "The initialisation of the mqtt policy enforcement point failed.");
+            extensionStartOutput.preventExtensionStartup("A critical failure during extension startup occurred. "
+                    + "The initialisation of the mqtt policy enforcement point failed.");
         }
     }
 }

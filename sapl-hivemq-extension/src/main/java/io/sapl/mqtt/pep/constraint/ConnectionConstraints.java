@@ -26,7 +26,8 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This utility class provides constraints handling functions for mqtt connections.
+ * This utility class provides constraints handling functions for mqtt
+ * connections.
  */
 @Slf4j
 @UtilityClass
@@ -37,8 +38,7 @@ public class ConnectionConstraints extends Constraints {
         boolean fulfill(C constraintDetails, J constraint);
     }
 
-    private static final Map<String, ConnectionConstraintHandlingFunction<ConstraintDetails, JsonNode>>
-            CONNECTION_CONSTRAINTS = new HashMap<>();
+    private static final Map<String, ConnectionConstraintHandlingFunction<ConstraintDetails, JsonNode>> CONNECTION_CONSTRAINTS = new HashMap<>();
 
     static {
         CONNECTION_CONSTRAINTS.put(ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION, ConnectionConstraints::setTimeLimit);
@@ -52,8 +52,8 @@ public class ConnectionConstraints extends Constraints {
         }
 
         if (connectionConstraintHandlingFunction == null) { // returns false if the constraint entry couldn't be handled
-            log.warn("No valid constraint handler found for client '{}' and constraint '{}'. " +
-                    "Please check your policy specification.", constraintDetails.getClientId(), constraint);
+            log.warn("No valid constraint handler found for client '{}' and constraint '{}'. "
+                    + "Please check your policy specification.", constraintDetails.getClientId(), constraint);
             return false;
         } else {
             return connectionConstraintHandlingFunction.fulfill(constraintDetails, constraint);
@@ -70,8 +70,8 @@ public class ConnectionConstraints extends Constraints {
             }
             var timeLimitSec = timeLimitJson.asLong();
             constraintDetails.setTimeLimitSec(timeLimitSec);
-            log.info("Limit the connection time for client '{}' to '{}' seconds.",
-                    constraintDetails.getClientId(), timeLimitSec);
+            log.info("Limit the connection time for client '{}' to '{}' seconds.", constraintDetails.getClientId(),
+                    timeLimitSec);
             return true;
         } else {
             log.warn("No time limit specified for mqtt connection constraint of type '{}' for client '{}'.",

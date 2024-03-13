@@ -27,17 +27,17 @@ import io.sapl.mqtt.pep.cache.MqttClientState;
 
 class ConstraintDetailsTests {
 
-	@Test
-	void when_subscriptionIdGetsLookedUp_then_returnSubscriptionId() {
-		// GIVEN
-		var mqttClientState    = new MqttClientState("clientId");
-		var identAuthzDecision = new IdentifiableAuthorizationDecision("subscriptionId", AuthorizationDecision.PERMIT);
-		var constraintDetails  = new ConstraintDetails(mqttClientState.getClientId(), identAuthzDecision);
+    @Test
+    void when_subscriptionIdGetsLookedUp_then_returnSubscriptionId() {
+        // GIVEN
+        var mqttClientState    = new MqttClientState("clientId");
+        var identAuthzDecision = new IdentifiableAuthorizationDecision("subscriptionId", AuthorizationDecision.PERMIT);
+        var constraintDetails  = new ConstraintDetails(mqttClientState.getClientId(), identAuthzDecision);
 
-		// WHEN
-		var subscriptionId = constraintDetails.getSubscriptionId();
+        // WHEN
+        var subscriptionId = constraintDetails.getSubscriptionId();
 
-		// THEN
-		assertEquals("subscriptionId", subscriptionId);
-	}
+        // THEN
+        assertEquals("subscriptionId", subscriptionId);
+    }
 }

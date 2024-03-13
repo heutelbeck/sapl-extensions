@@ -25,15 +25,15 @@ import org.junit.jupiter.api.Test;
 
 class ConfigInitUtilityTests {
 
-	@Test
-	void when_extensionConfigPathIsNotSpecified_then_useDefaultPathInExtensionHome() {
-		// GIVEN
-		var extensionHomeFolder = new File("src/test/resources/config");
+    @Test
+    void when_extensionConfigPathIsNotSpecified_then_useDefaultPathInExtensionHome() {
+        // GIVEN
+        var extensionHomeFolder = new File("src/test/resources/config");
 
-		// WHEN
-		var extensionConfig = ConfigInitUtility.getSaplMqttExtensionConfig(extensionHomeFolder, null);
+        // WHEN
+        var extensionConfig = ConfigInitUtility.getSaplMqttExtensionConfig(extensionHomeFolder, null);
 
-		// THEN
-		assertEquals(6000, extensionConfig.getConnectionEnforcementTimeoutMillis());
-	}
+        // THEN
+        assertEquals(6000, extensionConfig.getConnectionEnforcementTimeoutMillis());
+    }
 }

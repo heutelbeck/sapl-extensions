@@ -43,145 +43,139 @@ import org.junit.jupiter.api.io.TempDir;
 
 class WildcardSubscriptionEnforcementIT {
 
-	@TempDir
-	Path dataFolder;
-	@TempDir
-	Path configFolder;
-	@TempDir
-	Path extensionFolder;
+    @TempDir
+    Path dataFolder;
+    @TempDir
+    Path configFolder;
+    @TempDir
+    Path extensionFolder;
 
-	private EmbeddedHiveMQ mqttBroker;
-	private Mqtt5BlockingClient publishClient;
-	private Mqtt5BlockingClient 	subscribeClient;
+    private EmbeddedHiveMQ      mqttBroker;
+    private Mqtt5BlockingClient publishClient;
+    private Mqtt5BlockingClient subscribeClient;
 
-	@BeforeEach
-	void beforeEach() throws InitializationException {
-		mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder);
-		publishClient = buildAndStartMqttClient("WILDCARD_MQTT_CLIENT_PUBLISH");
-		subscribeClient = buildAndStartMqttClient("WILDCARD_MQTT_CLIENT_SUBSCRIBE");
-	}
+    @BeforeEach
+    void beforeEach() throws InitializationException {
+        mqttBroker      = buildAndStartBroker(dataFolder, configFolder, extensionFolder);
+        publishClient   = buildAndStartMqttClient("WILDCARD_MQTT_CLIENT_PUBLISH");
+        subscribeClient = buildAndStartMqttClient("WILDCARD_MQTT_CLIENT_SUBSCRIBE");
+    }
 
-	@AfterEach
-	void afterEach() {
-		publishClient.disconnect();
-		subscribeClient.disconnect();
-		stopBroker(mqttBroker);
-	}
+    @AfterEach
+    void afterEach() {
+        publishClient.disconnect();
+        subscribeClient.disconnect();
+        stopBroker(mqttBroker);
+    }
 
-	@Test
-	@Timeout(10)
-	void when_subscribedWithMultilevelWildcard_then_getMessageOfPermittedTopic() {
-		// GIVEN
-		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage("first/#");
+    @Test
+    @Timeout(10)
+    void when_subscribedWithMultilevelWildcard_then_getMessageOfPermittedTopic() {
+        // GIVEN
+        Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage("first/#");
 
-		Mqtt5Publish publishMessage = buildMqttPublishMessage("first/second/third",
-				false);
+        Mqtt5Publish publishMessage = buildMqttPublishMessage("first/second/third", false);
 
-		// WHEN
-		subscribeClient.subscribe(subscribeMessage);
+        // WHEN
+        subscribeClient.subscribe(subscribeMessage);
 
-		// THEN
-		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-			publishClient.publish(publishMessage);
-			Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL)
-					.receive(2, TimeUnit.SECONDS);
-			assertTrue(receivedMessage.isPresent());
-			assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
-		});
+        // THEN
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            publishClient.publish(publishMessage);
+            Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
+                    TimeUnit.SECONDS);
+            assertTrue(receivedMessage.isPresent());
+            assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
+        });
 
-		// FINALLY
-		subscribeClient.unsubscribeWith().topicFilter("first/#").send();
-	}
+        // FINALLY
+        subscribeClient.unsubscribeWith().topicFilter("first/#").send();
+    }
 
-	@Test
-	@Timeout(10)
-	void when_subscribedWithSingleLevelWildcard_then_getMessageOfPermittedTopic() {
-		// GIVEN
-		Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage("first/+/third");
+    @Test
+    @Timeout(10)
+    void when_subscribedWithSingleLevelWildcard_then_getMessageOfPermittedTopic() {
+        // GIVEN
+        Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage("first/+/third");
 
-		Mqtt5Publish publishMessage = buildMqttPublishMessage("first/second/third",
-				false);
+        Mqtt5Publish publishMessage = buildMqttPublishMessage("first/second/third", false);
 
-		// WHEN
-		subscribeClient.subscribe(subscribeMessage);
+        // WHEN
+        subscribeClient.subscribe(subscribeMessage);
 
-		// THEN
-		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-			publishClient.publish(publishMessage);
-			Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL)
-					.receive(2, TimeUnit.SECONDS);
-			assertTrue(receivedMessage.isPresent());
-			assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
-		});
+        // THEN
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            publishClient.publish(publishMessage);
+            Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
+                    TimeUnit.SECONDS);
+            assertTrue(receivedMessage.isPresent());
+            assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
+        });
 
-		// FINALLY
-		subscribeClient.unsubscribeWith().topicFilter("first/+/third").send();
-	}
+        // FINALLY
+        subscribeClient.unsubscribeWith().topicFilter("first/+/third").send();
+    }
 
-	@Test
-	@Timeout(10)
-	void when_subscribedWithMultiLevelWildcardAndAnotherTopicSubscriptionDenied_then_getMessagesOverWildcard() {
-		// GIVEN
-		Mqtt5Subscription firstSubscription              = Mqtt5Subscription.builder().topicFilter("first/#").build();
-		Mqtt5Subscription secondSubscription             = Mqtt5Subscription.builder().topicFilter("first/second")
-				.build();
-		Mqtt5Subscribe    subscribeMessageMultipleTopics = Mqtt5Subscribe.builder()
-				.addSubscriptions(firstSubscription, secondSubscription)
-				.build();
+    @Test
+    @Timeout(10)
+    void when_subscribedWithMultiLevelWildcardAndAnotherTopicSubscriptionDenied_then_getMessagesOverWildcard() {
+        // GIVEN
+        Mqtt5Subscription firstSubscription              = Mqtt5Subscription.builder().topicFilter("first/#").build();
+        Mqtt5Subscription secondSubscription             = Mqtt5Subscription.builder().topicFilter("first/second")
+                .build();
+        Mqtt5Subscribe    subscribeMessageMultipleTopics = Mqtt5Subscribe.builder()
+                .addSubscriptions(firstSubscription, secondSubscription).build();
 
-		Mqtt5Publish publishMessage = buildMqttPublishMessage("first/second",
-				false);
+        Mqtt5Publish publishMessage = buildMqttPublishMessage("first/second", false);
 
-		// WHEN
-		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> subscribeClient.subscribe(subscribeMessageMultipleTopics));
-		assertEquals(Mqtt5SubAckReasonCode.GRANTED_QOS_2, subAckException.getMqttMessage().getReasonCodes().get(0));
-		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(1));
+        // WHEN
+        Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
+                () -> subscribeClient.subscribe(subscribeMessageMultipleTopics));
+        assertEquals(Mqtt5SubAckReasonCode.GRANTED_QOS_2, subAckException.getMqttMessage().getReasonCodes().get(0));
+        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(1));
 
-		// THEN
-		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-			publishClient.publish(publishMessage);
-			Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL)
-					.receive(2, TimeUnit.SECONDS);
-			assertTrue(receivedMessage.isPresent());
-			assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
-		});
+        // THEN
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            publishClient.publish(publishMessage);
+            Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
+                    TimeUnit.SECONDS);
+            assertTrue(receivedMessage.isPresent());
+            assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
+        });
 
-		// FINALLY
-		subscribeClient.unsubscribeWith().topicFilter("first/#").send();
-	}
+        // FINALLY
+        subscribeClient.unsubscribeWith().topicFilter("first/#").send();
+    }
 
-	@Test
-	@Timeout(10)
-	void when_subscribedWithSingleLevelWildcardAndAnotherTopicSubscriptionDenied_then_getMessagesOverWildcard() {
-		// GIVEN
-		Mqtt5Subscription firstSubscription              = Mqtt5Subscription.builder().topicFilter("first/+/third")
-				.build();
-		Mqtt5Subscription secondSubscription             = Mqtt5Subscription.builder().topicFilter("first/second/third")
-				.build();
-		Mqtt5Subscribe    subscribeMessageMultipleTopics = Mqtt5Subscribe.builder()
-				.addSubscriptions(firstSubscription, secondSubscription)
-				.build();
+    @Test
+    @Timeout(10)
+    void when_subscribedWithSingleLevelWildcardAndAnotherTopicSubscriptionDenied_then_getMessagesOverWildcard() {
+        // GIVEN
+        Mqtt5Subscription firstSubscription              = Mqtt5Subscription.builder().topicFilter("first/+/third")
+                .build();
+        Mqtt5Subscription secondSubscription             = Mqtt5Subscription.builder().topicFilter("first/second/third")
+                .build();
+        Mqtt5Subscribe    subscribeMessageMultipleTopics = Mqtt5Subscribe.builder()
+                .addSubscriptions(firstSubscription, secondSubscription).build();
 
-		Mqtt5Publish publishMessage = buildMqttPublishMessage("first/second/third",
-				false);
+        Mqtt5Publish publishMessage = buildMqttPublishMessage("first/second/third", false);
 
-		// WHEN
-		Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-				() -> subscribeClient.subscribe(subscribeMessageMultipleTopics));
-		assertEquals(Mqtt5SubAckReasonCode.GRANTED_QOS_2, subAckException.getMqttMessage().getReasonCodes().get(0));
-		assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(1));
+        // WHEN
+        Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
+                () -> subscribeClient.subscribe(subscribeMessageMultipleTopics));
+        assertEquals(Mqtt5SubAckReasonCode.GRANTED_QOS_2, subAckException.getMqttMessage().getReasonCodes().get(0));
+        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(1));
 
-		// THEN
-		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-			publishClient.publish(publishMessage);
-			Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL)
-					.receive(2, TimeUnit.SECONDS);
-			assertTrue(receivedMessage.isPresent());
-			assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
-		});
+        // THEN
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            publishClient.publish(publishMessage);
+            Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
+                    TimeUnit.SECONDS);
+            assertTrue(receivedMessage.isPresent());
+            assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.get().getPayloadAsBytes()));
+        });
 
-		// FINALLY
-		subscribeClient.unsubscribeWith().topicFilter("first/+/third").send();
-	}
+        // FINALLY
+        subscribeClient.unsubscribeWith().topicFilter("first/+/third").send();
+    }
 }

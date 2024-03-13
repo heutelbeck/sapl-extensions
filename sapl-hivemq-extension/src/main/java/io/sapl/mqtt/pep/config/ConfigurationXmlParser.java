@@ -38,7 +38,8 @@ public class ConfigurationXmlParser {
     private final JAXBContext jaxb;
 
     /**
-     * Initializes the xml parser for unmarshalling the sapl mqtt extension configuration file.
+     * Initializes the xml parser for unmarshalling the sapl mqtt extension
+     * configuration file.
      */
     ConfigurationXmlParser() {
         try {
@@ -51,8 +52,10 @@ public class ConfigurationXmlParser {
 
     /**
      * Unmarshal the xml sapl mqtt extension configuration file for further usage.
+     *
      * @param file the sapl mqtt extension configuration file
-     * @return a java object representation of the sapl mqtt extension configuration file
+     * @return a java object representation of the sapl mqtt extension configuration
+     *         file
      * @throws IOException is thrown when unmarshalling does fail
      */
     SaplMqttExtensionConfig unmarshalExtensionConfig(File file) throws IOException {

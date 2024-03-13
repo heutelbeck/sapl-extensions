@@ -26,7 +26,8 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This utility class provides constraints handling functions for mqtt subscriptions.
+ * This utility class provides constraints handling functions for mqtt
+ * subscriptions.
  */
 @Slf4j
 @UtilityClass
@@ -39,8 +40,7 @@ public class SubscriptionConstraints extends Constraints {
         boolean fulfill(C constraintDetails, J constraint);
     }
 
-    private static final Map<String, SubscriptionConstraintHandlingFunction<ConstraintDetails, JsonNode>>
-            SUBSCRIPTION_CONSTRAINTS = new HashMap<>();
+    private static final Map<String, SubscriptionConstraintHandlingFunction<ConstraintDetails, JsonNode>> SUBSCRIPTION_CONSTRAINTS = new HashMap<>();
 
     static {
         SUBSCRIPTION_CONSTRAINTS.put(ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION, SubscriptionConstraints::setTimeLimit);
@@ -49,16 +49,16 @@ public class SubscriptionConstraints extends Constraints {
     }
 
     static boolean enforceSubscriptionConstraintEntries(ConstraintDetails constraintDetails, JsonNode constraint) {
-        SubscriptionConstraintHandlingFunction<ConstraintDetails, JsonNode>
-                subscriptionConstraintHandlingFunction = null;
+        SubscriptionConstraintHandlingFunction<ConstraintDetails, JsonNode> subscriptionConstraintHandlingFunction = null;
         if (constraint.has(ENVIRONMENT_CONSTRAINT_TYPE) && constraint.get(ENVIRONMENT_CONSTRAINT_TYPE).isTextual()) {
             String constraintType = constraint.get(ENVIRONMENT_CONSTRAINT_TYPE).asText();
             subscriptionConstraintHandlingFunction = SUBSCRIPTION_CONSTRAINTS.get(constraintType);
         }
 
-        if (subscriptionConstraintHandlingFunction == null) { // returns false if the constraint entry couldn't be handled
-            log.warn("No valid constraint handler found for client '{}' and constraint '{}'. " +
-                    "Please check your policy specification.", constraintDetails.getClientId(), constraint);
+        if (subscriptionConstraintHandlingFunction == null) { // returns false if the constraint entry couldn't be
+                                                              // handled
+            log.warn("No valid constraint handler found for client '{}' and constraint '{}'. "
+                    + "Please check your policy specification.", constraintDetails.getClientId(), constraint);
             return false;
         } else {
             return subscriptionConstraintHandlingFunction.fulfill(constraintDetails, constraint);
@@ -79,8 +79,10 @@ public class SubscriptionConstraints extends Constraints {
                     constraintDetails.getTopic(), constraintDetails.getClientId(), timeLimitSec);
             return true;
         } else {
-            log.warn("No time limit specified for mqtt subscription constraint of type '{}' for topic '{}' " +
-                    "of client '{}'.", constraint.get(ENVIRONMENT_CONSTRAINT_TYPE), constraintDetails.getTopic(),
+            log.warn(
+                    "No time limit specified for mqtt subscription constraint of type '{}' for topic '{}' "
+                            + "of client '{}'.",
+                    constraint.get(ENVIRONMENT_CONSTRAINT_TYPE), constraintDetails.getTopic(),
                     constraintDetails.getClientId());
             return false;
         }

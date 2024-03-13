@@ -36,43 +36,40 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This utility class provides constraints handling functions for mqtt publishes.
+ * This utility class provides constraints handling functions for mqtt
+ * publishes.
  */
 @Slf4j
 @UtilityClass
 public class PublishConstraints extends Constraints {
 
-    static final String ENVIRONMENT_QOS_CONSTRAINT = "setQos";
-    static final String ENVIRONMENT_QOS_LEVEL = "qosLevel";
-    static final String ENVIRONMENT_RETAIN_MESSAGE_CONSTRAINT = "retainMessage";
-    static final String ENVIRONMENT_REPLACE_CONTENT_TYPE = "replaceContentType";
-    static final String ENVIRONMENT_REPLACEMENT = "replacement";
-    static final String ENVIRONMENT_REPLACE_PAYLOAD = "replacePayload";
+    static final String ENVIRONMENT_QOS_CONSTRAINT                  = "setQos";
+    static final String ENVIRONMENT_QOS_LEVEL                       = "qosLevel";
+    static final String ENVIRONMENT_RETAIN_MESSAGE_CONSTRAINT       = "retainMessage";
+    static final String ENVIRONMENT_REPLACE_CONTENT_TYPE            = "replaceContentType";
+    static final String ENVIRONMENT_REPLACEMENT                     = "replacement";
+    static final String ENVIRONMENT_REPLACE_PAYLOAD                 = "replacePayload";
     static final String ENVIRONMENT_REPLACE_MESSAGE_EXPIRY_INTERVAL = "replaceMessageExpiryInterval";
-    static final String ENVIRONMENT_TIME_INTERVAL = "timeInterval";
-    static final String ENVIRONMENT_BLACKEN_PAYLOAD = "blackenPayload";
-    static final String ENVIRONMENT_DISCLOSE_LEFT = "discloseLeft";
-    static final String ENVIRONMENT_DISCLOSE_RIGHT = "discloseRight";
+    static final String ENVIRONMENT_TIME_INTERVAL                   = "timeInterval";
+    static final String ENVIRONMENT_BLACKEN_PAYLOAD                 = "blackenPayload";
+    static final String ENVIRONMENT_DISCLOSE_LEFT                   = "discloseLeft";
+    static final String ENVIRONMENT_DISCLOSE_RIGHT                  = "discloseRight";
 
-    private static final String DEFAULT_REPLACEMENT = "X";
-    private static final int DEFAULT_NUMBER_OF_CHARACTERS_TO_SHOW_LEFT = 0;
-    private static final int DEFAULT_NUMBER_OF_CHARACTERS_TO_SHOW_RIGHT = 0;
+    private static final String DEFAULT_REPLACEMENT                        = "X";
+    private static final int    DEFAULT_NUMBER_OF_CHARACTERS_TO_SHOW_LEFT  = 0;
+    private static final int    DEFAULT_NUMBER_OF_CHARACTERS_TO_SHOW_RIGHT = 0;
 
-    private static final String MIME_TYPE_PLAIN_TEXT = "text/plain";
-    private static final String ILLEGAL_PARAMETER_DISCLOSE_LEFT =
-            "Illegal parameter for left disclosure. Expecting a positive integer.";
-    private static final String ILLEGAL_PARAMETER_DISCLOSE_RIGHT =
-            "Illegal parameter for right disclosure. Expecting a positive integer.";
-    private static final String ILLEGAL_PARAMETER_REPLACEMENT = "Illegal parameter for replacement. Expecting a string.";
-
+    private static final String MIME_TYPE_PLAIN_TEXT             = "text/plain";
+    private static final String ILLEGAL_PARAMETER_DISCLOSE_LEFT  = "Illegal parameter for left disclosure. Expecting a positive integer.";
+    private static final String ILLEGAL_PARAMETER_DISCLOSE_RIGHT = "Illegal parameter for right disclosure. Expecting a positive integer.";
+    private static final String ILLEGAL_PARAMETER_REPLACEMENT    = "Illegal parameter for replacement. Expecting a string.";
 
     @FunctionalInterface
     private interface PublishConstraintHandlingFunction<S, M, J> {
         boolean fulfill(S clientId, M publishPacket, J constraint) throws CharacterCodingException;
     }
 
-    private static final Map<String, PublishConstraintHandlingFunction<String, ModifiablePublishPacket, JsonNode>>
-            PUBLISH_CONSTRAINTS = new HashMap<>();
+    private static final Map<String, PublishConstraintHandlingFunction<String, ModifiablePublishPacket, JsonNode>> PUBLISH_CONSTRAINTS = new HashMap<>();
 
     static {
         PUBLISH_CONSTRAINTS.put(ENVIRONMENT_QOS_CONSTRAINT, PublishConstraints::setQos);
@@ -85,18 +82,19 @@ public class PublishConstraints extends Constraints {
     }
 
     static boolean enforcePublishConstraintEntries(ConstraintDetails constraintDetails, JsonNode constraint) {
-        ModifiablePublishPacket publishPacket = constraintDetails.getPublishInboundOutput().getPublishPacket();
-        String clientId = constraintDetails.getClientId();
-        PublishConstraintHandlingFunction<String, ModifiablePublishPacket, JsonNode>
-                publishConstraintHandlingFunction = null;
+        ModifiablePublishPacket                                                      publishPacket                     = constraintDetails
+                .getPublishInboundOutput().getPublishPacket();
+        String                                                                       clientId                          = constraintDetails
+                .getClientId();
+        PublishConstraintHandlingFunction<String, ModifiablePublishPacket, JsonNode> publishConstraintHandlingFunction = null;
         if (constraint.has(ENVIRONMENT_CONSTRAINT_TYPE) && constraint.get(ENVIRONMENT_CONSTRAINT_TYPE).isTextual()) {
             String constraintType = constraint.get(ENVIRONMENT_CONSTRAINT_TYPE).asText();
             publishConstraintHandlingFunction = PUBLISH_CONSTRAINTS.get(constraintType);
         }
 
         if (publishConstraintHandlingFunction == null) { // returns false if the constraint entry couldn't be handled
-            log.warn("No valid constraint handler found for client '{}' and constraint '{}'. " +
-                    "Please check your policy specification.", clientId, constraint);
+            log.warn("No valid constraint handler found for client '{}' and constraint '{}'. "
+                    + "Please check your policy specification.", clientId, constraint);
             return false;
         } else {
             try {
@@ -134,14 +132,14 @@ public class PublishConstraints extends Constraints {
             String status = statusJson.asText();
             if (ENVIRONMENT_ENABLED.equals(status)) {
                 publishPacket.setRetain(true);
-                log.info("Changed retain flag of message '{}' of client '{}' to 'true'.",
-                        publishPacket.getTopic(), clientId);
+                log.info("Changed retain flag of message '{}' of client '{}' to 'true'.", publishPacket.getTopic(),
+                        clientId);
                 return true;
             }
             if (ENVIRONMENT_DISABLED.equals(status)) {
                 publishPacket.setRetain(false);
-                log.info("Changed retain flag of message '{}' of client '{}' to 'false'.",
-                        publishPacket.getTopic(), clientId);
+                log.info("Changed retain flag of message '{}' of client '{}' to 'false'.", publishPacket.getTopic(),
+                        clientId);
                 return true;
             }
             log.warn("Specified illegal value for the retain flag for message of topic '{}' of client '{}': {}",
@@ -154,7 +152,7 @@ public class PublishConstraints extends Constraints {
     }
 
     private static boolean setMessageExpiryInterval(String clientId, ModifiablePublishPacket publishPacket,
-                                                    JsonNode constraint) {
+            JsonNode constraint) {
         JsonNode timeIntervalJson = constraint.get(ENVIRONMENT_TIME_INTERVAL);
         if (timeIntervalJson != null && timeIntervalJson.canConvertToExactIntegral()) {
             var expiryInterval = timeIntervalJson.asLong();
@@ -163,8 +161,8 @@ public class PublishConstraints extends Constraints {
                     publishPacket.getTopic(), clientId, expiryInterval);
             return true;
         } else {
-            log.warn("No time interval to replace the message expiry interval of topic '{}' of client '{}' " +
-                    "was specified.", publishPacket.getTopic(), clientId);
+            log.warn("No time interval to replace the message expiry interval of topic '{}' of client '{}' "
+                    + "was specified.", publishPacket.getTopic(), clientId);
             return false;
         }
     }
@@ -175,8 +173,8 @@ public class PublishConstraints extends Constraints {
             String replacement = replacementJson.asText();
             // the content type must be a UTF-8 encoded String
             publishPacket.setContentType(replacement);
-            log.info("Changed content type of message '{}' of client '{}' to: {}", publishPacket.getTopic(),
-                    clientId, replacement);
+            log.info("Changed content type of message '{}' of client '{}' to: {}", publishPacket.getTopic(), clientId,
+                    replacement);
             return true;
         } else {
             log.warn("No replacement of content type constraint for message of topic '{}' of client '{}' specified.",
@@ -205,10 +203,10 @@ public class PublishConstraints extends Constraints {
     }
 
     private static boolean blackenPayloadText(String clientId, ModifiablePublishPacket publishPacket,
-                                                JsonNode constraint) throws CharacterCodingException {
-        var payloadFormatIndicator =
-                publishPacket.getPayloadFormatIndicator().orElse(PayloadFormatIndicator.UNSPECIFIED);
-        String contentType = publishPacket.getContentType().orElse(null);
+            JsonNode constraint) throws CharacterCodingException {
+        var    payloadFormatIndicator = publishPacket.getPayloadFormatIndicator()
+                .orElse(PayloadFormatIndicator.UNSPECIFIED);
+        String contentType            = publishPacket.getContentType().orElse(null);
 
         if (payloadFormatIndicator == PayloadFormatIndicator.UTF_8 || MIME_TYPE_PLAIN_TEXT.equals(contentType)) {
             String payloadUtf8 = getUtf8PayloadOfPublishPacket(publishPacket);
@@ -217,8 +215,8 @@ public class PublishConstraints extends Constraints {
             }
             return true;
         } else { // not a UTF-8 payload
-            log.warn("Blacken constraint could not be fulfilled because in the message of topic '{}' of client '{}' " +
-                    "the payload is not indicated as UTF-8.", publishPacket.getTopic(), clientId);
+            log.warn("Blacken constraint could not be fulfilled because in the message of topic '{}' of client '{}' "
+                    + "the payload is not indicated as UTF-8.", publishPacket.getTopic(), clientId);
             return false;
         }
     }
@@ -226,22 +224,24 @@ public class PublishConstraints extends Constraints {
     @Nullable
     private static String getUtf8PayloadOfPublishPacket(ModifiablePublishPacket publishPacket)
             throws CharacterCodingException {
-        String payloadUtf8 = null;
+        String               payloadUtf8               = null;
         Optional<ByteBuffer> optionalPayloadByteBuffer = publishPacket.getPayload();
         if (optionalPayloadByteBuffer.isPresent()) {
-            var payloadBytebuffer = optionalPayloadByteBuffer.get();
-            CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder();
-            var charBuffer = decoder.decode(payloadBytebuffer);
+            var            payloadBytebuffer = optionalPayloadByteBuffer.get();
+            CharsetDecoder decoder           = StandardCharsets.UTF_8.newDecoder();
+            var            charBuffer        = decoder.decode(payloadBytebuffer);
             payloadUtf8 = charBuffer.toString();
         }
         return payloadUtf8;
     }
 
     private static void setBlackenedPayloadInPublishPacket(ModifiablePublishPacket publishPacket, String payload,
-                                                           JsonNode constraint) {
-        int discloseLeft = extractNumberOfCharactersToDiscloseOnTheLeftSideFromParametersOrUseDefault(constraint);
-        int discloseRight = extractNumberOfCharactersToDiscloseOnTheRightSideFromParametersOrUseDefault(constraint);
-        var replacement = extractReplacementStringFromParametersOrUseDefault(constraint);
+            JsonNode constraint) {
+        int    discloseLeft     = extractNumberOfCharactersToDiscloseOnTheLeftSideFromParametersOrUseDefault(
+                constraint);
+        int    discloseRight    = extractNumberOfCharactersToDiscloseOnTheRightSideFromParametersOrUseDefault(
+                constraint);
+        var    replacement      = extractReplacementStringFromParametersOrUseDefault(constraint);
         String blackenedPayload = blackenText(payload, replacement, discloseLeft, discloseRight);
         publishPacket.setPayload(ByteBuffer.wrap(blackenedPayload.getBytes(StandardCharsets.UTF_8)));
     }
@@ -271,7 +271,8 @@ public class PublishConstraints extends Constraints {
                 ILLEGAL_PARAMETER_DISCLOSE_LEFT);
     }
 
-    private static int extractNumberOfCharactersToDiscloseOnTheRightSideFromParametersOrUseDefault(JsonNode constraint) {
+    private static int extractNumberOfCharactersToDiscloseOnTheRightSideFromParametersOrUseDefault(
+            JsonNode constraint) {
         return extractNumberOfCharactersToDiscloseOneSiteFromParametersOrUseDefault(
                 DEFAULT_NUMBER_OF_CHARACTERS_TO_SHOW_RIGHT, constraint, ENVIRONMENT_DISCLOSE_RIGHT,
                 ILLEGAL_PARAMETER_DISCLOSE_RIGHT);
@@ -280,7 +281,7 @@ public class PublishConstraints extends Constraints {
     private static int extractNumberOfCharactersToDiscloseOneSiteFromParametersOrUseDefault(
             int defaultNumberOfCharactersToShowOnSite, JsonNode constraint, String siteToDisclose,
             String illegalDiscloseParameterExceptionMessage) {
-        int discloseOnSite = defaultNumberOfCharactersToShowOnSite;
+        int      discloseOnSite     = defaultNumberOfCharactersToShowOnSite;
         JsonNode discloseOnSiteJson = constraint.get(siteToDisclose);
         if (discloseOnSiteJson != null) {
             if (!discloseOnSiteJson.isNumber() || discloseOnSiteJson.asInt() < 0) {
@@ -292,7 +293,7 @@ public class PublishConstraints extends Constraints {
     }
 
     private static String extractReplacementStringFromParametersOrUseDefault(JsonNode constraint) {
-        var replacementString = DEFAULT_REPLACEMENT;
+        var      replacementString     = DEFAULT_REPLACEMENT;
         JsonNode replacementStringJson = constraint.get(ENVIRONMENT_REPLACEMENT);
         if (replacementStringJson != null) {
             if (!replacementStringJson.isTextual()) {

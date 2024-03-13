@@ -33,43 +33,43 @@ import org.mockito.Mockito;
 
 class ExtensionConfigTests {
 
-	@Test
-	void when_configFileIsIncorrectlySpecified_then_usingDefaultValues() {
-		// GIVEN
-		var pathToConfig = new File("src/test/resources/config/incorrect");
+    @Test
+    void when_configFileIsIncorrectlySpecified_then_usingDefaultValues() {
+        // GIVEN
+        var pathToConfig = new File("src/test/resources/config/incorrect");
 
-		// WHEN
-		var saplMqttExtensionConfiguration = new SaplExtensionConfiguration(pathToConfig);
-		var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
+        // WHEN
+        var saplMqttExtensionConfiguration = new SaplExtensionConfiguration(pathToConfig);
+        var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
-		// THEN
-		assertEquals(DEFAULT_EMBEDDED_PDP_POLICIES_PATH, saplMqttExtensionConfig.getEmbeddedPdpPoliciesPath());
-	}
+        // THEN
+        assertEquals(DEFAULT_EMBEDDED_PDP_POLICIES_PATH, saplMqttExtensionConfig.getEmbeddedPdpPoliciesPath());
+    }
 
-	@Test
-	void when_configFileIsNotFoundInDirectory_then_usingDefaultValues() {
-		// GIVEN
-		var pathToConfig = new File("src/test/resources/config/incorrect/empty");
+    @Test
+    void when_configFileIsNotFoundInDirectory_then_usingDefaultValues() {
+        // GIVEN
+        var pathToConfig = new File("src/test/resources/config/incorrect/empty");
 
-		// WHEN
-		var saplMqttExtensionConfiguration = new SaplExtensionConfiguration(pathToConfig);
-		var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
+        // WHEN
+        var saplMqttExtensionConfiguration = new SaplExtensionConfiguration(pathToConfig);
+        var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
-		// THEN
-		assertTrue(saplMqttExtensionConfig.isEmbeddedPdpPoliciesPathRelativeToExtensionHome());
-	}
+        // THEN
+        assertTrue(saplMqttExtensionConfig.isEmbeddedPdpPoliciesPathRelativeToExtensionHome());
+    }
 
-	@Test
-	void when_xmlParserCouldNotBeInitialized_then_throwException() {
-		// GIVEN
-		try (var jaxbContextMock = Mockito.mockStatic(JAXBContext.class)) {
+    @Test
+    void when_xmlParserCouldNotBeInitialized_then_throwException() {
+        // GIVEN
+        try (var jaxbContextMock = Mockito.mockStatic(JAXBContext.class)) {
 
-			// WHEN
-			jaxbContextMock.when(() -> JAXBContext.newInstance(SaplMqttExtensionConfig.class))
-					.thenThrow(JAXBException.class);
+            // WHEN
+            jaxbContextMock.when(() -> JAXBContext.newInstance(SaplMqttExtensionConfig.class))
+                    .thenThrow(JAXBException.class);
 
-			// THEN
-			Assertions.assertThrows(DataBindingException.class, ConfigurationXmlParser::new);
-		}
-	}
+            // THEN
+            Assertions.assertThrows(DataBindingException.class, ConfigurationXmlParser::new);
+        }
+    }
 }

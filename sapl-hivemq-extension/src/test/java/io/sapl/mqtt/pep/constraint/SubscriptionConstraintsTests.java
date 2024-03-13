@@ -39,167 +39,167 @@ import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 
 class SubscriptionConstraintsTests {
 
-	@Test
-	void when_specifiedConstraintTypeIsNotTextual_then_signalConstraintCouldNotBeHandled() {
-		// GIVEN
-		var constraintDetails = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(), "testTopic");
-		var constraint        = JsonNodeFactory.instance.objectNode().put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, 4);
+    @Test
+    void when_specifiedConstraintTypeIsNotTextual_then_signalConstraintCouldNotBeHandled() {
+        // GIVEN
+        var constraintDetails = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(), "testTopic");
+        var constraint        = JsonNodeFactory.instance.objectNode().put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, 4);
 
-		// WHEN
-		var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetails,
-				constraint);
+        // WHEN
+        var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetails,
+                constraint);
 
-		// THEN
-		assertFalse(wasSuccessfullyHandled);
-	}
+        // THEN
+        assertFalse(wasSuccessfullyHandled);
+    }
 
-	@Test
-	void when_settingTimeLimitAndTimeLimitIsNotANumber_then_signalConstraintCouldNotBeHandled() {
-		// GIVEN
-		var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
-				"testTopic");
-		var constraintDetailsSpy = spy(constraintDetails);
-		var constraint           = JsonNodeFactory.instance.objectNode()
-				.put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION)
-				.put(ENVIRONMENT_TIME_LIMIT, "five");
+    @Test
+    void when_settingTimeLimitAndTimeLimitIsNotANumber_then_signalConstraintCouldNotBeHandled() {
+        // GIVEN
+        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+                "testTopic");
+        var constraintDetailsSpy = spy(constraintDetails);
+        var constraint           = JsonNodeFactory.instance.objectNode()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION)
+                .put(ENVIRONMENT_TIME_LIMIT, "five");
 
-		// WHEN
-		var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
-				constraint);
+        // WHEN
+        var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
+                constraint);
 
-		// THEN
-		verify(constraintDetailsSpy, never()).setTimeLimitSec(anyLong());
-		assertFalse(wasSuccessfullyHandled);
-	}
+        // THEN
+        verify(constraintDetailsSpy, never()).setTimeLimitSec(anyLong());
+        assertFalse(wasSuccessfullyHandled);
+    }
 
-	@Test
-	void when_settingTimeLimitAndTimeLimitIsBelowOne_then_signalConstraintCouldNotBeHandled() {
-		// GIVEN
-		var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
-				"testTopic");
-		var constraintDetailsSpy = spy(constraintDetails);
-		var constraint           = JsonNodeFactory.instance.objectNode()
-				.put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION)
-				.put(ENVIRONMENT_TIME_LIMIT, 0);
+    @Test
+    void when_settingTimeLimitAndTimeLimitIsBelowOne_then_signalConstraintCouldNotBeHandled() {
+        // GIVEN
+        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+                "testTopic");
+        var constraintDetailsSpy = spy(constraintDetails);
+        var constraint           = JsonNodeFactory.instance.objectNode()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION)
+                .put(ENVIRONMENT_TIME_LIMIT, 0);
 
-		// WHEN
-		var wasSuccessfullyHandled = SubscriptionConstraints
-				.enforceSubscriptionConstraintEntries(constraintDetailsSpy, constraint);
+        // WHEN
+        var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
+                constraint);
 
-		// THEN
-		verify(constraintDetailsSpy, never()).setTimeLimitSec(anyLong());
-		assertFalse(wasSuccessfullyHandled);
-	}
+        // THEN
+        verify(constraintDetailsSpy, never()).setTimeLimitSec(anyLong());
+        assertFalse(wasSuccessfullyHandled);
+    }
 
-	@Test
-	void when_settingTimeLimitAndTimeLimitIsNotSpecified_then_signalConstraintCouldNotBeHandled() {
-		// GIVEN
-		var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
-				"testTopic");
-		var constraintDetailsSpy = spy(constraintDetails);
-		var constraint           = JsonNodeFactory.instance.objectNode()
-				.put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION);
+    @Test
+    void when_settingTimeLimitAndTimeLimitIsNotSpecified_then_signalConstraintCouldNotBeHandled() {
+        // GIVEN
+        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+                "testTopic");
+        var constraintDetailsSpy = spy(constraintDetails);
+        var constraint           = JsonNodeFactory.instance.objectNode().put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE,
+                ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION);
 
-		// WHEN
-		var wasSuccessfullyHandled = SubscriptionConstraints
-				.enforceSubscriptionConstraintEntries(constraintDetailsSpy, constraint);
+        // WHEN
+        var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
+                constraint);
 
-		// THEN
-		verify(constraintDetailsSpy, never()).setTimeLimitSec(anyLong());
-		assertFalse(wasSuccessfullyHandled);
-	}
+        // THEN
+        verify(constraintDetailsSpy, never()).setTimeLimitSec(anyLong());
+        assertFalse(wasSuccessfullyHandled);
+    }
 
-	@Test
-	void when_handlingResubscribeConstraintAndNoStatusIsSpecified_then_signalConstraintCouldNotBeHandled() {
-		// GIVEN
-		var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
-				"testTopic");
-		var constraintDetailsSpy = spy(constraintDetails);
-		var constraint           = JsonNodeFactory.instance.objectNode()
-				.put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION);
+    @Test
+    void when_handlingResubscribeConstraintAndNoStatusIsSpecified_then_signalConstraintCouldNotBeHandled() {
+        // GIVEN
+        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+                "testTopic");
+        var constraintDetailsSpy = spy(constraintDetails);
+        var constraint           = JsonNodeFactory.instance.objectNode().put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE,
+                ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION);
 
-		// WHEN
-		var wasSuccessfullyHandled = SubscriptionConstraints
-				.enforceSubscriptionConstraintEntries(constraintDetailsSpy, constraint);
+        // WHEN
+        var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
+                constraint);
 
-		// THEN
-		verify(constraintDetailsSpy, never()).setIsResubscribeMqttSubscriptionEnabled(anyBoolean());
-		assertFalse(wasSuccessfullyHandled);
-	}
+        // THEN
+        verify(constraintDetailsSpy, never()).setIsResubscribeMqttSubscriptionEnabled(anyBoolean());
+        assertFalse(wasSuccessfullyHandled);
+    }
 
-	@Test
-	void when_handlingResubscribeConstraintAndStatusIsNotTextual_then_signalConstraintCouldNotBeHandled() {
-		// GIVEN
-		var constraintDetails    = new ConstraintDetails("clientId",
-				new IdentifiableAuthorizationDecision(), "testTopic");
-		var constraintDetailsSpy = spy(constraintDetails);
-		var constraint           = JsonNodeFactory.instance.objectNode()
-				.put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION)
-				.put(ENVIRONMENT_STATUS, 1);
+    @Test
+    void when_handlingResubscribeConstraintAndStatusIsNotTextual_then_signalConstraintCouldNotBeHandled() {
+        // GIVEN
+        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+                "testTopic");
+        var constraintDetailsSpy = spy(constraintDetails);
+        var constraint           = JsonNodeFactory.instance.objectNode()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION)
+                .put(ENVIRONMENT_STATUS, 1);
 
-		// WHEN
-		var wasSuccessfullyHandled = SubscriptionConstraints
-				.enforceSubscriptionConstraintEntries(constraintDetailsSpy, constraint);
+        // WHEN
+        var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
+                constraint);
 
-		// THEN
-		verify(constraintDetailsSpy, never()).setIsResubscribeMqttSubscriptionEnabled(anyBoolean());
-		assertFalse(wasSuccessfullyHandled);
-	}
+        // THEN
+        verify(constraintDetailsSpy, never()).setIsResubscribeMqttSubscriptionEnabled(anyBoolean());
+        assertFalse(wasSuccessfullyHandled);
+    }
 
-	@Test
-	void when_handlingResubscribeConstraintAndStatusIsEnabled_then_setResubscribeAnSignalSuccessfulConstraintHandling() {
-		// GIVEN
-		var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
-				"testTopic");
-		var constraintDetailsSpy = spy(constraintDetails);
-		var constraint           = JsonNodeFactory.instance.objectNode()
-				.put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION)
-				.put(ENVIRONMENT_STATUS, ENVIRONMENT_ENABLED);
+    @Test
+    void when_handlingResubscribeConstraintAndStatusIsEnabled_then_setResubscribeAnSignalSuccessfulConstraintHandling() {
+        // GIVEN
+        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+                "testTopic");
+        var constraintDetailsSpy = spy(constraintDetails);
+        var constraint           = JsonNodeFactory.instance.objectNode()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION)
+                .put(ENVIRONMENT_STATUS, ENVIRONMENT_ENABLED);
 
-		// WHEN
-		var wasSuccessfullyHandled = SubscriptionConstraints
-				.enforceSubscriptionConstraintEntries(constraintDetailsSpy, constraint);
+        // WHEN
+        var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
+                constraint);
 
-		// THEN
-		verify(constraintDetailsSpy).setIsResubscribeMqttSubscriptionEnabled(true);
-		assertTrue(wasSuccessfullyHandled);
-	}
+        // THEN
+        verify(constraintDetailsSpy).setIsResubscribeMqttSubscriptionEnabled(true);
+        assertTrue(wasSuccessfullyHandled);
+    }
 
-	@Test
-	void when_handlingResubscribeConstraintAndStatusIsDisabled_then_setResubscribeAnSignalSuccessfulConstraintHandling() {
-		// GIVEN
-		var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
-				"testTopic");
-		var constraintDetailsSpy = spy(constraintDetails);
-		var constraint           = JsonNodeFactory.instance.objectNode()
-				.put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION)
-				.put(ENVIRONMENT_STATUS, ENVIRONMENT_DISABLED);
+    @Test
+    void when_handlingResubscribeConstraintAndStatusIsDisabled_then_setResubscribeAnSignalSuccessfulConstraintHandling() {
+        // GIVEN
+        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+                "testTopic");
+        var constraintDetailsSpy = spy(constraintDetails);
+        var constraint           = JsonNodeFactory.instance.objectNode()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION)
+                .put(ENVIRONMENT_STATUS, ENVIRONMENT_DISABLED);
 
-		// WHEN
-		var wasSuccessfullyHandled = SubscriptionConstraints
-				.enforceSubscriptionConstraintEntries(constraintDetailsSpy, constraint);
+        // WHEN
+        var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
+                constraint);
 
-		// THEN
-		verify(constraintDetailsSpy).setIsResubscribeMqttSubscriptionEnabled(false);
-		assertTrue(wasSuccessfullyHandled);
-	}
+        // THEN
+        verify(constraintDetailsSpy).setIsResubscribeMqttSubscriptionEnabled(false);
+        assertTrue(wasSuccessfullyHandled);
+    }
 
-	@Test
-	void when_handlingResubscribeConstraintAndStatusIsNotAValidTextual_then_signalConstraintCouldNotBeHandled() {
-		// GIVEN
-		var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
-				"testTopic");
-		var constraintDetailsSpy = spy(constraintDetails);
-		var constraint           = JsonNodeFactory.instance.objectNode()
-				.put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION)
-				.put(ENVIRONMENT_STATUS, "illegalStatus");
+    @Test
+    void when_handlingResubscribeConstraintAndStatusIsNotAValidTextual_then_signalConstraintCouldNotBeHandled() {
+        // GIVEN
+        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+                "testTopic");
+        var constraintDetailsSpy = spy(constraintDetails);
+        var constraint           = JsonNodeFactory.instance.objectNode()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION)
+                .put(ENVIRONMENT_STATUS, "illegalStatus");
 
-		// WHEN
-		var wasSuccessfullyHandled = SubscriptionConstraints
-				.enforceSubscriptionConstraintEntries(constraintDetailsSpy, constraint);
+        // WHEN
+        var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
+                constraint);
 
-		// THEN
-		verify(constraintDetailsSpy, never()).setIsResubscribeMqttSubscriptionEnabled(anyBoolean());
-		assertFalse(wasSuccessfullyHandled);
-	}
+        // THEN
+        verify(constraintDetailsSpy, never()).setIsResubscribeMqttSubscriptionEnabled(anyBoolean());
+        assertFalse(wasSuccessfullyHandled);
+    }
 }

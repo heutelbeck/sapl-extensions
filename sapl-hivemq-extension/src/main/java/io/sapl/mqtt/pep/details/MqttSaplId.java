@@ -21,32 +21,41 @@ import lombok.NonNull;
 import lombok.Value;
 
 /**
- * These data objects cache unique specifications to identify a decision flux of mqtt action enforcement.
+ * These data objects cache unique specifications to identify a decision flux of
+ * mqtt action enforcement.
  */
 @Value
 public class MqttSaplId {
-    @NonNull String mqttClientId;
-    @NonNull String saplSubscriptionId;
+    @NonNull
+    String mqttClientId;
+    @NonNull
+    String saplSubscriptionId;
     String topic;
 
     /**
-     * Caches unique specifications to identify a decision flux of mqtt action enforcement.
-     * @param mqttClientId the id uniquely identifies a mqtt client
-     * @param saplSubscriptionId this id uniquely identifies a decision flux for mqtt action enforcement
+     * Caches unique specifications to identify a decision flux of mqtt action
+     * enforcement.
+     *
+     * @param mqttClientId       the id uniquely identifies a mqtt client
+     * @param saplSubscriptionId this id uniquely identifies a decision flux for
+     *                           mqtt action enforcement
      */
     public MqttSaplId(String mqttClientId, String saplSubscriptionId) {
         this(mqttClientId, saplSubscriptionId, null);
     }
 
     /**
-     * Caches unique specifications to identify a decision flux of mqtt action enforcement.
-     * @param mqttClientId the id uniquely identifies a mqtt client
-     * @param saplSubscriptionId this id uniquely identifies a decision flux for mqtt action enforcement
-     * @param topic the topic in focus of the mqtt action enforcement
+     * Caches unique specifications to identify a decision flux of mqtt action
+     * enforcement.
+     *
+     * @param mqttClientId       the id uniquely identifies a mqtt client
+     * @param saplSubscriptionId this id uniquely identifies a decision flux for
+     *                           mqtt action enforcement
+     * @param topic              the topic in focus of the mqtt action enforcement
      */
     public MqttSaplId(@NonNull String mqttClientId, @NonNull String saplSubscriptionId, String topic) {
-        this.mqttClientId = mqttClientId;
+        this.mqttClientId       = mqttClientId;
         this.saplSubscriptionId = saplSubscriptionId;
-        this.topic = topic;
+        this.topic              = topic;
     }
 }

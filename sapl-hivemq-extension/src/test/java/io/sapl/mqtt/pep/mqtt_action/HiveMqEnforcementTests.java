@@ -34,22 +34,21 @@ import io.sapl.mqtt.pep.details.MqttSaplId;
 
 class HiveMqEnforcementTests {
 
-	@Test
-	void when_enforcingMqttPublishAfterAsyncProcessingTimeout_then_catchException() {
-		// GIVEN
-		var publishInboundOutputMock = mock(PublishInboundOutput.class);
-		doThrow(UnsupportedOperationException.class).when(publishInboundOutputMock)
-				.preventPublishDelivery(any(AckReasonCode.class), anyString());
+    @Test
+    void when_enforcingMqttPublishAfterAsyncProcessingTimeout_then_catchException() {
+        // GIVEN
+        var publishInboundOutputMock = mock(PublishInboundOutput.class);
+        doThrow(UnsupportedOperationException.class).when(publishInboundOutputMock)
+                .preventPublishDelivery(any(AckReasonCode.class), anyString());
 
-		var mqttSaplId = new MqttSaplId("clientId", "subscriptionId");
+        var mqttSaplId = new MqttSaplId("clientId", "subscriptionId");
 
-		// WHEN
-		HiveMqEnforcement.enforceMqttPublishByHiveMqBroker(publishInboundOutputMock, AuthorizationDecision.DENY,
-				false, mqttSaplId);
+        // WHEN
+        HiveMqEnforcement.enforceMqttPublishByHiveMqBroker(publishInboundOutputMock, AuthorizationDecision.DENY, false,
+                mqttSaplId);
 
-		// THEN
-		verify(publishInboundOutputMock, times(1))
-				.preventPublishDelivery(any(AckReasonCode.class), anyString());
+        // THEN
+        verify(publishInboundOutputMock, times(1)).preventPublishDelivery(any(AckReasonCode.class), anyString());
 
-	}
+    }
 }

@@ -42,102 +42,98 @@ import io.sapl.pdp.PolicyDecisionPointFactory;
 
 class PdpInitUtilityTests {
 
-	private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
+    private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
-	@Test
-	void when_wrongTypeOfPdpImplementationSpecified_then_doNotBuildPdp() {
-		// GIVEN
-		var saplMqttExtensionConfigMock = Mockito.mock(SaplMqttExtensionConfig.class);
-		when(saplMqttExtensionConfigMock.getPdpImplementation()).thenReturn("false");
+    @Test
+    void when_wrongTypeOfPdpImplementationSpecified_then_doNotBuildPdp() {
+        // GIVEN
+        var saplMqttExtensionConfigMock = Mockito.mock(SaplMqttExtensionConfig.class);
+        when(saplMqttExtensionConfigMock.getPdpImplementation()).thenReturn("false");
 
-		// WHEN
-		var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, null, null);
+        // WHEN
+        var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, null, null);
 
-		// THEN
-		assertNull(pdp);
-	}
+        // THEN
+        assertNull(pdp);
+    }
 
-	@Test
-	void when_policiesPathIsNotProvidedAndPathFromConfigIsNotRelativeToExtensionHome_then_getPoliciesPathFromConfig() {
-		// GIVEN
-		var saplMqttExtensionConfigMock = Mockito.mock(SaplMqttExtensionConfig.class);
-		when(saplMqttExtensionConfigMock.getPdpImplementation()).thenReturn(PdpInitUtility.EMBEDDED_PDP_IDENTIFIER);
-		when(saplMqttExtensionConfigMock.isEmbeddedPdpPoliciesPathRelativeToExtensionHome()).thenReturn(false);
-		when(saplMqttExtensionConfigMock.getEmbeddedPdpPoliciesPath())
-				.thenReturn(new File("src/test/resources/policies").getAbsolutePath());
-		var subject  = JSON.objectNode()
-				.put(ENVIRONMENT_CLIENT_ID, "MQTT_CLIENT_SUBSCRIBE")
-				.put(ENVIRONMENT_USER_NAME, "user1");
-		var action   = JSON.objectNode().put(ENVIRONMENT_AUTHZ_ACTION_TYPE, SUBSCRIBE_AUTHZ_ACTION);
-		var resource = JSON.objectNode().put(ENVIRONMENT_TOPIC, "topic");
+    @Test
+    void when_policiesPathIsNotProvidedAndPathFromConfigIsNotRelativeToExtensionHome_then_getPoliciesPathFromConfig() {
+        // GIVEN
+        var saplMqttExtensionConfigMock = Mockito.mock(SaplMqttExtensionConfig.class);
+        when(saplMqttExtensionConfigMock.getPdpImplementation()).thenReturn(PdpInitUtility.EMBEDDED_PDP_IDENTIFIER);
+        when(saplMqttExtensionConfigMock.isEmbeddedPdpPoliciesPathRelativeToExtensionHome()).thenReturn(false);
+        when(saplMqttExtensionConfigMock.getEmbeddedPdpPoliciesPath())
+                .thenReturn(new File("src/test/resources/policies").getAbsolutePath());
+        var subject  = JSON.objectNode().put(ENVIRONMENT_CLIENT_ID, "MQTT_CLIENT_SUBSCRIBE").put(ENVIRONMENT_USER_NAME,
+                "user1");
+        var action   = JSON.objectNode().put(ENVIRONMENT_AUTHZ_ACTION_TYPE, SUBSCRIBE_AUTHZ_ACTION);
+        var resource = JSON.objectNode().put(ENVIRONMENT_TOPIC, "topic");
 
-		// WHEN
-		var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, null, null);
+        // WHEN
+        var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, null, null);
 
-		// THEN
-		assertNotNull(pdp);
-		var authzDecision = pdp.decide(AuthorizationSubscription.of(subject, action, resource)).blockFirst();
-		assertNotNull(authzDecision);
-		assertEquals(Decision.PERMIT, authzDecision.getDecision());
-	}
+        // THEN
+        assertNotNull(pdp);
+        var authzDecision = pdp.decide(AuthorizationSubscription.of(subject, action, resource)).blockFirst();
+        assertNotNull(authzDecision);
+        assertEquals(Decision.PERMIT, authzDecision.getDecision());
+    }
 
-	@Test
-	void when_policiesPathIsNotProvidedAndPathFromConfigIsRelativeToExtensionHome_then_getPoliciesPathFromConfig() {
-		// GIVEN
-		var saplMqttExtensionConfigMock = Mockito.mock(SaplMqttExtensionConfig.class);
-		when(saplMqttExtensionConfigMock.getPdpImplementation()).thenReturn(PdpInitUtility.EMBEDDED_PDP_IDENTIFIER);
-		when(saplMqttExtensionConfigMock.isEmbeddedPdpPoliciesPathRelativeToExtensionHome()).thenReturn(true);
-		when(saplMqttExtensionConfigMock.getEmbeddedPdpPoliciesPath()).thenReturn("/resources/policies");
-		var subject  = JSON.objectNode()
-				.put(ENVIRONMENT_CLIENT_ID, "MQTT_CLIENT_SUBSCRIBE")
-				.put(ENVIRONMENT_USER_NAME, "user1");
-		var action   = JSON.objectNode()
-				.put(ENVIRONMENT_AUTHZ_ACTION_TYPE, SUBSCRIBE_AUTHZ_ACTION);
-		var resource = JSON.objectNode()
-				.put(ENVIRONMENT_TOPIC, "topic");
+    @Test
+    void when_policiesPathIsNotProvidedAndPathFromConfigIsRelativeToExtensionHome_then_getPoliciesPathFromConfig() {
+        // GIVEN
+        var saplMqttExtensionConfigMock = Mockito.mock(SaplMqttExtensionConfig.class);
+        when(saplMqttExtensionConfigMock.getPdpImplementation()).thenReturn(PdpInitUtility.EMBEDDED_PDP_IDENTIFIER);
+        when(saplMqttExtensionConfigMock.isEmbeddedPdpPoliciesPathRelativeToExtensionHome()).thenReturn(true);
+        when(saplMqttExtensionConfigMock.getEmbeddedPdpPoliciesPath()).thenReturn("/resources/policies");
+        var subject  = JSON.objectNode().put(ENVIRONMENT_CLIENT_ID, "MQTT_CLIENT_SUBSCRIBE").put(ENVIRONMENT_USER_NAME,
+                "user1");
+        var action   = JSON.objectNode().put(ENVIRONMENT_AUTHZ_ACTION_TYPE, SUBSCRIBE_AUTHZ_ACTION);
+        var resource = JSON.objectNode().put(ENVIRONMENT_TOPIC, "topic");
 
-		// WHEN
-		var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, new File("src/test"), null);
+        // WHEN
+        var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, new File("src/test"), null);
 
-		// THEN
-		assertNotNull(pdp);
-		var authzDecision = pdp.decide(AuthorizationSubscription.of(subject, action, resource)).blockFirst();
-		assertNotNull(authzDecision);
-		assertEquals(Decision.PERMIT, authzDecision.getDecision());
-	}
+        // THEN
+        assertNotNull(pdp);
+        var authzDecision = pdp.decide(AuthorizationSubscription.of(subject, action, resource)).blockFirst();
+        assertNotNull(authzDecision);
+        assertEquals(Decision.PERMIT, authzDecision.getDecision());
+    }
 
-	@Test
-	void when_buildingEmbeddedPdpThrowsInitializationException_then_returnNull() {
-		// GIVEN
-		var saplMqttExtensionConfigMock = Mockito.mock(SaplMqttExtensionConfig.class);
-		when(saplMqttExtensionConfigMock.getPdpImplementation()).thenReturn(PdpInitUtility.EMBEDDED_PDP_IDENTIFIER);
+    @Test
+    void when_buildingEmbeddedPdpThrowsInitializationException_then_returnNull() {
+        // GIVEN
+        var saplMqttExtensionConfigMock = Mockito.mock(SaplMqttExtensionConfig.class);
+        when(saplMqttExtensionConfigMock.getPdpImplementation()).thenReturn(PdpInitUtility.EMBEDDED_PDP_IDENTIFIER);
 
-		try (var pdpFactoryMock = Mockito.mockStatic(PolicyDecisionPointFactory.class)) {
-			pdpFactoryMock.when(() -> PolicyDecisionPointFactory.filesystemPolicyDecisionPoint(Mockito.anyString()))
-					.thenThrow(InitializationException.class);
+        try (var pdpFactoryMock = Mockito.mockStatic(PolicyDecisionPointFactory.class)) {
+            pdpFactoryMock.when(() -> PolicyDecisionPointFactory.filesystemPolicyDecisionPoint(Mockito.anyString()))
+                    .thenThrow(InitializationException.class);
 
-			// WHEN
-			var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, null, "/policies");
+            // WHEN
+            var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, null, "/policies");
 
-			// THEN
-			assertNull(pdp);
-		}
-	}
+            // THEN
+            assertNull(pdp);
+        }
+    }
 
-	@Test
-	void when_buildingRemotePdpAndClientKeyAndSecretAreSet_then_doNotUseDefaultKeyAndSecret() {
-		// GIVEN
-		var saplMqttExtensionConfigMock = Mockito.mock(SaplMqttExtensionConfig.class);
-		when(saplMqttExtensionConfigMock.getPdpImplementation()).thenReturn(PdpInitUtility.REMOTE_PDP_IDENTIFIER);
-		when(saplMqttExtensionConfigMock.getRemotePdpClientKey()).thenReturn("key");
-		when(saplMqttExtensionConfigMock.getRemotePdpClientSecret()).thenReturn("secret");
-		when(saplMqttExtensionConfigMock.getRemotePdpBaseUrl())
-				.thenReturn(SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP_BASE_URL);
+    @Test
+    void when_buildingRemotePdpAndClientKeyAndSecretAreSet_then_doNotUseDefaultKeyAndSecret() {
+        // GIVEN
+        var saplMqttExtensionConfigMock = Mockito.mock(SaplMqttExtensionConfig.class);
+        when(saplMqttExtensionConfigMock.getPdpImplementation()).thenReturn(PdpInitUtility.REMOTE_PDP_IDENTIFIER);
+        when(saplMqttExtensionConfigMock.getRemotePdpClientKey()).thenReturn("key");
+        when(saplMqttExtensionConfigMock.getRemotePdpClientSecret()).thenReturn("secret");
+        when(saplMqttExtensionConfigMock.getRemotePdpBaseUrl())
+                .thenReturn(SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP_BASE_URL);
 
-		// WHEN
-		var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, null, null);
+        // WHEN
+        var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, null, null);
 
-		// THEN
-		assertNotNull(pdp);
-	}
+        // THEN
+        assertNotNull(pdp);
+    }
 }

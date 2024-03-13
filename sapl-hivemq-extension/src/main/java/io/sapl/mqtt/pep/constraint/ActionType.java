@@ -23,7 +23,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This enumeration is used to distinguish between constraints of different mqtt actions.
+ * This enumeration is used to distinguish between constraints of different mqtt
+ * actions.
  */
 @Slf4j
 enum ActionType {
@@ -31,9 +32,12 @@ enum ActionType {
     CONNECT {
         /**
          * Enforces the provided constraint for a mqtt connection.
-         * @param constraintDetails used to cache details about the constraints of a sapl authorization decision
-         * @param constraint the constraint to enforce
-         * @return returns {@code true} in case the constraint was successfully handled, otherwise {@code false}
+         *
+         * @param constraintDetails used to cache details about the constraints of a
+         *                          sapl authorization decision
+         * @param constraint        the constraint to enforce
+         * @return returns {@code true} in case the constraint was successfully handled,
+         *         otherwise {@code false}
          */
         @Override
         public boolean enforceConstraint(ConstraintDetails constraintDetails, JsonNode constraint) {
@@ -42,22 +46,27 @@ enum ActionType {
 
         /**
          * Logs the provided constraints.
-         * @param constraints the constraints to log
-         * @param constraintDetails used to cache details about the constraints of a sapl authorization decision
+         *
+         * @param constraints       the constraints to log
+         * @param constraintDetails used to cache details about the constraints of a
+         *                          sapl authorization decision
          */
         @Override
         public void loggingConstraints(ArrayNode constraints, ConstraintDetails constraintDetails) {
-            log.debug("Enforcing constraints for mqtt connection of client '{}': {}",
-                    constraintDetails.getClientId(), constraints);
+            log.debug("Enforcing constraints for mqtt connection of client '{}': {}", constraintDetails.getClientId(),
+                    constraints);
         }
     },
 
     SUBSCRIBE {
         /**
          * Enforces the provided constraint for a mqtt subscription.
-         * @param constraintDetails used to cache details about the constraints of a sapl authorization decision
-         * @param constraint the constraint to enforce
-         * @return returns {@code true} in case the constraint was successfully handled, otherwise {@code false}
+         *
+         * @param constraintDetails used to cache details about the constraints of a
+         *                          sapl authorization decision
+         * @param constraint        the constraint to enforce
+         * @return returns {@code true} in case the constraint was successfully handled,
+         *         otherwise {@code false}
          */
         @Override
         public boolean enforceConstraint(ConstraintDetails constraintDetails, JsonNode constraint) {
@@ -66,8 +75,10 @@ enum ActionType {
 
         /**
          * Logs the provided constraints.
-         * @param constraints the constraints to log
-         * @param constraintDetails used to cache details about the constraints of a sapl authorization decision
+         *
+         * @param constraints       the constraints to log
+         * @param constraintDetails used to cache details about the constraints of a
+         *                          sapl authorization decision
          */
         @Override
         public void loggingConstraints(ArrayNode constraints, ConstraintDetails constraintDetails) {
@@ -79,9 +90,12 @@ enum ActionType {
     PUBLISH {
         /**
          * Enforces the provided constraint for mqtt publishing.
-         * @param constraintDetails used to cache details about the constraints of a sapl authorization decision
-         * @param constraint the constraint to enforce
-         * @return returns {@code true} in case the constraint was successfully handled, otherwise {@code false}
+         *
+         * @param constraintDetails used to cache details about the constraints of a
+         *                          sapl authorization decision
+         * @param constraint        the constraint to enforce
+         * @return returns {@code true} in case the constraint was successfully handled,
+         *         otherwise {@code false}
          */
         @Override
         public boolean enforceConstraint(ConstraintDetails constraintDetails, JsonNode constraint) {
@@ -90,8 +104,10 @@ enum ActionType {
 
         /**
          * Logs the provided constraints.
-         * @param constraints the constraints to log
-         * @param constraintDetails used to cache details about the constraints of a sapl authorization decision
+         *
+         * @param constraints       the constraints to log
+         * @param constraintDetails used to cache details about the constraints of a
+         *                          sapl authorization decision
          */
         @Override
         public void loggingConstraints(ArrayNode constraints, ConstraintDetails constraintDetails) {
@@ -102,16 +118,21 @@ enum ActionType {
 
     /**
      * Enforces the provided constraint for a mqtt action.
-     * @param constraintDetails used to cache details about the constraints of a sapl authorization decision
-     * @param constraint the constraint to enforce
-     * @return returns {@code true} in case the constraint was successfully handled, otherwise {@code false}
+     *
+     * @param constraintDetails used to cache details about the constraints of a
+     *                          sapl authorization decision
+     * @param constraint        the constraint to enforce
+     * @return returns {@code true} in case the constraint was successfully handled,
+     *         otherwise {@code false}
      */
     public abstract boolean enforceConstraint(ConstraintDetails constraintDetails, JsonNode constraint);
 
     /**
      * Logs the provided constraints.
-     * @param constraints the constraints to log
-     * @param constraintDetails used to cache details about the constraints of a sapl authorization decision
+     *
+     * @param constraints       the constraints to log
+     * @param constraintDetails used to cache details about the constraints of a
+     *                          sapl authorization decision
      */
     public abstract void loggingConstraints(ArrayNode constraints, ConstraintDetails constraintDetails);
 }
