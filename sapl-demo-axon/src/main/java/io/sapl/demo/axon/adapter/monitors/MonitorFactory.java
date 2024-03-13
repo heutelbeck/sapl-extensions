@@ -28,7 +28,9 @@ import reactor.util.function.Tuples;
 @RequiredArgsConstructor
 public class MonitorFactory {
 
-	protected final static RandomGenerator RANDOM = RandomGenerator.getDefault();
+	private static final String FLOAT_3_2 = "%3.2f";
+
+    protected static final RandomGenerator RANDOM = RandomGenerator.getDefault();
 
 	private final ReactorEventGateway eventGateway;
 
@@ -47,20 +49,20 @@ public class MonitorFactory {
 
 	protected Flux<EventMessage<?>> createPulseMonitor(String id) {
 		return randomSequence(Duration.ofSeconds(4L), 30.0D, 120.0D, 2.0D, 0.0D, 270.0D).map(
-				pulse -> new MeasurementTaken(id, HEART_RATE, String.format(Locale.ENGLISH, "%3.2f", pulse), "BPM"))
+				pulse -> new MeasurementTaken(id, HEART_RATE, String.format(Locale.ENGLISH, FLOAT_3_2, pulse), "BPM"))
 				.map(GenericEventMessage::asEventMessage).flatMap(eventGateway::publish);
 	}
 
 	protected Flux<EventMessage<?>> createRespirationRateMonitor(String id) {
 		return randomSequence(Duration.ofMillis(4200L), 12.0D, 25.0D, 0.5D, 0.0D, 35.0D)
-				.map(pulse -> new MeasurementTaken(id, RESPIRATION_RATE, String.format(Locale.ENGLISH, "%3.2f", pulse),
+				.map(pulse -> new MeasurementTaken(id, RESPIRATION_RATE, String.format(Locale.ENGLISH, FLOAT_3_2, pulse),
 						"BPM"))
 				.flatMap(eventGateway::publish);
 	}
 
 	protected Flux<EventMessage<?>> createBodyTemperatureMonitor(String id) {
 		return randomSequence(Duration.ofMillis(4500L), 36.5D, 37.5D, 0.1D, 25.0D, 42.3D)
-				.map(pulse -> new MeasurementTaken(id, BODY_TEMPERATURE, String.format(Locale.ENGLISH, "%3.2f", pulse),
+				.map(pulse -> new MeasurementTaken(id, BODY_TEMPERATURE, String.format(Locale.ENGLISH, FLOAT_3_2, pulse),
 						"°C"))
 				.flatMap(eventGateway::publish);
 	}
