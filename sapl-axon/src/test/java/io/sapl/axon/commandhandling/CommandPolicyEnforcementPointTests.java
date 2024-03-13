@@ -145,7 +145,7 @@ class CommandPolicyEnforcementPointTests {
         setField(subscriptionBuilder, MAPPER_FILED_NAME, mapper);
         when(commandConstraintHandlerBundle.executeOnErrorHandlers(any(AccessDeniedException.class)))
                 .thenReturn(DEFAULT_HANDLED_EXCEPTION);
-        when(commandConstraintHandlerBundle.executeCommandMappingHandlers(eq(DEFAULT_COMMAND_MESSAGE)))
+        when(commandConstraintHandlerBundle.executeCommandMappingHandlers(DEFAULT_COMMAND_MESSAGE))
                 .thenCallRealMethod();
         when(commandConstraintHandlerBundle.executePostHandlingHandlers(any())).thenCallRealMethod();
         setField(commandConstraintHandlerBundle, COMMAND_MAPPER_FILED_NAME, Function.identity());
@@ -221,7 +221,7 @@ class CommandPolicyEnforcementPointTests {
     @Test
 	void when_permit_and_executeCommandMappingHandlersThrows_then_handledException() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		when(commandConstraintHandlerBundle.executeCommandMappingHandlers(eq(DEFAULT_COMMAND_MESSAGE)))
+		when(commandConstraintHandlerBundle.executeCommandMappingHandlers(DEFAULT_COMMAND_MESSAGE))
 				.thenThrow(new RuntimeException("some error message"));
 
 		var exception = assertThrows(RuntimeException.class,
@@ -235,7 +235,7 @@ class CommandPolicyEnforcementPointTests {
 
 		var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
 		assertEquals("defaultResult", result);
-		verify(commandConstraintHandlerBundle, times(1)).executeCommandMappingHandlers(eq(DEFAULT_COMMAND_MESSAGE));
+		verify(commandConstraintHandlerBundle, times(1)).executeCommandMappingHandlers(DEFAULT_COMMAND_MESSAGE);
 	}
 
     @Test
@@ -258,7 +258,7 @@ class CommandPolicyEnforcementPointTests {
     @Test
 	void when_permit_and_executePostHandlingHandlersThrows_then_handledException() {
 		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		when(commandConstraintHandlerBundle.executePostHandlingHandlers(eq("defaultResult")))
+		when(commandConstraintHandlerBundle.executePostHandlingHandlers("defaultResult"))
 				.thenThrow(new RuntimeException("some error message"));
 
 		var exception = assertThrows(RuntimeException.class,
@@ -272,6 +272,6 @@ class CommandPolicyEnforcementPointTests {
 
 		var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
 		assertEquals("defaultResult", result);
-		verify(commandConstraintHandlerBundle, times(1)).executePostHandlingHandlers(eq("defaultResult"));
+		verify(commandConstraintHandlerBundle, times(1)).executePostHandlingHandlers("defaultResult");
 	}
 }

@@ -17,9 +17,9 @@
  */
 package io.sapl.axon.queryhandling;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -69,7 +69,7 @@ class SaplQueryGatewayTests {
                 accessDeniedHandler);
         verify(gateway, times(1)).subscriptionQuery(eq(String.class.getName()), any(SubscriptionQueryMessage.class),
                 eq(DEFAULT_RESPONSE_TYPE), eq(ResponseTypes.instanceOf(RecoverableResponse.class)), any(int.class));
-        assertTrue(accessDeniedCounter.get() == 0);
+        assertEquals(0, accessDeniedCounter.get());
     }
 
     @Test
@@ -77,7 +77,7 @@ class SaplQueryGatewayTests {
         gateway.recoverableSubscriptionQuery(DEFAULT_QUERY_MESSAGE, String.class, String.class, accessDeniedHandler);
         verify(gateway, times(1)).subscriptionQuery(eq(String.class.getName()), any(SubscriptionQueryMessage.class),
                 eq(DEFAULT_RESPONSE_TYPE), eq(ResponseTypes.instanceOf(RecoverableResponse.class)), any(int.class));
-        assertTrue(accessDeniedCounter.get() == 0);
+        assertEquals(0, accessDeniedCounter.get());
     }
 
     @Test
@@ -97,7 +97,8 @@ class SaplQueryGatewayTests {
                 DEFAULT_RESPONSE_TYPE, accessDeniedHandler);
 
         assertNull(result.initialResult().block());
-        assertThrows(AccessDeniedException.class, () -> result.updates().blockLast());
-        assertTrue(accessDeniedCounter.get() == 1);
+        var updates = result.updates();
+        assertThrows(AccessDeniedException.class, () -> updates.blockLast());
+        assertEquals(1, accessDeniedCounter.get());
     }
 }

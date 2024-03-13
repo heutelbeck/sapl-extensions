@@ -36,7 +36,7 @@ class VaadinConfirmationDialog extends Dialog {
     private final String text;
     private final String confirmText;
 
-    private final String   cancelText;
+    private final String       cancelText;
     private transient Runnable onCancelListener;
     private transient Runnable onConfirmListener;
 
