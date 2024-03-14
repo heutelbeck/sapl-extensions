@@ -27,48 +27,49 @@ import lombok.Setter;
 @Setter
 public class PrinterUser extends User {
 
-	private String ethereumAddress;
+    private String ethereumAddress;
 
-	private String transactionHash;
+    private String transactionHash;
 
-	public PrinterUser(String userName, String password, String ethereumAddress, String transactionHash,
-			Collection<? extends GrantedAuthority> authorities) {
-		super(userName, password, authorities);
-		this.ethereumAddress = ethereumAddress;
-	}
+    public PrinterUser(String userName, String password, String ethereumAddress, String transactionHash,
+            Collection<? extends GrantedAuthority> authorities) {
+        super(userName, password, authorities);
+        this.ethereumAddress = ethereumAddress;
+        this.transactionHash = transactionHash;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime  = 31;
-		int       result = super.hashCode();
-		result = prime * result + ((ethereumAddress == null) ? 0 : ethereumAddress.hashCode());
-		result = prime * result + ((transactionHash == null) ? 0 : transactionHash.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime  = 31;
+        int       result = super.hashCode();
+        result = prime * result + ((ethereumAddress == null) ? 0 : ethereumAddress.hashCode());
+        result = prime * result + ((transactionHash == null) ? 0 : transactionHash.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		PrinterUser other = (PrinterUser) obj;
-		if (ethereumAddress == null) {
-			if (other.ethereumAddress != null)
-				return false;
-		} else if (!ethereumAddress.equals(other.ethereumAddress))
-			return false;
-		if (transactionHash == null) {
-			return other.transactionHash == null;
-		} else
-			return transactionHash.equals(other.transactionHash);
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        PrinterUser other = (PrinterUser) obj;
+        if (ethereumAddress == null) {
+            if (other.ethereumAddress != null)
+                return false;
+        } else if (!ethereumAddress.equals(other.ethereumAddress))
+            return false;
+        if (transactionHash == null) {
+            return other.transactionHash == null;
+        } else
+            return transactionHash.equals(other.transactionHash);
+    }
 
-	public PrinterUser copy() {
-		return new PrinterUser(this.getUsername(), this.getPassword(), this.getEthereumAddress(),
-				this.getTransactionHash(), this.getAuthorities());
-	}
+    public PrinterUser copy() {
+        return new PrinterUser(this.getUsername(), this.getPassword(), this.getEthereumAddress(),
+                this.getTransactionHash(), this.getAuthorities());
+    }
 
 }

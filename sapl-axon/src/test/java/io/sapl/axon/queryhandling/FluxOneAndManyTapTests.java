@@ -57,10 +57,8 @@ class FluxOneAndManyTapTests {
     void when_oneDecisionIsCalledTwice_then_throw() throws InterruptedException {
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(50L));
 
-        assertThrows(IllegalStateException.class, () -> {
-            tap.one();
-            tap.one();
-        });
+        tap.one();
+        assertThrows(IllegalStateException.class, () -> tap.one());
         verify(onSubscribe, times(0)).accept(any());
         verify(doFinally, times(0)).accept(any());
     }
@@ -78,10 +76,8 @@ class FluxOneAndManyTapTests {
     void when_decisionsIsCalledTwice_then_throw() throws InterruptedException {
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(50L));
 
-        assertThrows(IllegalStateException.class, () -> {
-            tap.many();
-            tap.many();
-        });
+        tap.many();
+        assertThrows(IllegalStateException.class, () -> tap.many());
         verify(onSubscribe, times(0)).accept(any());
         verify(doFinally, times(0)).accept(any());
     }

@@ -36,23 +36,16 @@ class VaadinConfirmationDialog extends Dialog {
     private final String text;
     private final String confirmText;
 
-    private final String       cancelText;
-    private transient Runnable onCancelListener;
-    private transient Runnable onConfirmListener;
+    private final String cancelText;
 
-    public VaadinConfirmationDialog(String header, String text, String confirmText, Runnable onConfirmListener,
-            String cancelText, Runnable onCancelListener) {
-        this.header            = header;
-        this.text              = text;
-        this.confirmText       = confirmText;
-        this.onConfirmListener = onConfirmListener;
-        this.cancelText        = cancelText;
-        this.onCancelListener  = onCancelListener;
+    public VaadinConfirmationDialog(String header, String text, String confirmText, final Runnable onConfirmListener,
+            String cancelText, final Runnable onCancelListener) {
+        this.header      = header;
+        this.text        = text;
+        this.confirmText = confirmText;
+        this.cancelText  = cancelText;
         setCloseOnOutsideClick(false);
-        this.add(this.createUI());
-    }
 
-    final VerticalLayout createUI() {
         var layout = new VerticalLayout();
 
         var headline = new H2(this.header);
@@ -64,26 +57,22 @@ class VaadinConfirmationDialog extends Dialog {
         layout.add(textComponent);
 
         var confirmButton = new Button(this.confirmText);
-        confirmButton.addClickListener(event -> this.closeAndConfirm());
+        confirmButton.addClickListener(event -> {
+            this.close();
+            onConfirmListener.run();
+        });
         confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         var cancelButton = new Button(this.cancelText);
-        cancelButton.addClickListener(event -> this.closeAndCancel());
+        cancelButton.addClickListener(event -> {
+            this.close();
+            onCancelListener.run();
+        });
 
         HorizontalLayout buttonLayout = new HorizontalLayout(cancelButton, confirmButton);
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
         layout.add(buttonLayout);
-        return layout;
-    }
-
-    void closeAndConfirm() {
-        this.close();
-        this.onConfirmListener.run();
-    }
-
-    void closeAndCancel() {
-        this.close();
-        this.onCancelListener.run();
+        this.add(layout);
     }
 
 }

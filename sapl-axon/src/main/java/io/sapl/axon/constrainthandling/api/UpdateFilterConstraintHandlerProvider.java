@@ -32,7 +32,6 @@ import io.sapl.spring.constraints.api.Responsible;
  * Only update messages will be emitted, if the respective predicate is true for
  * it.
  * <p>
- * TODO: apply filter to initial result.
  *
  * @author Dominic Heutelbeck
  * @since 2.1.0

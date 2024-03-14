@@ -52,9 +52,8 @@ public class ConstraintHandlingPage extends VerticalLayout {
 
     /**
      * @param pepBuilderService PEP Builder
-     * @param data              Pizza Data
      */
-    public ConstraintHandlingPage(@NonNull PepBuilderService pepBuilderService, @NonNull PizzaOrder data) {
+    public ConstraintHandlingPage(@NonNull PepBuilderService pepBuilderService) {
         add(Utilities.getInfoText(
                 "This page demonstrates JSON-Schema-based constraint handling functionality " + "while using a form."));
         add(Utilities.getDefaultHeader("Constraint Handling Page"));
@@ -168,7 +167,7 @@ public class ConstraintHandlingPage extends VerticalLayout {
         binder.bindInstanceFields(this);
 
         // position does not matter
-        binder.setBean(data);
+        binder.setBean(new PizzaOrder());
 
         this.enforceOpeningHours();
     }
