@@ -255,8 +255,7 @@ class QueryPolicyEnforcementPointTests {
 
     @Test
     @SuppressWarnings("unchecked")
-    void when_handle_with_preEnforce_and_buildQueryPreHandlerBundleThrowsAccessDenied_then_accessDenied()
-            throws NoSuchMethodException, SecurityException {
+    void when_handle_with_preEnforce_and_buildQueryPreHandlerBundleThrowsAccessDenied_then_accessDenied() {
         when(axonConstraintEnforcementService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class),
                 any(ResponseType.class), any(Optional.class))).thenThrow(ACCESS_DENIED);
 
