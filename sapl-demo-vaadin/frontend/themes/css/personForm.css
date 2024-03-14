@@ -1,21 +1,21 @@
 .descriptionPadding {
-    padding-right: 0.5rem;
-    padding-left: 0.5rem;
+	padding-right: 0.5rem;
+	padding-left: 0.5rem;
 }
 
 .formValidationNote {
-    background-color: #ffffcc;
+	background-color: #ffffcc;
 }
 
 span {
 	margin-top: 0px;
-    white-space:pre;
+	white-space: pre;
 }
 
 .infoIconMarginLeft {
-    margin-left: 20px;
+	margin-left: 20px;
 }
 
 .infoIconMarginTop {
-    margin-top: 10px;
+	margin-top: 10px;
 }

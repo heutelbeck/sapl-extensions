@@ -1,4 +1,4 @@
 {
-  "algorithm": "DENY_OVERRIDES",
-  "variables": {}
+	"algorithm": "DENY_OVERRIDES",
+	"variables": {}
 }

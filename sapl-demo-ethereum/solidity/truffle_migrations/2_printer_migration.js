@@ -18,7 +18,7 @@ var Ultimaker2ExtendedCertificate = artifacts.require("Ultimaker2ExtendedCertifi
 var ZmorphVXCertificate = artifacts.require("ZmorphVXCertificate");
 
 module.exports = function(deployer) {
-  deployer.deploy(GraftenOneCertificate);
-  deployer.deploy(Ultimaker2ExtendedCertificate);
-  deployer.deploy(ZmorphVXCertificate);
+	deployer.deploy(GraftenOneCertificate);
+	deployer.deploy(Ultimaker2ExtendedCertificate);
+	deployer.deploy(ZmorphVXCertificate);
 };

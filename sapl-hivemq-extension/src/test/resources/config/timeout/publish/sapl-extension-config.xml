@@ -15,7 +15,7 @@
     limitations under the License.
 -->
 <sapl-extension-config>
-    <connection-enforcement-timeout-millis>5000</connection-enforcement-timeout-millis>
-    <subscription-enforcement-timeout-millis>5000</subscription-enforcement-timeout-millis>
-    <publish-enforcement-timeout-millis>50</publish-enforcement-timeout-millis>
+	<connection-enforcement-timeout-millis>5000</connection-enforcement-timeout-millis>
+	<subscription-enforcement-timeout-millis>5000</subscription-enforcement-timeout-millis>
+	<publish-enforcement-timeout-millis>50</publish-enforcement-timeout-millis>
 </sapl-extension-config>
