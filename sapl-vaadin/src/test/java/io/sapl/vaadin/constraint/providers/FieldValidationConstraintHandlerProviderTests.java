@@ -54,25 +54,12 @@ import com.vaadin.flow.data.binder.Binder;
 import lombok.Data;
 
 class FieldValidationConstraintHandlerProviderTests {
+    private static final JsonNodeFactory JSON   = JsonNodeFactory.instance;
+    private static final ObjectMapper    MAPPER = new ObjectMapper();
 
-    static class TestForm extends VerticalLayout {
-        private IntegerField   integerField;
-        private DateTimePicker dateTimeField;
-        private TimePicker     timeField;
-    }
-
-    @Data
-    static class TestData {
-        private final Integer integerField = 0;
-        private LocalDateTime dateTimeField;
-        private LocalTime     timeField;
-    }
-
-    private Binder<TestData>      binder;
-    private TestForm              form;
-    private final JsonNodeFactory JSON   = JsonNodeFactory.instance;
-    private final ObjectMapper    MAPPER = new ObjectMapper();
-    private final UI              ui     = mock(UI.class);
+    private Binder<TestData> binder;
+    private TestForm         form;
+    private final UI         ui = mock(UI.class);
 
     @BeforeAll
     static void setUp() {
@@ -353,8 +340,7 @@ class FieldValidationConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_constraintHasDateTimeFormat_then_constraintIsApplied()
-            throws JsonMappingException, JsonProcessingException {
+    void when_constraintHasDateTimeFormat_then_constraintIsApplied() throws JsonProcessingException {
         // GIVEN
         var sut = new FieldValidationConstraintHandlerProvider(binder, form);
         sut.bindField(form.dateTimeField);
@@ -441,4 +427,18 @@ class FieldValidationConstraintHandlerProviderTests {
         form.integerField.setValue(21);
         assertFalse(form.integerField.isInvalid());
     }
+
+    static class TestForm extends VerticalLayout {
+        private IntegerField   integerField;
+        private DateTimePicker dateTimeField;
+        private TimePicker     timeField;
+    }
+
+    @Data
+    static class TestData {
+        private final Integer integerField = 0;
+        private LocalDateTime dateTimeField;
+        private LocalTime     timeField;
+    }
+
 }

@@ -49,7 +49,6 @@ class VaadinConstraintEnforcementServiceTests {
     List<ConsumerConstraintHandlerProvider<UI>>   globalConsumerProviders;
     List<RunnableConstraintHandlerProvider>       globalRunnableProviders;
     VaadinConstraintEnforcementService            sut;
-    VaadinConstraintHandlerBundle                 vaadinConstraintHandlerBundle = new VaadinConstraintHandlerBundle();
 
     @BeforeEach
     void beforeEach() {
