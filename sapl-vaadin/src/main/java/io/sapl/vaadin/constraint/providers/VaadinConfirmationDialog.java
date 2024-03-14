@@ -32,38 +32,29 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
  */
 class VaadinConfirmationDialog extends Dialog {
 
-    private final String header;
-    private final String text;
-    private final String confirmText;
-
-    private final String cancelText;
-
     public VaadinConfirmationDialog(String header, String text, String confirmText, final Runnable onConfirmListener,
             String cancelText, final Runnable onCancelListener) {
-        this.header      = header;
-        this.text        = text;
-        this.confirmText = confirmText;
-        this.cancelText  = cancelText;
+
         setCloseOnOutsideClick(false);
 
         var layout = new VerticalLayout();
 
-        var headline = new H2(this.header);
+        var headline = new H2(header);
         headline.getStyle().set("margin", "var(--lumo-space-m) 0 0 0").set("font-size", "1.5em").set("font-weight",
                 "bold");
         layout.add(headline);
 
-        var textComponent = new Text(this.text);
+        var textComponent = new Text(text);
         layout.add(textComponent);
 
-        var confirmButton = new Button(this.confirmText);
+        var confirmButton = new Button(confirmText);
         confirmButton.addClickListener(event -> {
             this.close();
             onConfirmListener.run();
         });
         confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        var cancelButton = new Button(this.cancelText);
+        var cancelButton = new Button(cancelText);
         cancelButton.addClickListener(event -> {
             this.close();
             onCancelListener.run();
