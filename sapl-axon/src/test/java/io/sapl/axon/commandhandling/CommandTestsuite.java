@@ -46,7 +46,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -85,7 +84,7 @@ public abstract class CommandTestsuite {
     private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
     private static final long COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS = 750L;
-    protected static boolean  isIntegrationTest                         = false;
+    static boolean            isIntegrationTest                         = false;
     private static boolean    waitedForCommandHandlerRegistration       = false;
 
     @MockBean
@@ -259,7 +258,6 @@ public abstract class CommandTestsuite {
     }
 
     @Slf4j
-    @Service
     public static class CommandHandlingService {
 
         public String data = "service data";

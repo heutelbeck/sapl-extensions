@@ -175,7 +175,7 @@ class QueryPolicyEnforcementPointTests {
 
     @BeforeEach
     @SuppressWarnings("unchecked")
-    void beforeEach() throws NoSuchMethodException, SecurityException {
+    void beforeEach() throws NoSuchMethodException {
         mapper = new ObjectMapper();
         var executable = HandlingObject.class.getDeclaredMethod("handle1", TestQueryPayload.class);
         factory = new DefaultParameterResolverFactory();
