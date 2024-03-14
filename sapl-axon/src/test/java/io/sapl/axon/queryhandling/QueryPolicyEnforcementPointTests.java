@@ -271,8 +271,7 @@ class QueryPolicyEnforcementPointTests {
 
     @Test
     @SuppressWarnings("unchecked")
-    void when_handle_with_preEnforce_and_executeOnDecisionHandlersThrowsAccessDenied_then_handledException()
-            throws NoSuchMethodException, SecurityException {
+    void when_handle_with_preEnforce_and_executeOnDecisionHandlersThrowsAccessDenied_then_handledException() {
         doThrow(ACCESS_DENIED).when(queryConstraintHandlerBundle)
                 .executeOnDecisionHandlers(any(AuthorizationDecision.class), any(Message.class));
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
@@ -290,8 +289,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handle_with_preEnforce_and_decisionNotPermit_then_handledException()
-            throws NoSuchMethodException, SecurityException {
+    void when_handle_with_preEnforce_and_decisionNotPermit_then_handledException() {
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
                 .thenReturn(new RuntimeException("A very special message!"));
 
@@ -308,8 +306,7 @@ class QueryPolicyEnforcementPointTests {
 
     @Test
     @SuppressWarnings("unchecked")
-    void when_handle_with_preEnforce_and_executePreHandlingHandlersMapQuery_then_callHandlerWithManipulatedQuery()
-            throws NoSuchMethodException, SecurityException {
+    void when_handle_with_preEnforce_and_executePreHandlingHandlersMapQuery_then_callHandlerWithManipulatedQuery() {
         var          specialPayload      = new TestQueryPayload("some special text");
         @SuppressWarnings("rawtypes")
         QueryMessage specialQueryMessage = new GenericQueryMessage<>(specialPayload,
@@ -331,8 +328,7 @@ class QueryPolicyEnforcementPointTests {
 
     @Test
     @SuppressWarnings("unchecked")
-    void when_handle_with_preEnforce_and_executePreHandlingHandlersThrowsAccessDenied_then_handledException()
-            throws NoSuchMethodException, SecurityException {
+    void when_handle_with_preEnforce_and_executePreHandlingHandlersThrowsAccessDenied_then_handledException() {
         when(queryConstraintHandlerBundle.executePreHandlingHandlers(any(QueryMessage.class))).thenThrow(ACCESS_DENIED);
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
                 .thenReturn(new RuntimeException("A very special message!"));
@@ -350,8 +346,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handle_with_preEnforce_and_delegateReturnsNull_then_empty()
-            throws NoSuchMethodException, SecurityException {
+    void when_handle_with_preEnforce_and_delegateReturnsNull_then_empty() {
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
         handlingInstance.setResponse(null);
 
@@ -364,8 +359,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handle_with_preEnforce_and_delegateThrows_then_handledException()
-            throws NoSuchMethodException, SecurityException {
+    void when_handle_with_preEnforce_and_delegateThrows_then_handledException() {
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
                 .thenReturn(new RuntimeException("An even more special message!"));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
@@ -385,7 +379,7 @@ class QueryPolicyEnforcementPointTests {
 
     @Test
     void when_handle_with_preEnforce_and_delegateReturnsCompletableFuture_then_deferResponse()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle4", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -403,8 +397,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handle_with_preEnforce_and_resourceInDecision_then_replaceResult()
-            throws NoSuchMethodException, SecurityException {
+    void when_handle_with_preEnforce_and_resourceInDecision_then_replaceResult() {
         var resource = new TestResponseType("some special text");
         var decision = AuthorizationDecision.PERMIT.withResource(asTree(resource));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(decision));
@@ -419,8 +412,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handle_with_preEnforce_and_executePostHandlingHandlersMapResponse_then_handledException()
-            throws NoSuchMethodException, SecurityException {
+    void when_handle_with_preEnforce_and_executePostHandlingHandlersMapResponse_then_handledException() {
         when(queryConstraintHandlerBundle.executePostHandlingHandlers(DEFAULT_RESPONSE)).thenReturn("special response");
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
@@ -433,8 +425,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handle_with_enforceDropUpdatesWhileDenied_then_preEnforceInitialResult()
-            throws NoSuchMethodException, SecurityException {
+    void when_handle_with_enforceDropUpdatesWhileDenied_then_preEnforceInitialResult() throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle5", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -453,7 +444,7 @@ class QueryPolicyEnforcementPointTests {
 
     @Test
     void when_handle_with_enforceRecoverableUpdatesIfDenied_then_preEnforceInitialResult()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle6", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -472,7 +463,7 @@ class QueryPolicyEnforcementPointTests {
 
     @Test
     void when_handle_with_postEnforce_and_handlerThrows_buildQueryPostHandlerBundleThrowsAccessDenied_then_accessDenied()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle7", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -497,7 +488,7 @@ class QueryPolicyEnforcementPointTests {
     @Test
     @SuppressWarnings("unchecked")
     void when_handle_with_postEnforce_and_handlerThrows_and_executeOnDecisionHandlersThrowsAccessDenied_then_handledThrowable()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle7", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -524,7 +515,7 @@ class QueryPolicyEnforcementPointTests {
 
     @Test
     void when_handle_with_postEnforce_and_handlerThrows_and_pdpDeny_then_handledThrowable()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle7", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -549,7 +540,7 @@ class QueryPolicyEnforcementPointTests {
 
     @Test
     void when_handle_with_postEnforce_and_handlerThrows_and_pdpPermit_then_handledThrowable()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle7", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -574,7 +565,7 @@ class QueryPolicyEnforcementPointTests {
 
     @Test
     void when_handle_with_postEnforce_and_buildQueryPostHandlerBundleThrowsAccessDenied_pdpPermit_then_accessDenied()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle7", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -598,7 +589,7 @@ class QueryPolicyEnforcementPointTests {
     @Test
     @SuppressWarnings("unchecked")
     void when_handle_with_postEnforce_and_executeOnDecisionHandlersThrowsAccessDenied_pdpPermit_then_handledThrowable()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle7", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -623,8 +614,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handle_with_postEnforce_and_pdpDeny_then_handledThrowable()
-            throws NoSuchMethodException, SecurityException {
+    void when_handle_with_postEnforce_and_pdpDeny_then_handledThrowable() throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle7", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -647,8 +637,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handle_with_postEnforce_and_resourceInDecision_then_resourceOfDecision()
-            throws NoSuchMethodException, SecurityException {
+    void when_handle_with_postEnforce_and_resourceInDecision_then_resourceOfDecision() throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle7", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -673,7 +662,7 @@ class QueryPolicyEnforcementPointTests {
     @Test
     @SuppressWarnings("unchecked")
     void when_handle_with_postEnforce_and_resourceInDecision_and_deserializeResourceThrows_then_handledThrowable()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle7", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -700,7 +689,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handle_with_postEnforce_then_handledResponse() throws NoSuchMethodException, SecurityException {
+    void when_handle_with_postEnforce_then_handledResponse() throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle7", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -723,7 +712,7 @@ class QueryPolicyEnforcementPointTests {
 
     @Test
     void when_handle_with_postEnforce_and_executePostHandlingHandlersThrowsAccessDenied_then_handledResponse()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle7", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -748,8 +737,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handleSubscriptionQuery_with_noAnnotation_then_handleWithoutAuthZ()
-            throws NoSuchMethodException, SecurityException {
+    void when_handleSubscriptionQuery_with_noAnnotation_then_handleWithoutAuthZ() throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle2", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -768,8 +756,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handleSubscriptionQuery_with_postEnforce_then_accessDenied()
-            throws NoSuchMethodException, SecurityException {
+    void when_handleSubscriptionQuery_with_postEnforce_then_accessDenied() throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle7", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -784,8 +771,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handleSubscriptionQuery_with_multipleAnnotations_then_illegalState()
-            throws NoSuchMethodException, SecurityException {
+    void when_handleSubscriptionQuery_with_multipleAnnotations_then_illegalState() throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle3", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -801,7 +787,7 @@ class QueryPolicyEnforcementPointTests {
 
     @Test
     void when_handleSubscriptionQuery_with_enforceDropUpdatesWhileDenied_then_preEnforceInitialResult()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle5", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
@@ -821,7 +807,7 @@ class QueryPolicyEnforcementPointTests {
 
     @Test
     void when_handleSubscriptionQuery_with_enforceRecoverableUpdatesIfDenied_then_preEnforceInitialResult()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle6", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
