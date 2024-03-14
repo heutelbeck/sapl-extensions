@@ -34,7 +34,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Locale;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
@@ -53,20 +52,16 @@ import com.vaadin.flow.data.binder.Binder;
 import lombok.Data;
 
 class FieldValidationConstraintHandlerProviderTests {
-    private static final JsonNodeFactory JSON   = JsonNodeFactory.instance;
-    private static final ObjectMapper    MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private Binder<TestData> binder;
     private TestForm         form;
-    private final UI         ui = mock(UI.class);
-
-    @BeforeAll
-    static void setUp() {
-    }
+    private UI               ui;
 
     @BeforeEach
     void setupTest() {
         // ui
+        ui = mock(UI.class);
         when(ui.getLocale()).thenReturn(Locale.ENGLISH);
         UI.setCurrent(ui);
 
@@ -172,7 +167,7 @@ class FieldValidationConstraintHandlerProviderTests {
     void when_constraintIsEmptyOrNull_then_providerIsNotResponsible() {
         // GIVEN
         var        sut        = new FieldValidationConstraintHandlerProvider(binder, form, new ObjectMapper());
-        ObjectNode constraint = JSON.objectNode();
+        ObjectNode constraint = JsonNodeFactory.instance.objectNode();
         // WHEN+THEN
         assertFalse(sut.isResponsible(constraint));
         assertFalse(sut.isResponsible(null));
