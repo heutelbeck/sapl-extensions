@@ -125,7 +125,7 @@ class CommandPolicyEnforcementPointTests {
 
     @BeforeEach
     @SuppressWarnings("unchecked")
-    void beforeEach() throws NoSuchMethodException, SecurityException {
+    void beforeEach() throws NoSuchMethodException {
         var mapper = new ObjectMapper();
         factory = new DefaultParameterResolverFactory();
         var executable = HandlingObject.class.getDeclaredMethod("handle1", TestCommand.class);
@@ -155,7 +155,7 @@ class CommandPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_noAnnotation_then_noEnforcement() throws NoSuchMethodException, SecurityException {
+    void when_noAnnotation_then_noEnforcement() throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle2", TestCommand.class);
         delegate   = spy(
                 new AnnotatedMessageHandlingMember<>(executable, CommandMessage.class, TestCommand.class, factory));
@@ -169,7 +169,7 @@ class CommandPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_wrongAnnotation_then_noEnforcement() throws NoSuchMethodException, SecurityException {
+    void when_wrongAnnotation_then_noEnforcement() throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle3", TestCommand.class);
         delegate   = spy(
                 new AnnotatedMessageHandlingMember<>(executable, CommandMessage.class, TestCommand.class, factory));
@@ -239,7 +239,7 @@ class CommandPolicyEnforcementPointTests {
 	}
 
     @Test
-    void when_permit_and_delegateHandleThrows_then_handledException() throws NoSuchMethodException, SecurityException {
+    void when_permit_and_delegateHandleThrows_then_handledException() throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle4", TestCommand.class);
         delegate   = spy(
                 new AnnotatedMessageHandlingMember<>(executable, CommandMessage.class, TestCommand.class, factory));

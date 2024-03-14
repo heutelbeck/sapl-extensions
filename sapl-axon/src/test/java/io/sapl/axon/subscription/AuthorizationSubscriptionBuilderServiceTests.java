@@ -298,7 +298,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForCommand_with_emptyAnnotation_then_anonymousSubscription()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
         var command = new GenericCommandMessage<>(payload);
 
@@ -330,7 +330,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForCommand_with_malformedSubject_then_exception()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
         var command = new GenericCommandMessage<>(payload);
 
@@ -349,7 +349,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForCommand_with_subject_then_subscriptionWithSubject()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
         var command = new GenericCommandMessage<>(payload);
 
@@ -381,7 +381,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForCommand_with_malformedAction_then_exception()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
         var command = new GenericCommandMessage<>(payload);
 
@@ -400,7 +400,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForCommand_with_action_then_subscriptionWithAction()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
         var command = new GenericCommandMessage<>(payload);
 
@@ -426,7 +426,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForCommand_with_malformedResource_then_exception()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
         var command = new GenericCommandMessage<>(payload);
 
@@ -445,7 +445,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForCommand_with_resource_then_subscriptionWithResource()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
         var command = new GenericCommandMessage<>(payload);
 
@@ -477,7 +477,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForCommand_with_noHandlerObject_then_noHandlerObjectInResource()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
         var command = new GenericCommandMessage<>(payload);
 
@@ -507,7 +507,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForCommand_with_providedAggregateType_then_subscriptionWithProvidedAggregateType()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
         var command = new GenericCommandMessage<>(payload).withMetaData(Map.of(AGGREGATE_TYPE, TEST_AGGREGATE_TYPE));
 
@@ -539,7 +539,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForCommand_with_commandWithoutTargetIdentifier_then_noIdentifierInResource()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new NonAnnotatedTestCommand(TEST_AGGREGATE_IDENTIFIER);
         var command = new GenericCommandMessage<>(payload);
 
@@ -571,7 +571,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForCommand_with_malformedEnvironment_then_exception()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
         var command = new GenericCommandMessage<>(payload);
 
@@ -590,7 +590,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForCommand_with_environment_then_subscriptionWithEnvironment()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
         var command = new GenericCommandMessage<>(payload);
 
@@ -622,7 +622,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForCommand_with_metaData_then_subscriptionWithMetaData()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload  = new TestCommand(TEST_AGGREGATE_IDENTIFIER);
         var metaData = Map.of("metaDataKey1", "metaDataValue1", "metaDataKey2", "metaDataValue2");
         var command  = new GenericCommandMessage<>(payload).andMetaData(metaData);
@@ -657,7 +657,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForQuery_with_emptyAnnotation_then_anonymousSubscription()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
         var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
@@ -679,7 +679,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForQuery_with_malformedSubject_then_exception()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
         var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
@@ -693,7 +693,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForQuery_with_subject_then_subscriptionWithSubject()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
         var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
@@ -715,7 +715,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForQuery_with_malformedAction_then_exception()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
         var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
@@ -729,7 +729,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForQuery_with_action_then_subscriptionWithAction()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
         var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
@@ -748,7 +748,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForQuery_with_malformedResource_then_exception()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
         var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
@@ -762,7 +762,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForQuery_with_resource_then_subscriptionWithResource()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
         var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
@@ -784,7 +784,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForQuery_with_postEnforce_and_resource_then_postEnforceSubscriptionWithResource()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
         var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
@@ -806,7 +806,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForQuery_with_postEnforce_then_postEnforceSubscription()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
         var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
@@ -828,7 +828,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForQuery_with_subscriptionQuery_then_subscriptionWithUpdateType()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
         var query   = new GenericSubscriptionQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class),
                 ResponseTypes.instanceOf(TestQueryUpdate.class));
@@ -852,7 +852,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForQuery_with_nonEnclosedPayload_then_subscriptionWithoutClassName()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new NonEnclosedTestQuery(TEST_DOCUMENT_IDENTIFIER);
         var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
@@ -874,7 +874,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForQuery_with_malformedEnvironment_then_exception()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
         var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
@@ -888,7 +888,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     @Test
     void when_constructAuthorizationSubscriptionForQuery_with_environment_then_subscriptionWithSubject()
-            throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException {
         var payload = new TestQuery(TEST_DOCUMENT_IDENTIFIER);
         var query   = new GenericQueryMessage<>(payload, ResponseTypes.instanceOf(TestQueryResult.class));
 
