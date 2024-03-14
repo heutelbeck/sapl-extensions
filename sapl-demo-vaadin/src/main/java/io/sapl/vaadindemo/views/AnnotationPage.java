@@ -17,6 +17,8 @@ import jakarta.annotation.security.PermitAll;
 @Route(value = "annotation-page", layout = MainLayout.class)
 public class AnnotationPage extends VerticalLayout {
 
+    private static final long serialVersionUID = 7202211904506460651L;
+
     /**
      * Create annotation page
      */

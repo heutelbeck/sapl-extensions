@@ -40,7 +40,9 @@ import reactor.core.Disposables;
 @PageTitle("SmartHomeMonitor")
 public class SmartHomeMonitor extends VerticalLayout {
 	
-	static final String BADGE_DESIGN_BLUE       = "badge";
+    private static final long serialVersionUID = 5947211740484132690L;
+    
+    static final String BADGE_DESIGN_BLUE       = "badge";
     static final String BADGE_DESIGN_ERROR      = "badge error";
     static final String BADGE_DESIGN_SUCCESS    = "badge success";
     static final String BADGE_DESIGN_UNKNOWN    = "badge contrast";

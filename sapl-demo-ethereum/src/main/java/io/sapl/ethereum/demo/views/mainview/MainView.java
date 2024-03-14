@@ -51,6 +51,8 @@ import lombok.extern.slf4j.Slf4j;
 @Route(value = "")
 public class MainView extends VerticalLayout {
 
+    private static final long serialVersionUID = 3882453216149362877L;
+
     public static final String GRAFTEN = "Graften One";
 
     public static final String ULTIMAKER = "Ultimaker 2 Extended+";

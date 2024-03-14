@@ -33,7 +33,9 @@ import com.vaadin.flow.theme.Theme;
 @Theme(value = "sapl-demo-mqtt-pep")
 public class SaplMqttHivemqPepDemo implements AppShellConfigurator {
 
-	public static void main(String[] args) {
+    private static final long serialVersionUID = -3270515339879196997L;
+
+    public static void main(String[] args) {
         SpringApplication.run(SaplMqttHivemqPepDemo.class, args);
     }
 

@@ -32,6 +32,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
  */
 class VaadinConfirmationDialog extends Dialog {
 
+    private static final long serialVersionUID = -1392716296697354919L;
+
     public VaadinConfirmationDialog(String header, String text, String confirmText, final Runnable onConfirmListener,
             String cancelText, final Runnable onCancelListener) {
 

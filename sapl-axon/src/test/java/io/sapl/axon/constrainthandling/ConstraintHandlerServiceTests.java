@@ -72,6 +72,8 @@ class ConstraintHandlerServiceTests {
 
     private static class UnknownResponseType<R> extends AbstractResponseType<R> {
 
+        private static final long serialVersionUID = -9035650923297559796L;
+
         protected UnknownResponseType(Class<R> expectedResponseType) {
             super(expectedResponseType);
         }

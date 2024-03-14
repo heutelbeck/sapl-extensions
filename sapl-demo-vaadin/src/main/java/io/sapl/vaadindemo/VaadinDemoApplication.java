@@ -15,7 +15,9 @@ import com.vaadin.flow.component.page.Push;
 @ComponentScan({ "io.sapl.vaadindemo", "io.sapl.vaadin" })
 public class VaadinDemoApplication extends SpringBootServletInitializer implements AppShellConfigurator {
 
-	public static void main(String[] args) {
+    private static final long serialVersionUID = 5743256440001025762L;
+
+    public static void main(String[] args) {
 		SpringApplication.run(VaadinDemoApplication.class, args);
 	}
 }

@@ -26,7 +26,9 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 @PageTitle("Login")
 public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
-	private final LoginForm login = new LoginForm();
+    private static final long serialVersionUID = -6441314421004375119L;
+
+    private final LoginForm login = new LoginForm();
 
     /**
      * Create Login Page

@@ -29,6 +29,9 @@ import io.sapl.vaadindemo.security.SecurityUtils;
  * The main view is a top-level placeholder for other views.
  */
 public class MainLayout extends AppLayout {
+
+    private static final long serialVersionUID = -5398634391624843809L;
+
     private static final String ITEMS_CENTER = "items-center";
     private H1 viewTitle;
 

@@ -24,7 +24,9 @@ import com.vaadin.flow.component.notification.Notification;
 @Service
 public class PrintService implements Serializable {
 
-	public void print(String template) {
+    private static final long serialVersionUID = -1127341432743397300L;
+
+    public void print(String template) {
 		if (template == null || template.isEmpty()) {
 			Notification.show("Please select a template");
 		} else {

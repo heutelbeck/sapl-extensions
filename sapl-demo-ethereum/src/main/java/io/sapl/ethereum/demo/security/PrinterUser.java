@@ -27,6 +27,8 @@ import lombok.Setter;
 @Setter
 public class PrinterUser extends User {
 
+    private static final long serialVersionUID = -5352921998138256038L;
+
     private String ethereumAddress;
 
     private String transactionHash;

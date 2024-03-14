@@ -103,6 +103,8 @@ class SaplQueryUpdateEmitterTests {
 
     private static class FlaggedSubscriptionQueryMessage<Q, I, U> extends GenericSubscriptionQueryMessage<Q, I, U> {
 
+        private static final long serialVersionUID = -4415866991004251226L;
+
         public FlaggedSubscriptionQueryMessage(Q payload, ResponseType<I> responseType,
                 ResponseType<U> updateResponseType) {
             super(payload, responseType, updateResponseType);

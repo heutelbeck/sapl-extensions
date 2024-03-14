@@ -14,7 +14,9 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 public class HospitalStaff extends User implements UserDetails {
 
-	@Getter
+    private static final long serialVersionUID = 1064197481300285671L;
+
+    @Getter
 	private Ward     assignedWard;
 	@Getter
 	private Position position;

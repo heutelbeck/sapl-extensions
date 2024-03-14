@@ -28,6 +28,8 @@ import lombok.Getter;
 @Getter
 public class PayForm extends VerticalLayout {
 
+    private static final long serialVersionUID = -6693456537313146729L;
+
     private final Button pay;
 
     public PayForm() {

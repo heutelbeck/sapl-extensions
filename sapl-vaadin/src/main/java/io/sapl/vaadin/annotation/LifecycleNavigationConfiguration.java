@@ -28,6 +28,8 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 @ConditionalOnProperty(value = "module.enabled", havingValue = "true", matchIfMissing = true)
 public class LifecycleNavigationConfiguration implements VaadinServiceInitListener {
 
+    private static final long serialVersionUID = 2723967835464547701L;
+
     private transient VaadinNavigationPepService vaadinNavigationPepService;
 
     public LifecycleNavigationConfiguration(VaadinNavigationPepService vaadinNavigationPepService) {

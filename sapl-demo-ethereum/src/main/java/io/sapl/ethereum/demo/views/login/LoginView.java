@@ -32,6 +32,8 @@ import io.sapl.ethereum.demo.security.AuthenticatedUser;
 @Route(value = "login")
 public class LoginView extends LoginOverlay implements BeforeEnterObserver {
 
+    private static final long serialVersionUID = -8393152533577059646L;
+
     private transient AuthenticatedUser authenticatedUser;
 
     public LoginView(AuthenticatedUser authenticatedUser) {

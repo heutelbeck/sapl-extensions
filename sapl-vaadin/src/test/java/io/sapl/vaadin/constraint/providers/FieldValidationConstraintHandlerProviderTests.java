@@ -425,6 +425,7 @@ class FieldValidationConstraintHandlerProviderTests {
 
     @Getter
     static class TestForm extends VerticalLayout {
+        private static final long serialVersionUID = 6075150831882767199L;
         private IntegerField   integerField;
         private DateTimePicker dateTimeField;
         private TimePicker     timeField;

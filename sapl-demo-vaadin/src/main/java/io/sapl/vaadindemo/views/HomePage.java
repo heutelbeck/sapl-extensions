@@ -17,7 +17,9 @@ import jakarta.annotation.security.PermitAll;
 @Route(value = "", layout = MainLayout.class)
 public class HomePage extends VerticalLayout {
 
-	private static final String INFOTEXT = "This page shows your current user role. Furthermore it is  used as a " +
+    private static final long serialVersionUID = -8283608367331153224L;
+
+    private static final String INFOTEXT = "This page shows your current user role. Furthermore it is  used as a " +
 			"landing page for demonstration of navigation functionalities.";
 
 	/**

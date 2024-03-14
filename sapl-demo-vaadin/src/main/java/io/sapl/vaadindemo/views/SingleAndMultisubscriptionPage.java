@@ -22,6 +22,9 @@ import jakarta.annotation.security.PermitAll;
 @PageTitle("Single- and Multisubscription Page")
 @Route(value = "single-and-multisubscription-page", layout = MainLayout.class)
 public class SingleAndMultisubscriptionPage extends VerticalLayout {
+
+    private static final long serialVersionUID = 627128122009470259L;
+
     private static final String VIEW_COMPONENT               = "view_component";
     private static final String SINGLE_AND_MULTISUBSCRIPTION = "SingleAndMultisubscription";
     private static final String OBJECT                       = "object";

@@ -79,6 +79,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 
     @StandardException
     private static class TestAccessDeniedException extends AccessDeniedException {
+        private static final long serialVersionUID = 8228035029758624491L;
     }
 
     private static ConstraintHandlerService constraintHandlerService;
