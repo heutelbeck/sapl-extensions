@@ -312,8 +312,7 @@ public class EthereumPipFunctionsTest {
     }
 
     @Test
-    public void createFunctionShouldWorkWithShortTypeCorrectly()
-            throws IOException, NumberFormatException, ClassNotFoundException {
+    public void createFunctionShouldWorkWithShortTypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "short");
         inputParam.put(VALUE, Short.valueOf("111"));

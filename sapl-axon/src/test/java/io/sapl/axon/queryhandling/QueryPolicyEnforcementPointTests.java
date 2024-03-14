@@ -236,8 +236,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handle_with_multiplePreEnforceAnnotations_then_accessDenied()
-            throws NoSuchMethodException, SecurityException {
+    void when_handle_with_multiplePreEnforceAnnotations_then_accessDenied() throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle3", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
