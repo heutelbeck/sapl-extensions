@@ -145,45 +145,25 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class EthereumPipFunctionsTest {
 
-    private static final String TEST_TO_BLOCK = "0x1abcdef";
-
-    private static final String TEST_FROM_BLOCK = "0x12356";
-
-    private static final String TO_BLOCK = "toBlock";
-
-    private static final String FROM_BLOCK = "fromBlock";
-
-    private static final int INT_TEST_VALUE = 123;
-
-    private static final int UINT_TEST_VALUE = 222;
-
-    private static final String SOME_STRING = "someString";
-
-    private static final String STRING = "string";
-
-    private static final String BOOL = "bool";
-
-    private static final String ADDRESS = "address";
-
-    private static final String TEST_ADDRESS = "0x3f2cbea2185089ea5bbabbcd7616b215b724885c";
-
-    private static final String TYPE = "type";
-
-    private static final String VALUE = "value";
-
-    private static final byte[] BYTE_ARRAY = hexStringToByteArray(TEST_ADDRESS);
-
-    private static final BigInteger TEST_BIG_INT = BigInteger.valueOf(1364961235);
-
-    private static final String TEST_FUNCTION_NAME = "testFunctionName";
-
-    private static byte[] bytesArray;
-
-    private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
-
-    private static final JsonNode TEST_OUTPUT_PARAM = JSON.arrayNode().add(BOOL);
-
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final String          TEST_TO_BLOCK      = "0x1abcdef";
+    private static final String          TEST_FROM_BLOCK    = "0x12356";
+    private static final String          TO_BLOCK           = "toBlock";
+    private static final String          FROM_BLOCK         = "fromBlock";
+    private static final int             INT_TEST_VALUE     = 123;
+    private static final int             UINT_TEST_VALUE    = 222;
+    private static final String          SOME_STRING        = "someString";
+    private static final String          STRING             = "string";
+    private static final String          BOOL               = "bool";
+    private static final String          ADDRESS            = "address";
+    private static final String          TEST_ADDRESS       = "0x3f2cbea2185089ea5bbabbcd7616b215b724885c";
+    private static final String          TYPE               = "type";
+    private static final String          VALUE              = "value";
+    private static final byte[]          BYTE_ARRAY         = hexStringToByteArray(TEST_ADDRESS);
+    private static final BigInteger      TEST_BIG_INT       = BigInteger.valueOf(1364961235);
+    private static final String          TEST_FUNCTION_NAME = "testFunctionName";
+    private static final JsonNodeFactory JSON               = JsonNodeFactory.instance;
+    private static final JsonNode        TEST_OUTPUT_PARAM  = JSON.arrayNode().add(BOOL);
+    private static final ObjectMapper    MAPPER             = new ObjectMapper();
 
     // convertToType
 
@@ -986,7 +966,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes1TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray    = new byte[1];
+        var        bytesArray = new byte[1];
         bytesArray[0] = 25;
         inputParam.put(TYPE, "bytes1");
         inputParam.put(VALUE, bytesArray);
@@ -998,7 +978,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes2TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray    = new byte[2];
+        var        bytesArray = new byte[2];
         bytesArray[1] = 33;
         inputParam.put(TYPE, "bytes2");
         inputParam.put(VALUE, bytesArray);
@@ -1010,7 +990,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes3TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[3];
+        var        bytesArray = new byte[3];
         inputParam.put(TYPE, "bytes3");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1021,7 +1001,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes4TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[4];
+        var        bytesArray = new byte[4];
         inputParam.put(TYPE, "bytes4");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1032,7 +1012,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes5TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[5];
+        var        bytesArray = new byte[5];
         inputParam.put(TYPE, "bytes5");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1043,7 +1023,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes6TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[6];
+        var        bytesArray = new byte[6];
         inputParam.put(TYPE, "bytes6");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1054,7 +1034,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes7TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[7];
+        var        bytesArray = new byte[7];
         inputParam.put(TYPE, "bytes7");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1065,7 +1045,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes8TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[8];
+        var        bytesArray = new byte[8];
         inputParam.put(TYPE, "bytes8");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1076,7 +1056,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes9TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[9];
+        var        bytesArray = new byte[9];
         inputParam.put(TYPE, "bytes9");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1087,7 +1067,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes10TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[10];
+        var        bytesArray = new byte[10];
         inputParam.put(TYPE, "bytes10");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1098,7 +1078,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithByte11TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[11];
+        var        bytesArray = new byte[11];
         inputParam.put(TYPE, "bytes11");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1109,7 +1089,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes12TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[12];
+        var        bytesArray = new byte[12];
         inputParam.put(TYPE, "bytes12");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1120,7 +1100,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes13TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[13];
+        var        bytesArray = new byte[13];
         inputParam.put(TYPE, "bytes13");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1131,7 +1111,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes14TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[14];
+        var        bytesArray = new byte[14];
         inputParam.put(TYPE, "bytes14");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1142,7 +1122,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes15TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[15];
+        var        bytesArray = new byte[15];
         inputParam.put(TYPE, "bytes15");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1153,7 +1133,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes16TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[16];
+        var        bytesArray = new byte[16];
         inputParam.put(TYPE, "bytes16");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1164,7 +1144,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes17TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[17];
+        var        bytesArray = new byte[17];
         inputParam.put(TYPE, "bytes17");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1175,7 +1155,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes18TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[18];
+        var        bytesArray = new byte[18];
         inputParam.put(TYPE, "bytes18");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1186,7 +1166,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes19TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[19];
+        var        bytesArray = new byte[19];
         inputParam.put(TYPE, "bytes19");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1197,7 +1177,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes20TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[20];
+        var        bytesArray = new byte[20];
         inputParam.put(TYPE, "bytes20");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1208,7 +1188,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes21TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[21];
+        var        bytesArray = new byte[21];
         inputParam.put(TYPE, "bytes21");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1219,7 +1199,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithByte22TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[22];
+        var        bytesArray = new byte[22];
         inputParam.put(TYPE, "bytes22");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1230,7 +1210,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes23TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[23];
+        var        bytesArray = new byte[23];
         inputParam.put(TYPE, "bytes23");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1241,7 +1221,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes24TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[24];
+        var        bytesArray = new byte[24];
         inputParam.put(TYPE, "bytes24");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1252,7 +1232,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes25TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[25];
+        var        bytesArray = new byte[25];
         inputParam.put(TYPE, "bytes25");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1263,7 +1243,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes26TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[26];
+        var        bytesArray = new byte[26];
         inputParam.put(TYPE, "bytes26");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1274,7 +1254,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes27TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[27];
+        var        bytesArray = new byte[27];
         inputParam.put(TYPE, "bytes27");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1285,7 +1265,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes28TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[28];
+        var        bytesArray = new byte[28];
         inputParam.put(TYPE, "bytes28");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1296,7 +1276,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes29TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[29];
+        var        bytesArray = new byte[29];
         inputParam.put(TYPE, "bytes29");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1307,7 +1287,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes30TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[30];
+        var        bytesArray = new byte[30];
         inputParam.put(TYPE, "bytes30");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1318,7 +1298,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes31TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[31];
+        var        bytesArray = new byte[31];
         inputParam.put(TYPE, "bytes31");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1329,7 +1309,7 @@ public class EthereumPipFunctionsTest {
     @Test
     public void createFunctionShouldWorkWithBytes32TypeCorrectly() throws IOException, ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
-        bytesArray = new byte[32];
+        var        bytesArray = new byte[32];
         inputParam.put(TYPE, "bytes32");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
@@ -1367,7 +1347,7 @@ public class EthereumPipFunctionsTest {
     public void getEthFilterFromCanBeUsedWithMappedFilter() {
         EthFilter testFilter = getTestEthFilter(TEST_FROM_BLOCK, TEST_TO_BLOCK,
                 Collections.singletonList(TEST_ADDRESS));
-        JsonNode  saplObject = mapper.convertValue(testFilter, JsonNode.class);
+        JsonNode  saplObject = MAPPER.convertValue(testFilter, JsonNode.class);
         EthFilter filter     = getEthFilterFrom(saplObject);
         assertTrue("The getEthFilterFrom method didn't return the correct filter.",
                 filtersAreEqual(testFilter, filter));
