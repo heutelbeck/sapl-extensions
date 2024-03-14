@@ -50,6 +50,7 @@ import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.binder.Binder;
 
 import lombok.Data;
+import lombok.Getter;
 
 class FieldValidationConstraintHandlerProviderTests {
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -422,6 +423,7 @@ class FieldValidationConstraintHandlerProviderTests {
         assertFalse(form.integerField.isInvalid());
     }
 
+    @Getter
     static class TestForm extends VerticalLayout {
         private IntegerField   integerField;
         private DateTimePicker dateTimeField;
