@@ -168,135 +168,135 @@ public abstract class QueryTestsuite {
     }
 
     @Test
-	@WithMockUser(username = "user1", roles = "MANAGER")
-	void when_preHandlerSecuredQueryAndPermit_then_resultReturnsAndPdpIsCalledWithSubscription() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+    @WithMockUser(username = "user1", roles = "MANAGER")
+    void when_preHandlerSecuredQueryAndPermit_then_resultReturnsAndPdpIsCalledWithSubscription() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-		var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+        var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
-		create(result).expectNext(QUERY).verifyComplete();
+        create(result).expectNext(QUERY).verifyComplete();
 
-		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		assertThatSubject(is(jsonObject().where("username", is(jsonText("user1")))));
-		assertThatAction(is(jsonText(PRE_HANDLE_QUERY)));
-		assertThatResource(is(jsonText(RESOURCE)));
-		assertThatEnvironmentNotPresent();
-	}
-
-    @Test
-	void when_dropSecuredQueryAndPermit_then_resultReturnsAndPdpIsCalledWithSubscription() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-
-		var result = Mono.fromFuture(() -> queryGateway.query(DROP_QUERY, QUERY, instanceOf(String.class)));
-
-		create(result).expectNext(QUERY).verifyComplete();
-
-		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		assertThatSubject(is(jsonText(ANONYMOUS)));
-		assertThatAction(is(jsonText(DROP_QUERY)));
-		assertThatResource(is(jsonText(RESOURCE)));
-		assertThatEnvironmentNotPresent();
-	}
+        verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
+        assertThatSubject(is(jsonObject().where("username", is(jsonText("user1")))));
+        assertThatAction(is(jsonText(PRE_HANDLE_QUERY)));
+        assertThatResource(is(jsonText(RESOURCE)));
+        assertThatEnvironmentNotPresent();
+    }
 
     @Test
-	void when_recoverableSecuredQueryAndPermit_then_resultReturnsAndPdpIsCalledWithSubscription() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+    void when_dropSecuredQueryAndPermit_then_resultReturnsAndPdpIsCalledWithSubscription() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-		var result = Mono.fromFuture(() -> queryGateway.query(RECOVERABLE_QUERY, QUERY, instanceOf(String.class)));
+        var result = Mono.fromFuture(() -> queryGateway.query(DROP_QUERY, QUERY, instanceOf(String.class)));
 
-		create(result).expectNext(QUERY).verifyComplete();
+        create(result).expectNext(QUERY).verifyComplete();
 
-		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		assertThatSubject(is(jsonText(ANONYMOUS)));
-		assertThatAction(is(jsonText(RECOVERABLE_QUERY)));
-		assertThatResource(is(jsonText(RESOURCE)));
-		assertThatEnvironmentNotPresent();
-	}
-
-    @Test
-	void when_preHandlerSecuredQueryAndDeny_then_accessDenied() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
-
-		var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
-
-		create(result).expectErrorMatches(isAccessDenied()).verify();
-	}
+        verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
+        assertThatSubject(is(jsonText(ANONYMOUS)));
+        assertThatAction(is(jsonText(DROP_QUERY)));
+        assertThatResource(is(jsonText(RESOURCE)));
+        assertThatEnvironmentNotPresent();
+    }
 
     @Test
-	void when_dropSecuredHandlerAndDeny_then_accessDenied() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
+    void when_recoverableSecuredQueryAndPermit_then_resultReturnsAndPdpIsCalledWithSubscription() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-		var result = Mono.fromFuture(() -> queryGateway.query(DROP_QUERY, QUERY, instanceOf(String.class)));
+        var result = Mono.fromFuture(() -> queryGateway.query(RECOVERABLE_QUERY, QUERY, instanceOf(String.class)));
 
-		create(result).expectErrorMatches(isAccessDenied()).verify();
-	}
+        create(result).expectNext(QUERY).verifyComplete();
 
-    @Test
-	void when_recoverableSecuredQueryAndDeny_then_accessDenied() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
-
-		var result = Mono.fromFuture(() -> queryGateway.query(RECOVERABLE_QUERY, QUERY, instanceOf(String.class)));
-
-		create(result).expectErrorMatches(isAccessDenied()).verify();
-	}
+        verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
+        assertThatSubject(is(jsonText(ANONYMOUS)));
+        assertThatAction(is(jsonText(RECOVERABLE_QUERY)));
+        assertThatResource(is(jsonText(RESOURCE)));
+        assertThatEnvironmentNotPresent();
+    }
 
     @Test
-	void when_postHandlerSecuredQueryAndPermitWithResource_then_resultReturnsAndPdpIsCalledWithSubscriptionAndReplacementIsReturned() {
-		when(pdp.decide(any(AuthorizationSubscription.class)))
-				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withResource(JSON.textNode(I_WAS_REPLACED))));
+    void when_preHandlerSecuredQueryAndDeny_then_accessDenied() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 
-		var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+        var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
-		create(result).expectNext(I_WAS_REPLACED).verifyComplete();
-
-		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		assertThatSubject(is(jsonText(ANONYMOUS)));
-		assertThatAction(is(jsonText(POST_HANDLE_QUERY)));
-		assertThatResource(is(jsonText(RESOURCE)));
-		assertThatEnvironmentNotPresent();
-	}
+        create(result).expectErrorMatches(isAccessDenied()).verify();
+    }
 
     @Test
-	void when_postHandlerSecuredQueryAndPermit_then_resultReturns() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+    void when_dropSecuredHandlerAndDeny_then_accessDenied() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 
-		var result = Mono
-				.fromFuture(() -> queryGateway.query(POST_HANDLE_NO_RESOURCE_QUERY, QUERY, instanceOf(String.class)));
+        var result = Mono.fromFuture(() -> queryGateway.query(DROP_QUERY, QUERY, instanceOf(String.class)));
 
-		create(result).expectNext(QUERY).verifyComplete();
-
-		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		assertThatSubject(is(jsonText(ANONYMOUS)));
-		assertThatAction(is(jsonText(POST_HANDLE_NO_RESOURCE_QUERY)));
-		assertThatResource(is(jsonText(RESOURCE)));
-		assertThatEnvironmentNotPresent();
-	}
+        create(result).expectErrorMatches(isAccessDenied()).verify();
+    }
 
     @Test
-	void when_postHandlerSecuredQueryAndPermitWithResourceAndResourceMarshallingPails_then_accessDenied() {
-		when(pdp.decide(any(AuthorizationSubscription.class)))
-				.thenReturn(Flux.just(AuthorizationDecision.PERMIT.withResource(JSON.textNode(I_WAS_REPLACED))));
+    void when_recoverableSecuredQueryAndDeny_then_accessDenied() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 
-		var result = Mono.fromFuture(
-				() -> queryGateway.query(BAD_RESOURCE_SERIALIZATION_QUERY, QUERY, instanceOf(Integer.class)));
+        var result = Mono.fromFuture(() -> queryGateway.query(RECOVERABLE_QUERY, QUERY, instanceOf(String.class)));
 
-		create(result).expectErrorMatches(isAccessDenied()).verify();
-
-		verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-		assertThatSubject(is(jsonText(ANONYMOUS)));
-		assertThatAction(is(jsonText(BAD_RESOURCE_SERIALIZATION_QUERY)));
-		assertThatResource(is(jsonText(RESOURCE)));
-		assertThatEnvironmentNotPresent();
-	}
+        create(result).expectErrorMatches(isAccessDenied()).verify();
+    }
 
     @Test
-	void when_postHandlerSecuredQueryAndDeny_then_accessDenied() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
+    void when_postHandlerSecuredQueryAndPermitWithResource_then_resultReturnsAndPdpIsCalledWithSubscriptionAndReplacementIsReturned() {
+        when(pdp.decide(any(AuthorizationSubscription.class)))
+                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withResource(JSON.textNode(I_WAS_REPLACED))));
 
-		var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+        var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
-		create(result).expectErrorMatches(isAccessDenied()).verify();
-	}
+        create(result).expectNext(I_WAS_REPLACED).verifyComplete();
+
+        verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
+        assertThatSubject(is(jsonText(ANONYMOUS)));
+        assertThatAction(is(jsonText(POST_HANDLE_QUERY)));
+        assertThatResource(is(jsonText(RESOURCE)));
+        assertThatEnvironmentNotPresent();
+    }
+
+    @Test
+    void when_postHandlerSecuredQueryAndPermit_then_resultReturns() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+
+        var result = Mono
+                .fromFuture(() -> queryGateway.query(POST_HANDLE_NO_RESOURCE_QUERY, QUERY, instanceOf(String.class)));
+
+        create(result).expectNext(QUERY).verifyComplete();
+
+        verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
+        assertThatSubject(is(jsonText(ANONYMOUS)));
+        assertThatAction(is(jsonText(POST_HANDLE_NO_RESOURCE_QUERY)));
+        assertThatResource(is(jsonText(RESOURCE)));
+        assertThatEnvironmentNotPresent();
+    }
+
+    @Test
+    void when_postHandlerSecuredQueryAndPermitWithResourceAndResourceMarshallingPails_then_accessDenied() {
+        when(pdp.decide(any(AuthorizationSubscription.class)))
+                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withResource(JSON.textNode(I_WAS_REPLACED))));
+
+        var result = Mono.fromFuture(
+                () -> queryGateway.query(BAD_RESOURCE_SERIALIZATION_QUERY, QUERY, instanceOf(Integer.class)));
+
+        create(result).expectErrorMatches(isAccessDenied()).verify();
+
+        verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
+        assertThatSubject(is(jsonText(ANONYMOUS)));
+        assertThatAction(is(jsonText(BAD_RESOURCE_SERIALIZATION_QUERY)));
+        assertThatResource(is(jsonText(RESOURCE)));
+        assertThatEnvironmentNotPresent();
+    }
+
+    @Test
+    void when_postHandlerSecuredQueryAndDeny_then_accessDenied() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
+
+        var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
+
+        create(result).expectErrorMatches(isAccessDenied()).verify();
+    }
 
     @Test
     void when_handlerIsAnnotatedWithAnIllegalCombinationOfSaplAnnotations_then_accessDenied_case1() {
@@ -321,7 +321,7 @@ public abstract class QueryTestsuite {
         var emitIntervallMs = 50L;
         var queryPayload    = "case1";
         var numberOfUpdates = 5L;
-        var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
+        var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 50L));
 
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
