@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -271,8 +272,7 @@ public class EthereumPipFunctionsTest {
     }
 
     @Test
-    public void createFunctionShouldUseBoolFalseWhenFloatProvided()
-            throws IOException, NumberFormatException, ClassNotFoundException {
+    public void createFunctionShouldUseBoolFalseWhenFloatProvided() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "float");
         inputParam.put(VALUE, Float.valueOf("7.654321"));
@@ -1417,7 +1417,7 @@ public class EthereumPipFunctionsTest {
                 && compareAddress(filter1.getAddress(), filter2.getAddress());
     }
 
-    private static boolean compareAddress(List<String> address1, List<String> address2) {
+    private static boolean compareAddress(Collection<String> address1, Collection<String> address2) {
         if (address1 == null | address2 == null) {
             return address1 == null && address2 == null;
         }

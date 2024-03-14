@@ -67,65 +67,65 @@ import io.sapl.api.interpreter.Val;
 
 public class EthereumModuleTest {
 
-    private static final String     WRONG_NAME                         = "wrongName";
-    private static final String     TRANSACTION                        = "transaction";
-    private static final String     TRANSACTION_VALUE                  = "transactionValue";
-    private static final String     TO_ACCOUNT                         = "toAccount";
-    private static final String     FROM_ACCOUNT                       = "fromAccount";
-    private static final String     TRANSACTION_HASH                   = "transactionHash";
-    private static final String     TEST_TRANSACTION_HASH              = "0xbeac927d1d256e9a21f8d81233cc83c03bf1a7a79a73a4664fa7ffba74101dac";
-    private static final String     TEST_FALSE_TRANSACTION_HASH        = "0x777c927d1d256e9a21f8d81233cc83c03bf1a7a79a73a4664fa7ffba74101dac";
-    private static final String     TEST_FROM_ACCOUNT                  = "0x70b6613e37616045a80a97e08e930e1e4d800039";
-    private static final String     TEST_TO_ACCOUNT                    = "0x3f2cbea2185089ea5bbabbcd7616b215b724885c";
-    private static final String     TEST_FALSE_ACCOUNT                 = "0x555cbea2185089ea5bbabbcd7616b215b724885c";
-    private static final BigInteger TEST_TRANSACTION_VALUE             = new BigInteger("2000000000000000000");
-    private static final String     OUTPUT_PARAMS                      = "outputParams";
-    private static final String     BOOL                               = "bool";
-    private static final String     INPUT_PARAMS                       = "inputParams";
-    private static final String     VALUE                              = "value";
-    private static final String     ADDRESS                            = "address";
-    private static final String     TYPE                               = "type";
-    private static final String     CONTRACT_ADDRESS                   = "contractAddress";
-    private static final String     FUNCTION_NAME                      = "functionName";
-    private static final String     IS_AUTHORIZED                      = "isAuthorized";
-    private static final String     USER1_ADDRESS                      = "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73";
-    private static final String     USER2_ADDRESS                      = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57";
-    private static final String     USER3_ADDRESS                      = "0xf17f52151EbEF6C7334FAD080c5704D77216b732";
-    private static final String     USER3_PRIVATE_KEY                  = "0xae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f";
-    private static final String     DEFAULT_BLOCK_PARAMETER            = "defaultBlockParameter";
-    private static final String     RETURN_FULL_TRANSACTION_OBJECTS    = "returnFullTransactionObjects";
-    private static final String     LATEST                             = "latest";
-    private static final String     EARLIEST                           = "earliest";
-    private static final String     PENDING                            = "pending";
-    private static final String     POSITION                           = "position";
-    private static final String     BLOCK_HASH                         = "blockHash";
-    private static final String     SHA3_HASH_OF_DATA_TO_SIGN          = "sha3HashOfDataToSign";
-    private static final String     FILTER_ID                          = "filterId";
-    private static final String     TRANSACTION_INDEX                  = "transactionIndex";
-    private static final String     UNCLE_INDEX                        = "uncleIndex";
-    private static final String     ETH_POLLING_INTERVAL               = "ethPollingInterval";
-    private static final String     TEST_DATA_CLIENT_VERSION           = "besu/v1.3.5/linux-x86_64/oracle_openjdk-java-11";
-    private static final String     TEST_DATA_SIGN_ADDRESS             = "0x9b2055d370f73ec7d8a03e965129118dc8f5bf83";
-    private static final String     TEST_DATA_SIGN_MESSAGE             = "0xdeadbeaf";
-    private static final String     TEST_DATA_SIGN_RESULT              = "0xa3f20717a250c2b0b729b7e5becbff67fdaef7e0699da4de7ca5895b02a170a12d887fd3b17bfdce3481f10bea41f45ba9f709d39ce8325427b57afcfc994cee1b";
-    private static final String     TEST_DATA_SHH_VERSION              = "2";
-    private static final String     TEST_DATA_HAS_IDENTITY             = "0x04f96a5e25610293e42a73908e93ccc8c4d4dc0edcfa9fa872f50cb214e08ebf61a03e245533f97284d442460f2998cd41858798ddfd4d661997d3940272b717b1";
-    private static final String     TEST_DATA_SHA3_RESULT              = "0x1e8c821d4eb4d148eb679979820c7c3338148b8433b4ffb0b9d713c8f8e33228";
-    private static final String     TEST_DATA_BLOCKHASH                = "0xc34757f3b3e5ee0d4533f2dedfa98925613acd16e1bb99ad1905bdabb37c897a";
-    private static final String     TEST_DATA_TRANSACTION_HASH_2       = "0x0d75b11b42df31d635730c6a1a26a0b849916cc5e9ceed4bc04a3348fe1f1db3";
-    private static final String     TEST_DATA_TRANSACTION_HASH         = "0x610a8276014437089ff619136486474322444f0814f224fbbf9e925bb477e1e4";
-    private static final String     TEST_DATA_STORAGE_ADDRESS          = "0x9a3dbca554e9f6b9257aaa24010da8377c57c17e";
-    private static final String     TEST_DATA_STORAGE_RETURN_VALUE     = "0x000000000000000000000000fe3b557e8fb62b89f4916b721be55ceb828dbd73";
-    private static final String     TEST_DATA_CONTRACT_ADDRESS         = "0x9a3dbca554e9f6b9257aaa24010da8377c57c17e";
-    private static final String     TEST_DATA_CALL_RETURN_VALUE        = "0x0000000000000000000000000000000000000000000000000000000000000001";
-    private static final String     TEST_DATA_RECEIPT_TRANSACTION_HASH = "0x610a8276014437089ff619136486474322444f0814f224fbbf9e925bb477e1e4";
-    private static final String     TEST_DATA_CODE_RETURN              = "0x608060405234801561001057600080fd5b50600436106100575760003560e01c8063a87430ba1461005c578063b6a5d7de14610096578063f0b37c04146100be578063f851a440146100e4578063fe9fbb8014610108575b600080fd5b6100826004803603602081101561007257600080fd5b50356001600160a01b031661012e565b604080519115158252519081900360200190f35b6100bc600480360360208110156100ac57600080fd5b50356001600160a01b0316610143565b005b6100bc600480360360208110156100d457600080fd5b50356001600160a01b03166101b3565b6100ec61021d565b604080516001600160a01b039092168252519081900360200190f35b6100826004803603602081101561011e57600080fd5b50356001600160a01b031661022c565b60016020526000908152604090205460ff1681565b6000546001600160a01b0316331461018c5760405162461bcd60e51b815260040180806020018281038252602381526020018061024b6023913960400191505060405180910390fd5b6001600160a01b03166000908152600160208190526040909120805460ff19169091179055565b6000546001600160a01b031633146101fc5760405162461bcd60e51b815260040180806020018281038252602581526020018061026e6025913960400191505060405180910390fd5b6001600160a01b03166000908152600160205260409020805460ff19169055565b6000546001600160a01b031681565b6001600160a01b031660009081526001602052604090205460ff169056fe4f6e6c79207468652061646d696e2063616e20617574686f72697a652075736572732e4f6e6c79207468652061646d696e2063616e20756e617574686f72697a652075736572732ea265627a7a723058205e648b3c949b765bf920a00b4306109e0fdb1a2204a85a0c9ed7cf171576562464736f6c63430005090032";
-    private static final String     TEST_DATA_LCI_CONTRACT_ADDRESS     = "0x9a3dbca554e9f6b9257aaa24010da8377c57c17e";
-    private static final String     TEST_DATA_LCI_ENCODED_FUNCTION     = "0xfe9fbb80000000000000000000000000627306090abab3a6e1400e9345bc60c78a8bef57";
-    private static final String     TEST_DATA_LCI_RESULT               = "0x0000000000000000000000000000000000000000000000000000000000000001";
-
-    private static final ObjectMapper             mapper = new ObjectMapper();
-    private static final JsonNodeFactory          JSON   = JsonNodeFactory.instance;
+    private static final String                   WRONG_NAME                         = "wrongName";
+    private static final String                   TRANSACTION                        = "transaction";
+    private static final String                   TRANSACTION_VALUE                  = "transactionValue";
+    private static final String                   TO_ACCOUNT                         = "toAccount";
+    private static final String                   FROM_ACCOUNT                       = "fromAccount";
+    private static final String                   TRANSACTION_HASH                   = "transactionHash";
+    private static final String                   TEST_TRANSACTION_HASH              = "0xbeac927d1d256e9a21f8d81233cc83c03bf1a7a79a73a4664fa7ffba74101dac";
+    private static final String                   TEST_FALSE_TRANSACTION_HASH        = "0x777c927d1d256e9a21f8d81233cc83c03bf1a7a79a73a4664fa7ffba74101dac";
+    private static final String                   TEST_FROM_ACCOUNT                  = "0x70b6613e37616045a80a97e08e930e1e4d800039";
+    private static final String                   TEST_TO_ACCOUNT                    = "0x3f2cbea2185089ea5bbabbcd7616b215b724885c";
+    private static final String                   TEST_FALSE_ACCOUNT                 = "0x555cbea2185089ea5bbabbcd7616b215b724885c";
+    private static final BigInteger               TEST_TRANSACTION_VALUE             = new BigInteger(
+            "2000000000000000000");
+    private static final String                   OUTPUT_PARAMS                      = "outputParams";
+    private static final String                   BOOL                               = "bool";
+    private static final String                   INPUT_PARAMS                       = "inputParams";
+    private static final String                   VALUE                              = "value";
+    private static final String                   ADDRESS                            = "address";
+    private static final String                   TYPE                               = "type";
+    private static final String                   CONTRACT_ADDRESS                   = "contractAddress";
+    private static final String                   FUNCTION_NAME                      = "functionName";
+    private static final String                   IS_AUTHORIZED                      = "isAuthorized";
+    private static final String                   USER1_ADDRESS                      = "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73";
+    private static final String                   USER2_ADDRESS                      = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57";
+    private static final String                   USER3_ADDRESS                      = "0xf17f52151EbEF6C7334FAD080c5704D77216b732";
+    private static final String                   USER3_PRIVATE_KEY                  = "0xae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f";
+    private static final String                   DEFAULT_BLOCK_PARAMETER            = "defaultBlockParameter";
+    private static final String                   RETURN_FULL_TRANSACTION_OBJECTS    = "returnFullTransactionObjects";
+    private static final String                   LATEST                             = "latest";
+    private static final String                   EARLIEST                           = "earliest";
+    private static final String                   PENDING                            = "pending";
+    private static final String                   POSITION                           = "position";
+    private static final String                   BLOCK_HASH                         = "blockHash";
+    private static final String                   SHA3_HASH_OF_DATA_TO_SIGN          = "sha3HashOfDataToSign";
+    private static final String                   FILTER_ID                          = "filterId";
+    private static final String                   TRANSACTION_INDEX                  = "transactionIndex";
+    private static final String                   UNCLE_INDEX                        = "uncleIndex";
+    private static final String                   ETH_POLLING_INTERVAL               = "ethPollingInterval";
+    private static final String                   TEST_DATA_CLIENT_VERSION           = "besu/v1.3.5/linux-x86_64/oracle_openjdk-java-11";
+    private static final String                   TEST_DATA_SIGN_ADDRESS             = "0x9b2055d370f73ec7d8a03e965129118dc8f5bf83";
+    private static final String                   TEST_DATA_SIGN_MESSAGE             = "0xdeadbeaf";
+    private static final String                   TEST_DATA_SIGN_RESULT              = "0xa3f20717a250c2b0b729b7e5becbff67fdaef7e0699da4de7ca5895b02a170a12d887fd3b17bfdce3481f10bea41f45ba9f709d39ce8325427b57afcfc994cee1b";
+    private static final String                   TEST_DATA_SHH_VERSION              = "2";
+    private static final String                   TEST_DATA_HAS_IDENTITY             = "0x04f96a5e25610293e42a73908e93ccc8c4d4dc0edcfa9fa872f50cb214e08ebf61a03e245533f97284d442460f2998cd41858798ddfd4d661997d3940272b717b1";
+    private static final String                   TEST_DATA_SHA3_RESULT              = "0x1e8c821d4eb4d148eb679979820c7c3338148b8433b4ffb0b9d713c8f8e33228";
+    private static final String                   TEST_DATA_BLOCKHASH                = "0xc34757f3b3e5ee0d4533f2dedfa98925613acd16e1bb99ad1905bdabb37c897a";
+    private static final String                   TEST_DATA_TRANSACTION_HASH_2       = "0x0d75b11b42df31d635730c6a1a26a0b849916cc5e9ceed4bc04a3348fe1f1db3";
+    private static final String                   TEST_DATA_TRANSACTION_HASH         = "0x610a8276014437089ff619136486474322444f0814f224fbbf9e925bb477e1e4";
+    private static final String                   TEST_DATA_STORAGE_ADDRESS          = "0x9a3dbca554e9f6b9257aaa24010da8377c57c17e";
+    private static final String                   TEST_DATA_STORAGE_RETURN_VALUE     = "0x000000000000000000000000fe3b557e8fb62b89f4916b721be55ceb828dbd73";
+    private static final String                   TEST_DATA_CONTRACT_ADDRESS         = "0x9a3dbca554e9f6b9257aaa24010da8377c57c17e";
+    private static final String                   TEST_DATA_CALL_RETURN_VALUE        = "0x0000000000000000000000000000000000000000000000000000000000000001";
+    private static final String                   TEST_DATA_RECEIPT_TRANSACTION_HASH = "0x610a8276014437089ff619136486474322444f0814f224fbbf9e925bb477e1e4";
+    private static final String                   TEST_DATA_CODE_RETURN              = "0x608060405234801561001057600080fd5b50600436106100575760003560e01c8063a87430ba1461005c578063b6a5d7de14610096578063f0b37c04146100be578063f851a440146100e4578063fe9fbb8014610108575b600080fd5b6100826004803603602081101561007257600080fd5b50356001600160a01b031661012e565b604080519115158252519081900360200190f35b6100bc600480360360208110156100ac57600080fd5b50356001600160a01b0316610143565b005b6100bc600480360360208110156100d457600080fd5b50356001600160a01b03166101b3565b6100ec61021d565b604080516001600160a01b039092168252519081900360200190f35b6100826004803603602081101561011e57600080fd5b50356001600160a01b031661022c565b60016020526000908152604090205460ff1681565b6000546001600160a01b0316331461018c5760405162461bcd60e51b815260040180806020018281038252602381526020018061024b6023913960400191505060405180910390fd5b6001600160a01b03166000908152600160208190526040909120805460ff19169091179055565b6000546001600160a01b031633146101fc5760405162461bcd60e51b815260040180806020018281038252602581526020018061026e6025913960400191505060405180910390fd5b6001600160a01b03166000908152600160205260409020805460ff19169055565b6000546001600160a01b031681565b6001600160a01b031660009081526001602052604090205460ff169056fe4f6e6c79207468652061646d696e2063616e20617574686f72697a652075736572732e4f6e6c79207468652061646d696e2063616e20756e617574686f72697a652075736572732ea265627a7a723058205e648b3c949b765bf920a00b4306109e0fdb1a2204a85a0c9ed7cf171576562464736f6c63430005090032";
+    private static final String                   TEST_DATA_LCI_CONTRACT_ADDRESS     = "0x9a3dbca554e9f6b9257aaa24010da8377c57c17e";
+    private static final String                   TEST_DATA_LCI_ENCODED_FUNCTION     = "0xfe9fbb80000000000000000000000000627306090abab3a6e1400e9345bc60c78a8bef57";
+    private static final String                   TEST_DATA_LCI_RESULT               = "0x0000000000000000000000000000000000000000000000000000000000000001";
+    private static final ObjectMapper             MAPPER                             = new ObjectMapper();
+    private static final JsonNodeFactory          JSON                               = JsonNodeFactory.instance;
     private static EthereumPolicyInformationPoint ethPip;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -136,8 +136,6 @@ public class EthereumModuleTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private Transaction transactionFromChain;
-
-    private Optional<Transaction> optionalTransactionFromChain;
 
     @Rule
     public MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -152,7 +150,7 @@ public class EthereumModuleTest {
 
     @Test
     public void verifyTransactionShouldReturnTrueWithCorrectTransaction() throws IOException {
-        optionalTransactionFromChain = Optional.of(transactionFromChain);
+        var optionalTransactionFromChain = Optional.of(transactionFromChain);
         when(web3j.ethGetTransactionByHash(TEST_TRANSACTION_HASH).send()).thenReturn(ethTransaction);
         when(ethTransaction.getTransaction()).thenReturn(optionalTransactionFromChain);
         when(transactionFromChain.getFrom()).thenReturn(TEST_FROM_ACCOUNT);
@@ -170,7 +168,7 @@ public class EthereumModuleTest {
 
     @Test
     public void verifyTransactionShouldReturnFalseWithFalseValue() throws IOException {
-        optionalTransactionFromChain = Optional.of(transactionFromChain);
+        var optionalTransactionFromChain = Optional.of(transactionFromChain);
         when(web3j.ethGetTransactionByHash(TEST_TRANSACTION_HASH).send()).thenReturn(ethTransaction);
         when(ethTransaction.getTransaction()).thenReturn(optionalTransactionFromChain);
         when(transactionFromChain.getFrom()).thenReturn(TEST_FROM_ACCOUNT);
@@ -188,7 +186,7 @@ public class EthereumModuleTest {
 
     @Test
     public void verifyTransactionShouldReturnFalseWithFalseSender() throws IOException {
-        optionalTransactionFromChain = Optional.of(transactionFromChain);
+        var optionalTransactionFromChain = Optional.of(transactionFromChain);
         when(web3j.ethGetTransactionByHash(TEST_TRANSACTION_HASH).send()).thenReturn(ethTransaction);
         when(ethTransaction.getTransaction()).thenReturn(optionalTransactionFromChain);
         when(transactionFromChain.getFrom()).thenReturn(TEST_FROM_ACCOUNT);
@@ -205,7 +203,7 @@ public class EthereumModuleTest {
 
     @Test
     public void verifyTransactionShouldReturnFalseWithFalseRecipient() throws IOException {
-        optionalTransactionFromChain = Optional.of(transactionFromChain);
+        var optionalTransactionFromChain = Optional.of(transactionFromChain);
         when(web3j.ethGetTransactionByHash(TEST_TRANSACTION_HASH).send()).thenReturn(ethTransaction);
         when(ethTransaction.getTransaction()).thenReturn(optionalTransactionFromChain);
         when(transactionFromChain.getFrom()).thenReturn(TEST_FROM_ACCOUNT);
@@ -222,39 +220,39 @@ public class EthereumModuleTest {
     }
 
     @Test
-	public void verifyTransactionShouldReturnFalseWithFalseTransactionHash() throws IOException {
-		when(web3j.ethGetTransactionByHash(TEST_TRANSACTION_HASH).send()).thenReturn(ethTransaction);
-		ObjectNode saplObject = JSON.objectNode();
-		saplObject.put(TRANSACTION_HASH, TEST_FALSE_TRANSACTION_HASH);
-		saplObject.put(FROM_ACCOUNT, TEST_FROM_ACCOUNT);
-		saplObject.put(TO_ACCOUNT, TEST_TO_ACCOUNT);
-		saplObject.put(TRANSACTION_VALUE, TEST_TRANSACTION_VALUE);
-		boolean result = ethPip.verifyTransaction(Val.of(saplObject), null).blockFirst().get().asBoolean();
-		assertFalse("Transaction was not validated as false although the TransactionHash was false.", result);
+    public void verifyTransactionShouldReturnFalseWithFalseTransactionHash() throws IOException {
+        when(web3j.ethGetTransactionByHash(TEST_TRANSACTION_HASH).send()).thenReturn(ethTransaction);
+        ObjectNode saplObject = JSON.objectNode();
+        saplObject.put(TRANSACTION_HASH, TEST_FALSE_TRANSACTION_HASH);
+        saplObject.put(FROM_ACCOUNT, TEST_FROM_ACCOUNT);
+        saplObject.put(TO_ACCOUNT, TEST_TO_ACCOUNT);
+        saplObject.put(TRANSACTION_VALUE, TEST_TRANSACTION_VALUE);
+        boolean result = ethPip.verifyTransaction(Val.of(saplObject), null).blockFirst().get().asBoolean();
+        assertFalse("Transaction was not validated as false although the TransactionHash was false.", result);
 
-	}
-
-    @Test
-	public void verifyTransactionShouldReturnFalseWithNullInput() throws IOException {
-		when(web3j.ethGetTransactionByHash(TEST_TRANSACTION_HASH).send()).thenReturn(ethTransaction);
-		when(transactionFromChain.getValue()).thenReturn(TEST_TRANSACTION_VALUE);
-		boolean result = ethPip.verifyTransaction(null, null).blockFirst().get().asBoolean();
-		assertFalse("Transaction was not validated as false although the input was null.", result);
-
-	}
+    }
 
     @Test
-	public void verifyTransactionShouldReturnFalseWithWrongInput() throws IOException {
-		when(web3j.ethGetTransactionByHash(TEST_TRANSACTION_HASH).send()).thenReturn(ethTransaction);
-		ObjectNode saplObject = JSON.objectNode();
-		saplObject.put(WRONG_NAME, TEST_TRANSACTION_HASH);
-		saplObject.put(FROM_ACCOUNT, TEST_FROM_ACCOUNT);
-		saplObject.put(TO_ACCOUNT, TEST_TO_ACCOUNT);
-		saplObject.put(TRANSACTION_VALUE, TEST_TRANSACTION_VALUE);
-		boolean result = ethPip.verifyTransaction(Val.of(saplObject), null).blockFirst().get().asBoolean();
-		assertFalse("Transaction was not validated as false although the input was erroneous.", result);
+    public void verifyTransactionShouldReturnFalseWithNullInput() throws IOException {
+        when(web3j.ethGetTransactionByHash(TEST_TRANSACTION_HASH).send()).thenReturn(ethTransaction);
+        when(transactionFromChain.getValue()).thenReturn(TEST_TRANSACTION_VALUE);
+        boolean result = ethPip.verifyTransaction(null, null).blockFirst().get().asBoolean();
+        assertFalse("Transaction was not validated as false although the input was null.", result);
 
-	}
+    }
+
+    @Test
+    public void verifyTransactionShouldReturnFalseWithWrongInput() throws IOException {
+        when(web3j.ethGetTransactionByHash(TEST_TRANSACTION_HASH).send()).thenReturn(ethTransaction);
+        ObjectNode saplObject = JSON.objectNode();
+        saplObject.put(WRONG_NAME, TEST_TRANSACTION_HASH);
+        saplObject.put(FROM_ACCOUNT, TEST_FROM_ACCOUNT);
+        saplObject.put(TO_ACCOUNT, TEST_TO_ACCOUNT);
+        saplObject.put(TRANSACTION_VALUE, TEST_TRANSACTION_VALUE);
+        boolean result = ethPip.verifyTransaction(Val.of(saplObject), null).blockFirst().get().asBoolean();
+        assertFalse("Transaction was not validated as false although the input was erroneous.", result);
+
+    }
 
     // loadContractInformation
 
@@ -280,21 +278,21 @@ public class EthereumModuleTest {
     // clientVersion
 
     @Test
-	public void web3ClientVersionShouldReturnTheClientVersion() throws IOException {
-		when(web3j.web3ClientVersion().send().getWeb3ClientVersion()).thenReturn(TEST_DATA_CLIENT_VERSION);
-		String pipResult = ethPip.web3ClientVersion(null, null).blockFirst().get().asText();
-		assertEquals("The web3ClientVersion from the PIP was not loaded correctly.", TEST_DATA_CLIENT_VERSION,
-				pipResult);
-	}
+    public void web3ClientVersionShouldReturnTheClientVersion() throws IOException {
+        when(web3j.web3ClientVersion().send().getWeb3ClientVersion()).thenReturn(TEST_DATA_CLIENT_VERSION);
+        String pipResult = ethPip.web3ClientVersion(null, null).blockFirst().get().asText();
+        assertEquals("The web3ClientVersion from the PIP was not loaded correctly.", TEST_DATA_CLIENT_VERSION,
+                pipResult);
+    }
 
     // sha3
     @Test
-	public void web3Sha3ShouldReturnCorrectValuer() throws IOException {
-		when(web3j.web3Sha3(USER3_PRIVATE_KEY).send().getResult()).thenReturn(TEST_DATA_SHA3_RESULT);
-		Val saplObject = Val.of(USER3_PRIVATE_KEY);
-		String pipResult = ethPip.web3Sha3(saplObject, null).blockFirst().get().textValue();
-		assertEquals("The web3Sha3 method did not work correctly.", TEST_DATA_SHA3_RESULT, pipResult);
-	}
+    public void web3Sha3ShouldReturnCorrectValuer() throws IOException {
+        when(web3j.web3Sha3(USER3_PRIVATE_KEY).send().getResult()).thenReturn(TEST_DATA_SHA3_RESULT);
+        Val    saplObject = Val.of(USER3_PRIVATE_KEY);
+        String pipResult  = ethPip.web3Sha3(saplObject, null).blockFirst().get().textValue();
+        assertEquals("The web3Sha3 method did not work correctly.", TEST_DATA_SHA3_RESULT, pipResult);
+    }
 
     // netVersion
     @Test
@@ -308,11 +306,11 @@ public class EthereumModuleTest {
 
     // listening
     @Test
-	public void netListeningShouldReturnTrueWhenListeningToNetworkConnections() throws IOException {
-		when(web3j.netListening().send().isListening()).thenReturn(true);
-		assertTrue("The netListening method did not return true although the Client by default is listening.",
-				ethPip.netListening(null, null).blockFirst().get().asBoolean());
-	}
+    public void netListeningShouldReturnTrueWhenListeningToNetworkConnections() throws IOException {
+        when(web3j.netListening().send().isListening()).thenReturn(true);
+        assertTrue("The netListening method did not return true although the Client by default is listening.",
+                ethPip.netListening(null, null).blockFirst().get().asBoolean());
+    }
 
     // peerCount
     @Test
@@ -336,28 +334,28 @@ public class EthereumModuleTest {
 
     // syncing
     @Test
-	public void ethSyncingShouldReturnTheCorrectValue() throws IOException {
-		when(web3j.ethSyncing().send().isSyncing()).thenReturn(true);
-		boolean pipResult = ethPip.ethSyncing(null, null).blockFirst().get().asBoolean();
-		assertTrue("The ethSyncing method did not return the correct value.", pipResult);
-	}
+    public void ethSyncingShouldReturnTheCorrectValue() throws IOException {
+        when(web3j.ethSyncing().send().isSyncing()).thenReturn(true);
+        boolean pipResult = ethPip.ethSyncing(null, null).blockFirst().get().asBoolean();
+        assertTrue("The ethSyncing method did not return the correct value.", pipResult);
+    }
 
     // coinbase
     @Test
-	public void ethCoinbaseShouldReturnTheCorrectValue() throws IOException {
-		when(web3j.ethCoinbase().send().getResult()).thenReturn(USER1_ADDRESS);
-		String pipResult = ethPip.ethCoinbase(null, null).blockFirst().get().textValue();
+    public void ethCoinbaseShouldReturnTheCorrectValue() throws IOException {
+        when(web3j.ethCoinbase().send().getResult()).thenReturn(USER1_ADDRESS);
+        String pipResult = ethPip.ethCoinbase(null, null).blockFirst().get().textValue();
 
-		assertEquals("The ethCoinbase method did not return the correct value.", USER1_ADDRESS, pipResult);
-	}
+        assertEquals("The ethCoinbase method did not return the correct value.", USER1_ADDRESS, pipResult);
+    }
 
     // mining
     @Test
-	public void ethMiningShouldReturnTheCorrectValue() throws IOException {
-		when(web3j.ethMining().send().isMining()).thenReturn(true);
-		boolean pipResult = ethPip.ethMining(null, new HashMap<>()).blockFirst().get().asBoolean();
-		assertTrue("The ethMining method did not return the correct value.", pipResult);
-	}
+    public void ethMiningShouldReturnTheCorrectValue() throws IOException {
+        when(web3j.ethMining().send().isMining()).thenReturn(true);
+        boolean pipResult = ethPip.ethMining(null, new HashMap<>()).blockFirst().get().asBoolean();
+        assertTrue("The ethMining method did not return the correct value.", pipResult);
+    }
 
     // hashrate
     @Test
@@ -424,19 +422,19 @@ public class EthereumModuleTest {
 
     // storage
     @Test
-	public void ethGetStorageAtShouldReturnTheCorrectValue() throws IOException {
-		when(web3j.ethGetStorageAt(TEST_DATA_STORAGE_ADDRESS, BigInteger.ZERO, DefaultBlockParameter.valueOf(LATEST))
-				.send().getData()).thenReturn(TEST_DATA_STORAGE_RETURN_VALUE);
+    public void ethGetStorageAtShouldReturnTheCorrectValue() throws IOException {
+        when(web3j.ethGetStorageAt(TEST_DATA_STORAGE_ADDRESS, BigInteger.ZERO, DefaultBlockParameter.valueOf(LATEST))
+                .send().getData()).thenReturn(TEST_DATA_STORAGE_RETURN_VALUE);
 
-		ObjectNode saplObject = JSON.objectNode();
-		saplObject.put(ADDRESS, TEST_DATA_STORAGE_ADDRESS);
-		saplObject.put(POSITION, BigInteger.ZERO);
-		saplObject.put(DEFAULT_BLOCK_PARAMETER, LATEST);
-		String pipResult = ethPip.ethGetStorageAt(Val.of(saplObject), null).blockFirst().get().textValue();
+        ObjectNode saplObject = JSON.objectNode();
+        saplObject.put(ADDRESS, TEST_DATA_STORAGE_ADDRESS);
+        saplObject.put(POSITION, BigInteger.ZERO);
+        saplObject.put(DEFAULT_BLOCK_PARAMETER, LATEST);
+        String pipResult = ethPip.ethGetStorageAt(Val.of(saplObject), null).blockFirst().get().textValue();
 
-		assertEquals("The ethGetStorageAt method did not return the correct value.", TEST_DATA_STORAGE_RETURN_VALUE,
-				pipResult);
-	}
+        assertEquals("The ethGetStorageAt method did not return the correct value.", TEST_DATA_STORAGE_RETURN_VALUE,
+                pipResult);
+    }
 
     // transactionCount
     @Test
@@ -493,17 +491,17 @@ public class EthereumModuleTest {
 
     // uncleCountByBlockHash
     @Test
-	public void ethGetUncleCountByBlockHashShouldReturnTheCorrectValue() throws IOException {
-		when(web3j.ethGetUncleCountByBlockHash(TEST_DATA_BLOCKHASH).send().getUncleCount()).thenReturn(BigInteger.ONE);
+    public void ethGetUncleCountByBlockHashShouldReturnTheCorrectValue() throws IOException {
+        when(web3j.ethGetUncleCountByBlockHash(TEST_DATA_BLOCKHASH).send().getUncleCount()).thenReturn(BigInteger.ONE);
 
-		ObjectNode saplObject = JSON.objectNode();
-		saplObject.put(BLOCK_HASH, TEST_DATA_BLOCKHASH);
-		BigInteger pipResult = ethPip.ethGetUncleCountByBlockHash(Val.of(saplObject), null).blockFirst().get()
-				.bigIntegerValue();
+        ObjectNode saplObject = JSON.objectNode();
+        saplObject.put(BLOCK_HASH, TEST_DATA_BLOCKHASH);
+        BigInteger pipResult = ethPip.ethGetUncleCountByBlockHash(Val.of(saplObject), null).blockFirst().get()
+                .bigIntegerValue();
 
-		assertEquals("The ethGetUncleCountByBlockHash method did not return the correct value.", BigInteger.ONE,
-				pipResult);
-	}
+        assertEquals("The ethGetUncleCountByBlockHash method did not return the correct value.", BigInteger.ONE,
+                pipResult);
+    }
 
     // uncleCountByBlockNumber
     @Test
@@ -528,23 +526,23 @@ public class EthereumModuleTest {
 
     // code
     @Test
-	public void ethGetCodeShouldReturnTheCorrectValue() throws IOException {
-		when(web3j.ethGetCode(TEST_DATA_CONTRACT_ADDRESS, DefaultBlockParameter.valueOf(LATEST)).send().getCode())
-				.thenReturn(TEST_DATA_CODE_RETURN);
+    public void ethGetCodeShouldReturnTheCorrectValue() throws IOException {
+        when(web3j.ethGetCode(TEST_DATA_CONTRACT_ADDRESS, DefaultBlockParameter.valueOf(LATEST)).send().getCode())
+                .thenReturn(TEST_DATA_CODE_RETURN);
 
-		ObjectNode saplObject = JSON.objectNode();
-		saplObject.put(ADDRESS, TEST_DATA_CONTRACT_ADDRESS);
-		String pipResult = ethPip.ethGetCode(Val.of(saplObject), null).blockFirst().get().textValue();
+        ObjectNode saplObject = JSON.objectNode();
+        saplObject.put(ADDRESS, TEST_DATA_CONTRACT_ADDRESS);
+        String pipResult = ethPip.ethGetCode(Val.of(saplObject), null).blockFirst().get().textValue();
 
-		assertEquals("The ethGetCode method did not return the correct value.", TEST_DATA_CODE_RETURN, pipResult);
-	}
+        assertEquals("The ethGetCode method did not return the correct value.", TEST_DATA_CODE_RETURN, pipResult);
+    }
 
     // call
     @Test
     public void ethCallShouldReturnTheCorrectValue() throws IOException, ClassNotFoundException {
         org.web3j.protocol.core.methods.request.Transaction transaction = createTestRequestTransaction();
         ObjectNode                                          saplObject  = JSON.objectNode();
-        saplObject.set(TRANSACTION, mapper.convertValue(transaction, JsonNode.class));
+        saplObject.set(TRANSACTION, MAPPER.convertValue(transaction, JsonNode.class));
         DefaultBlockParameter dbp = DefaultBlockParameter.valueOf(LATEST);
 
         mockStatic(EthereumPipFunctions.class);
@@ -562,7 +560,7 @@ public class EthereumModuleTest {
         org.web3j.protocol.core.methods.request.Transaction transaction = createTestRequestTransaction();
         BigInteger                                          gas         = BigInteger.valueOf(23300L);
         ObjectNode                                          saplObject  = JSON.objectNode();
-        saplObject.set(TRANSACTION, mapper.convertValue(transaction, JsonNode.class));
+        saplObject.set(TRANSACTION, MAPPER.convertValue(transaction, JsonNode.class));
 
         mockStatic(EthereumPipFunctions.class);
         when(EthereumPipFunctions.getTransactionFromJson(saplObject.get(TRANSACTION))).thenReturn(transaction);
@@ -585,7 +583,7 @@ public class EthereumModuleTest {
         String pipResult = ethPip.ethGetBlockByHash(Val.of(saplObject), null).blockFirst().get().toString();
 
         assertEquals("The ethGetBlockByHash method did not return the correct value.",
-                mapper.convertValue(testBlock, JsonNode.class).toString(), pipResult);
+                MAPPER.convertValue(testBlock, JsonNode.class).toString(), pipResult);
     }
 
     // blockByNumber
@@ -602,7 +600,7 @@ public class EthereumModuleTest {
         JsonNode pipResult = ethPip.ethGetBlockByNumber(Val.of(saplObject), null).blockFirst().get();
 
         assertEquals("The ethGetBlockByNumber method did not return the correct value.",
-                mapper.convertValue(testBlock, JsonNode.class), pipResult);
+                MAPPER.convertValue(testBlock, JsonNode.class), pipResult);
     }
 
     // transactionByHash
@@ -615,7 +613,7 @@ public class EthereumModuleTest {
         JsonNode pipResult  = ethPip.ethGetTransactionByHash(Val.of(saplObject), null).blockFirst().get();
 
         assertEquals("The ethGetTransactionByHash method did not return the correct value.",
-                mapper.convertValue(testTransaction, JsonNode.class), pipResult);
+                MAPPER.convertValue(testTransaction, JsonNode.class), pipResult);
     }
 
     // transactionByBlockHashAndIndex
@@ -633,7 +631,7 @@ public class EthereumModuleTest {
         JsonNode pipResult = ethPip.ethGetTransactionByBlockHashAndIndex(Val.of(saplObject), null).blockFirst().get();
 
         assertEquals("The ethGetTransactionByBlockHashAndIndex method did not return the correct value.",
-                mapper.convertValue(testTransaction, JsonNode.class), pipResult);
+                MAPPER.convertValue(testTransaction, JsonNode.class), pipResult);
     }
 
     // transactionByBlockNumberAndIndex
@@ -654,7 +652,7 @@ public class EthereumModuleTest {
         JsonNode pipResult = ethPip.ethGetTransactionByBlockNumberAndIndex(Val.of(saplObject), null).blockFirst().get();
 
         assertEquals("The ethGetTransactionByBlockNumberAndIndex method did not return the correct value.",
-                mapper.convertValue(testTransaction, JsonNode.class), pipResult);
+                MAPPER.convertValue(testTransaction, JsonNode.class), pipResult);
     }
 
     // transactionReceipt
@@ -667,20 +665,20 @@ public class EthereumModuleTest {
         JsonNode pipResult  = ethPip.ethGetTransactionReceipt(Val.of(saplObject), null).blockFirst().get();
 
         assertEquals("The ethGetTransactionReceipt method did not return the correct value.",
-                mapper.convertValue(receipt, JsonNode.class), pipResult);
+                MAPPER.convertValue(receipt, JsonNode.class), pipResult);
     }
 
     // pendingTransactions
     @Test
-	public void ethPendingTransactionsShouldReturnTheCorrectValue() {
-		when(web3j.ethPendingTransactionHashFlowable())
-				.thenReturn(Flowable.fromArray(TEST_DATA_TRANSACTION_HASH, TEST_DATA_TRANSACTION_HASH_2));
+    public void ethPendingTransactionsShouldReturnTheCorrectValue() {
+        when(web3j.ethPendingTransactionHashFlowable())
+                .thenReturn(Flowable.fromArray(TEST_DATA_TRANSACTION_HASH, TEST_DATA_TRANSACTION_HASH_2));
 
-		String pipResult = ethPip.ethPendingTransactions(null, null).blockFirst().get().textValue();
+        String pipResult = ethPip.ethPendingTransactions(null, null).blockFirst().get().textValue();
 
-		assertEquals("The ethPendingTransactions method did not return the correct value.", TEST_DATA_TRANSACTION_HASH,
-				pipResult);
-	}
+        assertEquals("The ethPendingTransactions method did not return the correct value.", TEST_DATA_TRANSACTION_HASH,
+                pipResult);
+    }
 
     // uncleByBlockHashAndIndex
     @Test
@@ -696,7 +694,7 @@ public class EthereumModuleTest {
         JsonNode pipResult = ethPip.ethGetUncleByBlockHashAndIndex(Val.of(saplObject), null).blockFirst().get();
 
         assertEquals("The ethGetUncleByBlockHashAndIndex method did not return the correct value.",
-                mapper.convertValue(testBlock, JsonNode.class), pipResult);
+                MAPPER.convertValue(testBlock, JsonNode.class), pipResult);
     }
 
     // uncleByBlockNumberAndIndex
@@ -716,7 +714,7 @@ public class EthereumModuleTest {
         JsonNode pipResult = ethPip.ethGetUncleByBlockNumberAndIndex(Val.of(saplObject), null).blockFirst().get();
 
         assertEquals("The ethGetUncleByBlockNumberAndIndex method did not return the correct value.",
-                mapper.convertValue(testBlock, JsonNode.class), pipResult);
+                MAPPER.convertValue(testBlock, JsonNode.class), pipResult);
     }
 
     // ethFilterChanges
@@ -736,7 +734,7 @@ public class EthereumModuleTest {
         }
 
         List<String> logStringList = Collections
-                .singletonList(mapper.convertValue(createLogObject(), JsonNode.class).toString());
+                .singletonList(MAPPER.convertValue(createLogObject(), JsonNode.class).toString());
 
         assertEquals("The ethGetFilterChanges method did not return the correct value.", logStringList, pipResult);
     }
@@ -759,7 +757,7 @@ public class EthereumModuleTest {
         }
 
         List<String> logStringList = Collections
-                .singletonList(mapper.convertValue(createLogObject(), JsonNode.class).toString());
+                .singletonList(MAPPER.convertValue(createLogObject(), JsonNode.class).toString());
 
         assertEquals("The ethGetFilterLogs method did not return the correct value.", logStringList, pipResult);
     }
@@ -768,7 +766,7 @@ public class EthereumModuleTest {
     @Test
     public void ethGetLogsShouldReturnTheCorrectValue() throws IOException {
         EthFilter filter     = getTestFilter();
-        JsonNode  saplObject = mapper.convertValue(filter, JsonNode.class);
+        JsonNode  saplObject = MAPPER.convertValue(filter, JsonNode.class);
 
         mockStatic(EthereumPipFunctions.class);
         when(EthereumPipFunctions.getEthFilterFrom(saplObject)).thenReturn(filter);
@@ -781,23 +779,23 @@ public class EthereumModuleTest {
         }
 
         List<String> logStringList = Collections
-                .singletonList(mapper.convertValue(createLogObject(), JsonNode.class).toString());
+                .singletonList(MAPPER.convertValue(createLogObject(), JsonNode.class).toString());
 
         assertEquals("The ethGetFilterLogs method did not return the correct value.", logStringList, pipResult);
     }
 
     // sign
     @Test
-	public void ethSignShouldReturnTheCorrectValue() throws IOException {
-		when(web3j.ethSign(TEST_DATA_SIGN_ADDRESS, TEST_DATA_SIGN_MESSAGE).send().getSignature())
-				.thenReturn(TEST_DATA_SIGN_RESULT);
+    public void ethSignShouldReturnTheCorrectValue() throws IOException {
+        when(web3j.ethSign(TEST_DATA_SIGN_ADDRESS, TEST_DATA_SIGN_MESSAGE).send().getSignature())
+                .thenReturn(TEST_DATA_SIGN_RESULT);
 
-		ObjectNode saplObject = JSON.objectNode();
-		saplObject.put(ADDRESS, TEST_DATA_SIGN_ADDRESS);
-		saplObject.put(SHA3_HASH_OF_DATA_TO_SIGN, TEST_DATA_SIGN_MESSAGE);
-		String pipResult = ethPip.ethSign(Val.of(saplObject), null).blockFirst().get().textValue();
-		assertEquals("The ethSign method did not return the correct value.", TEST_DATA_SIGN_RESULT, pipResult);
-	}
+        ObjectNode saplObject = JSON.objectNode();
+        saplObject.put(ADDRESS, TEST_DATA_SIGN_ADDRESS);
+        saplObject.put(SHA3_HASH_OF_DATA_TO_SIGN, TEST_DATA_SIGN_MESSAGE);
+        String pipResult = ethPip.ethSign(Val.of(saplObject), null).blockFirst().get().textValue();
+        assertEquals("The ethSign method did not return the correct value.", TEST_DATA_SIGN_RESULT, pipResult);
+    }
 
     // shhFilterChanges
     @Test
@@ -816,9 +814,9 @@ public class EthereumModuleTest {
             pipResult.add(json.toString());
         }
 
-        List<String> sshStringList = new ArrayList<>();
+        List<String> sshStringList = new ArrayList<>(sshList.size());
         for (SshMessage sshMessage : sshList) {
-            sshStringList.add(mapper.convertValue(sshMessage, JsonNode.class).toString());
+            sshStringList.add(MAPPER.convertValue(sshMessage, JsonNode.class).toString());
         }
         assertEquals("The shhGetFilterChanges method did not work correctly.", sshStringList, pipResult);
 
@@ -843,7 +841,7 @@ public class EthereumModuleTest {
 
         List<String> sshStringList = new ArrayList<>();
         for (SshMessage sshMessage : sshList) {
-            sshStringList.add(mapper.convertValue(sshMessage, JsonNode.class).toString());
+            sshStringList.add(MAPPER.convertValue(sshMessage, JsonNode.class).toString());
         }
         assertEquals("The shhGetMessages method did not work correctly.", sshStringList, pipResult);
 
@@ -851,12 +849,12 @@ public class EthereumModuleTest {
 
     // shhVersion
     @Test
-	public void shhVersionShouldReturnCorrectValue() throws IOException {
-		when(web3j.shhVersion().send().getVersion()).thenReturn(TEST_DATA_SHH_VERSION);
-		String pipResult = ethPip.shhVersion(null, null).blockFirst().get().textValue();
-		assertEquals("The shhVersion method did not work correctly.", TEST_DATA_SHH_VERSION, pipResult);
+    public void shhVersionShouldReturnCorrectValue() throws IOException {
+        when(web3j.shhVersion().send().getVersion()).thenReturn(TEST_DATA_SHH_VERSION);
+        String pipResult = ethPip.shhVersion(null, null).blockFirst().get().textValue();
+        assertEquals("The shhVersion method did not work correctly.", TEST_DATA_SHH_VERSION, pipResult);
 
-	}
+    }
 
     // work
     @Test

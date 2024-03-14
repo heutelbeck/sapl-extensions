@@ -222,7 +222,7 @@ class QueryPolicyEnforcementPointTests {
     }
 
     @Test
-    void when_handle_with_noSaplAnnotations_then_handleWithoutAuthZ() throws NoSuchMethodException, SecurityException {
+    void when_handle_with_noSaplAnnotations_then_handleWithoutAuthZ() throws NoSuchMethodException {
         var executable = HandlingObject.class.getDeclaredMethod("handle2", TestQueryPayload.class);
         delegate = spy(
                 new AnnotatedMessageHandlingMember<>(executable, QueryMessage.class, TestQueryPayload.class, factory));
