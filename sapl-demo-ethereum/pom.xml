@@ -24,7 +24,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.3</version>
+		<version>3.2.4</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
@@ -40,8 +40,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>17</java.version>
 		<sapl.version>3.0.0-SNAPSHOT</sapl.version>
-		<springboot.version>3.2.3</springboot.version>
-		<vaadin.version>24.3.5</vaadin.version>
+		<springboot.version>3.2.4</springboot.version>
+		<vaadin.version>24.3.7</vaadin.version>
 		<maven-source-plugin.version>3.0.1</maven-source-plugin.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
