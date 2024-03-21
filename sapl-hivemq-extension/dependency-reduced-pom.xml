@@ -322,7 +322,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.30</version>
+      <version>1.18.32</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -376,7 +376,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>hivemq</artifactId>
-      <version>1.19.5</version>
+      <version>1.19.7</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -470,7 +470,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>1.19.5</version>
+      <version>1.19.7</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -540,7 +540,7 @@
     <dependency>
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
-      <version>3.6.3</version>
+      <version>3.6.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
