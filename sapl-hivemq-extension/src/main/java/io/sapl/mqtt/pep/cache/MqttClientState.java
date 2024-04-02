@@ -389,10 +389,10 @@ public final class MqttClientState {
 
         AuthorizationSubscriptionElements authzSubscriptionElementsToRemove = authzSubscriptionElementsMap.remove(id);
         if (authzSubscriptionElementsToRemove != null) {
-            multiAuthzSubscription.getSubjects().remove(authzSubscriptionElementsToRemove.getSubjectId());
-            multiAuthzSubscription.getActions().remove(authzSubscriptionElementsToRemove.getActionId());
-            multiAuthzSubscription.getResources().remove(authzSubscriptionElementsToRemove.getResourceId());
-            multiAuthzSubscription.getEnvironments().remove(authzSubscriptionElementsToRemove.getEnvironmentId());
+            multiAuthzSubscription.getSubjects().remove((int) authzSubscriptionElementsToRemove.getSubjectId());
+            multiAuthzSubscription.getActions().remove((int) authzSubscriptionElementsToRemove.getActionId());
+            multiAuthzSubscription.getResources().remove((int) authzSubscriptionElementsToRemove.getResourceId());
+            multiAuthzSubscription.getEnvironments().remove((int) authzSubscriptionElementsToRemove.getEnvironmentId());
         }
     }
 
