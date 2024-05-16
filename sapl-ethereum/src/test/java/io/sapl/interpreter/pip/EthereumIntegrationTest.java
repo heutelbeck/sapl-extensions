@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -542,8 +541,7 @@ public class EthereumIntegrationTest {
         outputParameters.add(TypeReference.makeTypeReference(BOOL));
         List<Type<?>> inputList = new ArrayList<>();
         inputList.add(new Address(USER2_ADDRESS.substring(2)));
-        Function    function        = new Function(IS_AUTHORIZED, inputList.stream().collect(Collectors.toList()),
-                outputParameters);
+        Function    function        = new Function(IS_AUTHORIZED, new ArrayList<>(inputList), outputParameters);
         String      encodedFunction = FunctionEncoder.encode(function);
         Transaction transaction     = Transaction.createEthCallTransaction(USER1_ADDRESS, authContractAddress,
                 encodedFunction);
@@ -563,8 +561,7 @@ public class EthereumIntegrationTest {
         outputParameters.add(TypeReference.makeTypeReference(BOOL));
         List<Type<?>> inputList = new ArrayList<>();
         inputList.add(new Address(USER2_ADDRESS.substring(2)));
-        Function    function        = new Function(IS_AUTHORIZED, inputList.stream().collect(Collectors.toList()),
-                outputParameters);
+        Function    function        = new Function(IS_AUTHORIZED, new ArrayList<>(inputList), outputParameters);
         String      encodedFunction = FunctionEncoder.encode(function);
         Transaction transaction     = Transaction.createEthCallTransaction(USER1_ADDRESS, authContractAddress,
                 encodedFunction);

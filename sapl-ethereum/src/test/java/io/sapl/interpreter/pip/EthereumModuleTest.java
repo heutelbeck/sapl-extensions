@@ -942,8 +942,7 @@ public class EthereumModuleTest {
         outputParameters.add(TypeReference.makeTypeReference(BOOL));
         List<Type<?>> inputList = new ArrayList<>();
         inputList.add(new Address(USER2_ADDRESS.substring(2)));
-        Function function        = new Function(IS_AUTHORIZED, inputList.stream().collect(Collectors.toList()),
-                outputParameters);
+        Function function        = new Function(IS_AUTHORIZED, new ArrayList<>(inputList), outputParameters);
         String   encodedFunction = FunctionEncoder.encode(function);
         return org.web3j.protocol.core.methods.request.Transaction.createEthCallTransaction(USER1_ADDRESS,
                 TEST_DATA_CONTRACT_ADDRESS, encodedFunction);
