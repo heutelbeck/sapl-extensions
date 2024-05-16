@@ -531,8 +531,8 @@ class AuthorizationSubscriptionBuilderServiceTests {
         assertEquals(asTree(payload), subscription2.getAction().get(PAYLOAD));
         assertEquals(TestCommand.class.getName(), subscription1.getAction().get(PAYLOAD_TYPE).asText());
         assertEquals(TestCommand.class.getName(), subscription2.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(aggregateInfo(TEST_AGGREGATE_TYPE), subscription1.getResource());
-        assertEquals(handlerInfo(TEST_AGGREGATE_TYPE), subscription2.getResource());
+        assertEquals(info(TEST_AGGREGATE_TYPE), subscription1.getResource());
+        assertEquals(info(TEST_AGGREGATE_TYPE), subscription2.getResource());
         assertNull(subscription1.getEnvironment());
         assertNull(subscription2.getEnvironment());
     }
@@ -915,7 +915,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
         return node;
     }
 
-    private static JsonNode aggregateInfo(String aggregateType) {
+    private static JsonNode info(String aggregateType) {
         var node = JsonNodeFactory.instance.objectNode();
         node.put(AGGREGATE_TYPE, aggregateType);
         node.put(AGGREGATE_IDENTIFIER, TEST_AGGREGATE_IDENTIFIER);
@@ -930,13 +930,6 @@ class AuthorizationSubscriptionBuilderServiceTests {
 
     private static JsonNode handlerInfo() {
         var node = JsonNodeFactory.instance.objectNode();
-        node.put(AGGREGATE_IDENTIFIER, TEST_AGGREGATE_IDENTIFIER);
-        return node;
-    }
-
-    private static JsonNode handlerInfo(String aggregateType) {
-        var node = JsonNodeFactory.instance.objectNode();
-        node.put(AGGREGATE_TYPE, aggregateType);
         node.put(AGGREGATE_IDENTIFIER, TEST_AGGREGATE_IDENTIFIER);
         return node;
     }

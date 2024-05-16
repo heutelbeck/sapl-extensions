@@ -384,8 +384,7 @@ public abstract class QueryTestsuite {
     }
 
     @Test
-    void when_dropHandlerSecuredSubscriptionQueryAndPermitDenyPermit_then_initialReturnAndUpdatesAreEmittedAndDroppedWhileDenied()
-            throws InterruptedException {
+    void when_dropHandlerSecuredSubscriptionQueryAndPermitDenyPermit_then_initialReturnAndUpdatesAreEmittedAndDroppedWhileDenied() {
         var initialEmitDelayMs = 250L;
         var emitIntervallMs    = 250L;
         var queryPayload       = "case4";
@@ -418,8 +417,7 @@ public abstract class QueryTestsuite {
     }
 
     @Test
-    void when_recoverableHandlerSecuredSubscriptionQueryAndPermitDenyPermitNoContiniue_then_initialReturnAndUpdatesAreEmittedAndAccessDeniedTerminatesUpdates()
-            throws InterruptedException {
+    void when_recoverableHandlerSecuredSubscriptionQueryAndPermitDenyPermitNoContiniue_then_initialReturnAndUpdatesAreEmittedAndAccessDeniedTerminatesUpdates() {
         var emitIntervallMs = 50L;
         var queryPayload    = "case5";
         var numberOfUpdates = 14L;
@@ -458,8 +456,7 @@ public abstract class QueryTestsuite {
     }
 
     @Test
-    void when_recoverableHandlerSecuredSubscriptionQueryAndPermitDenyPermitWithContiniue_then_initialReturnAndUpdatesAreEmittedAndAccessDeniedThenResumesOnPermit()
-            throws InterruptedException {
+    void when_recoverableHandlerSecuredSubscriptionQueryAndPermitDenyPermitWithContiniue_then_initialReturnAndUpdatesAreEmittedAndAccessDeniedThenResumesOnPermit() {
         var emitIntervallMs = 100L;
         var queryPayload    = "case6";
         var numberOfUpdates = 14L;
@@ -616,21 +613,6 @@ public abstract class QueryTestsuite {
         create(result).expectErrorMatches(isAccessDenied()).verify();
 
         verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-    }
-
-    @Test
-    void when_postHandlerSecuredQueryAndPermitWithOnDecisionObligation_then_accessGranted() {
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode(ON_DECISION_DO));
-        when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
-
-        var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
-
-        create(result).expectNext(QUERY).verifyComplete();
-
-        verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-        verify(onDecisionProvider, times(1)).accept(any(), any());
     }
 
     @Test

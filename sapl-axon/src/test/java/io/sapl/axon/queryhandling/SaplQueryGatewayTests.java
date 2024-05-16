@@ -88,12 +88,12 @@ class SaplQueryGatewayTests {
                          });
         when(emitter.registerUpdateHandler(any(SubscriptionQueryMessage.class), anyInt())).thenReturn(registration);
         var queryBus = spy(SimpleQueryBus.builder().queryUpdateEmitter(emitter).build());
-        var gateway  = spy(new SaplQueryGateway(queryBus, List.of()));
+        var aGateway = spy(new SaplQueryGateway(queryBus, List.of()));
 
         doReturn(new DefaultSubscriptionQueryResult<>(Mono.empty(), Flux.error(ACCESS_DENIED), () -> false))
-                .when(gateway).subscriptionQuery(any(String.class), any(SubscriptionQueryMessage.class),
+                .when(aGateway).subscriptionQuery(any(String.class), any(SubscriptionQueryMessage.class),
                         any(ResponseType.class), any(ResponseType.class), anyInt());
-        var result = gateway.recoverableSubscriptionQuery(DEFAULT_QUERY_MESSAGE, DEFAULT_RESPONSE_TYPE,
+        var result = aGateway.recoverableSubscriptionQuery(DEFAULT_QUERY_MESSAGE, DEFAULT_RESPONSE_TYPE,
                 DEFAULT_RESPONSE_TYPE, accessDeniedHandler);
 
         assertNull(result.initialResult().block());

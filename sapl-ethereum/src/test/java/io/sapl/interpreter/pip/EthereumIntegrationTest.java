@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.junit.BeforeClass;
@@ -350,7 +349,7 @@ public class EthereumIntegrationTest {
 
     // listening
     @Test
-    public void netListeningShouldReturnTrueWhenListeningToNetworkConnections() throws IOException {
+    public void netListeningShouldReturnTrueWhenListeningToNetworkConnections() {
         assertTrue("The netListening method did not return true although the Client by default is listening.",
                 ethPip.netListening(null, null).blockFirst().get().asBoolean());
     }
@@ -397,7 +396,7 @@ public class EthereumIntegrationTest {
 
     // hashrate
     @Test
-    public void ethHashrateShouldReturnTheCorrectValue() throws IOException {
+    public void ethHashrateShouldReturnTheCorrectValue() {
         BigInteger pipResult = ethPip.ethHashrate(null, null).blockFirst().get().bigIntegerValue();
         assertTrue("The ethHashrate should be greater than 0.", pipResult.intValue() > 0);
     }
@@ -416,7 +415,7 @@ public class EthereumIntegrationTest {
 
         List<JsonNode> result = new ArrayList<>();
         ethPip.ethAccounts(null, null).blockFirst().get().elements().forEachRemaining(result::add);
-        List<String> pipResult   = result.stream().map(JsonNode::toString).collect(Collectors.toList());
+        List<String> pipResult   = result.stream().map(JsonNode::toString).toList();
         List<String> web3jResult = web3j.ethAccounts().send().getAccounts();
         assertEquals("The accounts method did not return the correct accounts.", web3jResult, pipResult);
     }
@@ -470,8 +469,7 @@ public class EthereumIntegrationTest {
 
     // blockTransactionCountByHash
     @Test
-    public void ethGetBlockTransactionCountByHashShouldReturnTheCorrectValue()
-            throws IOException, InterruptedException, ExecutionException {
+    public void ethGetBlockTransactionCountByHashShouldReturnTheCorrectValue() throws IOException {
         String     blockhash  = web3j.ethGetBlockByNumber(DefaultBlockParameter.valueOf(LATEST), false).send()
                 .getBlock().getHash();
         ObjectNode saplObject = JSON.objectNode();

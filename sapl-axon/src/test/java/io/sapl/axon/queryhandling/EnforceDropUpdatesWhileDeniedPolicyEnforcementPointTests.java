@@ -81,18 +81,18 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         private static final long serialVersionUID = -1236246641335607721L;
     }
 
-    private static ConstraintHandlerService constraintHandlerService;
+    private static ConstraintHandlerService sefaultConstraintHandlerService;
     private static JsonNode                 defaultResource;
 
     @BeforeAll
     @SuppressWarnings("unchecked")
     static void beforeAll() {
         var mapper = new ObjectMapper();
-        constraintHandlerService = mock(ConstraintHandlerService.class);
-        setField(constraintHandlerService, MAPPER_FILED_NAME, mapper);
-        when(constraintHandlerService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class),
+        sefaultConstraintHandlerService = mock(ConstraintHandlerService.class);
+        setField(sefaultConstraintHandlerService, MAPPER_FILED_NAME, mapper);
+        when(sefaultConstraintHandlerService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class),
                 any(ResponseType.class), any(Optional.class))).thenCallRealMethod();
-        when(constraintHandlerService.deserializeResource(any(JsonNode.class), any(ResponseType.class)))
+        when(sefaultConstraintHandlerService.deserializeResource(any(JsonNode.class), any(ResponseType.class)))
                 .thenCallRealMethod();
         defaultResource = mapper.valueToTree(new TestUpdateResponseType());
     }
@@ -107,7 +107,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<AuthorizationDecision>                                  decisions         = Flux.just();
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -122,7 +122,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<AuthorizationDecision>                                  decisions         = Flux.just();
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
         StepVerifier.create(enforcedUpdateMessageFlux).expectError(IllegalStateException.class)
@@ -140,7 +140,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
                 .error(new TestAccessDeniedException());
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -157,7 +157,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -173,7 +173,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .error(new TestAccessDeniedException());
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -190,7 +190,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .error(new TestAccessDeniedException());
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectError(TestAccessDeniedException.class)
                 .verify(DEFAULT_TIMEOUT);
@@ -206,7 +206,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -221,7 +221,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -236,7 +236,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -251,7 +251,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux.just();
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).verifyComplete();
     }
@@ -267,7 +267,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -283,7 +283,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -299,7 +299,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -315,7 +315,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -331,7 +331,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectNext(DEFAULT_UPDATE_MESSAGE).verifyComplete();
     }
@@ -348,7 +348,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -365,7 +365,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -382,7 +382,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -399,7 +399,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux)
                 .expectNextMatches(matchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE)).verifyComplete();
@@ -417,7 +417,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux)
                 .expectNextMatches(matchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE)).verifyComplete();
@@ -435,7 +435,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> updateMessageFlux = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -454,7 +454,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(DEFAULT_UPDATE_MESSAGE),
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE));
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux)
                 .expectNextMatches(matchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE))
@@ -476,7 +476,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(DEFAULT_UPDATE_MESSAGE),
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE));
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux)
                 .expectNextMatches(matchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE)).expectNoEvent(DEFAULT_TIMESTEP)
@@ -498,7 +498,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(DEFAULT_UPDATE_MESSAGE),
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE));
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux).expectSubscription().verifyTimeout(DEFAULT_TIMEOUT);
     }
@@ -520,7 +520,7 @@ class EnforceDropUpdatesWhileDeniedPolicyEnforcementPointTests {
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE),
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE));
 
-        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, constraintHandlerService,
+        var enforcedUpdateMessageFlux = of(query, decisions, updateMessageFlux, sefaultConstraintHandlerService,
                 resultResponseType, updateResponseType);
         StepVerifier.create(enforcedUpdateMessageFlux)
                 .expectNextMatches(matchesIgnoringIdentifier(DEFAULT_UPDATE_MESSAGE)).expectNoEvent(DEFAULT_TIMESTEP)

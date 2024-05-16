@@ -41,21 +41,21 @@ class FluxOneAndManyTapTests {
 
     Consumer<Subscription>      onSubscribe;
     Consumer<SignalType>        doFinally;
-    Flux<AuthorizationDecision> source;
+    Flux<AuthorizationDecision> defaultSource;
 
     @BeforeEach
     void beforeEach() {
-        onSubscribe = mock(Consumer.class);
-        doFinally   = mock(Consumer.class);
-        source      = Flux
+        onSubscribe   = mock(Consumer.class);
+        doFinally     = mock(Consumer.class);
+        defaultSource = Flux
                 .just(AuthorizationDecision.PERMIT, AuthorizationDecision.INDETERMINATE,
                         AuthorizationDecision.NOT_APPLICABLE, AuthorizationDecision.DENY)
                 .delayElements(Duration.ofMillis(50L)).doOnSubscribe(onSubscribe).doFinally(doFinally);
     }
 
     @Test
-    void when_oneDecisionIsCalledTwice_then_throw() throws InterruptedException {
-        var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(50L));
+    void when_oneDecisionIsCalledTwice_then_throw() {
+        var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(50L));
 
         tap.one();
         assertThrows(IllegalStateException.class, () -> tap.one());
@@ -64,8 +64,8 @@ class FluxOneAndManyTapTests {
     }
 
     @Test
-    void when_oneDecisionIsSunbscribedToTwice_then_throw() throws InterruptedException {
-        var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(50L));
+    void when_oneDecisionIsSunbscribedToTwice_then_throw() {
+        var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(50L));
 
         var one = tap.one();
         one.subscribe();
@@ -73,8 +73,8 @@ class FluxOneAndManyTapTests {
     }
 
     @Test
-    void when_decisionsIsCalledTwice_then_throw() throws InterruptedException {
-        var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(50L));
+    void when_decisionsIsCalledTwice_then_throw() {
+        var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(50L));
 
         tap.many();
         assertThrows(IllegalStateException.class, () -> tap.many());
@@ -83,8 +83,8 @@ class FluxOneAndManyTapTests {
     }
 
     @Test
-    void when_manyDecisionIsSunbscribedToTwice_then_throw() throws InterruptedException {
-        var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(50L));
+    void when_manyDecisionIsSunbscribedToTwice_then_throw() {
+        var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(50L));
 
         var many = tap.many();
         many.take(1).blockLast();
@@ -94,7 +94,7 @@ class FluxOneAndManyTapTests {
     @Test
     void when_oneThenManyNoDelay_then_AllEventsAreConsumed() throws InterruptedException {
         var ttl = 50L;
-        var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
+        var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
         StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
                 .verifyComplete();
@@ -111,7 +111,7 @@ class FluxOneAndManyTapTests {
     @Test
     void when_oneThenManyDelayButNotTillAfterNextUpdate_then_AllEventsAreConsumed() throws InterruptedException {
         var ttl = 200L;
-        var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
+        var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
         StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
                 .verifyComplete();
@@ -130,7 +130,7 @@ class FluxOneAndManyTapTests {
     void when_oneThenManyDelayLongerThanUpdateDelayButShorterThanTTL_then_decisionsDoesGet2ndEventFirst()
             throws InterruptedException {
         var ttl = 200L;
-        var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
+        var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
         StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
                 .verifyComplete();
@@ -148,7 +148,7 @@ class FluxOneAndManyTapTests {
     void when_oneThenManyDelayLongerThanUpdateDelayAndTTL_then_decisionsGetAllEventsAsItIsANewSubscription_and_PDPisSubscribedToTwice()
             throws InterruptedException {
         var ttl = 200L;
-        var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
+        var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
         StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
                 .verifyComplete();
@@ -166,7 +166,7 @@ class FluxOneAndManyTapTests {
     @Test
     void when_manyThenOneNoDelay_then_AllEventsAreConsumedOneGetsFinalOne() throws InterruptedException {
         var ttl = 200L;
-        var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
+        var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
         StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
                 .expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
@@ -183,7 +183,7 @@ class FluxOneAndManyTapTests {
     @Test
     void when_manyThenOneDelayButShorterThanTTL_then_AllEventsAreConsumedOneGetsFinalOne() throws InterruptedException {
         var ttl = 200L;
-        var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
+        var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
         StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
                 .expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
@@ -203,7 +203,7 @@ class FluxOneAndManyTapTests {
     void when_manyThenOneDelayButLongerThanTTL_then_AllEventsAreConsumedOneGetsFirstOneAgainAsItIsNewSubscription()
             throws InterruptedException {
         var ttl = 200L;
-        var tap = new FluxOneAndManyTap<AuthorizationDecision>(source, Duration.ofMillis(ttl));
+        var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
         StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
                 .expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)

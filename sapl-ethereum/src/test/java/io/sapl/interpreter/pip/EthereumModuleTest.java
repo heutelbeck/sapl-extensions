@@ -141,7 +141,7 @@ public class EthereumModuleTest {
     public MockitoRule mockitoRule = MockitoJUnit.rule();
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
         mockStatic(Web3j.class);
         ethPip = new EthereumPolicyInformationPoint(web3j);
     }
@@ -257,7 +257,7 @@ public class EthereumModuleTest {
     // loadContractInformation
 
     @Test
-    public void loadContractInformationShouldReturnCorrectValue() throws IOException, ClassNotFoundException {
+    public void loadContractInformationShouldReturnCorrectValue() throws IOException {
         Val                                                 saplObject  = createSaplObject();
         org.web3j.protocol.core.methods.request.Transaction transaction = org.web3j.protocol.core.methods.request.Transaction
                 .createEthCallTransaction(null, TEST_DATA_LCI_CONTRACT_ADDRESS, TEST_DATA_LCI_ENCODED_FUNCTION);
@@ -389,7 +389,7 @@ public class EthereumModuleTest {
 
         List<JsonNode> result = new ArrayList<>();
         ethPip.ethAccounts(null, null).blockFirst().get().elements().forEachRemaining(result::add);
-        List<String> pipResult = result.stream().map(JsonNode::textValue).collect(Collectors.toList());
+        List<String> pipResult = result.stream().map(JsonNode::textValue).toList();
 
         assertEquals("The accounts method did not return the correct accounts.", accountList, pipResult);
     }
@@ -539,7 +539,7 @@ public class EthereumModuleTest {
 
     // call
     @Test
-    public void ethCallShouldReturnTheCorrectValue() throws IOException, ClassNotFoundException {
+    public void ethCallShouldReturnTheCorrectValue() throws ClassNotFoundException, IOException {
         org.web3j.protocol.core.methods.request.Transaction transaction = createTestRequestTransaction();
         ObjectNode                                          saplObject  = JSON.objectNode();
         saplObject.set(TRANSACTION, MAPPER.convertValue(transaction, JsonNode.class));
@@ -556,7 +556,7 @@ public class EthereumModuleTest {
 
     // estimateGas
     @Test
-    public void ethEstimateGasCodeShouldReturnTheCorrectValue() throws IOException, ClassNotFoundException {
+    public void ethEstimateGasCodeShouldReturnTheCorrectValue() throws ClassNotFoundException, IOException {
         org.web3j.protocol.core.methods.request.Transaction transaction = createTestRequestTransaction();
         BigInteger                                          gas         = BigInteger.valueOf(23300L);
         ObjectNode                                          saplObject  = JSON.objectNode();

@@ -124,15 +124,15 @@ class SaplQueryUpdateEmitterTests {
     }
 
     private SaplQueryUpdateEmitter                                 emitter;
-    private SubscriptionQueryMessage<String, List<String>, String> subscriptionQueryMessage;
+    private SubscriptionQueryMessage<String, List<String>, String> defaultSbscriptionQueryMessage;
 
     @BeforeEach
     void setUp() {
-        subscriptionQueryMessage = new GenericSubscriptionQueryMessage<>("some-payload", "chatMessages",
+        defaultSbscriptionQueryMessage = new GenericSubscriptionQueryMessage<>("some-payload", "chatMessages",
                 ResponseTypes.multipleInstancesOf(String.class), ResponseTypes.instanceOf(String.class));
-        subscriptionQueryMessage = subscriptionQueryMessage.andMetaData(Map.of("updateResponseType",
-                subscriptionQueryMessage.getUpdateResponseType().getExpectedResponseType().getSimpleName()));
-        emitter                  = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
+        defaultSbscriptionQueryMessage = defaultSbscriptionQueryMessage.andMetaData(Map.of("updateResponseType",
+                defaultSbscriptionQueryMessage.getUpdateResponseType().getExpectedResponseType().getSimpleName()));
+        emitter                        = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
     }
 
     @Test
@@ -152,10 +152,10 @@ class SaplQueryUpdateEmitterTests {
 
     @Test
     void when_registerUpdateHandler_with_backpressure_then_ignoreBackpressure_and_callNonDeprecatedVariant() {
-        var emitter = mock(SaplQueryUpdateEmitter.class);
-        when(emitter.registerUpdateHandler(any(SubscriptionQueryMessage.class),
+        var anEmitter = mock(SaplQueryUpdateEmitter.class);
+        when(anEmitter.registerUpdateHandler(any(SubscriptionQueryMessage.class),
                 any(SubscriptionQueryBackpressure.class), any(Integer.class))).thenCallRealMethod();
-        when(emitter.registerUpdateHandler(any(SubscriptionQueryMessage.class), any(Integer.class)))
+        when(anEmitter.registerUpdateHandler(any(SubscriptionQueryMessage.class), any(Integer.class)))
                 .thenReturn(new FlaggedUpdateHandlerRegistration<Object>(() -> true, Flux.empty(), () -> {
                 }));
 
@@ -163,7 +163,8 @@ class SaplQueryUpdateEmitterTests {
                 ResponseTypes.multipleInstancesOf(Object.class));
         var backpressure = new SubscriptionQueryBackpressure(OverflowStrategy.ERROR);
 
-        var updateHandlerRegistration = emitter.registerUpdateHandler(query, backpressure, DEFAULT_UPDATE_BUFFER_SIZE);
+        var updateHandlerRegistration = anEmitter.registerUpdateHandler(query, backpressure,
+                DEFAULT_UPDATE_BUFFER_SIZE);
         assertEquals(FlaggedUpdateHandlerRegistration.class, updateHandlerRegistration.getClass());
     }
 
@@ -1174,11 +1175,11 @@ class SaplQueryUpdateEmitterTests {
 
     @Test
     void when_updateHandlerRegistered_then_contains() {
-        assertFalse(emitter.activeSubscriptions().contains(subscriptionQueryMessage));
-        var registration = emitter.registerUpdateHandler(subscriptionQueryMessage, 1024);
-        assertTrue(emitter.activeSubscriptions().contains(subscriptionQueryMessage));
+        assertFalse(emitter.activeSubscriptions().contains(defaultSbscriptionQueryMessage));
+        var registration = emitter.registerUpdateHandler(defaultSbscriptionQueryMessage, 1024);
+        assertTrue(emitter.activeSubscriptions().contains(defaultSbscriptionQueryMessage));
         registration.getRegistration().cancel();
-        assertFalse(emitter.activeSubscriptions().contains(subscriptionQueryMessage));
+        assertFalse(emitter.activeSubscriptions().contains(defaultSbscriptionQueryMessage));
     }
 
     @Test
