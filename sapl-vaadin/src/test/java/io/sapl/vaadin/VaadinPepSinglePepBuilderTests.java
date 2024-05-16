@@ -135,7 +135,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, nextVaadinConstraintEnforcementServiceMock, component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo((decision) -> {
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {
         });
 
         // WHEN
@@ -164,7 +164,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, nextVaadinConstraintEnforcementServiceMock, component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo((decision) -> {
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {
         });
         doAnswer(invocation -> {
             invocation.getArgument(0, ComponentEventListener.class).onComponentEvent(eventMock);
@@ -199,7 +199,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, nextVaadinConstraintEnforcementServiceMock, component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo((decision) -> {
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {
         });
         doAnswer(invocation -> {
             invocation.getArgument(0, ComponentEventListener.class).onComponentEvent(eventMock);
@@ -238,7 +238,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, nextVaadinConstraintEnforcementServiceMock, component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo((decision) -> {
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {
         });
 
         doAnswer(invocation -> {
@@ -271,7 +271,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, nextVaadinConstraintEnforcementServiceMock, component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo((decision) -> {
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {
         });
 
         // WHEN + THEN
@@ -299,7 +299,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, nextVaadinConstraintEnforcementServiceMock, component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo((decision) -> {
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {
         });
 
         // WHEN
@@ -328,7 +328,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, mock(VaadinConstraintEnforcementService.class), component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo((decision) -> {
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {
         });
 
         // WHEN

@@ -173,12 +173,12 @@ class LifecycleBeforeEnterPepBuilderTests {
         var enforcementServiceMock = mockNextVaadinConstraintEnforcementService(Decision.DENY);
 
         // Methods on SUT
-        var                                            sut            = new VaadinPep.LifecycleBeforeEnterPepBuilder(
-                pdpMock, enforcementServiceMock);
+        var pepUnderTest = new VaadinPep.LifecycleBeforeEnterPepBuilder(pdpMock, enforcementServiceMock);
+
         @SuppressWarnings("unchecked") // suppress mock
         BiConsumer<AuthorizationDecision, BeforeEvent> biConsumerMock = mock(BiConsumer.class);
-        sut.onDenyDo(biConsumerMock);
-        BeforeEnterListener listener = sut.build();
+        pepUnderTest.onDenyDo(biConsumerMock);
+        BeforeEnterListener listener = pepUnderTest.build();
 
         // WHEN
         listener.beforeEnter(beforeEnterEventMock);

@@ -72,7 +72,7 @@ class SecurityHelperTests {
         when(contextMock.getAuthentication()).thenReturn(authMock);
         when(authMock.getName()).thenReturn("user");
 
-        when(authMock.getAuthorities()).thenAnswer((invocationOnMock) -> {
+        when(authMock.getAuthorities()).thenAnswer(invocationOnMock -> {
             @SuppressWarnings("unchecked")
             Collection<? extends GrantedAuthority> collection = (Collection<? extends GrantedAuthority>) mock(
                     Collection.class);

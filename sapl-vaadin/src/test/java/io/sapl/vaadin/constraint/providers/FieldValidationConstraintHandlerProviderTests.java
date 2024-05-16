@@ -57,14 +57,14 @@ class FieldValidationConstraintHandlerProviderTests {
 
     private Binder<TestData> binder;
     private TestForm         form;
-    private UI               ui;
+    private UI               defaultUi;
 
     @BeforeEach
     void setupTest() {
         // ui
-        ui = mock(UI.class);
-        when(ui.getLocale()).thenReturn(Locale.ENGLISH);
-        UI.setCurrent(ui);
+        defaultUi = mock(UI.class);
+        when(defaultUi.getLocale()).thenReturn(Locale.ENGLISH);
+        UI.setCurrent(defaultUi);
 
         // binder
         binder = spy(new Binder<>(TestData.class));
@@ -110,21 +110,6 @@ class FieldValidationConstraintHandlerProviderTests {
 
     @Test
     void when_constraintIsTaggedIncorrectlyWithInvalidID_then_providerIsNotResponsible()
-            throws JsonProcessingException {
-        // GIVEN
-        var sut        = new FieldValidationConstraintHandlerProvider(binder, form, new ObjectMapper());
-        var constraint = MAPPER.readTree("""
-                {
-                  "type" : "saplVaadin",
-                  "id"   : "showNotification"
-                }
-                """);
-        // WHEN+THEN
-        assertFalse(sut.isResponsible(constraint));
-    }
-
-    @Test
-    void when_constraintIsTaggedIncorrectlyWithInvalidType_then_providerIsNotResponsible()
             throws JsonProcessingException {
         // GIVEN
         var sut        = new FieldValidationConstraintHandlerProvider(binder, form, new ObjectMapper());
@@ -206,7 +191,7 @@ class FieldValidationConstraintHandlerProviderTests {
                 """);
 
         // WHEN
-        sut.getHandler(constraint).accept(ui);
+        sut.getHandler(constraint).accept(defaultUi);
         form.integerField.setValue(10);
 
         // THEN
@@ -229,7 +214,7 @@ class FieldValidationConstraintHandlerProviderTests {
                 """);
 
         // WHEN
-        sut.getHandler(constraint).accept(ui);
+        sut.getHandler(constraint).accept(defaultUi);
 
         // THEN
         verifyNoInteractions(mockedForm);
@@ -356,7 +341,7 @@ class FieldValidationConstraintHandlerProviderTests {
                 """);
 
         // WHEN+THEN
-        sut.getHandler(constraint).accept(ui);
+        sut.getHandler(constraint).accept(defaultUi);
         // check valid value
         form.dateTimeField.setValue(LocalDateTime.parse("2022-04-01T10:00:00"));
         assertFalse(form.dateTimeField.isInvalid());
@@ -384,7 +369,7 @@ class FieldValidationConstraintHandlerProviderTests {
                 """);
 
         // WHEN+THEN
-        sut.getHandler(constraint).accept(ui);
+        sut.getHandler(constraint).accept(defaultUi);
         // check valid value
         form.timeField.setValue(LocalTime.parse("10:00:00"));
         assertFalse(form.dateTimeField.isInvalid());
@@ -417,7 +402,7 @@ class FieldValidationConstraintHandlerProviderTests {
                 }
                 """);
         // WHEN+THEN
-        sut.getHandler(constraint).accept(ui);
+        sut.getHandler(constraint).accept(defaultUi);
         // THEN
         form.integerField.setValue(21);
         assertFalse(form.integerField.isInvalid());
