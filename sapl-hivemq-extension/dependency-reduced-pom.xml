@@ -376,7 +376,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>hivemq</artifactId>
-      <version>1.19.7</version>
+      <version>1.19.8</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -388,7 +388,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.4.14</version>
+      <version>1.5.6</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -470,7 +470,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>1.19.7</version>
+      <version>1.19.8</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -528,7 +528,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
-      <version>5.7.0</version>
+      <version>5.11.0</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -540,7 +540,7 @@
     <dependency>
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
-      <version>3.6.5</version>
+      <version>3.6.6</version>
       <scope>test</scope>
     </dependency>
     <dependency>
