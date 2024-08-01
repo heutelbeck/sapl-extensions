@@ -84,6 +84,7 @@ class RemotePdpUsageIT {
     private static final String EXTENSIONS_CONFIG_FILE_NAME = "sapl-extension-config.xml";
 
     @Container
+    @SuppressWarnings("resource") // Fine for tests which are short lived
     static final GenericContainer<?> SAPL_SERVER_LT = new GenericContainer<>(
             DockerImageName.parse("ghcr.io/heutelbeck/sapl-server-lt:3.0.0-snapshot"))
             .withCopyFileToContainer(MountableFile.forHostPath("src/test/resources/policies"), "/pdp/data")

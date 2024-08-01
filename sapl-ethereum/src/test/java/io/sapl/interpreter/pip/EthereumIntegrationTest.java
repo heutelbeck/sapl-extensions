@@ -127,6 +127,7 @@ public class EthereumIntegrationTest {
     private static TransactionReceipt             transactionReceiptUser3;
 
     @ClassRule
+    @SuppressWarnings("resource") // Fine for tests which are short lived
     public static final GenericContainer<? extends GenericContainer<?>> besuContainer = new GenericContainer<>(
             "hyperledger/besu:latest").withExposedPorts(8545, 8546)
             .withCommand("--miner-enabled", "--miner-coinbase=" + USER1_ADDRESS, "--rpc-http-enabled", "--network=dev")

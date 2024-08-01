@@ -69,6 +69,7 @@ class EthereumDemoApplicationIT {
     static Network network = Network.newNetwork();
 
     @Container
+    @SuppressWarnings("resource") // Fine for tests which are short lived
     static GenericContainer<?> ganacheCli = new GenericContainer<>(DockerImageName.parse("trufflesuite/ganache-cli"))
             .withCommand(STARTUP_COMMAND).withExposedPorts(GANACHE_SERVER_PORT)
             .waitingFor(Wait.forLogMessage(STARTUP_LOG_MESSAGE, 1)).withStartupTimeout(TIMEOUT_FOR_GANACHE_CLI_SPINUP)
