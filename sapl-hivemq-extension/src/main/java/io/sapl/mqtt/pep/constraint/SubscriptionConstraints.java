@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @UtilityClass
-public class SubscriptionConstraints extends Constraints {
+public class SubscriptionConstraints {
 
     static final String ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION = "resubscribeMqttSubscription";
 
@@ -43,15 +43,17 @@ public class SubscriptionConstraints extends Constraints {
     private static final Map<String, SubscriptionConstraintHandlingFunction<ConstraintDetails, JsonNode>> SUBSCRIPTION_CONSTRAINTS = new HashMap<>();
 
     static {
-        SUBSCRIPTION_CONSTRAINTS.put(ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION, SubscriptionConstraints::setTimeLimit);
+        SUBSCRIPTION_CONSTRAINTS.put(Constraints.ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION,
+                SubscriptionConstraints::setTimeLimit);
         SUBSCRIPTION_CONSTRAINTS.put(ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION,
                 SubscriptionConstraints::setStayUnsubscribed);
     }
 
     static boolean enforceSubscriptionConstraintEntries(ConstraintDetails constraintDetails, JsonNode constraint) {
         SubscriptionConstraintHandlingFunction<ConstraintDetails, JsonNode> subscriptionConstraintHandlingFunction = null;
-        if (constraint.has(ENVIRONMENT_CONSTRAINT_TYPE) && constraint.get(ENVIRONMENT_CONSTRAINT_TYPE).isTextual()) {
-            String constraintType = constraint.get(ENVIRONMENT_CONSTRAINT_TYPE).asText();
+        if (constraint.has(Constraints.ENVIRONMENT_CONSTRAINT_TYPE)
+                && constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).isTextual()) {
+            String constraintType = constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).asText();
             subscriptionConstraintHandlingFunction = SUBSCRIPTION_CONSTRAINTS.get(constraintType);
         }
 
@@ -66,7 +68,7 @@ public class SubscriptionConstraints extends Constraints {
     }
 
     private static boolean setTimeLimit(ConstraintDetails constraintDetails, JsonNode constraint) {
-        JsonNode timeLimitJson = constraint.get(ENVIRONMENT_TIME_LIMIT);
+        JsonNode timeLimitJson = constraint.get(Constraints.ENVIRONMENT_TIME_LIMIT);
         if (timeLimitJson != null) {
             if (!timeLimitJson.canConvertToExactIntegral() || timeLimitJson.asLong() < 1) {
                 log.warn("Illegal time limit for mqtt subscription of topic '{}' for client '{}' specified: {}",
@@ -82,23 +84,23 @@ public class SubscriptionConstraints extends Constraints {
             log.warn(
                     "No time limit specified for mqtt subscription constraint of type '{}' for topic '{}' "
                             + "of client '{}'.",
-                    constraint.get(ENVIRONMENT_CONSTRAINT_TYPE), constraintDetails.getTopic(),
+                    constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE), constraintDetails.getTopic(),
                     constraintDetails.getClientId());
             return false;
         }
     }
 
     private static boolean setStayUnsubscribed(ConstraintDetails constraintDetails, JsonNode constraint) {
-        JsonNode resubscribeMqttSubscriptionStatusJson = constraint.get(ENVIRONMENT_STATUS);
+        JsonNode resubscribeMqttSubscriptionStatusJson = constraint.get(Constraints.ENVIRONMENT_STATUS);
         if (resubscribeMqttSubscriptionStatusJson != null && resubscribeMqttSubscriptionStatusJson.isTextual()) {
             var resubscribeMqttSubscriptionStatus = resubscribeMqttSubscriptionStatusJson.textValue();
-            if (ENVIRONMENT_ENABLED.equals(resubscribeMqttSubscriptionStatus)) {
+            if (Constraints.ENVIRONMENT_ENABLED.equals(resubscribeMqttSubscriptionStatus)) {
                 constraintDetails.setIsResubscribeMqttSubscriptionEnabled(Boolean.TRUE);
                 log.info("Enabled the resubscription of the client '{}' to topic '{}'.",
                         constraintDetails.getClientId(), constraintDetails.getTopic());
                 return true;
             }
-            if (ENVIRONMENT_DISABLED.equals(resubscribeMqttSubscriptionStatus)) {
+            if (Constraints.ENVIRONMENT_DISABLED.equals(resubscribeMqttSubscriptionStatus)) {
                 constraintDetails.setIsResubscribeMqttSubscriptionEnabled(Boolean.FALSE);
                 log.info("Disabled the resubscription of the client '{}' to topic '{}'.",
                         constraintDetails.getClientId(), constraintDetails.getTopic());

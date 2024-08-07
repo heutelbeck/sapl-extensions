@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @ThreadSafe
-public class ConfigurationXmlParser {
+public final class ConfigurationXmlParser {
 
     private final JAXBContext jaxb;
 

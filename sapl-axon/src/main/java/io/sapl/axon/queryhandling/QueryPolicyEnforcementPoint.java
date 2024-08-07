@@ -62,7 +62,7 @@ import reactor.core.publisher.Mono;
  * @param <T> The type of the handing object.
  */
 @Slf4j
-public class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember<T> {
+public final class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember<T> {
 
     private static final String ACCESS_DENIED = "Access Denied";
 

@@ -113,51 +113,61 @@ class AuthorizationSubscriptionBuilderServiceTests {
         @CommandHandler
         @PreHandleEnforce
         public void handle1(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(subject = "malformed")
         public void handle2(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(subject = "'testSubject'")
         public void handle3(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(action = "malformed")
         public void handle4(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(action = "'testAction'")
         public void handle5(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(resource = "malformed")
         public void handle6(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(resource = "'testResource'")
         public void handle7(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(environment = "malformed")
         public void handle8(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(environment = "'testEnvironment'")
         public void handle9(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce
         public void handle10(NonAnnotatedTestCommand cmd) {
+            // NOOP test dummy
         }
     }
 
@@ -165,51 +175,61 @@ class AuthorizationSubscriptionBuilderServiceTests {
         @CommandHandler
         @PreHandleEnforce
         public void handle1(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(subject = "malformed")
         public void handle2(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(subject = "'testSubject'")
         public void handle3(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(action = "malformed")
         public void handle4(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(action = "'testAction'")
         public void handle5(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(resource = "malformed")
         public void handle6(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(resource = "'testResource'")
         public void handle7(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(environment = "malformed")
         public void handle8(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce(environment = "'testEnvironment'")
         public void handle9(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PreHandleEnforce
         public void handle10(NonAnnotatedTestCommand cmd) {
+            // NOOP test dummy
         }
     }
 

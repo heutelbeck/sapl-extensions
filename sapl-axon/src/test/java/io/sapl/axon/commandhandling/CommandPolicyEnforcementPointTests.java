@@ -98,11 +98,13 @@ class CommandPolicyEnforcementPointTests {
 
         @CommandHandler
         public void handle2(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
         @PostHandleEnforce
         public void handle3(TestCommand cmd) {
+            // NOOP test dummy
         }
 
         @CommandHandler
@@ -188,55 +190,55 @@ class CommandPolicyEnforcementPointTests {
     }
 
     @Test
-	void when_permit_and_onDecisionHandlersThrow_then_handledException() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		doThrow(new RuntimeException("some error message")).when(commandConstraintHandlerBundle)
-				.executeOnDecisionHandlers(any(AuthorizationDecision.class), eq(DEFAULT_COMMAND_MESSAGE));
+    void when_permit_and_onDecisionHandlersThrow_then_handledException() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+        doThrow(new RuntimeException("some error message")).when(commandConstraintHandlerBundle)
+                .executeOnDecisionHandlers(any(AuthorizationDecision.class), eq(DEFAULT_COMMAND_MESSAGE));
 
-		var exception = assertThrows(RuntimeException.class,
-				() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-		assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
-	}
-
-    @Test
-	void when_deny_then_handledException() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
-
-		var exception = assertThrows(RuntimeException.class,
-				() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-		assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
-	}
+        var exception = assertThrows(RuntimeException.class,
+                () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+        assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
+    }
 
     @Test
-	void when_permit_and_executeAggregateConstraintHandlerMethodsThrows_then_handledException() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		doThrow(new RuntimeException("some error message")).when(commandConstraintHandlerBundle)
-				.executeAggregateConstraintHandlerMethods();
+    void when_deny_then_handledException() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 
-		var exception = assertThrows(RuntimeException.class,
-				() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-		assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
-	}
+        var exception = assertThrows(RuntimeException.class,
+                () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+        assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
+    }
 
     @Test
-	void when_permit_and_executeCommandMappingHandlersThrows_then_handledException() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		when(commandConstraintHandlerBundle.executeCommandMappingHandlers(DEFAULT_COMMAND_MESSAGE))
-				.thenThrow(new RuntimeException("some error message"));
+    void when_permit_and_executeAggregateConstraintHandlerMethodsThrows_then_handledException() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+        doThrow(new RuntimeException("some error message")).when(commandConstraintHandlerBundle)
+                .executeAggregateConstraintHandlerMethods();
 
-		var exception = assertThrows(RuntimeException.class,
-				() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-		assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
-	}
+        var exception = assertThrows(RuntimeException.class,
+                () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+        assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
+    }
 
     @Test
-	void when_permit_then_mapCommands() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+    void when_permit_and_executeCommandMappingHandlersThrows_then_handledException() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+        when(commandConstraintHandlerBundle.executeCommandMappingHandlers(DEFAULT_COMMAND_MESSAGE))
+                .thenThrow(new RuntimeException("some error message"));
 
-		var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-		assertEquals("defaultResult", result);
-		verify(commandConstraintHandlerBundle, times(1)).executeCommandMappingHandlers(DEFAULT_COMMAND_MESSAGE);
-	}
+        var exception = assertThrows(RuntimeException.class,
+                () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+        assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
+    }
+
+    @Test
+    void when_permit_then_mapCommands() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+
+        var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+        assertEquals("defaultResult", result);
+        verify(commandConstraintHandlerBundle, times(1)).executeCommandMappingHandlers(DEFAULT_COMMAND_MESSAGE);
+    }
 
     @Test
     void when_permit_and_delegateHandleThrows_then_handledException() throws NoSuchMethodException {
@@ -256,22 +258,22 @@ class CommandPolicyEnforcementPointTests {
     }
 
     @Test
-	void when_permit_and_executePostHandlingHandlersThrows_then_handledException() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-		when(commandConstraintHandlerBundle.executePostHandlingHandlers("defaultResult"))
-				.thenThrow(new RuntimeException("some error message"));
+    void when_permit_and_executePostHandlingHandlersThrows_then_handledException() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+        when(commandConstraintHandlerBundle.executePostHandlingHandlers("defaultResult"))
+                .thenThrow(new RuntimeException("some error message"));
 
-		var exception = assertThrows(RuntimeException.class,
-				() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-		assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
-	}
+        var exception = assertThrows(RuntimeException.class,
+                () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+        assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
+    }
 
     @Test
-	void when_permit_then_mapResult() {
-		when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
+    void when_permit_then_mapResult() {
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-		var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-		assertEquals("defaultResult", result);
-		verify(commandConstraintHandlerBundle, times(1)).executePostHandlingHandlers("defaultResult");
-	}
+        var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+        assertEquals("defaultResult", result);
+        verify(commandConstraintHandlerBundle, times(1)).executePostHandlingHandlers("defaultResult");
+    }
 }

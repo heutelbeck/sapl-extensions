@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @UtilityClass
-public class ConnectionConstraints extends Constraints {
+public class ConnectionConstraints {
 
     @FunctionalInterface
     private interface ConnectionConstraintHandlingFunction<C, J> {
@@ -41,13 +41,15 @@ public class ConnectionConstraints extends Constraints {
     private static final Map<String, ConnectionConstraintHandlingFunction<ConstraintDetails, JsonNode>> CONNECTION_CONSTRAINTS = new HashMap<>();
 
     static {
-        CONNECTION_CONSTRAINTS.put(ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION, ConnectionConstraints::setTimeLimit);
+        CONNECTION_CONSTRAINTS.put(Constraints.ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION,
+                ConnectionConstraints::setTimeLimit);
     }
 
     static boolean enforceConnectionConstraintEntries(ConstraintDetails constraintDetails, JsonNode constraint) {
         ConnectionConstraintHandlingFunction<ConstraintDetails, JsonNode> connectionConstraintHandlingFunction = null;
-        if (constraint.has(ENVIRONMENT_CONSTRAINT_TYPE) && constraint.get(ENVIRONMENT_CONSTRAINT_TYPE).isTextual()) {
-            String constraintType = constraint.get(ENVIRONMENT_CONSTRAINT_TYPE).asText();
+        if (constraint.has(Constraints.ENVIRONMENT_CONSTRAINT_TYPE)
+                && constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).isTextual()) {
+            String constraintType = constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).asText();
             connectionConstraintHandlingFunction = CONNECTION_CONSTRAINTS.get(constraintType);
         }
 
@@ -61,7 +63,7 @@ public class ConnectionConstraints extends Constraints {
     }
 
     private static boolean setTimeLimit(ConstraintDetails constraintDetails, JsonNode constraint) {
-        JsonNode timeLimitJson = constraint.get(ENVIRONMENT_TIME_LIMIT);
+        JsonNode timeLimitJson = constraint.get(Constraints.ENVIRONMENT_TIME_LIMIT);
         if (timeLimitJson != null) {
             if (!timeLimitJson.canConvertToExactIntegral() || timeLimitJson.asLong() < 1) {
                 log.warn("Illegal time limit for connection of client '{}' specified: {}",
@@ -75,7 +77,7 @@ public class ConnectionConstraints extends Constraints {
             return true;
         } else {
             log.warn("No time limit specified for mqtt connection constraint of type '{}' for client '{}'.",
-                    constraint.get(ENVIRONMENT_CONSTRAINT_TYPE), constraintDetails.getClientId());
+                    constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE), constraintDetails.getClientId());
             return false;
         }
     }

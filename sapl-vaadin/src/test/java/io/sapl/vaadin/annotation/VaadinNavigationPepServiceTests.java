@@ -24,7 +24,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -51,10 +50,6 @@ class VaadinNavigationPepServiceTests {
         var subject = JSON.objectNode();
         subject.put("username", "dummy");
         mockSpringContextHolderAuthentication();
-    }
-
-    @AfterAll
-    static void afterAll() {
     }
 
     private static void mockSpringContextHolderAuthentication() {

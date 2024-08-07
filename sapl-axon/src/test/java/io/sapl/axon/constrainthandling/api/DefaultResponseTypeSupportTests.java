@@ -44,83 +44,91 @@ class DefaultResponseTypeSupportTests {
     }
 
     @Test
-	void when_noSupportedType_then_alwasyFalse() {
-		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of());
+    void when_noSupportedType_then_alwasyFalse() {
+        when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of());
 
-		assertFalse(responseTypeSupport.supports(Object.class));
-		assertFalse(responseTypeSupport.supports(ResponseTypes.instanceOf(Object.class)));
-	}
-
-    @Test
-	void when_instanceSupportedType_then_true() {
-		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.instanceOf(String.class)));
-
-		assertTrue(responseTypeSupport.supports(String.class));
-		assertTrue(responseTypeSupport.supports(ResponseTypes.instanceOf(String.class)));
-	}
+        assertFalse(responseTypeSupport.supports(Object.class));
+        assertFalse(responseTypeSupport.supports(ResponseTypes.instanceOf(Object.class)));
+    }
 
     @Test
-	void when_subClassOfInstanceSupportedType_then_false() {
-		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.instanceOf(String.class)));
+    void when_instanceSupportedType_then_true() {
+        when(responseTypeSupport.getSupportedResponseTypes())
+                .thenReturn(Set.of(ResponseTypes.instanceOf(String.class)));
 
-		assertFalse(responseTypeSupport.supports(Object.class));
-		assertFalse(responseTypeSupport.supports(ResponseTypes.instanceOf(Object.class)));
-	}
-
-    @Test
-	void when_superClassOfInstanceSupportedType_then_true() {
-		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.instanceOf(Object.class)));
-
-		assertTrue(responseTypeSupport.supports(String.class));
-		assertTrue(responseTypeSupport.supports(ResponseTypes.instanceOf(String.class)));
-	}
+        assertTrue(responseTypeSupport.supports(String.class));
+        assertTrue(responseTypeSupport.supports(ResponseTypes.instanceOf(String.class)));
+    }
 
     @Test
-	void when_multipleInstancesResponseType_then_true() {
-		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.multipleInstancesOf(String.class)));
+    void when_subClassOfInstanceSupportedType_then_false() {
+        when(responseTypeSupport.getSupportedResponseTypes())
+                .thenReturn(Set.of(ResponseTypes.instanceOf(String.class)));
 
-		assertTrue(responseTypeSupport.supports(String[].class));
-		assertTrue(responseTypeSupport.supports(List.class));
-		assertTrue(responseTypeSupport.supports(ResponseTypes.multipleInstancesOf(String.class)));
-	}
-
-    @Test
-	void when_optionalResponseType_then_true() {
-		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.optionalInstanceOf(String.class)));
-
-		assertTrue(responseTypeSupport.supports(Optional.class));
-		assertTrue(responseTypeSupport.supports(ResponseTypes.optionalInstanceOf(String.class)));
-	}
+        assertFalse(responseTypeSupport.supports(Object.class));
+        assertFalse(responseTypeSupport.supports(ResponseTypes.instanceOf(Object.class)));
+    }
 
     @Test
-	void when_differingResponseTypes_and_instanceResponseType_then_false() {
-		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.instanceOf(String.class)));
+    void when_superClassOfInstanceSupportedType_then_true() {
+        when(responseTypeSupport.getSupportedResponseTypes())
+                .thenReturn(Set.of(ResponseTypes.instanceOf(Object.class)));
 
-		assertFalse(responseTypeSupport.supports(String[].class));
-		assertFalse(responseTypeSupport.supports(List.class));
-		assertFalse(responseTypeSupport.supports(ResponseTypes.multipleInstancesOf(String.class)));
-		assertFalse(responseTypeSupport.supports(Optional.class));
-		assertFalse(responseTypeSupport.supports(ResponseTypes.optionalInstanceOf(String.class)));
-	}
+        assertTrue(responseTypeSupport.supports(String.class));
+        assertTrue(responseTypeSupport.supports(ResponseTypes.instanceOf(String.class)));
+    }
 
     @Test
-	void when_differingResponseTypes_and_multipleInstancesResponseType_then_false() {
-		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.multipleInstancesOf(String.class)));
+    void when_multipleInstancesResponseType_then_true() {
+        when(responseTypeSupport.getSupportedResponseTypes())
+                .thenReturn(Set.of(ResponseTypes.multipleInstancesOf(String.class)));
 
-		assertFalse(responseTypeSupport.supports(String.class));
-		assertFalse(responseTypeSupport.supports(ResponseTypes.instanceOf(String.class)));
-		assertFalse(responseTypeSupport.supports(Optional.class));
-		assertFalse(responseTypeSupport.supports(ResponseTypes.optionalInstanceOf(String.class)));
-	}
+        assertTrue(responseTypeSupport.supports(String[].class));
+        assertTrue(responseTypeSupport.supports(List.class));
+        assertTrue(responseTypeSupport.supports(ResponseTypes.multipleInstancesOf(String.class)));
+    }
 
     @Test
-	void when_differingResponseTypes_and_optionalResponseType_then_false() {
-		when(responseTypeSupport.getSupportedResponseTypes()).thenReturn(Set.of(ResponseTypes.optionalInstanceOf(String.class)));
+    void when_optionalResponseType_then_true() {
+        when(responseTypeSupport.getSupportedResponseTypes())
+                .thenReturn(Set.of(ResponseTypes.optionalInstanceOf(String.class)));
 
-		assertFalse(responseTypeSupport.supports(String.class));
-		assertFalse(responseTypeSupport.supports(ResponseTypes.instanceOf(String.class)));
-		assertFalse(responseTypeSupport.supports(String[].class));
-		assertFalse(responseTypeSupport.supports(List.class));
-		assertFalse(responseTypeSupport.supports(ResponseTypes.multipleInstancesOf(String.class)));
-	}
+        assertTrue(responseTypeSupport.supports(Optional.class));
+        assertTrue(responseTypeSupport.supports(ResponseTypes.optionalInstanceOf(String.class)));
+    }
+
+    @Test
+    void when_differingResponseTypes_and_instanceResponseType_then_false() {
+        when(responseTypeSupport.getSupportedResponseTypes())
+                .thenReturn(Set.of(ResponseTypes.instanceOf(String.class)));
+
+        assertFalse(responseTypeSupport.supports(String[].class));
+        assertFalse(responseTypeSupport.supports(List.class));
+        assertFalse(responseTypeSupport.supports(ResponseTypes.multipleInstancesOf(String.class)));
+        assertFalse(responseTypeSupport.supports(Optional.class));
+        assertFalse(responseTypeSupport.supports(ResponseTypes.optionalInstanceOf(String.class)));
+    }
+
+    @Test
+    void when_differingResponseTypes_and_multipleInstancesResponseType_then_false() {
+        when(responseTypeSupport.getSupportedResponseTypes())
+                .thenReturn(Set.of(ResponseTypes.multipleInstancesOf(String.class)));
+
+        assertFalse(responseTypeSupport.supports(String.class));
+        assertFalse(responseTypeSupport.supports(ResponseTypes.instanceOf(String.class)));
+        assertFalse(responseTypeSupport.supports(Optional.class));
+        assertFalse(responseTypeSupport.supports(ResponseTypes.optionalInstanceOf(String.class)));
+    }
+
+    @Test
+    void when_differingResponseTypes_and_optionalResponseType_then_false() {
+        when(responseTypeSupport.getSupportedResponseTypes())
+                .thenReturn(Set.of(ResponseTypes.optionalInstanceOf(String.class)));
+
+        assertFalse(responseTypeSupport.supports(String.class));
+        assertFalse(responseTypeSupport.supports(ResponseTypes.instanceOf(String.class)));
+        assertFalse(responseTypeSupport.supports(String[].class));
+        assertFalse(responseTypeSupport.supports(List.class));
+        assertFalse(responseTypeSupport.supports(ResponseTypes.multipleInstancesOf(String.class)));
+    }
 }

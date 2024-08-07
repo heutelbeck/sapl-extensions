@@ -971,7 +971,7 @@ public abstract class QueryTestsuite {
     public static class DataPoint {
         String  name;
         Integer age;
-    };
+    }
 
     static class ResultFilterProvider implements UpdateFilterConstraintHandlerProvider {
 
@@ -1130,8 +1130,7 @@ public abstract class QueryTestsuite {
     private AuthorizationSubscription captureAuthzSubscription() {
         var argumentCaptor = ArgumentCaptor.forClass(AuthorizationSubscription.class);
         verify(pdp).decide(argumentCaptor.capture());
-        var capturedArgument = argumentCaptor.getValue();
-        return capturedArgument;
+        return argumentCaptor.getValue();
     }
 
     @Configuration

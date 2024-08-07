@@ -17,10 +17,13 @@
  */
 package io.sapl.mqtt.pep.constraint;
 
+import lombok.experimental.UtilityClass;
+
 /**
- * This class provides common variables used to handle constraints of mqtt
- * action enforcements.
+ * This class provides common variables used to handle constraints of MQTT
+ * action enforcement.
  */
+@UtilityClass
 class Constraints {
     static final String ENVIRONMENT_STATUS                     = "status";
     static final String ENVIRONMENT_ENABLED                    = "enabled";
@@ -28,12 +31,4 @@ class Constraints {
     static final String ENVIRONMENT_CONSTRAINT_TYPE            = "type";
     static final String ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION = "limitMqttActionDuration";
     static final String ENVIRONMENT_TIME_LIMIT                 = "timeLimit";
-
-    /**
-     * This class is not allowed to initialize. In case this method is called a
-     * {@link UnsupportedOperationException} will be thrown.
-     */
-    Constraints() {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
-    }
 }

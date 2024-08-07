@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @UtilityClass
-public class PublishConstraints extends Constraints {
+public class PublishConstraints {
 
     static final String ENVIRONMENT_QOS_CONSTRAINT                  = "setQos";
     static final String ENVIRONMENT_QOS_LEVEL                       = "qosLevel";
@@ -87,8 +87,9 @@ public class PublishConstraints extends Constraints {
         String                                                                       clientId                          = constraintDetails
                 .getClientId();
         PublishConstraintHandlingFunction<String, ModifiablePublishPacket, JsonNode> publishConstraintHandlingFunction = null;
-        if (constraint.has(ENVIRONMENT_CONSTRAINT_TYPE) && constraint.get(ENVIRONMENT_CONSTRAINT_TYPE).isTextual()) {
-            String constraintType = constraint.get(ENVIRONMENT_CONSTRAINT_TYPE).asText();
+        if (constraint.has(Constraints.ENVIRONMENT_CONSTRAINT_TYPE)
+                && constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).isTextual()) {
+            String constraintType = constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).asText();
             publishConstraintHandlingFunction = PUBLISH_CONSTRAINTS.get(constraintType);
         }
 
@@ -100,8 +101,8 @@ public class PublishConstraints extends Constraints {
             try {
                 return publishConstraintHandlingFunction.fulfill(clientId, publishPacket, constraint);
             } catch (IllegalArgumentException | CharacterCodingException exception) {
-                log.warn("Failed to handle constraint '{}': {}", constraint.get(ENVIRONMENT_CONSTRAINT_TYPE).asText(),
-                        exception.getMessage());
+                log.warn("Failed to handle constraint '{}': {}",
+                        constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).asText(), exception.getMessage());
                 return false;
             }
         }
@@ -127,16 +128,16 @@ public class PublishConstraints extends Constraints {
     }
 
     private static boolean setRetainFlag(String clientId, ModifiablePublishPacket publishPacket, JsonNode constraint) {
-        JsonNode statusJson = constraint.get(ENVIRONMENT_STATUS);
+        JsonNode statusJson = constraint.get(Constraints.ENVIRONMENT_STATUS);
         if (statusJson != null && statusJson.isTextual()) {
             String status = statusJson.asText();
-            if (ENVIRONMENT_ENABLED.equals(status)) {
+            if (Constraints.ENVIRONMENT_ENABLED.equals(status)) {
                 publishPacket.setRetain(true);
                 log.info("Changed retain flag of message '{}' of client '{}' to 'true'.", publishPacket.getTopic(),
                         clientId);
                 return true;
             }
-            if (ENVIRONMENT_DISABLED.equals(status)) {
+            if (Constraints.ENVIRONMENT_DISABLED.equals(status)) {
                 publishPacket.setRetain(false);
                 log.info("Changed retain flag of message '{}' of client '{}' to 'false'.", publishPacket.getTopic(),
                         clientId);

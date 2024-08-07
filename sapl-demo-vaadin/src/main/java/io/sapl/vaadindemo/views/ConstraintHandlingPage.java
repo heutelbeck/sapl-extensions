@@ -38,7 +38,7 @@ import lombok.NonNull;
 @PermitAll
 @PageTitle("Constraint Handling Page")
 @Route(value = "constraint-handling-page", layout = MainLayout.class)
-public class ConstraintHandlingPage extends VerticalLayout {
+public final class ConstraintHandlingPage extends VerticalLayout {
 
     private static final long serialVersionUID = -3737327115893433567L;
 
