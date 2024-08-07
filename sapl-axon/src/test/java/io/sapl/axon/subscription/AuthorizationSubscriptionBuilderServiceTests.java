@@ -955,8 +955,7 @@ class AuthorizationSubscriptionBuilderServiceTests {
     }
 
     private static JsonNode handlerInfoWithoutIdentifier() {
-        var node = JsonNodeFactory.instance.objectNode();
-        return node;
+        return JsonNodeFactory.instance.objectNode();
     }
 
     private static JsonNode projectionInfo(String methodName) {
