@@ -68,7 +68,7 @@ import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
 
 class ConstraintHandlerServiceTests {
 
-    private final static Optional<Executable> EMPTY = Optional.empty();
+    private static final Optional<Executable> EMPTY = Optional.empty();
 
     private static class UnknownResponseType<R> extends AbstractResponseType<R> {
 

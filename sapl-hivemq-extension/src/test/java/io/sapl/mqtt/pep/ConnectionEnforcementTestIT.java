@@ -58,8 +58,8 @@ class ConnectionEnforcementTestIT {
     @TempDir
     Path extensionFolder;
 
-    private final static String                                     PUBLISH_CLIENT_ID = "MQTT_CLIENT_PUBLISH";
-    private final static ConcurrentHashMap<String, MqttClientState> MQTT_CLIENT_CACHE = new ConcurrentHashMap<>();
+    private static final String                                     PUBLISH_CLIENT_ID = "MQTT_CLIENT_PUBLISH";
+    private static final ConcurrentHashMap<String, MqttClientState> MQTT_CLIENT_CACHE = new ConcurrentHashMap<>();
 
     private EmbeddedHiveMQ mqttBroker;
 
