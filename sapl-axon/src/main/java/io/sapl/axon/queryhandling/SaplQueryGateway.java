@@ -57,7 +57,7 @@ public class SaplQueryGateway extends DefaultQueryGateway {
     /**
      * Creates the SaplQueryGateway
      *
-     * @param queryBus             A QueryBus.
+     * @param queryBus A QueryBus.
      * @param dispatchInterceptors Available interceptors.
      */
     public SaplQueryGateway(QueryBus queryBus,
@@ -71,14 +71,14 @@ public class SaplQueryGateway extends DefaultQueryGateway {
      * the query is sent, until it is cancelled by the caller or closed by the
      * emitting side).
      *
-     * @param query               The {@code query} to be sent
+     * @param query The {@code query} to be sent
      * @param initialResponseType The initial response type used for this query
-     * @param updateResponseType  The update response type used for this query
+     * @param updateResponseType The update response type used for this query
      * @param accessDeniedHandler The runner called whenever an access-denied event
-     *                            occurs in the update stream
-     * @param <Q>                 The type of the query
-     * @param <I>                 The type of the initial response
-     * @param <U>                 The type of the incremental update
+     * occurs in the update stream
+     * @param <Q> The type of the query
+     * @param <I> The type of the initial response
+     * @param <U> The type of the incremental update
      * @return registration which can be used to cancel receiving updates
      * @see QueryBus#subscriptionQuery(SubscriptionQueryMessage)
      * @see QueryBus#subscriptionQuery(SubscriptionQueryMessage, int)
@@ -95,15 +95,15 @@ public class SaplQueryGateway extends DefaultQueryGateway {
      * the query is sent, until it is cancelled by the caller or closed by the
      * emitting side).
      *
-     * @param queryName           A {@link String} describing query to be executed
-     * @param query               The {@code query} to be sent
+     * @param queryName A {@link String} describing query to be executed
+     * @param query The {@code query} to be sent
      * @param initialResponseType The initial response type used for this query
-     * @param updateResponseType  The update response type used for this query
+     * @param updateResponseType The update response type used for this query
      * @param accessDeniedHandler The runner called whenever an access-denied event
-     *                            occurs in the update stream
-     * @param <Q>                 The type of the query
-     * @param <I>                 The type of the initial response
-     * @param <U>                 The type of the incremental update
+     * occurs in the update stream
+     * @param <Q> The type of the query
+     * @param <I> The type of the initial response
+     * @param <U> The type of the incremental update
      * @return registration which can be used to cancel receiving updates
      * @see QueryBus#subscriptionQuery(SubscriptionQueryMessage)
      * @see QueryBus#subscriptionQuery(SubscriptionQueryMessage, int)
@@ -120,14 +120,14 @@ public class SaplQueryGateway extends DefaultQueryGateway {
      * the query is sent, until it is cancelled by the caller or closed by the
      * emitting side).
      *
-     * @param query               The {@code query} to be sent
+     * @param query The {@code query} to be sent
      * @param initialResponseType The initial response type used for this query
-     * @param updateResponseType  The update response type used for this query
+     * @param updateResponseType The update response type used for this query
      * @param accessDeniedHandler The runner called whenever an access-denied event
-     *                            occurs in the update stream
-     * @param <Q>                 The type of the query
-     * @param <I>                 The type of the initial response
-     * @param <U>                 The type of the incremental update
+     * occurs in the update stream
+     * @param <Q> The type of the query
+     * @param <I> The type of the initial response
+     * @param <U> The type of the incremental update
      * @return registration which can be used to cancel receiving updates
      * @see QueryBus#subscriptionQuery(SubscriptionQueryMessage)
      * @see QueryBus#subscriptionQuery(SubscriptionQueryMessage, int)
@@ -144,15 +144,15 @@ public class SaplQueryGateway extends DefaultQueryGateway {
      * the query is sent, until it is cancelled by the caller or closed by the
      * emitting side).
      *
-     * @param queryName           a {@link String} describing query to be executed
-     * @param query               the {@code query} to be sent
+     * @param queryName a {@link String} describing query to be executed
+     * @param query the {@code query} to be sent
      * @param initialResponseType the initial response type used for this query
-     * @param updateResponseType  the update response type used for this query
+     * @param updateResponseType the update response type used for this query
      * @param accessDeniedHandler The runner called whenever an access-denied event
-     *                            occurs in the update stream
-     * @param <Q>                 the type of the query
-     * @param <I>                 the type of the initial response
-     * @param <U>                 the type of the incremental update
+     * occurs in the update stream
+     * @param <Q> the type of the query
+     * @param <I> the type of the initial response
+     * @param <U> the type of the incremental update
      * @return registration which can be used to cancel receiving updates
      * @see QueryBus#subscriptionQuery(SubscriptionQueryMessage)
      * @see QueryBus#subscriptionQuery(SubscriptionQueryMessage, int)
@@ -169,17 +169,16 @@ public class SaplQueryGateway extends DefaultQueryGateway {
      * the query is sent, until it is cancelled by the caller or closed by the
      * emitting side).
      *
-     * @param queryName           a {@link String} describing query to be executed
-     * @param query               the {@code query} to be sent
+     * @param queryName a {@link String} describing query to be executed
+     * @param query the {@code query} to be sent
      * @param initialResponseType the initial response type used for this query
-     * @param updateResponseType  the update response type used for this query
-     * @param updateBufferSize    the size of buffer which accumulates updates
+     * @param updateResponseType the update response type used for this query
+     * @param updateBufferSize the size of buffer which accumulates updates
      * @param accessDeniedHandler The runner called whenever an access-denied event
-     *                            occurs in the update stream before subscription to
-     *                            the flux is made
-     * @param <Q>                 the type of the query
-     * @param <I>                 the type of the initial response
-     * @param <U>                 the type of the incremental update
+     * occurs in the update stream before subscription to the flux is made
+     * @param <Q> the type of the query
+     * @param <I> the type of the initial response
+     * @param <U> the type of the incremental update
      * @return registration which can be used to cancel receiving updates
      * @see QueryBus#subscriptionQuery(SubscriptionQueryMessage)
      * @see QueryBus#subscriptionQuery(SubscriptionQueryMessage, int)

@@ -43,7 +43,7 @@ public class ConstraintDetails {
      * Create a data object used to cache details about the constraints of a sapl
      * authorization decision.
      *
-     * @param clientId           used to identify the mqtt client
+     * @param clientId used to identify the mqtt client
      * @param identAuthzDecision the authorization decision provided by the PDP
      */
     public ConstraintDetails(String clientId, IdentifiableAuthorizationDecision identAuthzDecision) {
@@ -54,9 +54,9 @@ public class ConstraintDetails {
      * Create a data object used to cache details about the constraints of a sapl
      * authorization decision.
      *
-     * @param clientId           used to identify the mqtt client
+     * @param clientId used to identify the mqtt client
      * @param identAuthzDecision the authorization decision provided by the PDP
-     * @param topic              the topic of the current mqtt action
+     * @param topic the topic of the current mqtt action
      */
     public ConstraintDetails(String clientId, IdentifiableAuthorizationDecision identAuthzDecision, String topic) {
         this(clientId, identAuthzDecision, topic, null);
@@ -66,9 +66,9 @@ public class ConstraintDetails {
      * Create a data object used to cache details about the constraints of a sapl
      * authorization decision.
      *
-     * @param clientId             used to identify the mqtt client
-     * @param identAuthzDecision   the authorization decision provided by the PDP
-     * @param topic                the topic of the current mqtt action
+     * @param clientId used to identify the mqtt client
+     * @param identAuthzDecision the authorization decision provided by the PDP
+     * @param topic the topic of the current mqtt action
      * @param publishInboundOutput provides the mqtt publish message
      */
     public ConstraintDetails(String clientId, IdentifiableAuthorizationDecision identAuthzDecision, String topic,

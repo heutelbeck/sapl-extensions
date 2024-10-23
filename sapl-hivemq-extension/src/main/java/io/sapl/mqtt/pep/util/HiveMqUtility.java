@@ -70,7 +70,7 @@ public class HiveMqUtility {
      * Extracts the acknowledgement reason code from a mqtt unsubscribe message.
      *
      * @param unsubscribeAckOutboundInput the input to extract the reason code from
-     * @param index                       to specify the right reason code
+     * @param index to specify the right reason code
      * @return the acknowledgement reason code of a mqtt unsubscribe message
      */
     public static UnsubackReasonCode getUnsubackReasonCode(UnsubackOutboundInput unsubscribeAckOutboundInput,

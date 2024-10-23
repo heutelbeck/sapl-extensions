@@ -47,9 +47,9 @@ public class DecisionFluxUtility {
      * Adds the given SAPL authorization subscription to the cached multi
      * subscription.
      *
-     * @param subscriptionId    the id to identify the decision flux for mqtt action
-     *                          enforcement
-     * @param mqttClientState   the cached state of the client
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
+     * @param mqttClientState the cached state of the client
      * @param authzSubscription the SAPL authorization subscription to add
      */
     public static void addSaplAuthzSubscriptionToMultiSubscription(String subscriptionId,
@@ -61,8 +61,8 @@ public class DecisionFluxUtility {
      * Removes the SAPL authorization subscription of the referenced mqtt action
      * enforcement decision flux from the multi subscription.
      *
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      * @param mqttClientState the cached state of the client
      */
     public static void removeSaplAuthzSubscriptionFromMultiSubscription(String subscriptionId,
@@ -124,9 +124,9 @@ public class DecisionFluxUtility {
      * Takes the identifiable authorization decision and caches it in a map with
      * other identifiable authorization decisions of the client.
      *
-     * @param mqttClientState    the cached state of the client
+     * @param mqttClientState the cached state of the client
      * @param identAuthzDecision the returned identifiable authorization decision of
-     *                           the pdp
+     * the pdp
      * @return map of identifiable authorization decisions of the client
      */
     public static Map<String, IdentifiableAuthorizationDecision> saveIdentAuthzDecisionAndTransformToMap(
@@ -144,10 +144,10 @@ public class DecisionFluxUtility {
      * Looks up the identifiable authorization decision referenced by the
      * subscription id from the cache.
      *
-     * @param subscriptionId        the id to identify the decision flux for mqtt
-     *                              action enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      * @param identAuthzDecisionMap map of identifiable authorization decisions of
-     *                              the client
+     * the client
      * @return the referenced identifiable authorization decision
      */
     public static IdentifiableAuthorizationDecision getIdentAuthzDecision(String subscriptionId,
@@ -163,10 +163,10 @@ public class DecisionFluxUtility {
      * Evaluates whether the obligations were successfully handled or not.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      * @return true, if all obligations were handled successfully or no obligations
-     *         had to be evaluated
+     * had to be evaluated
      */
     public static boolean hasHandledObligationsSuccessfully(MqttClientState mqttClientState, String subscriptionId) {
         var hasHandledObligationsSuccessfully = false;
@@ -183,12 +183,12 @@ public class DecisionFluxUtility {
      * Evaluates whether an identifiable authorization subscription is cached under
      * the subscription id or null.
      *
-     * @param subscriptionId        the id to identify the decision flux for mqtt
-     *                              action enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      * @param identAuthzDecisionMap map of identifiable authorization decisions of
-     *                              the client
+     * the client
      * @return true, if an identifiable authorization subscription is cached under
-     *         the subscription id or null
+     * the subscription id or null
      */
     public static boolean containsAuthzDecisionOfSubscriptionIdOrNull(String subscriptionId,
             Map<String, IdentifiableAuthorizationDecision> identAuthzDecisionMap) {
@@ -200,8 +200,8 @@ public class DecisionFluxUtility {
      * authorization subscription.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      * @return returns the referenced authorization subscription
      */
     public static AuthorizationSubscription getAuthzSubscriptionFromCachedMultiAuthzSubscription(
@@ -213,8 +213,8 @@ public class DecisionFluxUtility {
      * Caches the current time as time of the last mqtt action message.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      */
     public static void cacheCurrentTimeAsTimeOfLastSignalEvent(MqttClientState mqttClientState, String subscriptionId) {
         mqttClientState.addLastSignalTimeToMap(subscriptionId, Schedulers.parallel().now(TimeUnit.MILLISECONDS));
@@ -224,8 +224,8 @@ public class DecisionFluxUtility {
      * Removes the time of the last mqtt action message from cache.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      */
     public static void removeLastSignalTimeFromCache(MqttClientState mqttClientState, String subscriptionId) {
         mqttClientState.removeLastSignalTimeFromMap(subscriptionId);
@@ -234,9 +234,9 @@ public class DecisionFluxUtility {
     /**
      * Caches a flux for enforcement of mqtt actions.
      *
-     * @param mqttClientState        the cached state of the client
-     * @param subscriptionId         the id to identify the decision flux for mqtt
-     *                               action enforcement
+     * @param mqttClientState the cached state of the client
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      * @param mqttActionDecisionFlux the flux for mqtt action enforcement to cache
      */
     public static void cacheMqttActionDecisionFlux(MqttClientState mqttClientState, String subscriptionId,
@@ -248,8 +248,8 @@ public class DecisionFluxUtility {
      * Removes the referenced mqtt action decision flux from cache.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      */
     public static void removeMqttActionDecisionFluxFromCache(MqttClientState mqttClientState, String subscriptionId) {
         mqttClientState.removeMqttActionDecisionFluxFromMap(subscriptionId);
@@ -259,8 +259,8 @@ public class DecisionFluxUtility {
      * Caches the current time as the start time of the mqtt action of the client.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      */
     public static void cacheCurrentTimeAsStartTimeOfMqttAction(MqttClientState mqttClientState, String subscriptionId) {
         mqttClientState.addMqttActionStartTimeToMap(subscriptionId, Schedulers.parallel().now(TimeUnit.MILLISECONDS));
@@ -270,8 +270,8 @@ public class DecisionFluxUtility {
      * Looks up the cached mqtt action start time.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      * @return returns the cached mqtt action start time
      */
     public static Long getMqttActionStartTimeFromCache(MqttClientState mqttClientState, String subscriptionId) {
@@ -282,8 +282,8 @@ public class DecisionFluxUtility {
      * Removes the cached start time of the referenced mqtt action.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      */
     public static void removeStartTimeOfMqttActionFromCache(MqttClientState mqttClientState, String subscriptionId) {
         mqttClientState.removeMqttActionStartTimeFromMap(subscriptionId);
@@ -293,11 +293,11 @@ public class DecisionFluxUtility {
      * Caches {@link ConstraintDetails} as specifics about the constraint handling
      * for the referenced mqtt action enforcement.
      *
-     * @param mqttClientState   the cached state of the client
-     * @param subscriptionId    the id to identify the decision flux for mqtt action
-     *                          enforcement
+     * @param mqttClientState the cached state of the client
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      * @param constraintDetails enforcement details of the specific constraint
-     *                          handling
+     * handling
      */
     public static void cacheConstraintDetails(MqttClientState mqttClientState, String subscriptionId,
             ConstraintDetails constraintDetails) {
@@ -308,8 +308,8 @@ public class DecisionFluxUtility {
      * Looks up the cached and referenced details about the constraint handling.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      * @return returns the referenced {@link ConstraintDetails}
      */
     public static ConstraintDetails getConstraintDetailsFromCache(MqttClientState mqttClientState,
@@ -321,8 +321,8 @@ public class DecisionFluxUtility {
      * Removes the referenced {@link ConstraintDetails} from the cache.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      */
     public static void removeConstraintDetailsFromCache(MqttClientState mqttClientState, String subscriptionId) {
         mqttClientState.removeConstraintDetailsFromMap(subscriptionId);
@@ -331,9 +331,9 @@ public class DecisionFluxUtility {
     /**
      * Caches the given mqtt topic subscription.
      *
-     * @param mqttClientState   the cached state of the client
-     * @param subscriptionId    the id to identify the decision flux for mqtt action
-     *                          enforcement
+     * @param mqttClientState the cached state of the client
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      * @param topicSubscription specifics about a mqtt subscription of a topic
      */
     public static void cacheMqttTopicSubscription(MqttClientState mqttClientState, String subscriptionId,
@@ -345,8 +345,8 @@ public class DecisionFluxUtility {
      * Looks up the referenced mqtt topic subscription from the cache.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      * @return returns the referenced mqtt topic subscription
      */
     public static TopicSubscription getMqttTopicSubscriptionFromCache(MqttClientState mqttClientState,
@@ -358,8 +358,8 @@ public class DecisionFluxUtility {
      * Removes the referenced mqtt topic subscription from the cache.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      */
     public static void removeMqttTopicSubscriptionFromCache(MqttClientState mqttClientState, String subscriptionId) {
         mqttClientState.removeTopicSubscriptionFromMap(subscriptionId);
@@ -369,8 +369,8 @@ public class DecisionFluxUtility {
      * Removes the referenced identifiable authorization decision from the cache.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      */
     public static void removeIdentAuthzDecisionFromCache(MqttClientState mqttClientState, String subscriptionId) {
         mqttClientState.removeIdentAuthzDecisionFromMap(subscriptionId);
@@ -381,9 +381,9 @@ public class DecisionFluxUtility {
      * caches its disposable.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
-     * @param mqttActionFlux  the flux to enforce the mqtt action
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
+     * @param mqttActionFlux the flux to enforce the mqtt action
      */
     public static void subscribeMqttActionDecisionFluxAndCacheDisposable(MqttClientState mqttClientState,
             String subscriptionId, Flux<IdentifiableAuthorizationDecision> mqttActionFlux) {
@@ -396,9 +396,9 @@ public class DecisionFluxUtility {
      * {@link reactor.core.Disposable.Composite} in the cache.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
-     * @param disposable      the disposable of a mqtt action decision flux
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
+     * @param disposable the disposable of a mqtt action decision flux
      */
     public static void cacheMqttActionDecisionFluxDisposable(MqttClientState mqttClientState, String subscriptionId,
             Disposable disposable) {
@@ -412,8 +412,8 @@ public class DecisionFluxUtility {
      * {@link reactor.core.Disposable.Composite}.
      *
      * @param mqttClientState the cached state of the client
-     * @param subscriptionId  the id to identify the decision flux for mqtt action
-     *                        enforcement
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      */
     public static void disposeMqttActionDecisionFluxAndRemoveDisposableFromCache(MqttClientState mqttClientState,
             String subscriptionId) {
@@ -427,10 +427,10 @@ public class DecisionFluxUtility {
     /**
      * Caches a list containing the topics of a mqtt unsubscribe message.
      *
-     * @param mqttClientState   the cached state of the client
-     * @param packetId          the id of a mqtt message
+     * @param mqttClientState the cached state of the client
+     * @param packetId the id of a mqtt message
      * @param unsubscribeTopics a list of topics contained in the mqtt unsubscribe
-     *                          message
+     * message
      */
     public static void cacheTopicsOfUnsubscribeMessage(MqttClientState mqttClientState, int packetId,
             List<String> unsubscribeTopics) {
@@ -442,9 +442,9 @@ public class DecisionFluxUtility {
      * the cache.
      *
      * @param mqttClientState the cached state of the client
-     * @param packetId        the id of a mqtt message
+     * @param packetId the id of a mqtt message
      * @return returns the list of topics to unsubscribe that were removed from the
-     *         cache
+     * cache
      */
     public static List<String> removeTopicsOfUnsubscribeMessageFromCache(MqttClientState mqttClientState,
             int packetId) {
@@ -455,11 +455,11 @@ public class DecisionFluxUtility {
      * Calculates the remaining duration in milliseconds until the set time limit
      * will be reached. If the time limit was already reached, 0 will be returned.
      *
-     * @param timeLimitSec    the defined time limit in seconds
+     * @param timeLimitSec the defined time limit in seconds
      * @param startTimeMillis the start time in milliseconds from when the time
-     *                        limit began
+     * limit began
      * @return returns the remaining time in milliseconds until the time limit will
-     *         be reached.
+     * be reached.
      */
     public static long getRemainingTimeLimitMillis(long timeLimitSec, Long startTimeMillis) {
         long timeLimitMillis = timeLimitSec * 1_000;
@@ -482,11 +482,11 @@ public class DecisionFluxUtility {
      * already reached, 0 will be returned.
      *
      * @param saplMqttExtensionConfig the sapl mqtt pep extension config used to
-     *                                look up the timeout interval
-     * @param mqttClientState         the cached state of the client used to look up
-     *                                the start time of the timeout duration
-     * @param subscriptionId          the id to identify the decision flux for mqtt
-     *                                action enforcement
+     * look up the timeout interval
+     * @param mqttClientState the cached state of the client used to look up the
+     * start time of the timeout duration
+     * @param subscriptionId the id to identify the decision flux for mqtt action
+     * enforcement
      * @return returns the remaining timeout duration in milliseconds
      */
     public static Duration getAuthzSubscriptionTimeoutDuration(SaplMqttExtensionConfig saplMqttExtensionConfig,

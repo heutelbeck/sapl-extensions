@@ -77,13 +77,11 @@ class CommandConstraintHandlerBundleTests {
 
     @Test
     void when_mappedErrorIsThrowable_convertToRuntimeException() {
-        BiConsumer<AuthorizationDecision, Message<?>>  onDecision       = (decision, message) -> {
-                                                                        };
+        BiConsumer<AuthorizationDecision, Message<?>>  onDecision       = (decision, message) -> {};
         Function<Throwable, Throwable>                 errorMapper      = t -> new Throwable("some spectial message");
         Function<CommandMessage<?>, CommandMessage<?>> commandMapper    = c -> null;
         Function<String, String>                       resultMapper     = r -> null;
-        Runnable                                       handlersOnObject = () -> {
-                                                                        };
+        Runnable                                       handlersOnObject = () -> {};
         var                                            bundle           = new CommandConstraintHandlerBundle<>(
                 onDecision, errorMapper, commandMapper, resultMapper, handlersOnObject);
 

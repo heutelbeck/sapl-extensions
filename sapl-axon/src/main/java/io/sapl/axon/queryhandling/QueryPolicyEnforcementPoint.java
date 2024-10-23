@@ -87,14 +87,12 @@ public final class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandling
     /**
      * Instantiate a QueryPolicyEnforcementPoint.
      *
-     * @param delegate                         The delegate handler.
-     * @param pdp                              The Policy Decision Point.
-     * @param emitter                          The SaplQueryUpdateEmitter.
+     * @param delegate The delegate handler.
+     * @param pdp The Policy Decision Point.
+     * @param emitter The SaplQueryUpdateEmitter.
      * @param axonConstraintEnforcementService The ConstraintHandlerService.
-     * @param properties                       The configuration class for TTL
-     *                                         settings.
-     * @param subscriptionBuilder              The
-     *                                         AuthorizationSubscriptionBuilderService.
+     * @param properties The configuration class for TTL settings.
+     * @param subscriptionBuilder The AuthorizationSubscriptionBuilderService.
      */
     public QueryPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
             ConstraintHandlerService axonConstraintEnforcementService, SaplQueryUpdateEmitter emitter,

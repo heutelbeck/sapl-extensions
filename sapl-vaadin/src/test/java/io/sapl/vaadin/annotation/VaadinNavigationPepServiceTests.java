@@ -68,8 +68,7 @@ class VaadinNavigationPepServiceTests {
         // GIVEN
         // mock Livecycle builder
         var beforeEnterBuilder = mock(VaadinPep.LifecycleBeforeEnterPepBuilder.class);
-        when(beforeEnterBuilder.build()).thenReturn((BeforeEnterListener) event -> {
-        });
+        when(beforeEnterBuilder.build()).thenReturn((BeforeEnterListener) event -> {});
 
         // mock pep builder
         var pepBuilderService = mock(PepBuilderService.class);
@@ -105,8 +104,7 @@ class VaadinNavigationPepServiceTests {
         // GIVEN
         // mock Livecycle builder
         var beforeLeaveBuilder = mock(VaadinPep.LifecycleBeforeLeavePepBuilder.class);
-        when(beforeLeaveBuilder.build()).thenReturn((BeforeLeaveListener) event -> {
-        });
+        when(beforeLeaveBuilder.build()).thenReturn((BeforeLeaveListener) event -> {});
 
         // mock pep builder
         var pepBuilderService = mock(PepBuilderService.class);
@@ -138,8 +136,7 @@ class VaadinNavigationPepServiceTests {
         // GIVEN
         // mock Livecycle builder
         var beforeLeaveBuilder = mock(VaadinPep.LifecycleBeforeLeavePepBuilder.class);
-        when(beforeLeaveBuilder.build()).thenReturn((BeforeLeaveListener) event -> {
-        });
+        when(beforeLeaveBuilder.build()).thenReturn((BeforeLeaveListener) event -> {});
 
         // mock pep builder
         var pepBuilderService = mock(PepBuilderService.class);
@@ -167,8 +164,7 @@ class VaadinNavigationPepServiceTests {
         // GIVEN
         // mock Livecycle builder
         var beforeEnterBuilder = mock(VaadinPep.LifecycleBeforeEnterPepBuilder.class);
-        when(beforeEnterBuilder.build()).thenReturn((BeforeEnterListener) event -> {
-        });
+        when(beforeEnterBuilder.build()).thenReturn((BeforeEnterListener) event -> {});
 
         // mock pep builder
         var pepBuilderService = mock(PepBuilderService.class);
@@ -199,8 +195,7 @@ class VaadinNavigationPepServiceTests {
         // GIVEN
         // mock Livecycle builder
         var beforeLeaveBuilder = mock(VaadinPep.LifecycleBeforeLeavePepBuilder.class);
-        when(beforeLeaveBuilder.build()).thenReturn((BeforeLeaveListener) event -> {
-        });
+        when(beforeLeaveBuilder.build()).thenReturn((BeforeLeaveListener) event -> {});
 
         // mock pep builder
         var pepBuilderService = mock(PepBuilderService.class);
@@ -228,8 +223,7 @@ class VaadinNavigationPepServiceTests {
         // GIVEN
         // mock Livecycle builder
         var beforeEnterBuilder = mock(VaadinPep.LifecycleBeforeEnterPepBuilder.class);
-        when(beforeEnterBuilder.build()).thenReturn((BeforeEnterListener) event -> {
-        });
+        when(beforeEnterBuilder.build()).thenReturn((BeforeEnterListener) event -> {});
 
         // mock pep builder
         var pepBuilderService = mock(PepBuilderService.class);
@@ -257,8 +251,7 @@ class VaadinNavigationPepServiceTests {
         // GIVEN
         // mock Livecycle builder
         var beforeLeaveBuilder = mock(VaadinPep.LifecycleBeforeLeavePepBuilder.class);
-        when(beforeLeaveBuilder.build()).thenReturn((BeforeLeaveListener) event -> {
-        });
+        when(beforeLeaveBuilder.build()).thenReturn((BeforeLeaveListener) event -> {});
 
         // mock pep builder
         var pepBuilderService = mock(PepBuilderService.class);
@@ -286,8 +279,7 @@ class VaadinNavigationPepServiceTests {
         // GIVEN
         // mock Livecycle builder
         var beforeEnterBuilder = mock(VaadinPep.LifecycleBeforeEnterPepBuilder.class);
-        when(beforeEnterBuilder.build()).thenReturn((BeforeEnterListener) event -> {
-        });
+        when(beforeEnterBuilder.build()).thenReturn((BeforeEnterListener) event -> {});
 
         // mock pep builder
         var pepBuilderService = mock(PepBuilderService.class);

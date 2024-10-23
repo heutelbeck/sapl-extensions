@@ -66,8 +66,7 @@ public class HivemqPepExtensionMain implements ExtensionMain {
     /**
      * Initialize the HiveMq extension for startup and enforcement.
      *
-     * @param policiesPath            path to the policy files to evaluate by the
-     *                                pdp
+     * @param policiesPath path to the policy files to evaluate by the pdp
      * @param saplExtensionConfigPath path to the extension configuration file
      */
     public HivemqPepExtensionMain(String policiesPath, String saplExtensionConfigPath) {
@@ -77,11 +76,9 @@ public class HivemqPepExtensionMain implements ExtensionMain {
     /**
      * Initialize the HiveMq extension for startup and enforcement.
      *
-     * @param policiesPath            path to the policy files to evaluate by the
-     *                                pdp
+     * @param policiesPath path to the policy files to evaluate by the pdp
      * @param saplExtensionConfigPath path to the extension configuration file
-     * @param mqttClientCache         used to cache the state of different
-     *                                enforcements
+     * @param mqttClientCache used to cache the state of different enforcements
      */
     public HivemqPepExtensionMain(String policiesPath, String saplExtensionConfigPath,
             ConcurrentMap<String, MqttClientState> mqttClientCache) {
@@ -94,8 +91,7 @@ public class HivemqPepExtensionMain implements ExtensionMain {
      * Initialize the HiveMq extension for startup and enforcement.
      *
      * @param saplExtensionConfigPath path to the extension configuration file
-     * @param pdp                     used by the pep to request authorization
-     *                                decisions
+     * @param pdp used by the pep to request authorization decisions
      */
     public HivemqPepExtensionMain(String saplExtensionConfigPath, PolicyDecisionPoint pdp) {
         this(saplExtensionConfigPath, pdp, null);
@@ -105,10 +101,8 @@ public class HivemqPepExtensionMain implements ExtensionMain {
      * Initialize the HiveMq extension for startup and enforcement.
      *
      * @param saplExtensionConfigPath path to the extension configuration file
-     * @param pdp                     used by the pep to request authorization
-     *                                decisions
-     * @param mqttClientCache         used to cache the state of different
-     *                                enforcements
+     * @param pdp used by the pep to request authorization decisions
+     * @param mqttClientCache used to cache the state of different enforcements
      */
     public HivemqPepExtensionMain(String saplExtensionConfigPath, PolicyDecisionPoint pdp,
             ConcurrentMap<String, MqttClientState> mqttClientCache) {

@@ -50,7 +50,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
     /**
      * @param constraint The constraint required by the authorization decision.
      * @return The handler triggering all required side effects and potentially
-     *         changing the message.
+     * changing the message.
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     default Function<QueryMessage<?, ?>, QueryMessage<?, ?>> getHandler(JsonNode constraint) {
@@ -77,7 +77,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
      *
      * Method for triggering side-effects.
      *
-     * @param message    The message.
+     * @param message The message.
      * @param constraint The constraint.
      */
     default void accept(QueryMessage<?, ?> message, JsonNode constraint) {
@@ -88,7 +88,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
      * Method to change the response type.
      *
      * @param responseType The original response type.
-     * @param constraint   The constraint.
+     * @param constraint The constraint.
      * @return A potentially updated response type.
      */
     default ResponseType<?> mapResponseType(ResponseType<?> responseType, JsonNode constraint) {
@@ -99,7 +99,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
      * Method to change the updateResponseType type.
      *
      * @param updateResponseType The original updateResponseType type.
-     * @param constraint         The constraint.
+     * @param constraint The constraint.
      * @return A potentially updated updateResponseType type.
      */
     default ResponseType<?> mapUpdateResponseType(ResponseType<?> updateResponseType, JsonNode constraint) {
@@ -110,7 +110,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
      * Method to change the payload type.
      *
      * @param payloadType The original payload type.
-     * @param constraint  The constraint.
+     * @param constraint The constraint.
      * @return A potentially updated payload type.
      */
     default Class<?> mapPayloadType(Class<?> payloadType, JsonNode constraint) {
@@ -120,8 +120,8 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
     /**
      * Method to change the payload.
      *
-     * @param payload    The original payload.
-     * @param clazz      The type of the payload.
+     * @param payload The original payload.
+     * @param clazz The type of the payload.
      * @param constraint The constraint.
      * @return A potentially updated payload.
      */
@@ -132,7 +132,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
     /**
      * Method to change the query name.
      *
-     * @param queryName  The original query name.
+     * @param queryName The original query name.
      * @param constraint The constraint.
      * @return A potentially updated queryName.
      */
@@ -144,7 +144,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
      * Method to change the metadata.
      *
      * @param originalMetadata The original metadata.
-     * @param constraint       The constraint.
+     * @param constraint The constraint.
      * @return Potentially updated metadata.
      */
     default MetaData mapMetadata(MetaData originalMetadata, JsonNode constraint) {

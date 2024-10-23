@@ -107,24 +107,17 @@ public class ConstraintHandlerService {
     /**
      * Instantiate the ConstraintHandlerService.
      *
-     * @param mapper                         The systems ObjectMapper
-     * @param parameterResolverFactory       Axon parameter resolver factory.
-     * @param onDecisionProviders            All OnDecisionConstraintHandlerProvider
-     *                                       instances.
-     * @param globalCommandProviders         All CommandConstraintHandlerProvider
-     *                                       instances.
-     * @param globalQueryProviders           All QueryConstraintHandlerProvider
-     *                                       instances.
-     * @param globalErrorHandlerProviders    All
-     *                                       ErrorMappingConstraintHandlerProvider
-     *                                       instances.
-     * @param globalMappingProviders         All MappingConstraintHandlerProvider
-     *                                       instances.
+     * @param mapper The systems ObjectMapper
+     * @param parameterResolverFactory Axon parameter resolver factory.
+     * @param onDecisionProviders All OnDecisionConstraintHandlerProvider instances.
+     * @param globalCommandProviders All CommandConstraintHandlerProvider instances.
+     * @param globalQueryProviders All QueryConstraintHandlerProvider instances.
+     * @param globalErrorHandlerProviders All ErrorMappingConstraintHandlerProvider
+     * instances.
+     * @param globalMappingProviders All MappingConstraintHandlerProvider instances.
      * @param globalUpdatePredicateProviders All
-     *                                       UpdateFilterConstraintHandlerProvider
-     *                                       instances.
-     * @param updateMappingProviders         All ResultConstraintHandlerProvider
-     *                                       instances.
+     * UpdateFilterConstraintHandlerProvider instances.
+     * @param updateMappingProviders All ResultConstraintHandlerProvider instances.
      */
     public ConstraintHandlerService(ObjectMapper mapper, ParameterResolverFactory parameterResolverFactory,
             List<OnDecisionConstraintHandlerProvider> onDecisionProviders,
@@ -175,11 +168,11 @@ public class ConstraintHandlerService {
     /**
      * Attempts to deserialize a JSON Object to the provided class.
      *
-     * @param <T>      Expected Type.
+     * @param <T> Expected Type.
      * @param resource JSON representation of resource
-     * @param type     Expected type.
+     * @param type Expected type.
      * @return The deserialized resource, or AccessDeniedException if
-     *         deserialization fails.
+     * deserialization fails.
      */
     @SuppressWarnings("unchecked")
     public <T> Object deserializeResource(JsonNode resource, ResponseType<T> type) {
@@ -230,11 +223,11 @@ public class ConstraintHandlerService {
     /**
      * Build the bundle for command handling.
      *
-     * @param <T>           Type of the handler Object.
-     * @param decision      The decision.
+     * @param <T> Type of the handler Object.
+     * @param decision The decision.
      * @param handlerObject The handlerObject.
-     * @param executable    The Executable.
-     * @param command       The command.
+     * @param executable The Executable.
+     * @param command The command.
      * @return A CommandConstraintHandlerBundle.
      */
     public <T> CommandConstraintHandlerBundle<?> buildPreEnforceCommandConstraintHandlerBundle(
@@ -272,10 +265,10 @@ public class ConstraintHandlerService {
     /**
      * Build the QueryConstraintHandlerBundle for pre-query handling.
      *
-     * @param decision     The decision.
+     * @param decision The decision.
      * @param responseType The response type.
-     * @param updateType   The update type. Optional. Non-empty for subscription
-     *                     queries.
+     * @param updateType The update type. Optional. Non-empty for subscription
+     * queries.
      * @return A QueryConstraintHandlerBundle.
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -314,8 +307,7 @@ public class ConstraintHandlerService {
             HashSet<JsonNode> obligationsWithoutHandler, ResponseType<T> responseType) {
         var obligationFun = constructResultMessageMappingHandlers(decision.getObligations(),
                 obligationsWithoutHandler::remove, responseType);
-        var adviceFun     = constructResultMessageMappingHandlers(decision.getAdvice(), x -> {
-                          }, responseType);
+        var adviceFun     = constructResultMessageMappingHandlers(decision.getAdvice(), x -> {}, responseType);
 
         return result -> {
             var newResult = result;
@@ -397,7 +389,7 @@ public class ConstraintHandlerService {
     /**
      * Build the QueryConstraintHandlerBundle for post-query handling.
      *
-     * @param decision     The decision.
+     * @param decision The decision.
      * @param responseType The response type.
      * @return A QueryConstraintHandlerBundle.
      */
@@ -425,8 +417,7 @@ public class ConstraintHandlerService {
     private UnaryOperator<Throwable> constructErrorMappingHandlers(AuthorizationDecision decision,
             HashSet<JsonNode> obligationsWithoutHandler) {
         var obligationFun = constructErrorMappingHandlers(decision.getObligations(), obligationsWithoutHandler::remove);
-        var adviceFun     = constructErrorMappingHandlers(decision.getAdvice(), x -> {
-                          });
+        var adviceFun     = constructErrorMappingHandlers(decision.getAdvice(), x -> {});
 
         return error -> {
             var newError = error;
@@ -469,8 +460,7 @@ public class ConstraintHandlerService {
             HashSet<JsonNode> obligationsWithoutHandler) {
         var obligationFun = constructCommandMessageMappingHandlers(decision.getObligations(),
                 obligationsWithoutHandler::remove);
-        var adviceFun     = constructCommandMessageMappingHandlers(decision.getAdvice(), x -> {
-                          });
+        var adviceFun     = constructCommandMessageMappingHandlers(decision.getAdvice(), x -> {});
 
         return command -> {
             var newCommand = command;
@@ -513,8 +503,7 @@ public class ConstraintHandlerService {
             HashSet<JsonNode> obligationsWithoutHandler) {
         var obligationFun = constructQueryMessageMappingHandlers(decision.getObligations(),
                 obligationsWithoutHandler::remove);
-        var adviceFun     = constructQueryMessageMappingHandlers(decision.getAdvice(), x -> {
-                          });
+        var adviceFun     = constructQueryMessageMappingHandlers(decision.getAdvice(), x -> {});
 
         return query -> {
             var newQuery = query;
@@ -558,8 +547,7 @@ public class ConstraintHandlerService {
             HashSet<JsonNode> obligationsWithoutHandler, Class<?> type) {
         var obligationFun = constructResultMappingHandlers(decision.getObligations(), obligationsWithoutHandler::remove,
                 type);
-        var adviceFun     = constructResultMappingHandlers(decision.getAdvice(), x -> {
-                          }, type);
+        var adviceFun     = constructResultMappingHandlers(decision.getAdvice(), x -> {}, type);
 
         return result -> {
             var newResult = result;
@@ -603,8 +591,7 @@ public class ConstraintHandlerService {
             Set<JsonNode> obligationsWithoutHandler) {
         var onDecisionObligationHandlers = onDecisionHandlers(decision.getObligations(),
                 obligationsWithoutHandler::remove);
-        var onDecisionAdviceHandlers     = onDecisionHandlers(decision.getAdvice(), x -> {
-                                         });
+        var onDecisionAdviceHandlers     = onDecisionHandlers(decision.getAdvice(), x -> {});
 
         return (authzDecision, message) -> {
             onDecisionObligationHandlers.map(biConsumer -> (Runnable) (() -> biConsumer.accept(authzDecision, message)))
@@ -635,8 +622,7 @@ public class ConstraintHandlerService {
         var obligationHandlers = collectConstraintHandlerMethods(decision.getObligations(), aggregate, command,
                 decision, obligationsWithoutHandler::remove);
         var adviceHandlers     = collectConstraintHandlerMethods(decision.getAdvice(), aggregate, command, decision,
-                x -> {
-                                       });
+                x -> {});
 
         return () -> {
             obligationHandlers.map(this::obligation).ifPresent(Runnable::run);

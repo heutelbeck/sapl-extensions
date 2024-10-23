@@ -66,7 +66,7 @@ public class CommandConstraintHandlerBundle<R> {
      * Execute all handlers assigned to be executed after each decision.
      *
      * @param decision The authorization decision.
-     * @param message  The command message under authorization.
+     * @param message The command message under authorization.
      */
     public void executeOnDecisionHandlers(AuthorizationDecision decision, Message<?> message) {
         onDecision.accept(decision, message);

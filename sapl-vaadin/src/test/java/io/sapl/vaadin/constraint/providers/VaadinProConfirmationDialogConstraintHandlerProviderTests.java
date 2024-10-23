@@ -223,9 +223,8 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
             var vaadinConfirmationDialogConstraintHandlerProvider = spy(
                     VaadinProConfirmationDialogConstraintHandlerProvider.class);
             // WHEN
-            vaadinConfirmationDialogConstraintHandlerProvider.openConfirmDialog("header", "text", "confirm", event -> {
-            }, "cancel", event -> {
-            });
+            vaadinConfirmationDialogConstraintHandlerProvider.openConfirmDialog("header", "text", "confirm",
+                    event -> {}, "cancel", event -> {});
             // THEN
             assertNotNull(mockedConstructor.constructed().get(0));
             verify(mockedConstructor.constructed().get(0), times(1)).open();

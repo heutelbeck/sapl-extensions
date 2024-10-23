@@ -53,7 +53,7 @@ public class SaplExtensionConfiguration {
      * Selects and reads the configuration file.
      *
      * @return the {@link SaplMqttExtensionConfig} object contains the
-     *         configurations for the pep
+     * configurations for the pep
      */
     public SaplMqttExtensionConfig getSaplMqttExtensionConfig() {
         return readConfigFile(new File(extensionHomeFolder, SAPL_MQTT_EXTENSION_CONFIG_FILE_NAME));
@@ -64,7 +64,7 @@ public class SaplExtensionConfiguration {
      *
      * @param saplExtensionConfigFile the configuration file
      * @return the {@link SaplMqttExtensionConfig} object contains the
-     *         configurations for the pep
+     * configurations for the pep
      */
     protected SaplMqttExtensionConfig readConfigFile(File saplExtensionConfigFile) {
         var defaultSaplMqttExtensionConfig = new SaplMqttExtensionConfig();

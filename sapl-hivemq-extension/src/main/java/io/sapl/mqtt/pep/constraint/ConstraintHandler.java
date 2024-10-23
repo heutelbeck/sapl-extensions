@@ -34,7 +34,7 @@ public class ConstraintHandler {
      * Enforces the cached constraints for a mqtt connection.
      *
      * @param constraintDetails used to cache details about the constraints of a
-     *                          sapl authorization decision
+     * sapl authorization decision
      */
     public static void enforceMqttConnectionConstraints(ConstraintDetails constraintDetails) {
         constraintDetails.setActionType(ActionType.CONNECT);
@@ -45,7 +45,7 @@ public class ConstraintHandler {
      * Enforces the cached constraints for a mqtt subscription.
      *
      * @param constraintDetails used to cache details about the constraints of a
-     *                          sapl authorization decision
+     * sapl authorization decision
      */
     public static void enforceMqttSubscriptionConstraints(ConstraintDetails constraintDetails) {
         constraintDetails.setActionType(ActionType.SUBSCRIBE);
@@ -56,7 +56,7 @@ public class ConstraintHandler {
      * Enforces the cached constraints for mqtt publishing.
      *
      * @param constraintDetails used to cache details about the constraints of a
-     *                          sapl authorization decision
+     * sapl authorization decision
      */
     public static void enforceMqttPublishConstraints(ConstraintDetails constraintDetails) {
         constraintDetails.setActionType(ActionType.PUBLISH);

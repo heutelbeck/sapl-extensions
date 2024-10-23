@@ -129,7 +129,7 @@ public class SaplAutoConfiguration {
      * The default AutoConfiguration of the reactor extension does not automatically
      * inject interceptors.
      *
-     * @param commandBus    the CommandBus
+     * @param commandBus the CommandBus
      * @param authnSupplier the authn interceptor
      * @return ReactorCommandGateway with Authn interceptor
      */
@@ -144,7 +144,7 @@ public class SaplAutoConfiguration {
      * The default AutoConfiguration of the reactor extension does not automatically
      * inject interceptors.
      *
-     * @param queryBus      the QueryBus
+     * @param queryBus the QueryBus
      * @param authnSupplier the authn interceptor
      * @return ReactorQueryGateway with Authn interceptor
      */
@@ -160,9 +160,9 @@ public class SaplAutoConfiguration {
      * MessageDispatchInterceptor for authenticating command messages.
      *
      * @param authnSupplier The applications AuthenticationSupplier.
-     * @param commandBus    The Axon Command Bus.
+     * @param commandBus The Axon Command Bus.
      * @return A MessageDispatchInterceptor for adding authentication metadata to
-     *         commands.
+     * commands.
      */
     @Bean
     AuthenticationCommandDispatchInterceptor authenticationCommandDispatchInterceptor(
@@ -178,9 +178,9 @@ public class SaplAutoConfiguration {
      * MessageDispatchInterceptor for authenticating query messages.
      *
      * @param authnSupplier The applications AuthenticationSupplier.
-     * @param queryBus      The Axon Query Bus.
+     * @param queryBus The Axon Query Bus.
      * @return A MessageDispatchInterceptor for adding authentication metadata to
-     *         queries.
+     * queries.
      */
     @Bean
     AuthenticationQueryDispatchInterceptor authenticationQueryDispatchInterceptor(AuthenticationSupplier authnSupplier,
@@ -197,38 +197,24 @@ public class SaplAutoConfiguration {
      * PDP and to create customized bundles of handlers for individual authorization
      * decisions.
      *
-     * @param mapper                               The applications ObjectMapper.
-     * @param parameterResolver                    The Axon ParameterResolverFactory
-     *                                             for injecting arguments in
-     *                                             command handler methods..
-     * @param globalRunnableProviders              All
-     *                                             OnDecisionConstraintHandlerProvider
-     *                                             implementation in the
-     *                                             ApplicationContext.
+     * @param mapper The applications ObjectMapper.
+     * @param parameterResolver The Axon ParameterResolverFactory for injecting
+     * arguments in command handler methods..
+     * @param globalRunnableProviders All OnDecisionConstraintHandlerProvider
+     * implementation in the ApplicationContext.
      * @param globalCommandMessageMappingProviders All
-     *                                             CommandConstraintHandlerProvider
-     *                                             implementation in the
-     *                                             ApplicationContext.
-     * @param globalQueryMappingProviders          All
-     *                                             QueryConstraintHandlerProvider
-     *                                             implementation in the
-     *                                             ApplicationContext.
-     * @param globalErrorMappingHandlerProviders   All
-     *                                             ErrorMappingConstraintHandlerProvider
-     *                                             implementation in the
-     *                                             ApplicationContext.
-     * @param globalMappingProviders               All
-     *                                             MappingConstraintHandlerProvider
-     *                                             implementation in the
-     *                                             ApplicationContext.
-     * @param filterPredicateProviders             All
-     *                                             UpdateFilterConstraintHandlerProvider
-     *                                             implementation in the
-     *                                             ApplicationContext.
-     * @param resultMappingProviders               All
-     *                                             ResultConstraintHandlerProvider
-     *                                             implementation in the
-     *                                             ApplicationContext.
+     * CommandConstraintHandlerProvider implementation in the ApplicationContext.
+     * @param globalQueryMappingProviders All QueryConstraintHandlerProvider
+     * implementation in the ApplicationContext.
+     * @param globalErrorMappingHandlerProviders All
+     * ErrorMappingConstraintHandlerProvider implementation in the
+     * ApplicationContext.
+     * @param globalMappingProviders All MappingConstraintHandlerProvider
+     * implementation in the ApplicationContext.
+     * @param filterPredicateProviders All UpdateFilterConstraintHandlerProvider
+     * implementation in the ApplicationContext.
+     * @param resultMappingProviders All ResultConstraintHandlerProvider
+     * implementation in the ApplicationContext.
      * @return The ConstraintHandlerService.
      */
     @Bean
@@ -253,10 +239,9 @@ public class SaplAutoConfiguration {
      * AccessDeniedException and continue to consume updates one access is granted
      * again.
      *
-     * @param queryBus             The Axon QueryBus
+     * @param queryBus The Axon QueryBus
      * @param dispatchInterceptors All
-     *                             {@code MessageDispatchInterceptor<QueryMessage>}
-     *                             in the application context.
+     * {@code MessageDispatchInterceptor<QueryMessage>} in the application context.
      * @return A query gateway supporting recoverable subscription queries.
      */
     @Bean

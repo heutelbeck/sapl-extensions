@@ -73,7 +73,7 @@ import java.lang.annotation.Target;
 public @interface ConstraintHandler {
     /**
      * @return SpEL expression that should evaluate to a Boolean value to determine
-     *         responsibility.
+     * responsibility.
      */
     String value() default "";
 }

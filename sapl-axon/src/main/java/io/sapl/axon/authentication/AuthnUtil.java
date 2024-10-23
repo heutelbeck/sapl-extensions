@@ -37,7 +37,7 @@ public class AuthnUtil {
 
     /**
      * @param authentication the Authentication
-     * @param mapper         the ObjectMapper
+     * @param mapper the ObjectMapper
      * @return the Authentication as a JSON String
      */
     @SneakyThrows

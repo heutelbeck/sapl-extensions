@@ -97,8 +97,8 @@ class QueryConstraintHandlerBundleTests {
 
     @Test
     void whenresultIsCompletableFurute_then_returnMappedCompletableFuture() {
-        BiConsumer<AuthorizationDecision, Message<?>>    onDecision           = (decisionInternal, messageInternal) -> {
-                                                                              };
+        BiConsumer<AuthorizationDecision, Message<?>>    onDecision           = (decisionInternal,
+                messageInternal) -> {};
         Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers         = x -> null;
         Function<Throwable, Throwable>                   errorMapper          = x -> null;
         Function<String, String>                         initialResultMappers = x -> "spectial initial result";

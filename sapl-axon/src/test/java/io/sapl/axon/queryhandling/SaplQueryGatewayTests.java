@@ -84,8 +84,7 @@ class SaplQueryGatewayTests {
     @SuppressWarnings("unchecked")
     void when_wrappedSubscriptionQuery_with_accessDenied_then_executeAccessDeniedHandler() {
         var emitter      = mock(QueryUpdateEmitter.class);
-        var registration = new UpdateHandlerRegistration<>(() -> false, Flux.just(), () -> {
-                         });
+        var registration = new UpdateHandlerRegistration<>(() -> false, Flux.just(), () -> {});
         when(emitter.registerUpdateHandler(any(SubscriptionQueryMessage.class), anyInt())).thenReturn(registration);
         var queryBus = spy(SimpleQueryBus.builder().queryUpdateEmitter(emitter).build());
         var aGateway = spy(new SaplQueryGateway(queryBus, List.of()));

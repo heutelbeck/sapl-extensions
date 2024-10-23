@@ -90,7 +90,7 @@ public class SaplSubscriptionUtility {
     /**
      * Builds a subscription id specific for the client and the mqtt action.
      *
-     * @param clientId   the id of the connected client
+     * @param clientId the id of the connected client
      * @param mqttAction used to distinguish the kind of mqtt action
      * @return the textual subscription id
      */
@@ -101,9 +101,9 @@ public class SaplSubscriptionUtility {
     /**
      * Builds a subscription id specific for the client, mqtt action and the topic.
      *
-     * @param clientId   the id of the connected client
+     * @param clientId the id of the connected client
      * @param mqttAction used to distinguish the kind of mqtt action
-     * @param topic      topic of the mqtt subscription or the mqtt publish
+     * @param topic topic of the mqtt subscription or the mqtt publish
      * @return the textual subscription id
      */
     public static String buildSubscriptionId(String clientId, String mqttAction, String topic) {
@@ -114,7 +114,7 @@ public class SaplSubscriptionUtility {
      * Creates a SAPL authorization subscription for mqtt connection enforcement.
      *
      * @param mqttClientState the currently cached client state
-     * @param authnInput      contains mqtt connection specifics
+     * @param authnInput contains mqtt connection specifics
      * @return the SAPL authorization subscription for enforcement
      */
     public static AuthorizationSubscription buildSaplAuthzSubscriptionForMqttConnection(MqttClientState mqttClientState,
@@ -129,7 +129,7 @@ public class SaplSubscriptionUtility {
     /**
      * Creates a SAPL authorization subscription for mqtt subscription enforcement.
      *
-     * @param mqttClientState   the currently cached client state
+     * @param mqttClientState the currently cached client state
      * @param topicSubscription contains mqtt subscriptions specifics
      * @return the SAPL authorization subscription for enforcement
      */
@@ -144,7 +144,7 @@ public class SaplSubscriptionUtility {
     /**
      * Creates a SAPL authorization subscription for mqtt subscription enforcement.
      *
-     * @param mqttClientState             the currently cached client state
+     * @param mqttClientState the currently cached client state
      * @param subscriptionAuthorizerInput contains mqtt subscriptions specifics
      * @return the SAPL authorization subscription for enforcement
      */
@@ -160,7 +160,7 @@ public class SaplSubscriptionUtility {
     /**
      * Creates a SAPL authorization subscription for mqtt publish enforcement.
      *
-     * @param mqttClientState     the currently cached client state
+     * @param mqttClientState the currently cached client state
      * @param publishInboundInput contains mqtt publish specifics
      * @return the SAPL authorization subscription for enforcement
      */

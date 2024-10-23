@@ -71,7 +71,6 @@ import reactor.core.publisher.Sinks.Many;
  */
 
 @Slf4j
-@SuppressWarnings("deprecation") // inherited from Axon
 public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
     private static final String QUERY_UPDATE_TASKS_RESOURCE_KEY = "/update-tasks";
@@ -84,7 +83,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
     /**
      * Instantiate a {@link SaplQueryUpdateEmitter}
      *
-     * @param updateMessageMonitor     A MessageMonitor;
+     * @param updateMessageMonitor A MessageMonitor;
      * @param constraintHandlerService The ConstraintHandlerService.
      */
     public SaplQueryUpdateEmitter(
@@ -98,7 +97,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
      * {@inheritDoc}
      *
      * @deprecated in favour of using
-     *             {{@link #registerUpdateHandler(SubscriptionQueryMessage, int)}}
+     * {{@link #registerUpdateHandler(SubscriptionQueryMessage, int)}}
      */
     @Override
     @Deprecated
@@ -108,8 +107,7 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
         return registerUpdateHandler(query, updateBufferSize);
     }
 
-    private record QueryEnforcementConfiguration(QueryAuthorizationMode mode, Flux<AuthorizationDecision> decisions) {
-    }
+    private record QueryEnforcementConfiguration(QueryAuthorizationMode mode, Flux<AuthorizationDecision> decisions) {}
 
     private record QueryData<U>(QueryAuthorizationMode mode,
             Sinks.One<QueryEnforcementConfiguration> enforcementConfigurationSink,
@@ -140,8 +138,8 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
      * Authorizes the query with the identifier without SAPL authorization in place.
      *
      * @param messageIdentifier Query message Id.
-     * @param decisions         The decision stream.
-     * @param clazz             The response type.
+     * @param decisions The decision stream.
+     * @param clazz The response type.
      */
     public void authorizeUpdatesForSubscriptionQueryWithId(String messageIdentifier,
             Flux<AuthorizationDecision> decisions, Class<? extends Annotation> clazz) {
@@ -385,9 +383,9 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
      * {@link QueryUpdateEmitter} calls in a different phase.
      *
      * @param queryUpdateTask a {@link Runnable} to be run immediately or as a
-     *                        resource if
-     *                        {@link org.axonframework.queryhandling.SimpleQueryUpdateEmitter#inStartedPhaseOfUnitOfWork}
-     *                        returns {@code true}
+     * resource if
+     * {@link org.axonframework.queryhandling.SimpleQueryUpdateEmitter#inStartedPhaseOfUnitOfWork}
+     * returns {@code true}
      */
     private void runOnAfterCommitOrNow(Runnable queryUpdateTask) {
         if (inStartedPhaseOfUnitOfWork()) {
@@ -408,8 +406,8 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
      * otherwise {@code false}.
      *
      * @return {@code true} if the {@link CurrentUnitOfWork#isStarted()} returns
-     *         {@code true} and in if the phase is {@link UnitOfWork.Phase#STARTED},
-     *         otherwise {@code false}.
+     * {@code true} and in if the phase is {@link UnitOfWork.Phase#STARTED},
+     * otherwise {@code false}.
      */
     private boolean inStartedPhaseOfUnitOfWork() {
         if (CurrentUnitOfWork.isStarted())

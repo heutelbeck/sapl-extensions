@@ -37,13 +37,11 @@ public class ConfigInitUtility {
      * Used to get the sapl mqtt extension configuration from the sapl mqtt
      * extension configuration file.
      *
-     * @param extensionHomeFolder     Used to find the sapl mqtt extension
-     *                                configuration file in case no full path is
-     *                                specified.
+     * @param extensionHomeFolder Used to find the sapl mqtt extension configuration
+     * file in case no full path is specified.
      * @param saplExtensionConfigPath The full path to the sapl mqtt extension
-     *                                configuration file. If the path is not
-     *                                specified the configuration file will be tried
-     *                                to find in the extension home folder.
+     * configuration file. If the path is not specified the configuration file will
+     * be tried to find in the extension home folder.
      * @return the sapl mqtt extension configuration
      */
     public static SaplMqttExtensionConfig getSaplMqttExtensionConfig(File extensionHomeFolder,

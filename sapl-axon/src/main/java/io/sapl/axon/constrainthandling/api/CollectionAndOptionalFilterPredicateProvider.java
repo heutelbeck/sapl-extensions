@@ -73,7 +73,7 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
     }
 
     /**
-     * @param payload    the Flux payload
+     * @param payload the Flux payload
      * @param constraint the constraint
      * @return a Flux only containing elements where the predicate is true
      */
@@ -82,10 +82,10 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
     }
 
     /**
-     * @param payload    the Mono payload
+     * @param payload the Mono payload
      * @param constraint the constraint
      * @return The original if the predicate was true for the content, else an empty
-     *         Mono.
+     * Mono.
      */
     default Object filterMono(Mono<T> payload, JsonNode constraint) {
         return payload.filter(x -> test(x, constraint));
@@ -105,7 +105,7 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
     Class<T> getContainedType();
 
     /**
-     * @param o          The object to test.
+     * @param o The object to test.
      * @param constraint The constraint
      * @return true to indicate that {@code o} should stay in the container.
      */

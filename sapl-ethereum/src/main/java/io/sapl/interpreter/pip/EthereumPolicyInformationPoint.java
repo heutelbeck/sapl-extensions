@@ -117,19 +117,16 @@ public class EthereumPolicyInformationPoint {
      * Method for verifying if a given transaction has taken place.
      *
      * @param leftHandValue needs to have the following values: <br>
-     *                      "transactionHash" : The hash of the transaction that
-     *                      should be verified <br>
-     *                      "fromAccount" : The address of the account the
-     *                      transaction is sent from <br>
-     *                      "toAccount" : The address of the account that receives
-     *                      the transaction <br>
-     *                      "transactionValue" : A BigInteger that represents the
-     *                      value of the transaction in Wei
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "transactionHash" : The hash of the transaction that should be verified <br>
+     * "fromAccount" : The address of the account the transaction is sent from <br>
+     * "toAccount" : The address of the account that receives the transaction <br>
+     * "transactionValue" : A BigInteger that represents the value of the
+     * transaction in Wei
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of JsonNodes that have boolean value true if the transaction
-     *         has taken place and false otherwise @
+     * has taken place and false otherwise @
      */
     @Attribute(name = "transaction", docs = "Returns true, if a transaction has taken place and false otherwise.")
     public Flux<Val> verifyTransaction(Val leftHandValue, Map<String, Val> variables) {
@@ -162,32 +159,28 @@ public class EthereumPolicyInformationPoint {
      * Method for querying the state of a contract.
      *
      * @param leftHandValue needs to have the following values <br>
-     *                      "fromAccount" : (Optional) The account that makes the
-     *                      request <br>
-     *                      "contractAddress" : The address of the called contract
-     *                      <br>
-     *                      "functionName" : The name of the called function. <br>
-     *                      "inputParams" : A Json ArrayNode that contains a tuple
-     *                      of "type" and "value" for each input parameter. Example:
-     *                      [{"type" : "uint32", "value" : 45},{"type" : "bool",
-     *                      "value" : "true"}] <br>
-     *                      "outputParams" : A Json ArrayNode that contains the
-     *                      return types. Example: ["address","bool"] <br>
-     *                      "defaultBlockParameter": (Optional) BigInteger value of
-     *                      the desired block number <b>or</b> one of the strings
-     *                      "latest", "earliest", or "pending". <br>
-     *                      <br>
-     *                      All types that can be used are listed in the
-     *                      convertToType-method of the <a href=
-     *                      "https://github.com/heutelbeck/sapl-policy-engine/blob/sapl-ethereum/sapl-ethereum/src/main/java/io/sapl/interpreter/pip/EthereumPipFunctions.java">EthereumPipFunctions</a>.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "fromAccount" : (Optional) The account that makes the request <br>
+     * "contractAddress" : The address of the called contract <br>
+     * "functionName" : The name of the called function. <br>
+     * "inputParams" : A Json ArrayNode that contains a tuple of "type" and "value"
+     * for each input parameter. Example: [{"type" : "uint32", "value" : 45},{"type"
+     * : "bool", "value" : "true"}] <br>
+     * "outputParams" : A Json ArrayNode that contains the return types. Example:
+     * ["address","bool"] <br>
+     * "defaultBlockParameter": (Optional) BigInteger value of the desired block
+     * number <b>or</b> one of the strings "latest", "earliest", or "pending". <br>
+     * <br>
+     * All types that can be used are listed in the convertToType-method of the
+     * <a href=
+     * "https://github.com/heutelbeck/sapl-policy-engine/blob/sapl-ethereum/sapl-ethereum/src/main/java/io/sapl/interpreter/pip/EthereumPipFunctions.java">EthereumPipFunctions</a>.
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of ArrayNodes that contain the return value(s) of the called
-     *         contract function. Each node entry contains two values, "value" with
-     *         the return value and "typeAsString" with the return type. Example for
-     *         a return array: [{"value":true,"typeAsString":"bool"},
-     *         {"value":324,"typeAsString":"uint"}] @
+     * contract function. Each node entry contains two values, "value" with the
+     * return value and "typeAsString" with the return type. Example for a return
+     * array: [{"value":true,"typeAsString":"bool"},
+     * {"value":324,"typeAsString":"uint"}] @
      */
     @Attribute(name = "contract", docs = "Returns the result of a function call of a specified contract.")
     public Flux<Val> loadContractInformation(Val leftHandValue, Map<String, Val> variables) {
@@ -219,9 +212,9 @@ public class EthereumPolicyInformationPoint {
      * EthPip connects to.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of JsonNodes containing a string with the clientVersion
      */
     @Attribute(name = "clientVersion", docs = "Returns the current client version.")
@@ -238,12 +231,12 @@ public class EthereumPolicyInformationPoint {
      * in Ethereum) of a given hex value.
      *
      * @param leftHandValue should contain only a string that has to be a hex value,
-     *                      otherwise the hash can't be calculated.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * otherwise the hash can't be calculated.
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return Flux of JsonNodes containing a string with the hash value of the
-     *         data.
+     * data.
      */
     @Attribute(name = "sha3", docs = "Returns Keccak-256 (not the standardized SHA3-256) of the given data.")
     public Flux<Val> web3Sha3(Val leftHandValue, Map<String, Val> variables) {
@@ -261,9 +254,9 @@ public class EthereumPolicyInformationPoint {
      * to a private testnet.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return Flux of JsonNodes containing a string with the current network id.
      */
     @Attribute(name = "netVersion", docs = "Returns the current network id.")
@@ -280,11 +273,11 @@ public class EthereumPolicyInformationPoint {
      * connections.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return Flux of JsonNodes with boolean value true if listening and false
-     *         otherwise.
+     * otherwise.
      */
     @Attribute(name = "listening", docs = "Returns true if client is actively listening for network connections.")
     public Flux<Val> netListening(Val leftHandValue, Map<String, Val> variables) {
@@ -299,11 +292,11 @@ public class EthereumPolicyInformationPoint {
      * Method to find out the number of connected peers.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return Flux of JsonNodes with the number of connected peers as BigInteger
-     *         value.
+     * value.
      */
     @Attribute(name = "peerCount", docs = "Returns number of peers currently connected to the client.")
     public Flux<Val> netPeerCount(Val leftHandValue, Map<String, Val> variables) {
@@ -318,9 +311,9 @@ public class EthereumPolicyInformationPoint {
      * Method for querying the version of the currently used ethereum protocol.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return Flux of JsonNodes that contain the protocol version as a String
      */
     @Attribute(name = "protocolVersion", docs = "Returns the current ethereum protocol version.")
@@ -336,11 +329,11 @@ public class EthereumPolicyInformationPoint {
      * Simple method to check if the client is currently syncing with the network.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return Flux of JsonNodes with boolean value true if syncing and false
-     *         otherwise.
+     * otherwise.
      */
     @Attribute(name = "syncing", docs = "Returns true if the client is syncing or false otherwise.")
     public Flux<Val> ethSyncing(Val leftHandValue, Map<String, Val> variables) {
@@ -355,11 +348,11 @@ public class EthereumPolicyInformationPoint {
      * Method for retrieving the address of the client coinbase.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return Flux of JsonNodes containing the address of the client coinbase as a
-     *         String.
+     * String.
      */
     @Attribute(name = "coinbase", docs = "Returns the client coinbase address.")
     public Flux<Val> ethCoinbase(Val leftHandValue, Map<String, Val> variables) {
@@ -375,11 +368,11 @@ public class EthereumPolicyInformationPoint {
      * Simple method to check if the client is mining.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return Flux of JsonNodes with boolean value true if mining and false
-     *         otherwise.
+     * otherwise.
      */
     @Attribute(name = "mining", docs = "Returns true if client is actively mining new blocks.")
     public Flux<Val> ethMining(Val leftHandValue, Map<String, Val> variables) {
@@ -396,9 +389,9 @@ public class EthereumPolicyInformationPoint {
      * with.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return Flux of JsonNodes with the hashrate as BigInteger value.
      */
     @Attribute(name = "hashrate", docs = "Returns the number of hashes per second that the node is mining with.")
@@ -414,9 +407,9 @@ public class EthereumPolicyInformationPoint {
      * Method for querying the current gas price in wei.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return Flux of JsonNodes containing the gas price as BigInteger value.
      */
     @Attribute(name = "gasPrice", docs = "Returns the current price per gas in wei.")
@@ -432,9 +425,9 @@ public class EthereumPolicyInformationPoint {
      * Method for returning all addresses owned by the client.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return Flux of ArrayNodes that contain the owned addresses as Strings.
      */
     @Attribute(name = "accounts", docs = "Returns a list of addresses owned by client.")
@@ -450,9 +443,9 @@ public class EthereumPolicyInformationPoint {
      * Method for receiving the number of the most recent block.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return Flux of JsonNodes containing the block number as a BigInteger.
      */
     @Attribute(name = "blockNumber", docs = "Returns the number of most recent block.")
@@ -469,12 +462,11 @@ public class EthereumPolicyInformationPoint {
      * DefaultBlockParameter is provided the latest Block will be queried.
      *
      * @param leftHandValue needs to have the following values: <br>
-     *                      "address": The address of the account that you want to
-     *                      get the balance of. <br>
-     *                      "defaultBlockParameter": (Optional) BigInteger value of
-     *                      the desired block number <b>or</b> one of the strings
-     *                      "latest", "earliest", or "pending".
-     * @param variables     SAPL variables
+     * "address": The address of the account that you want to get the balance of.
+     * <br>
+     * "defaultBlockParameter": (Optional) BigInteger value of the desired block
+     * number <b>or</b> one of the strings "latest", "earliest", or "pending".
+     * @param variables SAPL variables
      * @return Flux of JsonNodes holding the balance in wei as BigInteger.
      *
      */
@@ -497,17 +489,15 @@ public class EthereumPolicyInformationPoint {
      * to find out how the storage position is being calculated.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "address": Address of the contract that the storage
-     *                      belongs to. <br>
-     *                      "position": Position of the stored data. <br>
-     *                      "defaultBlockParameter": (Optional) BigInteger value of
-     *                      the desired block number <b>or</b> one of the strings
-     *                      "latest", "earliest", or "pending".
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "address": Address of the contract that the storage belongs to. <br>
+     * "position": Position of the stored data. <br>
+     * "defaultBlockParameter": (Optional) BigInteger value of the desired block
+     * number <b>or</b> one of the strings "latest", "earliest", or "pending".
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes that contain the stored value at the denoted
-     *         position.
+     * position.
      */
     @Attribute(name = "storage", docs = "Returns the value from a storage position at a given address.")
     public Flux<Val> ethGetStorageAt(Val leftHandValue, Map<String, Val> variables) {
@@ -527,16 +517,15 @@ public class EthereumPolicyInformationPoint {
      * case of a contract account.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "address": Address of the account that the
-     *                      transactionCount should be returned from. <br>
-     *                      "defaultBlockParameter": (Optional) BigInteger value of
-     *                      the desired block number <b>or</b> one of the strings
-     *                      "latest", "earliest", or "pending".
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "address": Address of the account that the transactionCount should be
+     * returned from. <br>
+     * "defaultBlockParameter": (Optional) BigInteger value of the desired block
+     * number <b>or</b> one of the strings "latest", "earliest", or "pending".
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of JsonNodes that contain the transaction count as a
-     *         BigInteger value.
+     * BigInteger value.
      */
     @Attribute(name = "transactionCount", docs = "Returns the number of transactions sent from an address.")
     public Flux<Val> ethGetTransactionCount(Val leftHandValue, Map<String, Val> variables) {
@@ -555,13 +544,12 @@ public class EthereumPolicyInformationPoint {
      * Method for querying the number of transactions in a block with a given hash.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "blockHash": The hash of the block in question as
-     *                      String.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "blockHash": The hash of the block in question as String.
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of JsonNodes holding the transaction count of the block as
-     *         BigInteger value.
+     * BigInteger value.
      */
     @Attribute(name = "blockTransactionCountByHash", docs = "Returns the number of transactions in a block from a block matching the given block hash.")
     public Flux<Val> ethGetBlockTransactionCountByHash(Val leftHandValue, Map<String, Val> variables) {
@@ -579,14 +567,13 @@ public class EthereumPolicyInformationPoint {
      * number.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "defaultBlockParameter": (Optional) BigInteger value of
-     *                      the desired block number <b>or</b> one of the strings
-     *                      "latest", "earliest", or "pending".
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "defaultBlockParameter": (Optional) BigInteger value of the desired block
+     * number <b>or</b> one of the strings "latest", "earliest", or "pending".
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of JsonNodes holding the transaction count of the block as
-     *         BigInteger value.
+     * BigInteger value.
      */
     @Attribute(name = "blockTransactionCountByNumber", docs = "Returns the number of transactions in a block matching the given block number.")
     public Flux<Val> ethGetBlockTransactionCountByNumber(Val leftHandValue, Map<String, Val> variables) {
@@ -602,13 +589,12 @@ public class EthereumPolicyInformationPoint {
      * Method for querying the number of uncles in a block with a given hash.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "blockHash": The hash of the block in question as
-     *                      String.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "blockHash": The hash of the block in question as String.
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of JsonNodes holding the uncle count of the block as
-     *         BigInteger value.
+     * BigInteger value.
      */
     @Attribute(name = "uncleCountByBlockHash", docs = "Returns the number of uncles in a block from a block matching the given block hash.")
     public Flux<Val> ethGetUncleCountByBlockHash(Val leftHandValue, Map<String, Val> variables) {
@@ -624,14 +610,13 @@ public class EthereumPolicyInformationPoint {
      * Method for querying the number of uncles in a block with a given number.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "defaultBlockParameter": (Optional) BigInteger value of
-     *                      the desired block number <b>or</b> one of the strings
-     *                      "latest", "earliest", or "pending".
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "defaultBlockParameter": (Optional) BigInteger value of the desired block
+     * number <b>or</b> one of the strings "latest", "earliest", or "pending".
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of JsonNodes holding the uncle count of the block as
-     *         BigInteger value.
+     * BigInteger value.
      */
     @Attribute(name = "uncleCountByBlockNumber", docs = "Returns the number of uncles in a block from a block matching the given block number.")
     public Flux<Val> ethGetUncleCountByBlockNumber(Val leftHandValue, Map<String, Val> variables) {
@@ -647,14 +632,13 @@ public class EthereumPolicyInformationPoint {
      * Method for getting the code stored at a certain address.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "address": Address of the contract that the code should
-     *                      be returned from. <br>
-     *                      "defaultBlockParameter": (Optional) BigInteger value of
-     *                      the desired block number <b>or</b> one of the strings
-     *                      "latest", "earliest", or "pending".
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "address": Address of the contract that the code should be returned from.
+     * <br>
+     * "defaultBlockParameter": (Optional) BigInteger value of the desired block
+     * number <b>or</b> one of the strings "latest", "earliest", or "pending".
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of JsonNodes containing the code at the address as String.
      */
     @Attribute(name = "code", docs = "Returns code at a given address.")
@@ -673,14 +657,13 @@ public class EthereumPolicyInformationPoint {
      * address to sign with mus be unlocked in the client.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "address": Address used to sign with. <br>
-     *                      "sha3HashOfDataToSign": The message that should be
-     *                      signed.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "address": Address used to sign with. <br>
+     * "sha3HashOfDataToSign": The message that should be signed.
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of JsonNodes holding the resulting signature in form of a
-     *         String.
+     * String.
      */
     @Attribute(name = "sign", docs = "The sign method calculates an Ethereum specific signature.")
     public Flux<Val> ethSign(Val leftHandValue, Map<String, Val> variables) {
@@ -700,15 +683,13 @@ public class EthereumPolicyInformationPoint {
      * the ObjectMapper. An example can be found in the documentation.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "transaction": An
-     *                      org.web3j.protocol.core.methods.request.Transaction
-     *                      mapped to JsonNode. <br>
-     *                      "defaultBlockParameter": (Optional) BigInteger value of
-     *                      the desired block number <b>or</b> one of the strings
-     *                      "latest", "earliest", or "pending".
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "transaction": An org.web3j.protocol.core.methods.request.Transaction mapped
+     * to JsonNode. <br>
+     * "defaultBlockParameter": (Optional) BigInteger value of the desired block
+     * number <b>or</b> one of the strings "latest", "earliest", or "pending".
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of JsonNodes with the result of the call in form of a String.
      */
     @Attribute(name = "call", docs = "Executes a new message call immediately without creating a transaction on the block chain.")
@@ -730,12 +711,11 @@ public class EthereumPolicyInformationPoint {
      * found in the documentation.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "transaction": An
-     *                      org.web3j.protocol.core.methods.request.Transaction
-     *                      mapped to JsonNode.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "transaction": An org.web3j.protocol.core.methods.request.Transaction mapped
+     * to JsonNode.
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of JsonNodes containing the estimated gas value as BigInteger.
      */
     @Attribute(name = "estimateGas", docs = "Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.")
@@ -752,15 +732,13 @@ public class EthereumPolicyInformationPoint {
      * Method to retrieve a complete block by using its hash.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "blockHash": The hash of the block that should be
-     *                      retrieved. <br>
-     *                      "returnFullTransactionObjects": (Optional) To include
-     *                      the full transaction objects this value has to be true.
-     *                      If false or not provided, only the transaction hashes
-     *                      will be included.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "blockHash": The hash of the block that should be retrieved. <br>
+     * "returnFullTransactionObjects": (Optional) To include the full transaction
+     * objects this value has to be true. If false or not provided, only the
+     * transaction hashes will be included.
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json nodes containing the returned block mapped to Json.
      */
     @Attribute(name = "blockByHash", docs = "Returns information about a block by hash.")
@@ -777,16 +755,14 @@ public class EthereumPolicyInformationPoint {
      * Method to retrieve a complete block by using its number.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "returnFullTransactionObjects": (Optional) To include
-     *                      the full transaction objects this value has to be true.
-     *                      If false or not provided, only the transaction hashes
-     *                      will be included. <br>
-     *                      "defaultBlockParameter": (Optional) BigInteger value of
-     *                      the desired block number <b>or</b> one of the strings
-     *                      "latest", "earliest", or "pending".
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "returnFullTransactionObjects": (Optional) To include the full transaction
+     * objects this value has to be true. If false or not provided, only the
+     * transaction hashes will be included. <br>
+     * "defaultBlockParameter": (Optional) BigInteger value of the desired block
+     * number <b>or</b> one of the strings "latest", "earliest", or "pending".
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json nodes containing the returned block mapped to Json.
      */
     @Attribute(name = "blockByNumber", docs = "Returns information about a block by block number.")
@@ -804,9 +780,9 @@ public class EthereumPolicyInformationPoint {
      * hash.
      *
      * @param leftHandValue should only be the transaction hash.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes containing the mapped transaction.
      */
     @Attribute(name = "transactionByHash", docs = "Returns the information about a transaction requested by transaction hash.")
@@ -823,13 +799,11 @@ public class EthereumPolicyInformationPoint {
      * block hash and index to find it.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "blockHash": Hash of the block the transaction is in.
-     *                      <br>
-     *                      "transactionIndex": Position of the transaction in the
-     *                      block. <br>
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "blockHash": Hash of the block the transaction is in. <br>
+     * "transactionIndex": Position of the transaction in the block. <br>
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes containing the mapped transaction.
      */
     @Attribute(name = "transactionByBlockHashAndIndex", docs = "Returns information about a transaction by block hash and transaction index position.")
@@ -847,12 +821,11 @@ public class EthereumPolicyInformationPoint {
      * block number and index to find it.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "defaultBlockParameter": Should in this case hold the
-     *                      number of the Block as BigInteger. "transactionIndex":
-     *                      The position of the transaction in the block.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "defaultBlockParameter": Should in this case hold the number of the Block as
+     * BigInteger. "transactionIndex": The position of the transaction in the block.
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes containing the mapped transaction.
      */
     @Attribute(name = "transactionByBlockNumberAndIndex", docs = "Returns information about a transaction by block number and transaction index position.")
@@ -870,9 +843,9 @@ public class EthereumPolicyInformationPoint {
      * transaction.
      *
      * @param leftHandValue should contain only the transaction hash as a String.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes
      */
     @Attribute(name = "transactionReceipt", docs = "Returns the receipt of a transaction by transaction hash.")
@@ -889,9 +862,9 @@ public class EthereumPolicyInformationPoint {
      * been broadcast, but not yet mined into a block).
      *
      * @param leftHandValue is unused here
-     * @param variables     is unused here
+     * @param variables is unused here
      * @return A Flux of Json Nodes that hold the hashes of the pending
-     *         transactions.
+     * transactions.
      */
     @Attribute(name = "pendingTransactions", docs = "Returns the pending transactions list.")
     public Flux<Val> ethPendingTransactions(Val leftHandValue, Map<String, Val> variables) {
@@ -903,11 +876,11 @@ public class EthereumPolicyInformationPoint {
      * Method for getting an uncle by block hash and position of the uncle.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "blockHash": Hash of the block the uncle is in. <br>
-     *                      "uncleIndex": Position in the uncles list as BigInteger.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "blockHash": Hash of the block the uncle is in. <br>
+     * "uncleIndex": Position in the uncles list as BigInteger.
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes containing the mapped uncle.
      */
     @Attribute(name = "uncleByBlockHashAndIndex", docs = "Returns information about a uncle of a block by hash and uncle index position.")
@@ -924,12 +897,12 @@ public class EthereumPolicyInformationPoint {
      * Method for getting an uncle by block number and position of the uncle.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "defaultBlockParameter": Here it should hold the number
-     *                      of the block the uncle is in. <br>
-     *                      "uncleIndex": Position in the uncles list as BigInteger.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "defaultBlockParameter": Here it should hold the number of the block the
+     * uncle is in. <br>
+     * "uncleIndex": Position in the uncles list as BigInteger.
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes containing the mapped uncle.
      */
     @Attribute(name = "uncleByBlockNumberAndIndex", docs = "Returns information about a uncle of a block by number and uncle index position.")
@@ -947,11 +920,10 @@ public class EthereumPolicyInformationPoint {
      * received list.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "filterId": The identification number of the requested
-     *                      filter as BigInteger.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "filterId": The identification number of the requested filter as BigInteger.
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes containing arrays of new filter logs.
      */
     @Attribute(name = "ethFilterChanges", docs = "Returns an array of logs which occurred since last poll.")
@@ -967,13 +939,12 @@ public class EthereumPolicyInformationPoint {
      * Method that returns all logs matching a given filter id.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "filterId": The identification number of the requested
-     *                      filter as BigInteger.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "filterId": The identification number of the requested filter as BigInteger.
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes that contain an array of all filter logs from a
-     *         given filter.
+     * given filter.
      */
     @Attribute(name = "ethFilterLogs", docs = "Returns an array of all logs matching filter with given id.")
     public Flux<Val> ethGetFilterLogs(Val leftHandValue, Map<String, Val> variables) {
@@ -988,19 +959,18 @@ public class EthereumPolicyInformationPoint {
      * Method that returns all logs matching a given filter object.
      *
      * @param leftHandValue needs to hold the following values: <br>
-     *                      "fromBlock": Hex value of the block from which on should
-     *                      be filtered from (beginning with 0x). <br>
-     *                      "toBlock": Hex value of the block from where the
-     *                      filtering should end (beginning with 0x). <br>
-     *                      "address": An array of addresses that should be reviewed
-     *                      by the filter. <br>
-     *                      You can simply map an EthFilter object to Json in order
-     *                      to get the required values.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * "fromBlock": Hex value of the block from which on should be filtered from
+     * (beginning with 0x). <br>
+     * "toBlock": Hex value of the block from where the filtering should end
+     * (beginning with 0x). <br>
+     * "address": An array of addresses that should be reviewed by the filter. <br>
+     * You can simply map an EthFilter object to Json in order to get the required
+     * values.
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes that contain an array of all filter logs from a
-     *         given filter object.
+     * given filter object.
      */
     @Attribute(name = "logs", docs = "Returns an array of all logs matching a given filter object.")
     public Flux<Val> ethGetLogs(Val leftHandValue, Map<String, Val> variables) {
@@ -1016,9 +986,9 @@ public class EthereumPolicyInformationPoint {
      * difficulty.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Array Nodes each holding the three values.
      */
     @Attribute(name = "work", docs = "Returns the hash of the current block, the seedHash, and the boundary condition to be met (\"target\").")
@@ -1035,11 +1005,11 @@ public class EthereumPolicyInformationPoint {
      * Method for querying the current whisper protocol version.
      *
      * @param leftHandValue is unused here
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes where each contains the whisper protocol
-     *         version.
+     * version.
      */
     @Attribute(name = "shhVersion", docs = "Returns the current whisper protocol version.")
     public Flux<Val> shhVersion(Val leftHandValue, Map<String, Val> variables) {
@@ -1054,11 +1024,11 @@ public class EthereumPolicyInformationPoint {
      * Method to verify if the client has the private keys for a certain identity.
      *
      * @param leftHandValue needs to be the public address of the identity.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes returning true if the client holds the private
-     *         keys and false otherwise.
+     * keys and false otherwise.
      */
     @Attribute(name = "hasIdentity", docs = "Checks if the client holds the private keys for a given identity.")
     public Flux<Val> shhHasIdentity(Val leftHandValue, Map<String, Val> variables) {
@@ -1074,9 +1044,9 @@ public class EthereumPolicyInformationPoint {
      * the new messages that appeared since the last array.
      *
      * @param leftHandValue should simply be the filter id as BigInteger value.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes each containing an array of Messages.
      */
     @Attribute(name = "shhFilterChanges", docs = "Polling method for whisper filters. Returns new messages since the last call of this method.")
@@ -1092,11 +1062,11 @@ public class EthereumPolicyInformationPoint {
      * Method for getting all shh messages from a certain filter.
      *
      * @param leftHandValue should simply be the filter id as BigInteger value.
-     * @param variables     can optionally contain a key with value
-     *                      "ethPollingInterval" that holds the time span in which
-     *                      the blockchain should be polled in milliseconds
+     * @param variables can optionally contain a key with value "ethPollingInterval"
+     * that holds the time span in which the blockchain should be polled in
+     * milliseconds
      * @return A Flux of Json Nodes each containing all messages matching the
-     *         requested filter.
+     * requested filter.
      */
     @Attribute(name = "messages", docs = "Get all messages matching a filter. Unlike shhFilterChanges this returns all messages.")
     public Flux<Val> shhGetMessages(Val leftHandValue, Map<String, Val> variables) {

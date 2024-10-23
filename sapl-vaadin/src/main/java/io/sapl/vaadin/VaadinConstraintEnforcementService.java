@@ -89,9 +89,8 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * are present
      *
      * @param authorizationDecision Current decision from subscription
-     * @param ui                    Current Vaadin UI
-     * @param vaadinPep             vaadinPep containing additional local constraint
-     *                              handler
+     * @param ui Current Vaadin UI
+     * @param vaadinPep vaadinPep containing additional local constraint handler
      * @return Derived decision as Mono
      */
     @Override
@@ -112,8 +111,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * returns it.
      *
      * @param authorizationDecision Decision to get the obligations and advices from
-     * @param vaadinPep             vaadinPep containing additional local constraint
-     *                              handler
+     * @param vaadinPep vaadinPep containing additional local constraint handler
      * @return New {@link VaadinConstraintHandlerBundle}
      */
     private VaadinConstraintHandlerBundle getHandlerBundleForDecision(AuthorizationDecision authorizationDecision,
@@ -139,11 +137,11 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * This function creates the runnable handlers, consumer handlers and vaadin
      * function handlers and adds them to the given handler bundle.
      *
-     * @param obligation    Current Obligation or Advice
+     * @param obligation Current Obligation or Advice
      * @param handlerBundle Handler bundle to add the handlers
-     * @param isObligation  Set to true if param obligation is an obligation or to
-     *                      false if param obligation is an advice.
-     * @param vaadinPep     vaadinPep containing additional local constraint handler
+     * @param isObligation Set to true if param obligation is an obligation or to
+     * false if param obligation is an advice.
+     * @param vaadinPep vaadinPep containing additional local constraint handler
      */
     private void addConstraintHandlerToHandlerBundle(JsonNode obligation, VaadinConstraintHandlerBundle handlerBundle,
             boolean isObligation, VaadinPep vaadinPep) {
@@ -161,10 +159,10 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
     /**
      * This function creates and returns the vaadin function handlers.
      *
-     * @param constraint   Obligation or Advice
+     * @param constraint Obligation or Advice
      * @param isObligation Set to true if param obligation is an obligation or to
-     *                     false if param obligation is an advice.
-     * @param vaadinPep    vaadinPep containing additional local constraint handler
+     * false if param obligation is an advice.
+     * @param vaadinPep vaadinPep containing additional local constraint handler
      */
     private List<Function<UI, Mono<Boolean>>> constructVaadinFunctionHandlersForConstraint(JsonNode constraint,
             boolean isObligation, VaadinPep vaadinPep) {
@@ -176,10 +174,10 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
     /**
      * This function creates and returns the consumer handlers.
      *
-     * @param constraint   Obligation or Advice
+     * @param constraint Obligation or Advice
      * @param isObligation Set to true if param obligation is an obligation or to
-     *                     false if param obligation is an advice.
-     * @param vaadinPep    vaadinPep containing additional local constraint handler
+     * false if param obligation is an advice.
+     * @param vaadinPep vaadinPep containing additional local constraint handler
      */
     private List<Consumer<UI>> constructConsumerHandlersForConstraint(JsonNode constraint, boolean isObligation,
             VaadinPep vaadinPep) {
@@ -191,10 +189,10 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
     /**
      * This function creates and returns the runnable handlers.
      *
-     * @param constraint   Obligation or Advice
+     * @param constraint Obligation or Advice
      * @param isObligation Set to true if param obligation is an obligation or to
-     *                     false if param obligation is an advice.
-     * @param vaadinPep    vaadinPep containing additional local constraint handler
+     * false if param obligation is an advice.
+     * @param vaadinPep vaadinPep containing additional local constraint handler
      */
     private List<Runnable> constructRunnableHandlersForConstraint(JsonNode constraint, boolean isObligation,
             VaadinPep vaadinPep) {
@@ -212,7 +210,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * a {@link Mono#just(Object)} with FALSE is returned.
      *
      * @param isObligation Set to true, if executed in context of an obligation,
-     *                     false otherwise.
+     * false otherwise.
      * @return Wrapped function
      */
     private Function<Function<UI, Mono<Boolean>>, Function<UI, Mono<Boolean>>> failVaadinFunctionHandlerOnlyIfObligationOrFatal(
@@ -237,7 +235,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * isObligation is set, an {@link AccessDeniedException} is thrown.
      *
      * @param isObligation Set to true, if executed in context of an obligation,
-     *                     false otherwise.
+     * false otherwise.
      * @return Wrapped function
      */
     private Function<Consumer<UI>, Consumer<UI>> failConsumerHandlerOnlyIfObligationOrFatal(boolean isObligation) {
@@ -260,7 +258,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * isObligation is set, an {@link AccessDeniedException} is thrown.
      *
      * @param isObligation Set to true, if executed in context of an obligation,
-     *                     false otherwise.
+     * false otherwise.
      * @return Wrapped function
      */
     private Function<Runnable, Runnable> failRunnableHandlerOnlyIfObligationOrFatal(boolean isObligation) {
@@ -280,10 +278,10 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * This function executes all constraint handlers and returns the final derived
      * decision.
      *
-     * @param handlerBundle         Handler bundle containing all constraint
-     *                              handlers to execute
+     * @param handlerBundle Handler bundle containing all constraint handlers to
+     * execute
      * @param authorizationDecision Decision passed to Vaadin function handlers
-     * @param ui                    Current Vaadin UI
+     * @param ui Current Vaadin UI
      * @return Final decision from Vaadin function handlers
      */
     private Mono<AuthorizationDecision> executeConstraintHandlersAndDeriveFinalDecision(
@@ -309,7 +307,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * This function executes every consumer in the handlers list.
      *
      * @param handlers List containing the consumers to be executed
-     * @param ui       Current Vaadin UI, passed to consumers
+     * @param ui Current Vaadin UI, passed to consumers
      */
     private void executeHandler(Iterable<Consumer<UI>> handlers, UI ui) {
         for (Consumer<UI> handler : handlers) {
@@ -321,9 +319,9 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * This function executes every function in the handlers list and returns the
      * final derived decision
      *
-     * @param handlers              List containing the consumers to be executed
+     * @param handlers List containing the consumers to be executed
      * @param authorizationDecision Current decision, passed to functions
-     * @param ui                    Current Vaadin UI, passed to functions
+     * @param ui Current Vaadin UI, passed to functions
      * @return Final derived decision
      */
     private Mono<AuthorizationDecision> executeHandler(Collection<Function<UI, Mono<Boolean>>> handlers,

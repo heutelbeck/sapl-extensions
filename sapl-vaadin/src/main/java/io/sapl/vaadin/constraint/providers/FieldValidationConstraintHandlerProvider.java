@@ -172,7 +172,7 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
     /**
      * This function adds a sapl schema based field validator to the binder.
      *
-     * @param <F>   type of the field value
+     * @param <F> type of the field value
      * @param field requested to bind
      * @return this FieldValidationConstraintHandlerProvider instance
      */
@@ -218,10 +218,10 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
     /**
      * Checks that the field is bound correctly
      *
-     * @param memberField            from the class
-     * @param field                  from the instance
+     * @param memberField from the class
+     * @param field from the instance
      * @param objectWithMemberFields instance holding field
-     * @param <F>                    the value type of the field
+     * @param <F> the value type of the field
      * @return returns true of the field is bound
      */
     <F> boolean isFieldBound(Field memberField, HasValue<?, F> field, Object objectWithMemberFields) {

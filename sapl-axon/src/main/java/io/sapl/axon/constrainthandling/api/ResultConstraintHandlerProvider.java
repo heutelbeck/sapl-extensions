@@ -53,7 +53,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
     /**
      * @param constraint The constraint required by the authorization decision.
      * @return The handler triggering all required side effects and potentially
-     *         changing the result.
+     * changing the result.
      */
     default Function<Object, Object> getHandler(JsonNode constraint) {
         return result -> {
@@ -67,7 +67,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
     /**
      * Handling of result messages.
      *
-     * @param result     Original result.
+     * @param result Original result.
      * @param constraint The constraint.
      * @return Potentially updated message.
      */
@@ -101,7 +101,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
     /**
      * Method for triggering side-effects.
      *
-     * @param message    The message.
+     * @param message The message.
      * @param constraint The constraint.
      */
     default void accept(ResultMessage<?> message, JsonNode constraint) {
@@ -112,7 +112,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
      * Method to change an Exception.
      *
      * @param exceptionResult The original Exception.
-     * @param constraint      The constraint.
+     * @param constraint The constraint.
      * @return Potentially updated Exception.
      */
     default Throwable mapThrowable(Throwable exceptionResult, JsonNode constraint) {
@@ -123,7 +123,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
      * Method to change the payload type.
      *
      * @param payloadType The original payload type.
-     * @param constraint  The constraint.
+     * @param constraint The constraint.
      * @return A potentially updated payload type.
      */
     default Class<?> mapPayloadType(Class<?> payloadType, JsonNode constraint) {
@@ -133,8 +133,8 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
     /**
      * Method to change the payload.
      *
-     * @param payload    The original payload.
-     * @param clazz      The type of the payload.
+     * @param payload The original payload.
+     * @param clazz The type of the payload.
      * @param constraint The constraint.
      * @return A potentially updated payload.
      */
@@ -146,7 +146,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
      * Method to change the metadata.
      *
      * @param originalMetadata The original metadata.
-     * @param constraint       The constraint.
+     * @param constraint The constraint.
      * @return Potentially updated metadata.
      */
     default MetaData mapMetadata(MetaData originalMetadata, JsonNode constraint) {

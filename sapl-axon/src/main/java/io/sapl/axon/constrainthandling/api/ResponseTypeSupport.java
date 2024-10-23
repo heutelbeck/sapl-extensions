@@ -45,9 +45,9 @@ public interface ResponseTypeSupport {
      * Checks if the constraint handler can work with the given type.
      *
      * @param responseType the response {@link java.lang.reflect.Type} of the
-     *                     handler which is matched against
+     * handler which is matched against
      * @return true if a response can be converted based on the given
-     *         {@code responseType} and false if it cannot
+     * {@code responseType} and false if it cannot
      */
     default boolean supports(Class<?> responseType) {
         return getSupportedResponseTypes().stream().anyMatch(isSupportedType(responseType));
@@ -72,9 +72,9 @@ public interface ResponseTypeSupport {
      * Checks if the constraint handler can work with the given type.
      *
      * @param responseType the response {@link java.lang.reflect.Type} of the
-     *                     handler which is matched against
+     * handler which is matched against
      * @return true if a response can be converted based on the given
-     *         {@code responseType} and false if it cannot
+     * {@code responseType} and false if it cannot
      */
     default boolean supports(ResponseType<?> responseType) {
         return getSupportedResponseTypes().stream().anyMatch(compatibleResponseType(responseType));

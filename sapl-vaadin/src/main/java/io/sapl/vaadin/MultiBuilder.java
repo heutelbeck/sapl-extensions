@@ -67,7 +67,7 @@ public class MultiBuilder {
      * This function shall add the parameter vaadinPep to the list of subscriptions.
      *
      * @param vaadinPep Subscription container to be added to the multi
-     *                  subscription.
+     * subscription.
      * @return Index of the added vaadinPep in the list (list size - 1).
      */
     protected int registerPep(VaadinPep vaadinPep) {
@@ -173,7 +173,7 @@ public class MultiBuilder {
      * and add them to a new multi subscription.
      *
      * @return New MultiAuthorizationSubscription created out of the VaadinPep
-     *         containers
+     * containers
      */
     private MultiAuthorizationSubscription getMultiSubscription() {
         var multiAuthorizationSubscription = new MultiAuthorizationSubscription();

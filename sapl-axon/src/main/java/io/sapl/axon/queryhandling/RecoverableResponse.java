@@ -67,7 +67,7 @@ public class RecoverableResponse<U> {
     /**
      * Utility factory method creating access denied responses.
      *
-     * @param <T>          The Response type.
+     * @param <T> The Response type.
      * @param responseType The Response type.
      * @return An access denied response.
      */

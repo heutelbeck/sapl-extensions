@@ -156,8 +156,7 @@ class SaplQueryUpdateEmitterTests {
         when(anEmitter.registerUpdateHandler(any(SubscriptionQueryMessage.class),
                 any(SubscriptionQueryBackpressure.class), any(Integer.class))).thenCallRealMethod();
         when(anEmitter.registerUpdateHandler(any(SubscriptionQueryMessage.class), any(Integer.class)))
-                .thenReturn(new FlaggedUpdateHandlerRegistration<Object>(() -> true, Flux.empty(), () -> {
-                }));
+                .thenReturn(new FlaggedUpdateHandlerRegistration<Object>(() -> true, Flux.empty(), () -> {}));
 
         var query        = new GenericSubscriptionQueryMessage<>(new Object(), ResponseTypes.instanceOf(Object.class),
                 ResponseTypes.multipleInstancesOf(Object.class));

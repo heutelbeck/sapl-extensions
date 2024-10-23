@@ -99,8 +99,8 @@ public class VaadinPep {
      * This function shall execute all decision event listener bi consumers
      *
      * @param authzDecision Authorization decision passed as first argument to the
-     *                      bi consumers
-     * @param event         Event passed as the second argument to the bi consumers
+     * bi consumers
+     * @param event Event passed as the second argument to the bi consumers
      */
     private void handleEventDecision(AuthorizationDecision authzDecision, BeforeEvent event) {
         for (BiConsumer<AuthorizationDecision, BeforeEvent> listener : decisionEventListenerList) {
@@ -152,7 +152,7 @@ public class VaadinPep {
      * This function shall start the subscription and block until a decision has
      * arrived.
      *
-     * @param ui    Current UI used for constraint handling
+     * @param ui Current UI used for constraint handling
      * @param event Current event passed to the event bi consumers
      */
     private void enforceOnce(UI ui, BeforeEvent event) {
@@ -180,9 +180,9 @@ public class VaadinPep {
      * This interface provides basic functions which all components support.
      *
      * @param <T> VaadinSingle*PepBuilder or VaadinMulti*PepBuilder (e.g.
-     *            VaadinMultiButtonBuilder)
+     * VaadinMultiButtonBuilder)
      * @param <C> Subclass of component (e.g. Button). Note: Should be consistent
-     *            with T
+     * with T
      */
     public interface VaadinPepBuilderBase<T, C extends Component> {
         /**
@@ -347,9 +347,9 @@ public class VaadinPep {
      * HasEnabled interface.
      *
      * @param <T> VaadinSingle*PepBuilder or VaadinMulti*PepBuilder (e.g.
-     *            VaadinMultiButtonBuilder)
+     * VaadinMultiButtonBuilder)
      * @param <C> Subclass of component (e.g. Button). Note: Should be consistent
-     *            with T
+     * with T
      */
     public interface EnforceHasEnabled<T, C extends Component> extends VaadinPepBuilderBase<T, C> {
         /**
@@ -373,9 +373,9 @@ public class VaadinPep {
      * interface.
      *
      * @param <T> VaadinSingle*PepBuilder or VaadinMulti*PepBuilder (e.g.
-     *            VaadinMultiButtonBuilder)
+     * VaadinMultiButtonBuilder)
      * @param <C> Subclass of component (e.g. Button). Note: Should be consistent
-     *            with T
+     * with T
      */
     public interface EnforceHasText<T, C extends Component & HasText> extends VaadinPepBuilderBase<T, C> {
         /**
@@ -386,9 +386,9 @@ public class VaadinPep {
          * set to the passed deny text.
          *
          * @param permitText Text that will be used as the components text, if a PERMIT
-         *                   decision occurs.
-         * @param denyText   Text that will be used as the components text, if a DENY
-         *                   decision occurs.
+         * decision occurs.
+         * @param denyText Text that will be used as the components text, if a DENY
+         * decision occurs.
          * @return VaadinSingle*PepBuilder or VaadinMulti*PepBuilder
          */
         default T onDecisionSetText(String permitText, String denyText) {
@@ -408,7 +408,7 @@ public class VaadinPep {
          * occurs.
          *
          * @param permitText Text that will be used as the components text, if a PERMIT
-         *                   decision occurs.
+         * decision occurs.
          * @return VaadinSingle*PepBuilder or VaadinMulti*PepBuilder
          */
         default T onPermitSetText(String permitText) {
@@ -422,7 +422,7 @@ public class VaadinPep {
          * occurs.
          *
          * @param denyText Text that will be used as the components text, if a DENY
-         *                 decision occurs.
+         * decision occurs.
          * @return VaadinSingle*PepBuilder or VaadinMulti*PepBuilder
          */
         default T onDenySetText(String denyText) {
@@ -436,9 +436,9 @@ public class VaadinPep {
      * interface.
      *
      * @param <T> VaadinSingle*PepBuilder or VaadinMulti*PepBuilder (e.g.
-     *            VaadinMultiButtonBuilder)
+     * VaadinMultiButtonBuilder)
      * @param <C> Subclass of component (e.g. Button). Note: Should be consistent
-     *            with T
+     * with T
      */
     public interface EnforceHasValueAndElement<T, C extends Component & HasValueAndElement<?, ?>>
             extends VaadinPepBuilderBase<T, C> {
@@ -464,9 +464,9 @@ public class VaadinPep {
      * builders.
      *
      * @param <T> VaadinSingle*PepBuilder or VaadinMulti*PepBuilder (e.g.
-     *            VaadinMultiButtonBuilder)
+     * VaadinMultiButtonBuilder)
      * @param <C> Subclass of component (e.g. Button). Note: Should be consistent
-     *            with T
+     * with T
      */
     public abstract static class VaadinPepBuilder<T, C extends Component> implements VaadinPepBuilderBase<T, C> {
         protected final VaadinPep vaadinPep;
@@ -598,9 +598,9 @@ public class VaadinPep {
          * Adds a constraint handler provider to the local consumer provider list
          *
          * @param isResponsible predicate of JsonNode to determine the constraint the
-         *                      handler is responsible for
-         * @param getHandler    function that returns a Consumer handler for a specific
-         *                      constraint
+         * handler is responsible for
+         * @param getHandler function that returns a Consumer handler for a specific
+         * constraint
          * @return Current object (=this)
          */
         public T addConstraintHandler(Predicate<JsonNode> isResponsible, Function<JsonNode, Consumer<UI>> getHandler) {
@@ -632,7 +632,7 @@ public class VaadinPep {
      *
      * @param <T> VaadinSingle*PepBuilder (e.g. VaadinSingleButtonBuilder)
      * @param <C> Subclass of component (e.g. Button). Note: Should be consistent
-     *            with T
+     * with T
      */
     public abstract static class VaadinSinglePepBuilder<T, C extends Component> extends VaadinPepBuilder<T, C> {
         protected boolean isBuilt = false;
@@ -697,7 +697,7 @@ public class VaadinPep {
      *
      * @param <T> VaadinMulti*PepBuilder (e.g. VaadinMultiButtonBuilder)
      * @param <C> Subclass of component (e.g. Button). Note: Should be consistent
-     *            with T
+     * with T
      */
     public abstract static class VaadinMultiPepBuilder<T, C extends Component> extends VaadinPepBuilder<T, C> {
         private final MultiBuilder multiBuilder;
@@ -939,7 +939,7 @@ public class VaadinPep {
      * and {@link LifecycleBeforeLeavePepBuilder}.
      *
      * @param <L> {@link LifecycleBeforeEnterPepBuilder} or
-     *            {@link LifecycleBeforeLeavePepBuilder}
+     * {@link LifecycleBeforeLeavePepBuilder}
      */
     public static class LifecycleEventHandlerPepBuilder<L> {
         final VaadinPep vaadinPep;
@@ -947,7 +947,7 @@ public class VaadinPep {
         /**
          * The constructor sets the subject of the subscription.
          *
-         * @param pdp                          the PDP
+         * @param pdp the PDP
          * @param enforceConstraintsOfDecision the deicision
          */
         public LifecycleEventHandlerPepBuilder(PolicyDecisionPoint pdp,
@@ -988,7 +988,7 @@ public class VaadinPep {
          *
          * @param subject subject of the subscription
          * @return Returns an instance of {@link LifecycleBeforeEnterPepBuilder} or
-         *         {@link LifecycleBeforeLeavePepBuilder}
+         * {@link LifecycleBeforeLeavePepBuilder}
          */
         public L subject(Object subject) {
             vaadinPep.subject = subject;
@@ -1000,7 +1000,7 @@ public class VaadinPep {
          *
          * @param action subject of the subscription
          * @return Returns an instance of {@link LifecycleBeforeEnterPepBuilder} or
-         *         {@link LifecycleBeforeLeavePepBuilder}
+         * {@link LifecycleBeforeLeavePepBuilder}
          */
         public L action(Object action) {
             vaadinPep.action = action;
@@ -1012,7 +1012,7 @@ public class VaadinPep {
          *
          * @param resource resource of the subscription
          * @return Returns an instance of {@link LifecycleBeforeEnterPepBuilder} or
-         *         {@link LifecycleBeforeLeavePepBuilder}
+         * {@link LifecycleBeforeLeavePepBuilder}
          */
         public L resource(Object resource) {
             vaadinPep.resource = resource;
@@ -1024,7 +1024,7 @@ public class VaadinPep {
          *
          * @param environment subject of the subscription
          * @return Returns an instance of {@link LifecycleBeforeEnterPepBuilder} or
-         *         {@link LifecycleBeforeLeavePepBuilder}
+         * {@link LifecycleBeforeLeavePepBuilder}
          */
         public L environment(Object environment) {
             vaadinPep.environment = environment;
@@ -1132,7 +1132,7 @@ public class VaadinPep {
          * Adds a {@link BiConsumer} to the decisionEventListenerList.
          *
          * @param action A custom {@link BiConsumer} to be executed. This BiConsumer
-         *               must be able to handle the decisions 'DENY' and 'PERMIT'.
+         * must be able to handle the decisions 'DENY' and 'PERMIT'.
          * @return The current instance of this LifecycleEventHandlerPepBuilder.
          */
         public L onDecisionDo(BiConsumer<AuthorizationDecision, BeforeEvent> action) {
@@ -1144,7 +1144,7 @@ public class VaadinPep {
          * Sets the resource for the subscription to the current navigation target.
          *
          * @param event The {@link BeforeEnterEvent} of the current navigation
-         *              lifecycle.
+         * lifecycle.
          */
         protected void setResourceByNavigationTargetIfNotDefined(BeforeEvent event) {
             if (vaadinPep.resource == null) {
@@ -1167,7 +1167,7 @@ public class VaadinPep {
         /**
          * This constructor method sets the action of the subscription.
          *
-         * @param pdp                          the PDP
+         * @param pdp the PDP
          * @param enforceConstraintsOfDecision the decision
          */
         public LifecycleBeforeEnterPepBuilder(PolicyDecisionPoint pdp,
@@ -1219,7 +1219,7 @@ public class VaadinPep {
         /**
          * This constructor method sets the action of the subscription.
          *
-         * @param pdp                          the PDP
+         * @param pdp the PDP
          * @param enforceConstraintsOfDecision the decision
          */
         protected LifecycleBeforeLeavePepBuilder(PolicyDecisionPoint pdp,

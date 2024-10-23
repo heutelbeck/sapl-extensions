@@ -432,8 +432,7 @@ class ConstraintHandlerServiceTests {
     void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_oneResponsible_then_oneOnDecisionHandlers() {
         when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
         when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
-        });
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {});
         var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
         var obligations = factory.arrayNode().add("obligation");
@@ -450,10 +449,8 @@ class ConstraintHandlerServiceTests {
     void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_allResponsible_then_allOnDecisionHandlers() {
         when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
         when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
-        });
-        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
-        });
+        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {});
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {});
         var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
         var obligations = factory.arrayNode().add("obligation");
@@ -505,8 +502,7 @@ class ConstraintHandlerServiceTests {
     void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_oneResponsible_then_oneOnDecisionHandlers() {
         when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
         when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
-        });
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {});
         var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
         var advices  = factory.arrayNode().add("advice");
@@ -523,10 +519,8 @@ class ConstraintHandlerServiceTests {
     void when_buildPreEnforceCommandConstraintHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_allResponsible_then_allOnDecisionHandlers() {
         when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
         when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
-        });
-        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
-        });
+        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {});
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {});
         var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
         var advices  = factory.arrayNode().add("advice");
@@ -1458,8 +1452,7 @@ class ConstraintHandlerServiceTests {
     void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_oneResponsible_then_oneOnDecisionHandlers() {
         when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
         when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
-        });
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {});
         var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
         var obligations = factory.arrayNode().add("obligation");
@@ -1476,10 +1469,8 @@ class ConstraintHandlerServiceTests {
     void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_allResponsible_then_allOnDecisionHandlers() {
         when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
         when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
-        });
-        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
-        });
+        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {});
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {});
         var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
         var obligations = factory.arrayNode().add("obligation");
@@ -1531,8 +1522,7 @@ class ConstraintHandlerServiceTests {
     void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_oneResponsible_then_oneOnDecisionHandlers() {
         when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
         when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
-        });
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {});
         var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
         var advices  = factory.arrayNode().add("advice");
@@ -1549,10 +1539,8 @@ class ConstraintHandlerServiceTests {
     void when_buildQueryPreHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_allResponsible_then_allOnDecisionHandlers() {
         when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
         when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
-        });
-        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {
-        });
+        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {});
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((d, m) -> {});
         var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
         var advices  = factory.arrayNode().add("advice");
@@ -2774,8 +2762,7 @@ class ConstraintHandlerServiceTests {
     void when_buildQueryPostHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_oneResponsible_then_oneOnDecisionHandlers() {
         when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
         when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x, y) -> {
-        });
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x, y) -> {});
         var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
         var obligations = factory.arrayNode().add("obligation");
@@ -2792,10 +2779,8 @@ class ConstraintHandlerServiceTests {
     void when_buildQueryPostHandlerBundle_with_presentGlobalRunnableProviders_and_obligation_and_allResponsible_then_allOnDecisionHandlers() {
         when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
         when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x, y) -> {
-        });
-        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x, y) -> {
-        });
+        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x, y) -> {});
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x, y) -> {});
         var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
         var obligations = factory.arrayNode().add("obligation");
@@ -2847,8 +2832,7 @@ class ConstraintHandlerServiceTests {
     void when_buildQueryPostHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_oneResponsible_then_oneOnDecisionHandlers() {
         when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.FALSE);
         when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x, y) -> {
-        });
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x, y) -> {});
         var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
         var advices  = factory.arrayNode().add("advice");
@@ -2865,10 +2849,8 @@ class ConstraintHandlerServiceTests {
     void when_buildQueryPostHandlerBundle_with_presentGlobalRunnableProviders_and_advice_and_allResponsible_then_allOnDecisionHandlers() {
         when(firstOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
         when(secondOnDecisionConstraintHandlerProvider.isResponsible(any(JsonNode.class))).thenReturn(Boolean.TRUE);
-        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x, y) -> {
-        });
-        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x, y) -> {
-        });
+        when(firstOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x, y) -> {});
+        when(secondOnDecisionConstraintHandlerProvider.getHandler(any(JsonNode.class))).thenReturn((x, y) -> {});
         var service = buildServiceForTest(2, 0, 0, 0, 0, 0, 0);
 
         var advices  = factory.arrayNode().add("advice");

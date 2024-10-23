@@ -197,7 +197,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.1.0</version>
       </plugin>
       <plugin>
         <groupId>org.asciidoctor</groupId>
@@ -388,7 +387,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.5.7</version>
+      <version>1.5.8</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -540,7 +539,7 @@
     <dependency>
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
-      <version>3.6.9</version>
+      <version>3.6.10</version>
       <scope>test</scope>
     </dependency>
     <dependency>

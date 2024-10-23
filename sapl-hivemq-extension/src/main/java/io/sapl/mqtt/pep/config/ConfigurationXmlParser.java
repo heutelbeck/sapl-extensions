@@ -55,7 +55,7 @@ public final class ConfigurationXmlParser {
      *
      * @param file the sapl mqtt extension configuration file
      * @return a java object representation of the sapl mqtt extension configuration
-     *         file
+     * file
      * @throws IOException is thrown when unmarshalling does fail
      */
     SaplMqttExtensionConfig unmarshalExtensionConfig(File file) throws IOException {

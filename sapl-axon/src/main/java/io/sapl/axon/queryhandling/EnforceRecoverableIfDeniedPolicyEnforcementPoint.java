@@ -92,12 +92,12 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
     /**
      * Wraps the source Flux.
      *
-     * @param <V>                        Update payload type.
-     * @param query                      The Query
-     * @param decisions                  The PDP decision stream.
-     * @param resourceAccessPoint        The incoming messages.
-     * @param constraintHandlerService   The ConstraintHandlerService.
-     * @param resultResponseType         The initial response type.
+     * @param <V> Update payload type.
+     * @param query The Query
+     * @param decisions The PDP decision stream.
+     * @param resourceAccessPoint The incoming messages.
+     * @param constraintHandlerService The ConstraintHandlerService.
+     * @param resultResponseType The initial response type.
      * @param originalUpdateResponseType The result response type.
      * @return A wrapped Flux of SubscriptionQueryUpdateMessage.
      */

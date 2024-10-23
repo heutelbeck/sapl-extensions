@@ -50,16 +50,13 @@ public class PdpInitUtility {
      * Builds an embedded or remote sapl policy decision point.
      *
      * @param saplMqttExtensionConfig contains the configurations of the sapl mqtt
-     *                                pep extension
-     * @param extensionHomeFolder     If the {@link SaplMqttExtensionConfig}
-     *                                specifies that the by configuration provided
-     *                                policies path is relative to the extension
-     *                                home folder, use this extension home folder.
-     * @param policiesPath            The path to find the specified sapl policies.
-     *                                In case the path is null the
-     *                                {@link SaplMqttExtensionConfig} respectively
-     *                                the extension home folder will be used to
-     *                                extract the policy path from.
+     * pep extension
+     * @param extensionHomeFolder If the {@link SaplMqttExtensionConfig} specifies
+     * that the by configuration provided policies path is relative to the extension
+     * home folder, use this extension home folder.
+     * @param policiesPath The path to find the specified sapl policies. In case the
+     * path is null the {@link SaplMqttExtensionConfig} respectively the extension
+     * home folder will be used to extract the policy path from.
      * @return an embedded or remote sapl policy decision point
      */
     public static PolicyDecisionPoint buildPdp(SaplMqttExtensionConfig saplMqttExtensionConfig,

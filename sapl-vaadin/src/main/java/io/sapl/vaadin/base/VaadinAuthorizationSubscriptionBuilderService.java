@@ -47,7 +47,7 @@ public class VaadinAuthorizationSubscriptionBuilderService {
      * authentication.
      *
      * @param authentication Spring authentication context
-     * @param expression     SpEL Expression that will be evaluated
+     * @param expression SpEL Expression that will be evaluated
      * @return JSON subject for Authentication Subscription
      */
     public JsonNode retrieveSubject(Authentication authentication, String expression) {
@@ -84,7 +84,7 @@ public class VaadinAuthorizationSubscriptionBuilderService {
      * Evaluate expression string against root Object and return JSON
      *
      * @param expressionString expression string that get evaluated
-     * @param rootObject       root object used as evaluation context
+     * @param rootObject root object used as evaluation context
      * @return JSON representation of the evaluation result
      */
     public JsonNode evaluateExpressionStringToJson(String expressionString, Object rootObject) {

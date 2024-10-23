@@ -92,10 +92,9 @@ public final class MqttClientState {
      * given reference. Any existing value under the reference will be hereby
      * overridden.
      *
-     * @param id                 the reference for the
-     *                           {@link IdentifiableAuthorizationDecision}
+     * @param id the reference for the {@link IdentifiableAuthorizationDecision}
      * @param identAuthzDecision the {@link IdentifiableAuthorizationDecision} to
-     *                           add
+     * add
      */
     public void addIdentAuthzDecisionToMap(String id, IdentifiableAuthorizationDecision identAuthzDecision) {
         identAuthzDecisionMap.put(id, identAuthzDecision);
@@ -114,7 +113,7 @@ public final class MqttClientState {
     /**
      * Adds the given unsubscribe message topics list to the state.
      *
-     * @param id            the reference under which the topics list is to add
+     * @param id the reference under which the topics list is to add
      * @param messageTopics unsubscribe message topics list to add
      */
     public void addUnsubscribeMessageTopicsToMap(Integer id, List<String> messageTopics) {
@@ -155,8 +154,7 @@ public final class MqttClientState {
     /**
      * Adds the given {@link TopicSubscription} to the state.
      *
-     * @param id                the reference under which the
-     *                          {@link TopicSubscription} is to add
+     * @param id the reference under which the {@link TopicSubscription} is to add
      * @param topicSubscription the {@link TopicSubscription} to add
      */
     public void addTopicSubscriptionToMap(String id, TopicSubscription topicSubscription) {
@@ -194,7 +192,7 @@ public final class MqttClientState {
     /**
      * Adds the given last signal time to the state.
      *
-     * @param id             the reference under which the given time is to add
+     * @param id the reference under which the given time is to add
      * @param lastSignalTime the last signal time to add
      */
     public void addLastSignalTimeToMap(String id, Long lastSignalTime) {
@@ -214,8 +212,7 @@ public final class MqttClientState {
     /**
      * Adds the given mqtt action start time to the state.
      *
-     * @param id                  the reference under which the mqtt action start
-     *                            time is to add
+     * @param id the reference under which the mqtt action start time is to add
      * @param mqttActionStartTime the mqtt action start time to add
      */
     public void addMqttActionStartTimeToMap(String id, Long mqttActionStartTime) {
@@ -235,9 +232,9 @@ public final class MqttClientState {
      * Removes the mqtt action decision flux {@link Disposable} from the state.
      *
      * @param id the reference of the mqtt action decision flux {@link Disposable}
-     *           to remove
+     * to remove
      * @return the removed mqtt action decision flux {@link Disposable} or null in
-     *         case there was no mapping
+     * case there was no mapping
      */
     public Disposable removeMqttActionDecisionFluxDisposableFromMap(String id) {
         return mqttActionDecisionFluxesDisposablesMap.remove(id);
@@ -247,7 +244,7 @@ public final class MqttClientState {
      * Gets the mqtt action decision flux {@link Disposable} from the state.
      *
      * @param id the reference of the mqtt action decision flux {@link Disposable}
-     *           to return
+     * to return
      * @return the referenced mqtt action decision flux {@link Disposable}
      */
     public Disposable getMqttActionDecisionFluxDisposableFromMap(String id) {
@@ -257,7 +254,7 @@ public final class MqttClientState {
     /**
      * Adds the mqtt action decision flux {@link Disposable} to the state.
      *
-     * @param id         the reference under which the {@link Disposable} is to add
+     * @param id the reference under which the {@link Disposable} is to add
      * @param disposable the {@link Disposable} to add
      */
     public void addMqttActionDecisionFluxDisposableToMap(String id, Disposable disposable) {
@@ -275,11 +272,10 @@ public final class MqttClientState {
      * Adds the given mqtt action decision {@link Flux} of
      * {@link IdentifiableAuthorizationDecision} to the state.
      *
-     * @param id             the reference under which the mqtt action decision
-     *                       {@link Flux} of
-     *                       {@link IdentifiableAuthorizationDecision} s to add
+     * @param id the reference under which the mqtt action decision {@link Flux} of
+     * {@link IdentifiableAuthorizationDecision} s to add
      * @param identAuthzFlux the mqtt action decision {@link Flux} of
-     *                       {@link IdentifiableAuthorizationDecision} to add
+     * {@link IdentifiableAuthorizationDecision} to add
      */
     public void addMqttActionDecisionFluxToMap(String id, Flux<IdentifiableAuthorizationDecision> identAuthzFlux) {
         mqttActionDecisionFluxesMap.put(id, identAuthzFlux);
@@ -291,7 +287,7 @@ public final class MqttClientState {
      *
      * @param id the reference of the mqtt action decision flux to return
      * @return the referenced mqtt action decision {@link Flux} of
-     *         {@link IdentifiableAuthorizationDecision}
+     * {@link IdentifiableAuthorizationDecision}
      */
     public Flux<IdentifiableAuthorizationDecision> getMqttActionDecisionFluxFromMap(String id) {
         return mqttActionDecisionFluxesMap.get(id);
@@ -302,7 +298,7 @@ public final class MqttClientState {
      * {@link IdentifiableAuthorizationDecision} from the state.
      *
      * @param id the reference of the mqtt action decision {@link Flux} of
-     *           {@link IdentifiableAuthorizationDecision} to remove
+     * {@link IdentifiableAuthorizationDecision} to remove
      */
     public void removeMqttActionDecisionFluxFromMap(String id) {
         mqttActionDecisionFluxesMap.remove(id);
@@ -313,7 +309,7 @@ public final class MqttClientState {
      * {@link IdentifiableAuthorizationDecision} from the state.
      *
      * @return all mqtt action decision {@link Flux} of
-     *         {@link IdentifiableAuthorizationDecision} from the state
+     * {@link IdentifiableAuthorizationDecision} from the state
      */
     public Set<Map.Entry<String, Flux<IdentifiableAuthorizationDecision>>> getMqttActionDecisionFluxesFromMap() {
         return mqttActionDecisionFluxesMap.entrySet();
@@ -332,8 +328,7 @@ public final class MqttClientState {
     /**
      * Adds the given {@link ConstraintDetails} to the state.
      *
-     * @param id                the reference of the {@link ConstraintDetails} to
-     *                          add
+     * @param id the reference of the {@link ConstraintDetails} to add
      * @param constraintDetails the {@link ConstraintDetails} to add
      */
     public void addConstraintDetailsToMap(String id, ConstraintDetails constraintDetails) {
@@ -369,8 +364,8 @@ public final class MqttClientState {
      * Adds the given {@link AuthorizationSubscription} to the
      * {@link MultiAuthorizationSubscription}.
      *
-     * @param id                the reference under which the
-     *                          {@link AuthorizationSubscription} is to add
+     * @param id the reference under which the {@link AuthorizationSubscription} is
+     * to add
      * @param authzSubscription the {@link AuthorizationSubscription} to add
      */
     public void addSaplAuthzSubscriptionToMultiSubscription(String id, AuthorizationSubscription authzSubscription) {
@@ -402,7 +397,7 @@ public final class MqttClientState {
      *
      * @param id the reference of the {@link AuthorizationSubscription} to return
      * @return the referenced {@link AuthorizationSubscription} of the
-     *         {@link MultiAuthorizationSubscription}
+     * {@link MultiAuthorizationSubscription}
      */
     public AuthorizationSubscription getSaplAuthzSubscriptionFromMultiSubscription(String id) {
         return multiAuthzSubscription.getAuthorizationSubscriptionWithId(id);
@@ -465,7 +460,7 @@ public final class MqttClientState {
      * Checks whether the mqtt action decision fluxes are disposed or not.
      *
      * @return true if the {@link reactor.core.Disposable.Composite} was disposed,
-     *         false otherwise
+     * false otherwise
      */
     public boolean areMqttActionDecisionFluxesDisposed() {
         return mqttActionDecisionFluxesDisposablesComposite.isDisposed();

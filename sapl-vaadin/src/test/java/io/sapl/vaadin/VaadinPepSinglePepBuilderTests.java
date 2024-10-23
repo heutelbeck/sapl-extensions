@@ -135,8 +135,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, nextVaadinConstraintEnforcementServiceMock, component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo(decision -> {
-        });
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {});
 
         // WHEN
         vaadinSinglePepBuilder.build();
@@ -164,8 +163,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, nextVaadinConstraintEnforcementServiceMock, component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo(decision -> {
-        });
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {});
         doAnswer(invocation -> {
             invocation.getArgument(0, ComponentEventListener.class).onComponentEvent(eventMock);
             return null;
@@ -199,8 +197,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, nextVaadinConstraintEnforcementServiceMock, component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo(decision -> {
-        });
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {});
         doAnswer(invocation -> {
             invocation.getArgument(0, ComponentEventListener.class).onComponentEvent(eventMock);
             return null;
@@ -238,8 +235,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, nextVaadinConstraintEnforcementServiceMock, component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo(decision -> {
-        });
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {});
 
         doAnswer(invocation -> {
             listener = invocation.getArgument(0, ComponentEventListener.class);
@@ -271,8 +267,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, nextVaadinConstraintEnforcementServiceMock, component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo(decision -> {
-        });
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {});
 
         // WHEN + THEN
         assertThrows(AccessDeniedException.class, vaadinSinglePepBuilder::build);
@@ -299,8 +294,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, nextVaadinConstraintEnforcementServiceMock, component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo(decision -> {
-        });
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {});
 
         // WHEN
         vaadinSinglePepBuilder.build();
@@ -328,8 +322,7 @@ class VaadinPepSinglePepBuilderTests {
                         // object
                         .useConstructor(pdp, mock(VaadinConstraintEnforcementService.class), component)
                         .defaultAnswer(CALLS_REAL_METHODS));
-        vaadinSinglePepBuilder.onDecisionDo(decision -> {
-        });
+        vaadinSinglePepBuilder.onDecisionDo(decision -> {});
 
         // WHEN
         vaadinSinglePepBuilder.build();
@@ -357,8 +350,7 @@ class VaadinPepSinglePepBuilderTests {
                         .useConstructor(pdp, mock(VaadinConstraintEnforcementService.class), component)
                         .defaultAnswer(CALLS_REAL_METHODS));
         // dummy action to avoid error message because of missing DENY handler
-        vaadinSinglePepBuilder.onDenyDo(x -> {
-        });
+        vaadinSinglePepBuilder.onDenyDo(x -> {});
         vaadinSinglePepBuilder.build();
 
         // THEN

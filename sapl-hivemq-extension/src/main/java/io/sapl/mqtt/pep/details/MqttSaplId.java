@@ -36,9 +36,9 @@ public class MqttSaplId {
      * Caches unique specifications to identify a decision flux of mqtt action
      * enforcement.
      *
-     * @param mqttClientId       the id uniquely identifies a mqtt client
+     * @param mqttClientId the id uniquely identifies a mqtt client
      * @param saplSubscriptionId this id uniquely identifies a decision flux for
-     *                           mqtt action enforcement
+     * mqtt action enforcement
      */
     public MqttSaplId(String mqttClientId, String saplSubscriptionId) {
         this(mqttClientId, saplSubscriptionId, null);
@@ -48,10 +48,10 @@ public class MqttSaplId {
      * Caches unique specifications to identify a decision flux of mqtt action
      * enforcement.
      *
-     * @param mqttClientId       the id uniquely identifies a mqtt client
+     * @param mqttClientId the id uniquely identifies a mqtt client
      * @param saplSubscriptionId this id uniquely identifies a decision flux for
-     *                           mqtt action enforcement
-     * @param topic              the topic in focus of the mqtt action enforcement
+     * mqtt action enforcement
+     * @param topic the topic in focus of the mqtt action enforcement
      */
     public MqttSaplId(@NonNull String mqttClientId, @NonNull String saplSubscriptionId, String topic) {
         this.mqttClientId       = mqttClientId;

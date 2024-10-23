@@ -93,13 +93,13 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
     /**
      * Wraps the source Flux.
      *
-     * @param <U>                      Update payload type.
-     * @param query                    The Query
-     * @param decisions                The PDP decision stream.
-     * @param updateMessageFlux        The incoming messages.
+     * @param <U> Update payload type.
+     * @param query The Query
+     * @param decisions The PDP decision stream.
+     * @param updateMessageFlux The incoming messages.
      * @param constraintHandlerService The ConstraintHandlerService
-     * @param resultResponseType       The initial response type.
-     * @param updateResponseType       The result response type.
+     * @param resultResponseType The initial response type.
+     * @param updateResponseType The result response type.
      * @return A wrapped Flux of SubscriptionQueryUpdateMessage.
      */
     public static <U> Flux<SubscriptionQueryUpdateMessage<U>> of(SubscriptionQueryMessage<?, ?, ?> query,

@@ -90,9 +90,9 @@ public class AuthorizationSubscriptionBuilderService {
     /**
      * Executed to get the AuthorizationSubscription for a CommandMessage.
      *
-     * @param command          The CommandMessage to be handled.
-     * @param handlerObject    The instance of the object with the @CommandHandler
-     *                         to be executed.
+     * @param command The CommandMessage to be handled.
+     * @param handlerObject The instance of the object with the @CommandHandler to
+     * be executed.
      * @param methodAnnotation The annotation.
      * @return the AuthorizationSubscription for the Command.
      */
@@ -113,14 +113,13 @@ public class AuthorizationSubscriptionBuilderService {
      * Executed to get the AuthorizationSubscription for a QueryMessage.
      *
      * @param queryMessage The QueryMessage to be handled.
-     * @param annotation   The SAPL annotation of the @QueryHandler method to be
-     *                     executed.
-     * @param executable   The Executable representing the @QueryHandler method to
-     *                     be executed.
-     * @param queryResult  An Optional query result. If the client class is dealing
-     *                     with a @PostHandleEnforce annotation, the Optional should
-     *                     contain the object returned by the @QueryHandler method.
-     *                     Else, leave the Optional empty.
+     * @param annotation The SAPL annotation of the @QueryHandler method to be
+     * executed.
+     * @param executable The Executable representing the @QueryHandler method to be
+     * executed.
+     * @param queryResult An Optional query result. If the client class is dealing
+     * with a @PostHandleEnforce annotation, the Optional should contain the object
+     * returned by the @QueryHandler method. Else, leave the Optional empty.
      * @return the AuthorizationSubscription for the Query
      */
     public AuthorizationSubscription constructAuthorizationSubscriptionForQuery(QueryMessage<?, ?> queryMessage,

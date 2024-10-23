@@ -150,8 +150,7 @@ public class MqttPep {
     /**
      * Enforces mqtt specific actions.
      *
-     * @param pdp                     used by the pep to request authorization
-     *                                decisions
+     * @param pdp used by the pep to request authorization decisions
      * @param saplMqttExtensionConfig contains the configuration params for the pep
      */
     public MqttPep(PolicyDecisionPoint pdp, SaplMqttExtensionConfig saplMqttExtensionConfig) {
@@ -161,11 +160,9 @@ public class MqttPep {
     /**
      * Enforces mqtt specific actions.
      *
-     * @param pdp                     used by the pep to request authorization
-     *                                decisions
+     * @param pdp used by the pep to request authorization decisions
      * @param saplMqttExtensionConfig contains the configuration params for the pep
-     * @param mqttClientCache         used to cache the state of different
-     *                                enforcements
+     * @param mqttClientCache used to cache the state of different enforcements
      */
     public MqttPep(PolicyDecisionPoint pdp, SaplMqttExtensionConfig saplMqttExtensionConfig,
             ConcurrentMap<String, MqttClientState> mqttClientCache) {
