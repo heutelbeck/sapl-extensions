@@ -41,11 +41,11 @@ import org.axonframework.messaging.MetaData;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -87,7 +87,7 @@ public abstract class CommandTestsuite {
     static boolean            isIntegrationTest                         = false;
     private static boolean    waitedForCommandHandlerRegistration       = false;
 
-    @MockBean
+    @MockitoBean
     PolicyDecisionPoint pdp;
 
     @Autowired
@@ -99,16 +99,16 @@ public abstract class CommandTestsuite {
     @Autowired
     CommandHandlingService commandService;
 
-    @SpyBean
+    @MockitoSpyBean
     OnDecisionProvider onDecisionProvider;
 
-    @SpyBean
+    @MockitoSpyBean
     CommandMappingProvider querMappingProvider;
 
-    @SpyBean
+    @MockitoSpyBean
     ResultMappingProvider resultMappingProvider;
 
-    @SpyBean
+    @MockitoSpyBean
     ErrorMappingProvider errorMappingProvider;
 
     @Test

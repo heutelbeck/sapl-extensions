@@ -55,13 +55,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -125,7 +125,7 @@ public abstract class QueryTestsuite {
 
     private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
-    @MockBean
+    @MockitoBean
     PolicyDecisionPoint pdp;
 
     @Autowired
@@ -137,28 +137,28 @@ public abstract class QueryTestsuite {
     @Autowired
     QueryUpdateEmitter emitter;
 
-    @SpyBean
+    @MockitoSpyBean
     OnDecisionProvider onDecisionProvider;
 
-    @SpyBean
+    @MockitoSpyBean
     QueryMappingProvider querMappingProvider;
 
-    @SpyBean
+    @MockitoSpyBean
     ResultMappingProvider resultMappingProvider;
 
-    @SpyBean
+    @MockitoSpyBean
     ErrorMappingProvider errorMappingProvider;
 
-    @SpyBean
+    @MockitoSpyBean
     ResultFilterProvider filterUpdatesProvider;
 
-    @SpyBean
+    @MockitoSpyBean
     ResultMessageMappingProvider resultMessageMappingProvider;
 
     @Autowired
     ResponseMessagePayloadFilterProvider responseMessagePayloadFilterProvider;
 
-    @SpyBean
+    @MockitoSpyBean
     FilterPredicateExampleProvider rilterPredicateExampleProvider;
 
     @Test
