@@ -539,13 +539,13 @@
     <dependency>
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
-      <version>3.7.0</version>
+      <version>3.7.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.11.3</version>
+      <version>5.11.4</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -577,17 +577,17 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
+    <output.dir>${basedir}</output.dir>
     <asciidoctor.version>1.5.7.1</asciidoctor.version>
+    <java.version>17</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
     <extension.name>sapl-hivemq-extension</extension.name>
+    <source.document.name>README.adoc</source.document.name>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
     <sapl.version>3.0.0-SNAPSHOT</sapl.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <skipTests>true</skipTests>
     <extension.author>Nils Mahnken</extension.author>
-    <output.dir>${basedir}</output.dir>
-    <java.version>17</java.version>
-    <maven.compiler.source>${java.version}</maven.compiler.source>
-    <source.document.name>README.adoc</source.document.name>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 </project>

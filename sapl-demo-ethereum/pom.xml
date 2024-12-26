@@ -24,7 +24,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.0</version>
+		<version>3.4.1</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
@@ -52,7 +52,7 @@
 		<sapl.version>3.0.0-SNAPSHOT</sapl.version>
 		<spotbugs.version>4.7.3.6</spotbugs.version>
 		<sbcontrib.version>7.6.0</sbcontrib.version>
-		<springboot.version>3.4.0</springboot.version>
+		<springboot.version>3.4.1</springboot.version>
 		<version.testcontainers>1.20.4</version.testcontainers>
 
 		<maven.javadoc.skip>true</maven.javadoc.skip>

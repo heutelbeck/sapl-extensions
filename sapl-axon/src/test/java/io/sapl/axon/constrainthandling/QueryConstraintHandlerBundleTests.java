@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -41,7 +41,7 @@ import io.sapl.api.pdp.AuthorizationDecision;
 class QueryConstraintHandlerBundleTests {
 
     @Test
-    void testAllInvokations() {
+    void testAllInvocations() {
         var onDecisionCounter = new AtomicInteger();
         var decision          = new AuthorizationDecision();
         var message           = new GenericQueryMessage<>("message payload", ResponseTypes.instanceOf(String.class));
