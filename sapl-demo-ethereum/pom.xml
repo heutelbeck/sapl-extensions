@@ -45,7 +45,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<jacoco.version>0.8.11</jacoco.version>
-		<vaadin.version>24.5.7</vaadin.version>
+		<vaadin.version>24.6.4</vaadin.version>
 		<version.lombok>1.18.36</version.lombok>
 		<failsafe.version>3.2.5</failsafe.version>
 		<selenium.version>4.8.3</selenium.version>
@@ -122,6 +122,7 @@
 			<artifactId>sapl-ethereum</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
 		<!-- Utility -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -184,6 +185,19 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-compiler-plugin</artifactId>
+			  <configuration>
+			    <annotationProcessorPaths>
+			      <path>
+			        <groupId>org.projectlombok</groupId>     
+			        <artifactId>lombok</artifactId>
+			        <version>${lombok.version}</version>
+			      </path>
+			    </annotationProcessorPaths>
+			  </configuration>
+			</plugin>			
 			<plugin>
 				<groupId>com.vaadin</groupId>
 				<artifactId>vaadin-maven-plugin</artifactId>

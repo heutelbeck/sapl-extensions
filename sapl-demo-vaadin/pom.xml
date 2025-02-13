@@ -21,7 +21,7 @@
 	<properties>
 		<java.version>17</java.version>
 
-		<vaadin.version>24.5.7</vaadin.version>
+		<vaadin.version>24.6.4</vaadin.version>
 
 		<jacoco.version>0.8.11</jacoco.version>
 		<failsafe.version>3.2.5</failsafe.version>

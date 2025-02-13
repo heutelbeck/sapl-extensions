@@ -39,18 +39,22 @@
 		broker.</description>
 
 	<properties>
-		<extension.name>sapl-hivemq-extension</extension.name>
-		<extension.author>Nils Mahnken</extension.author>
-		<asciidoctor.version>1.5.7.1</asciidoctor.version>
-		<output.dir>${basedir}</output.dir>
-		<source.document.name>README.adoc</source.document.name>
-		<sapl.version>3.0.0-SNAPSHOT</sapl.version>
 		<java.version>17</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.deploy.skip>true</maven.deploy.skip>
+
+		<sapl.version>3.0.0-SNAPSHOT</sapl.version>
+
+		<extension.author>Nils Mahnken</extension.author>
+		<extension.name>sapl-hivemq-extension</extension.name>
+
+		<output.dir>${basedir}</output.dir>
+		<asciidoctor.version>1.5.7.1</asciidoctor.version>
+		<source.document.name>README.adoc</source.document.name>
+
 		<skipTests>true</skipTests>
+		<maven.deploy.skip>true</maven.deploy.skip>
 	</properties>
 
 	<repositories>

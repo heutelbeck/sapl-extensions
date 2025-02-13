@@ -42,7 +42,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<vaadin.version>24.5.7</vaadin.version>
+		<vaadin.version>24.6.4</vaadin.version>
 		<selenium.version>4.8.3</selenium.version>
 		<sapl.version>3.0.0-SNAPSHOT</sapl.version>
 		<spotbugs.version>4.7.3.6</spotbugs.version>
@@ -172,6 +172,19 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-compiler-plugin</artifactId>
+			  <configuration>
+			    <annotationProcessorPaths>
+			      <path>
+			        <groupId>org.projectlombok</groupId>     
+			        <artifactId>lombok</artifactId>
+			        <version>${lombok.version}</version>
+			      </path>
+			    </annotationProcessorPaths>
+			  </configuration>
+			</plugin>	
 		</plugins>
 	</build>
 
