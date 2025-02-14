@@ -103,7 +103,7 @@ jobs:
     - name: Run Unit Tests, Integration Tests, JaCoCo, SpotBugs
       # Javadoc: skipped in demos
       # Unit and integration tests: skipped in sapl-demo-mqtt-pep, sapl-hivemq-extension
-      run: mvn -B verify -fae javadoc:jar spotbugs:spotbugs -Pcoverage,it,spotbugs
+      run: mvn -B verify javadoc:jar spotbugs:spotbugs -Pcoverage,it,spotbugs
 
     - name: Cache Sonar Packages
       if: env.IS_FORK == 'false'
