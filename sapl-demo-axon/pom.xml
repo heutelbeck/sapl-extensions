@@ -19,9 +19,9 @@
 
 	<properties>
 		<java.version>17</java.version>
-		<axon.version>4.9.3</axon.version>
-		<axonstarter.version>4.9.0</axonstarter.version>
-		<axon.mongo.version>4.9.0</axon.mongo.version>
+		<axon.version>4.10.3</axon.version>
+		<axonstarter.version>4.10.0</axonstarter.version>
+		<axon.mongo.version>4.10.0</axon.mongo.version>
 		<sapl.version>3.0.0-SNAPSHOT</sapl.version>
 		<spotbugs.version>4.7.3.6</spotbugs.version>
 		<sbcontrib.version>7.6.0</sbcontrib.version>
