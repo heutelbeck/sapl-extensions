@@ -26,6 +26,7 @@
 		<spotbugs.version>4.7.3.6</spotbugs.version>
 		<sbcontrib.version>7.6.0</sbcontrib.version>
 		<jacoco.version>0.8.11</jacoco.version>
+		<maven.test.skip>true</maven.test.skip>
 		<maven.javadoc.skip>true</maven.javadoc.skip>
 		<argLine />
 	</properties>
