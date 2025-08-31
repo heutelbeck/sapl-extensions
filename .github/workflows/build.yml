@@ -151,34 +151,36 @@ jobs:
       uses: scacap/action-surefire-report@a2911bd1a4412ec18dde2d93b1758b3e56d2a880 # v1.8.0
 
     - name: Configure Servers
-      if: github.ref == 'refs/heads/main'
       uses: s4u/maven-settings-action@7802f6aec16c9098b4798ad1f1d8ac75198194bd # v3.0.0
       with:
         githubServer: false
         servers: |
           [{
-              "id": "ossrh",
-              "username": "${{ secrets.OSSRH_USERNAME }}",
-              "password": "${{ secrets.OSSRH_PASSWORD }}"
-           },{
-              "id": "ghcr.io",
-              "username": "${{ secrets.GHUB_USERNAME }}",
-              "password": "${{ secrets.GHUB_ACCESS_TOKEN }}"
-           },{
+              "id": "central",
+              "username": "${{ secrets.NEXUS_USERNAME }}",
+              "password": "${{ secrets.NEXUS_PASSWORD }}"
+            },{
+               "id": "ghcr.io",
+               "username": "${{ secrets.GHUB_USERNAME }}",
+               "password": "${{ secrets.GHUB_ACCESS_TOKEN }}"
+            },{
               "id": "github",
               "username": "${{ secrets.GHUB_USERNAME }}",
               "password": "${{ secrets.GHUB_ACCESS_TOKEN }}"
-           }]
-
+          }]
+           
     - name: Install GPG Code Signing Key
       if: github.ref == 'refs/heads/main'
       run: |
-        cat <(echo -e "${{ secrets.OSSRH_GPG_SECRET_KEY }}") | gpg --batch --import
+        cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --batch --import
         gpg --list-secret-keys --keyid-format LONG
 
     - name: Deploy Maven Artifacts
-      if: github.ref == 'refs/heads/main'
-      run: mvn -B --no-transfer-progress -Dgpg.passphrase=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }} -pl !sapl-demo-vaadin,!sapl-demo-ethereum,!sapl-demo-axon,!sapl-demo-mqtt-pep -Ppublish -DskipTests clean package deploy
+      run: mvn -B --no-transfer-progress -pl !sapl-demo-vaadin,!sapl-demo-ethereum,!sapl-demo-axon,!sapl-demo-mqtt-pep -Ppublish -DskipTests clean package deploy
+      env:
+        MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+        MAVEN_CENTRAL_TOKEN: ${{ secrets.NEXUS_PASSWORD }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}   
 
     - name: Delete Workflow Runs
       if: github.ref == 'refs/heads/main'
