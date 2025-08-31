@@ -3,7 +3,7 @@
   <parent>
     <artifactId>sapl-policy-engine</artifactId>
     <groupId>io.sapl</groupId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
     <relativePath>pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -400,7 +400,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>hivemq</artifactId>
-      <version>1.21.2</version>
+      <version>1.21.3</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -494,7 +494,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>1.21.2</version>
+      <version>1.21.3</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -564,7 +564,7 @@
     <dependency>
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
-      <version>3.7.7</version>
+      <version>3.7.9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -604,7 +604,7 @@
   <properties>
     <asciidoctor.version>1.5.7.1</asciidoctor.version>
     <extension.name>sapl-hivemq-extension</extension.name>
-    <sapl.version>3.0.0-SNAPSHOT</sapl.version>
+    <sapl.version>3.1.0-SNAPSHOT</sapl.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <skipTests>true</skipTests>
     <extension.author>Nils Mahnken</extension.author>

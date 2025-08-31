@@ -150,24 +150,26 @@ jobs:
       if: ${{ (success() || failure()) && (env.IS_FORK == 'false') }}
       uses: scacap/action-surefire-report@a2911bd1a4412ec18dde2d93b1758b3e56d2a880 # v1.8.0
 
-    - name: Configure Servers
-      uses: s4u/maven-settings-action@7802f6aec16c9098b4798ad1f1d8ac75198194bd # v3.0.0
-      with:
-        githubServer: false
-        servers: |
-          [{
-              "id": "central",
-              "username": "${{ secrets.NEXUS_USERNAME }}",
-              "password": "${{ secrets.NEXUS_PASSWORD }}"
-            },{
-               "id": "ghcr.io",
-               "username": "${{ secrets.GHUB_USERNAME }}",
-               "password": "${{ secrets.GHUB_ACCESS_TOKEN }}"
-            },{
-              "id": "github",
-              "username": "${{ secrets.GHUB_USERNAME }}",
-              "password": "${{ secrets.GHUB_ACCESS_TOKEN }}"
-          }]
+#    The extensions are considered experimental. Do not publish
+      
+#    - name: Configure Servers
+#      uses: s4u/maven-settings-action@7802f6aec16c9098b4798ad1f1d8ac75198194bd # v3.0.0
+#      with:
+#        githubServer: false
+#        servers: |
+#          [{
+#              "id": "central",
+#              "username": "${{ secrets.NEXUS_USERNAME }}",
+#              "password": "${{ secrets.NEXUS_PASSWORD }}"
+#            },{
+#               "id": "ghcr.io",
+#               "username": "${{ secrets.GHUB_USERNAME }}",
+#               "password": "${{ secrets.GHUB_ACCESS_TOKEN }}"
+#            },{
+#              "id": "github",
+#              "username": "${{ secrets.GHUB_USERNAME }}",
+#              "password": "${{ secrets.GHUB_ACCESS_TOKEN }}"
+#          }]
            
 #    - name: Install GPG Code Signing Key
 #      if: github.ref == 'refs/heads/main'

@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.sapl</groupId>
 		<artifactId>sapl-policy-engine</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.1.0-SNAPSHOT</version>
 		<relativePath />
 	</parent>
 
@@ -44,7 +44,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<sapl.version>3.0.0-SNAPSHOT</sapl.version>
+		<sapl.version>3.1.0-SNAPSHOT</sapl.version>
 
 		<extension.author>Nils Mahnken</extension.author>
 		<extension.name>sapl-hivemq-extension</extension.name>
