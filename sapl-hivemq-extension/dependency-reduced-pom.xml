@@ -299,12 +299,37 @@
   <repositories>
     <repository>
       <snapshots>
-        <updatePolicy>always</updatePolicy>
+        <enabled>false</enabled>
       </snapshots>
-      <id>ossrh</id>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+      <id>central</id>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots />
+      <id>central-portal-snapshots</id>
+      <name>Central Portal Snapshots</name>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
     </repository>
   </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <snapshots />
+      <id>central</id>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </pluginRepository>
+    <pluginRepository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots />
+      <id>central-portal-snapshots</id>
+      <name>Central Portal Snapshots</name>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+    </pluginRepository>
+  </pluginRepositories>
   <dependencies>
     <dependency>
       <groupId>com.hivemq</groupId>
@@ -321,7 +346,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.36</version>
+      <version>1.18.38</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -375,7 +400,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>hivemq</artifactId>
-      <version>1.20.6</version>
+      <version>1.21.2</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -469,7 +494,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>1.20.6</version>
+      <version>1.21.2</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -527,7 +552,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
-      <version>5.14.2</version>
+      <version>5.17.0</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -539,13 +564,13 @@
     <dependency>
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
-      <version>3.7.4</version>
+      <version>3.7.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.11.4</version>
+      <version>5.12.2</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>

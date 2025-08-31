@@ -146,7 +146,7 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
      */
     private void updateValidationSchemes(JsonNode constraint) {
         if (constraint.has("fields")) {
-            constraint.get("fields").fields().forEachRemaining(fieldPolicy -> {
+            constraint.get("fields").properties().forEach(fieldPolicy -> {
                 String fieldName = fieldPolicy.getKey();
                 if (isBoundFromFieldName.containsKey(fieldName)) {
                     var validationJson = JSON.objectNode();
