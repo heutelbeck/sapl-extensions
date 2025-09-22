@@ -473,7 +473,8 @@ public class VaadinPep {
         protected final C         component;
         protected boolean         denyRuleIsPresent = false;
 
-        protected VaadinPepBuilder(PolicyDecisionPoint pdp, EnforceConstraintsOfDecision enforceConstraintsOfDecision,
+        protected VaadinPepBuilder(PolicyDecisionPoint pdp,
+                EnforceConstraintsOfDecision enforceConstraintsOfDecision,
                 C component) {
             vaadinPep      = new VaadinPep(pdp, enforceConstraintsOfDecision);
             this.component = component;
@@ -638,7 +639,8 @@ public class VaadinPep {
         protected boolean isBuilt = false;
 
         protected VaadinSinglePepBuilder(PolicyDecisionPoint pdp,
-                EnforceConstraintsOfDecision enforceConstraintsOfDecision, C component) {
+                EnforceConstraintsOfDecision enforceConstraintsOfDecision,
+                C component) {
             super(pdp, enforceConstraintsOfDecision, component);
         }
 
@@ -704,7 +706,9 @@ public class VaadinPep {
         private boolean            isBuilt = false;
 
         protected VaadinMultiPepBuilder(PolicyDecisionPoint pdp,
-                EnforceConstraintsOfDecision enforceConstraintsOfDecision, MultiBuilder multiBuilder, C component) {
+                EnforceConstraintsOfDecision enforceConstraintsOfDecision,
+                MultiBuilder multiBuilder,
+                C component) {
             super(pdp, enforceConstraintsOfDecision, component);
             this.multiBuilder = multiBuilder;
         }
@@ -804,7 +808,8 @@ public class VaadinPep {
             extends VaadinSinglePepBuilder<VaadinSingleComponentPepBuilder, Component>
             implements EnforceHasEnabled<VaadinSingleComponentPepBuilder, Component> {
         protected VaadinSingleComponentPepBuilder(PolicyDecisionPoint pdp,
-                EnforceConstraintsOfDecision enforceConstraintsOfDecision, Component component) {
+                EnforceConstraintsOfDecision enforceConstraintsOfDecision,
+                Component component) {
             super(pdp, enforceConstraintsOfDecision, component);
         }
     }
@@ -816,7 +821,8 @@ public class VaadinPep {
             extends VaadinMultiPepBuilder<VaadinMultiComponentPepBuilder, Component>
             implements EnforceHasEnabled<VaadinMultiComponentPepBuilder, Component> {
         protected VaadinMultiComponentPepBuilder(PolicyDecisionPoint pdp,
-                EnforceConstraintsOfDecision enforceConstraintsOfDecision, MultiBuilder multiBuilder,
+                EnforceConstraintsOfDecision enforceConstraintsOfDecision,
+                MultiBuilder multiBuilder,
                 Component component) {
             super(pdp, enforceConstraintsOfDecision, multiBuilder, component);
         }
@@ -832,7 +838,8 @@ public class VaadinPep {
             implements EnforceHasEnabled<VaadinSingleButtonPepBuilder, Button>,
             EnforceHasText<VaadinSingleButtonPepBuilder, Button> {
         protected VaadinSingleButtonPepBuilder(PolicyDecisionPoint pdp,
-                EnforceConstraintsOfDecision enforceConstraintsOfDecision, Button button) {
+                EnforceConstraintsOfDecision enforceConstraintsOfDecision,
+                Button button) {
             super(pdp, enforceConstraintsOfDecision, button);
         }
     }
@@ -844,7 +851,9 @@ public class VaadinPep {
             implements EnforceHasEnabled<VaadinMultiButtonPepBuilder, Button>,
             EnforceHasText<VaadinMultiButtonPepBuilder, Button> {
         protected VaadinMultiButtonPepBuilder(PolicyDecisionPoint pdp,
-                EnforceConstraintsOfDecision enforceConstraintsOfDecision, MultiBuilder multiBuilder, Button button) {
+                EnforceConstraintsOfDecision enforceConstraintsOfDecision,
+                MultiBuilder multiBuilder,
+                Button button) {
             super(pdp, enforceConstraintsOfDecision, multiBuilder, button);
         }
     }
@@ -860,7 +869,8 @@ public class VaadinPep {
             implements EnforceHasEnabled<VaadinSingleTextFieldPepBuilder, TextField>,
             EnforceHasValueAndElement<VaadinSingleTextFieldPepBuilder, TextField> {
         protected VaadinSingleTextFieldPepBuilder(PolicyDecisionPoint pdp,
-                EnforceConstraintsOfDecision enforceConstraintsOfDecision, TextField textField) {
+                EnforceConstraintsOfDecision enforceConstraintsOfDecision,
+                TextField textField) {
             super(pdp, enforceConstraintsOfDecision, textField);
         }
     }
@@ -873,7 +883,8 @@ public class VaadinPep {
             implements EnforceHasEnabled<VaadinMultiTextFieldPepBuilder, TextField>,
             EnforceHasValueAndElement<VaadinMultiTextFieldPepBuilder, TextField> {
         protected VaadinMultiTextFieldPepBuilder(PolicyDecisionPoint pdp,
-                EnforceConstraintsOfDecision enforceConstraintsOfDecision, MultiBuilder multiBuilder,
+                EnforceConstraintsOfDecision enforceConstraintsOfDecision,
+                MultiBuilder multiBuilder,
                 TextField textField) {
             super(pdp, enforceConstraintsOfDecision, multiBuilder, textField);
         }
@@ -888,7 +899,8 @@ public class VaadinPep {
             extends VaadinSinglePepBuilder<VaadinSingleCheckboxPepBuilder, Checkbox>
             implements EnforceHasEnabled<VaadinSingleCheckboxPepBuilder, Checkbox> {
         protected VaadinSingleCheckboxPepBuilder(PolicyDecisionPoint pdp,
-                EnforceConstraintsOfDecision enforceConstraintsOfDecision, Checkbox checkbox) {
+                EnforceConstraintsOfDecision enforceConstraintsOfDecision,
+                Checkbox checkbox) {
             super(pdp, enforceConstraintsOfDecision, checkbox);
         }
     }
@@ -900,7 +912,8 @@ public class VaadinPep {
             extends VaadinMultiPepBuilder<VaadinMultiCheckboxPepBuilder, Checkbox>
             implements EnforceHasEnabled<VaadinMultiCheckboxPepBuilder, Checkbox> {
         protected VaadinMultiCheckboxPepBuilder(PolicyDecisionPoint pdp,
-                EnforceConstraintsOfDecision enforceConstraintsOfDecision, MultiBuilder multiBuilder,
+                EnforceConstraintsOfDecision enforceConstraintsOfDecision,
+                MultiBuilder multiBuilder,
                 Checkbox checkbox) {
             super(pdp, enforceConstraintsOfDecision, multiBuilder, checkbox);
         }
@@ -915,7 +928,8 @@ public class VaadinPep {
             implements EnforceHasEnabled<VaadinSingleSpanPepBuilder, Span>,
             EnforceHasText<VaadinSingleSpanPepBuilder, Span> {
         protected VaadinSingleSpanPepBuilder(PolicyDecisionPoint pdp,
-                EnforceConstraintsOfDecision enforceConstraintsOfDecision, Span span) {
+                EnforceConstraintsOfDecision enforceConstraintsOfDecision,
+                Span span) {
             super(pdp, enforceConstraintsOfDecision, span);
         }
     }
@@ -927,7 +941,9 @@ public class VaadinPep {
             implements EnforceHasEnabled<VaadinMultiSpanPepBuilder, Span>,
             EnforceHasText<VaadinMultiSpanPepBuilder, Span> {
         protected VaadinMultiSpanPepBuilder(PolicyDecisionPoint pdp,
-                EnforceConstraintsOfDecision enforceConstraintsOfDecision, MultiBuilder multiBuilder, Span span) {
+                EnforceConstraintsOfDecision enforceConstraintsOfDecision,
+                MultiBuilder multiBuilder,
+                Span span) {
             super(pdp, enforceConstraintsOfDecision, multiBuilder, span);
         }
     }

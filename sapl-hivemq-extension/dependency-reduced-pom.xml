@@ -346,7 +346,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.38</version>
+      <version>1.18.42</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -564,7 +564,7 @@
     <dependency>
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
-      <version>3.7.9</version>
+      <version>3.7.11</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -602,17 +602,17 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
+    <output.dir>${basedir}</output.dir>
     <asciidoctor.version>1.5.7.1</asciidoctor.version>
+    <java.version>21</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
     <extension.name>sapl-hivemq-extension</extension.name>
+    <source.document.name>README.adoc</source.document.name>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
     <sapl.version>3.1.0-SNAPSHOT</sapl.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <skipTests>true</skipTests>
     <extension.author>Nils Mahnken</extension.author>
-    <output.dir>${basedir}</output.dir>
-    <java.version>17</java.version>
-    <maven.compiler.source>${java.version}</maven.compiler.source>
-    <source.document.name>README.adoc</source.document.name>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 </project>

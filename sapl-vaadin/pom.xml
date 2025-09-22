@@ -35,7 +35,8 @@
 
 	<properties>
 		<jetty.version>9.4.28.v20200408</jetty.version>
-	</properties>
+        <vaadin.version>24.9.0</vaadin.version>
+    </properties>
 
 	<dependencyManagement>
 		<dependencies>
@@ -46,6 +47,13 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-bom</artifactId>
+                <version>${vaadin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 		</dependencies>
 	</dependencyManagement>
 

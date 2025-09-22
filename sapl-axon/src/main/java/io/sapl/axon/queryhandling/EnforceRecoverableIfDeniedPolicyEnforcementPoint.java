@@ -78,8 +78,10 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
     final AtomicBoolean                                    stopped               = new AtomicBoolean(false);
 
     private EnforceRecoverableIfDeniedPolicyEnforcementPoint(SubscriptionQueryMessage<?, ?, ?> query,
-            Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<U>> resourceAccessPoint,
-            ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
+            Flux<AuthorizationDecision> decisions,
+            Flux<SubscriptionQueryUpdateMessage<U>> resourceAccessPoint,
+            ConstraintHandlerService constraintHandlerService,
+            ResponseType<?> resultResponseType,
             ResponseType<U> updateResponseType) {
         this.query                    = query;
         this.decisions                = decisions;

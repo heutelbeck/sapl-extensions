@@ -97,7 +97,8 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
         objectMapper.findAndRegisterModules();
     }
 
-    public FieldValidationConstraintHandlerProvider(Binder<?> binder, Object objectWithMemberFields,
+    public FieldValidationConstraintHandlerProvider(Binder<?> binder,
+            Object objectWithMemberFields,
             ObjectMapper objectMapper) {
         this.binder                 = binder;
         this.objectWithMemberFields = objectWithMemberFields;

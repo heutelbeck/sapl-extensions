@@ -59,7 +59,8 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
      * @param axonConstraintEnforcementService The ConstraintHandlerService.
      * @param subscriptionBuilder The AuthorizationSubscriptionBuilderService.
      */
-    public CommandPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
+    public CommandPolicyEnforcementPoint(MessageHandlingMember<T> delegate,
+            PolicyDecisionPoint pdp,
             ConstraintHandlerService axonConstraintEnforcementService,
             AuthorizationSubscriptionBuilderService subscriptionBuilder) {
         super(delegate);

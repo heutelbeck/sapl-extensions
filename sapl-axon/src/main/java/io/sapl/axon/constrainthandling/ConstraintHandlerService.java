@@ -119,7 +119,8 @@ public class ConstraintHandlerService {
      * UpdateFilterConstraintHandlerProvider instances.
      * @param updateMappingProviders All ResultConstraintHandlerProvider instances.
      */
-    public ConstraintHandlerService(ObjectMapper mapper, ParameterResolverFactory parameterResolverFactory,
+    public ConstraintHandlerService(ObjectMapper mapper,
+            ParameterResolverFactory parameterResolverFactory,
             List<OnDecisionConstraintHandlerProvider> onDecisionProviders,
             List<CommandConstraintHandlerProvider> globalCommandProviders,
             List<QueryConstraintHandlerProvider> globalQueryProviders,

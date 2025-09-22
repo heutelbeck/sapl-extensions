@@ -164,7 +164,8 @@ public class MqttPep {
      * @param saplMqttExtensionConfig contains the configuration params for the pep
      * @param mqttClientCache used to cache the state of different enforcements
      */
-    public MqttPep(PolicyDecisionPoint pdp, SaplMqttExtensionConfig saplMqttExtensionConfig,
+    public MqttPep(PolicyDecisionPoint pdp,
+            SaplMqttExtensionConfig saplMqttExtensionConfig,
             ConcurrentMap<String, MqttClientState> mqttClientCache) {
         this.pdp                     = pdp;
         this.saplMqttExtensionConfig = new SaplMqttExtensionConfig(saplMqttExtensionConfig);

@@ -109,7 +109,8 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
 
     private record QueryEnforcementConfiguration(QueryAuthorizationMode mode, Flux<AuthorizationDecision> decisions) {}
 
-    private record QueryData<U>(QueryAuthorizationMode mode,
+    private record QueryData<U>(
+            QueryAuthorizationMode mode,
             Sinks.One<QueryEnforcementConfiguration> enforcementConfigurationSink,
             SinkManyWrapper<SubscriptionQueryUpdateMessage<U>> updateSinkWrapper) {
 
@@ -417,7 +418,12 @@ public class SaplQueryUpdateEmitter implements QueryUpdateEmitter {
     }
 
     private enum QueryAuthorizationMode {
-        NO_AUTHORIZATION, TILL_DENIED, DROP_WHILE_DENIED, RECOVERABLE_IF_DENIED, UNDEFINED, IMMEDIATE_DENY;
+        NO_AUTHORIZATION,
+        TILL_DENIED,
+        DROP_WHILE_DENIED,
+        RECOVERABLE_IF_DENIED,
+        UNDEFINED,
+        IMMEDIATE_DENY;
 
         public static QueryAuthorizationMode of(Class<? extends Annotation> clazz) {
             if (PreHandleEnforce.class.isAssignableFrom(clazz))

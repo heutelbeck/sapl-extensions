@@ -71,7 +71,9 @@ public class ConstraintDetails {
      * @param topic the topic of the current mqtt action
      * @param publishInboundOutput provides the mqtt publish message
      */
-    public ConstraintDetails(String clientId, IdentifiableAuthorizationDecision identAuthzDecision, String topic,
+    public ConstraintDetails(String clientId,
+            IdentifiableAuthorizationDecision identAuthzDecision,
+            String topic,
             PublishInboundOutput publishInboundOutput) {
         this.topic                                = topic;
         this.clientId                             = clientId;

@@ -80,7 +80,8 @@ public class HivemqPepExtensionMain implements ExtensionMain {
      * @param saplExtensionConfigPath path to the extension configuration file
      * @param mqttClientCache used to cache the state of different enforcements
      */
-    public HivemqPepExtensionMain(String policiesPath, String saplExtensionConfigPath,
+    public HivemqPepExtensionMain(String policiesPath,
+            String saplExtensionConfigPath,
             ConcurrentMap<String, MqttClientState> mqttClientCache) {
         this.policiesPath            = policiesPath;
         this.saplExtensionConfigPath = saplExtensionConfigPath;
@@ -104,7 +105,8 @@ public class HivemqPepExtensionMain implements ExtensionMain {
      * @param pdp used by the pep to request authorization decisions
      * @param mqttClientCache used to cache the state of different enforcements
      */
-    public HivemqPepExtensionMain(String saplExtensionConfigPath, PolicyDecisionPoint pdp,
+    public HivemqPepExtensionMain(String saplExtensionConfigPath,
+            PolicyDecisionPoint pdp,
             ConcurrentMap<String, MqttClientState> mqttClientCache) {
         this.pdp                     = pdp;
         this.saplExtensionConfigPath = saplExtensionConfigPath;

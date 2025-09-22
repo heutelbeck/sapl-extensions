@@ -79,8 +79,10 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
     final AtomicBoolean                                    stopped               = new AtomicBoolean(false);
 
     private EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint(SubscriptionQueryMessage<?, ?, ?> query,
-            Flux<AuthorizationDecision> decisions, Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
-            ConstraintHandlerService constraintHandlerService, ResponseType<?> resultResponseType,
+            Flux<AuthorizationDecision> decisions,
+            Flux<SubscriptionQueryUpdateMessage<U>> updateMessageFlux,
+            ConstraintHandlerService constraintHandlerService,
+            ResponseType<?> resultResponseType,
             ResponseType<?> updateResponseType) {
         this.query                    = query;
         this.decisions                = decisions;

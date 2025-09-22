@@ -90,7 +90,8 @@ class SaplQueryUpdateEmitterTests {
 
     private static class FlaggedUpdateHandlerRegistration<U> extends UpdateHandlerRegistration<U> {
         public FlaggedUpdateHandlerRegistration(Registration registration,
-                Flux<SubscriptionQueryUpdateMessage<U>> updates, Runnable completeHandler) {
+                Flux<SubscriptionQueryUpdateMessage<U>> updates,
+                Runnable completeHandler) {
             super(registration, updates, completeHandler);
         }
     }
@@ -105,7 +106,8 @@ class SaplQueryUpdateEmitterTests {
 
         private static final long serialVersionUID = -4415866991004251226L;
 
-        public FlaggedSubscriptionQueryMessage(Q payload, ResponseType<I> responseType,
+        public FlaggedSubscriptionQueryMessage(Q payload,
+                ResponseType<I> responseType,
                 ResponseType<U> updateResponseType) {
             super(payload, responseType, updateResponseType);
         }

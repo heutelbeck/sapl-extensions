@@ -94,9 +94,12 @@ public final class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandling
      * @param properties The configuration class for TTL settings.
      * @param subscriptionBuilder The AuthorizationSubscriptionBuilderService.
      */
-    public QueryPolicyEnforcementPoint(MessageHandlingMember<T> delegate, PolicyDecisionPoint pdp,
-            ConstraintHandlerService axonConstraintEnforcementService, SaplQueryUpdateEmitter emitter,
-            AuthorizationSubscriptionBuilderService subscriptionBuilder, SaplAxonProperties properties) {
+    public QueryPolicyEnforcementPoint(MessageHandlingMember<T> delegate,
+            PolicyDecisionPoint pdp,
+            ConstraintHandlerService axonConstraintEnforcementService,
+            SaplQueryUpdateEmitter emitter,
+            AuthorizationSubscriptionBuilderService subscriptionBuilder,
+            SaplAxonProperties properties) {
         super(delegate);
         this.delegate                         = delegate;
         this.pdp                              = pdp;

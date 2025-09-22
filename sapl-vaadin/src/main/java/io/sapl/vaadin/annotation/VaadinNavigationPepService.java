@@ -41,11 +41,14 @@ public class VaadinNavigationPepService {
     private final VaadinAuthorizationSubscriptionBuilderService authorizationSubscriptionBuilderService;
 
     public enum NavigationType {
-        REDIRECT, REROUTE
+        REDIRECT,
+        REROUTE
     }
 
     public enum LifecycleType {
-        LEAVE, ENTER, BOTH
+        LEAVE,
+        ENTER,
+        BOTH
     }
 
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
