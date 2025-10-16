@@ -196,7 +196,7 @@ class SaplAxonDemoTests {
     private TestAuthenticationSupplier authenticationSupplier;
 
     @BeforeEach
-    public void beforeEach() {
+    void beforeEach() {
         authenticationSupplier.setTestAuthentication(null);
     }
 

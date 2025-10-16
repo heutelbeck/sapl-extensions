@@ -1415,14 +1415,14 @@ public class EthereumPipFunctionsTest {
     }
 
     private static boolean compareAddress(Collection<String> address1, Collection<String> address2) {
-        if (address1 == null | address2 == null) {
+        if (address1 == null || address2 == null) {
             return address1 == null && address2 == null;
         }
         return address1.equals(address2);
     }
 
     private static boolean compareDbp(DefaultBlockParameter dbp1, DefaultBlockParameter dbp2) {
-        if (dbp1 == null | dbp2 == null) {
+        if (dbp1 == null || dbp2 == null) {
             return dbp1 == null && dbp2 == null;
         }
         return dbp1.getValue().equals(dbp2.getValue());

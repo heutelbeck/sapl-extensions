@@ -31,8 +31,8 @@ public class PrinterUserForm extends VerticalLayout {
     private static final long serialVersionUID = -2485900675712345966L;
 
     public PrinterUserForm(PrinterUser user, Select<String> printerSelect, AccessCertificate accessCertificate) {
-		String username = user.getUsername();
-		String address  = user.getEthereumAddress();
+		String username = user == null ? "" : user.getUsername();
+		String address  = user == null ? "" : user.getEthereumAddress();
 
 		H2   userWelcome = new H2("Welcome " + username);
 		Span showAddress = new Span("Your registered Ethereum address: " + address);
