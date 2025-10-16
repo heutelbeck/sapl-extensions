@@ -105,7 +105,5 @@ public class MonitorFactory {
 		return limit(oldValue + (RANDOM.nextDouble() * deltaMax - deltaMax / 2.0D), min, max);
 	}
 
-	double limit(double x, double min, double max) {
-		return Math.max(min, Math.min(x, max));
-	}
+	double limit(double x, double min, double max) { return Math.clamp(x, min, max); }
 }

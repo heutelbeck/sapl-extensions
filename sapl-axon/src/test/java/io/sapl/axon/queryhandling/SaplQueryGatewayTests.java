@@ -97,7 +97,7 @@ class SaplQueryGatewayTests {
 
         assertNull(result.initialResult().block());
         var updates = result.updates();
-        assertThrows(AccessDeniedException.class, () -> updates.blockLast());
+        assertThrows(AccessDeniedException.class, updates::blockLast);
         assertEquals(1, accessDeniedCounter.get());
     }
 }

@@ -248,7 +248,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(AccessDeniedException.class, exception.getCause().getClass());
     }
@@ -264,7 +264,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(AccessDeniedException.class, exception.getCause().getClass());
     }
@@ -282,7 +282,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(RuntimeException.class, exception.getCause().getClass());
         assertEquals("A very special message!", exception.getCause().getLocalizedMessage());
@@ -298,7 +298,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(RuntimeException.class, exception.getCause().getClass());
         assertEquals("A very special message!", exception.getCause().getLocalizedMessage());
@@ -339,7 +339,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(RuntimeException.class, exception.getCause().getClass());
         assertEquals("A very special message!", exception.getCause().getLocalizedMessage());
@@ -371,7 +371,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(RuntimeException.class, exception.getCause().getClass());
         assertEquals("An even more special message!", exception.getCause().getLocalizedMessage());
@@ -480,7 +480,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(AccessDeniedException.class, exception.getCause().getClass());
     }
@@ -507,7 +507,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(RuntimeException.class, exception.getCause().getClass());
         assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());
@@ -532,7 +532,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(RuntimeException.class, exception.getCause().getClass());
         assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());
@@ -557,7 +557,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(RuntimeException.class, exception.getCause().getClass());
         assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());
@@ -581,7 +581,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(AccessDeniedException.class, exception.getCause().getClass());
     }
@@ -607,7 +607,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(RuntimeException.class, exception.getCause().getClass());
         assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());
@@ -630,7 +630,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(RuntimeException.class, exception.getCause().getClass());
         assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());
@@ -682,7 +682,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(RuntimeException.class, exception.getCause().getClass());
         assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());
@@ -730,7 +730,7 @@ class QueryPolicyEnforcementPointTests {
         assertInstanceOf(CompletableFuture.class, response);
         var future = (CompletableFuture<?>) response;
         assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, () -> future.get());
+        var exception = assertThrows(ExecutionException.class, future::get);
         assertNotNull(exception.getCause());
         assertEquals(RuntimeException.class, exception.getCause().getClass());
         assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());

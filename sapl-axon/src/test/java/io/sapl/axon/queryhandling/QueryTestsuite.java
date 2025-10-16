@@ -585,8 +585,6 @@ public abstract class QueryTestsuite {
         verify(errorMappingProvider, times(1)).map(any());
     }
 
-    ////////////////////////////////////////////////
-
     @Test
     void when_postHandlerSecuredQueryAndPermitWithUnknownAdvice_then_accessGranted() {
         var advice = JSON.arrayNode();
@@ -674,9 +672,9 @@ public abstract class QueryTestsuite {
                 .subscribe();
     }
 
-    /// SUBSCRIPTION QUERIES WITH CONSTRAINTS
+    // SUBSCRIPTION QUERIES WITH CONSTRAINTS
 
-    /// TILL DENIED
+    // TILL DENIED
 
     @Test
     void when_preHandlerSecuredSubscriptionQueryAndPermitWithConstraints_then_initialReturnAndUpdatesAreEmitted() {

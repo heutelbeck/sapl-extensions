@@ -17,17 +17,16 @@
  */
 package io.sapl.axon.constrainthandling.api;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
+import com.fasterxml.jackson.databind.JsonNode;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * This type of constraint handler provider will remove all content from a
@@ -95,7 +94,7 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
         return payload.filter(x -> test(x, constraint));
     }
 
-    private Collection<T> filterCollection(Collection<T> payload, JsonNode constraint) {
+    private List<T> filterCollection(Collection<T> payload, JsonNode constraint) {
         return payload.stream().filter(x -> test(x, constraint)).toList();
     }
 

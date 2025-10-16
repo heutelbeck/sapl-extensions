@@ -56,12 +56,12 @@ public class CommandIT extends CommandTestsuite {
     }
 
     @BeforeAll
-    public static void beforeAll() {
+    static void beforeAll() {
         isIntegrationTest = true;
     }
 
     @AfterAll
-    public static void afterAll() {
+    static void afterAll() {
         isIntegrationTest = false;
     }
 }

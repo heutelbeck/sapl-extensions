@@ -64,7 +64,7 @@ class SaplAxonDemoTests {
     }
 
     @org.springframework.boot.test.context.TestConfiguration
-    public static class TestConfiguration {
+    static class TestConfiguration {
         @Bean
         @Primary
         AuthenticationSupplier authenticationSupplier(ObjectMapper mapper) {
@@ -335,7 +335,7 @@ class SaplAxonDemoTests {
             var testAuthentication = UsernamePasswordAuthenticationToken.authenticated(user, user.getPassword(),
                     user.getAuthorities());
             authenticationSupplier.setTestAuthentication(testAuthentication);
-        }).map(user -> (HospitalStaff) user);
+        }).map(HospitalStaff::cast);
     }
 
 }

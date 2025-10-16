@@ -20,7 +20,7 @@
 
 	<properties>
 		<java.version>21</java.version>
-        <vaadin.version>24.9.0</vaadin.version>
+        <vaadin.version>24.9.2</vaadin.version>
 		<jacoco.version>0.8.11</jacoco.version>
 		<failsafe.version>3.2.5</failsafe.version>
 		<spotbugs.version>4.8.5.0</spotbugs.version>

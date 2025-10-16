@@ -50,9 +50,7 @@ class CommandConstraintHandlerBundleTests {
         Function<CommandMessage<?>, CommandMessage<?>> commandMapper    = c -> new GenericCommandMessage<>(
                 "special payload");
         Function<String, String>                       resultMapper     = r -> "special result";
-        Runnable                                       handlersOnObject = () -> {
-                                                                            handlerOnObjectCounter.getAndIncrement();
-                                                                        };
+        Runnable                                       handlersOnObject = handlerOnObjectCounter::getAndIncrement;
         var                                            bundle           = new CommandConstraintHandlerBundle<>(
                 onDecision, errorMapper, commandMapper, resultMapper, handlersOnObject);
 

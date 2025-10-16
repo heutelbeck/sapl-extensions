@@ -58,7 +58,7 @@ class FluxOneAndManyTapTests {
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(50L));
 
         tap.one();
-        assertThrows(IllegalStateException.class, () -> tap.one());
+        assertThrows(IllegalStateException.class, tap::one);
         verify(onSubscribe, times(0)).accept(any());
         verify(doFinally, times(0)).accept(any());
     }
@@ -77,7 +77,7 @@ class FluxOneAndManyTapTests {
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(50L));
 
         tap.many();
-        assertThrows(IllegalStateException.class, () -> tap.many());
+        assertThrows(IllegalStateException.class, tap::many);
         verify(onSubscribe, times(0)).accept(any());
         verify(doFinally, times(0)).accept(any());
     }

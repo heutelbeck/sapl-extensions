@@ -35,7 +35,7 @@
 
 	<properties>
 		<jetty.version>9.4.28.v20200408</jetty.version>
-        <vaadin.version>24.9.0</vaadin.version>
+        <vaadin.version>24.9.2</vaadin.version>
     </properties>
 
 	<dependencyManagement>

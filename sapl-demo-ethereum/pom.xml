@@ -45,7 +45,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<jacoco.version>0.8.11</jacoco.version>
-		<vaadin.version>24.9.0</vaadin.version>
+		<vaadin.version>24.9.2</vaadin.version>
 		<version.lombok>1.18.42</version.lombok>
 		<failsafe.version>3.2.5</failsafe.version>
 		<selenium.version>4.8.3</selenium.version>
