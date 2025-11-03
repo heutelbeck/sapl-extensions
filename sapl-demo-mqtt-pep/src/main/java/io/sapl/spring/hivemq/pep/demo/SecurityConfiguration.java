@@ -16,24 +16,27 @@
 
 package io.sapl.spring.hivemq.pep.demo;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
-import com.vaadin.flow.spring.security.VaadinWebSecurity;
+import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
+import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfiguration extends VaadinWebSecurity {
+@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
+public class SecurityConfiguration {
 
-	@Override
-    protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
+        http.with(VaadinSecurityConfigurer.vaadin(), vaadin -> {
+            // No login view configured - all requests permitted
+        });
+        return http.build();
     }
-
-	@Override
-	public void configure(WebSecurity web) {
-		web.ignoring().anyRequest();
-	}
 }

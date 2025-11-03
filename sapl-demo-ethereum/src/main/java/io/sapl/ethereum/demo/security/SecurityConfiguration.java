@@ -17,36 +17,73 @@ package io.sapl.ethereum.demo.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
-import com.vaadin.flow.spring.security.VaadinWebSecurity;
+import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
+import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import io.sapl.ethereum.demo.views.login.LoginView;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
+/**
+ * Security configuration for SAPL Ethereum Demo application.
+ * <p>
+ * Configures Vaadin UI security with form-based login, permits access to static
+ * image resources and line-awesome SVG icons, and integrates Vaadin's security
+ * features for view-based access control.
+ */
+@Slf4j
 @Configuration
 @EnableWebSecurity
-public class SecurityConfiguration extends VaadinWebSecurity {
+@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
+public class SecurityConfiguration {
 
-	@Bean
-	PasswordEncoder passwordEncoder() {
-		return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
-	}
+    /**
+     * Configures password encoding using Argon2 with Spring Security 5.8 defaults.
+     * <p>
+     * Argon2 provides strong protection against brute-force attacks and is
+     * recommended for production environments.
+     *
+     * @return the configured PasswordEncoder.
+     */
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
+    }
 
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
+    /**
+     * Configures the security filter chain for the Vaadin UI.
+     * <p>
+     * Permits public access to static resources (PNG images and line-awesome SVG
+     * icons), applies Vaadin's security integration for view-based access control,
+     * and configures the login view.
+     *
+     * @param http the HttpSecurity to configure.
+     * @return the configured SecurityFilterChain.
+     * @throws Exception if configuration fails.
+     */
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        val matcher = PathPatternRequestMatcher.withDefaults();
 
-		http.authorizeHttpRequests(
-				requests -> requests.requestMatchers(new AntPathRequestMatcher("/images/*.png")).permitAll());
+        log.info("Configuring Vaadin UI security with form-based login.");
 
-		// Icons from the line-awesome addon
-		http.authorizeHttpRequests(
-				requests -> requests.requestMatchers(new AntPathRequestMatcher("/line-awesome/**/*.svg")).permitAll());
-		super.configure(http);
-		setLoginView(http, LoginView.class);
-	}
+        // Configure static resources with public access
+        http.authorizeHttpRequests(auth -> auth.requestMatchers(matcher.matcher("/images/*.png")).permitAll()
+                .requestMatchers(matcher.matcher("/line-awesome/**/*.svg")).permitAll());
 
+        // Apply Vaadin's security integration
+        http.with(VaadinSecurityConfigurer.vaadin(), vaadin -> {
+            vaadin.loginView(LoginView.class);
+        });
+
+        return http.build();
+    }
 }
