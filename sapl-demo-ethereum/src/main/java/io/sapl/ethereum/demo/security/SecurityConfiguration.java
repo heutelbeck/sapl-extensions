@@ -77,7 +77,7 @@ public class SecurityConfiguration {
 
         // Configure static resources with public access
         http.authorizeHttpRequests(auth -> auth.requestMatchers(matcher.matcher("/images/*.png")).permitAll()
-                .requestMatchers(matcher.matcher("/line-awesome/**/*.svg")).permitAll());
+                .requestMatchers(matcher.matcher("/line-awesome/**")).permitAll());
 
         // Apply Vaadin's security integration
         http.with(VaadinSecurityConfigurer.vaadin(), vaadin -> {
