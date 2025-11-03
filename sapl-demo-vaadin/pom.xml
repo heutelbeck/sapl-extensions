@@ -23,8 +23,8 @@
         <vaadin.version>24.9.4</vaadin.version>
 		<jacoco.version>0.8.11</jacoco.version>
 		<failsafe.version>3.2.5</failsafe.version>
-		<spotbugs.version>4.8.5.0</spotbugs.version>
-		<sbcontrib.version>7.6.0</sbcontrib.version>
+		<spotbugs.version>4.9.8.1</spotbugs.version>
+		<sbcontrib.version>7.6.15</sbcontrib.version>
 		<maven.javadoc.skip>true</maven.javadoc.skip>
 		<argLine />
 	</properties>
