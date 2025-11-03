@@ -42,7 +42,7 @@ public class HiveMqUtility {
      * Evaluates whether a mqtt subscription is existing or not.
      *
      * @param mqttSaplId the id used to check against
-     * @return true if an mqtt subscription exists
+     * @return true if a mqtt subscription exists
      */
     public static boolean isMqttSubscriptionExisting(MqttSaplId mqttSaplId) {
         var                    isMqttSubscriptionExisting = new AtomicBoolean(false);

@@ -152,7 +152,7 @@ class FluxOneAndManyTapTests {
 
         StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
                 .verifyComplete();
-        Thread.sleep(250L); // longer than event delay and than ttl
+        Thread.sleep(250L); // longer than event delay and ttl
         StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
                 .expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
                 .verifyComplete();

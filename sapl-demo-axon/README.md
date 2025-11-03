@@ -8,12 +8,12 @@ adding different SAPL Annotations to aggregates, domain services, or projections
 policy enforcement points in the command and query handlers.
 
 Further, the demo includes examples for customizing authorization subscriptions and enforcing obligations on the handling of 
-commands and queries, such as triggering side-effects (e.g., dispatch events or commands) or modifying and filtering data 
+commands and queries, such as triggering side effects (e.g., dispatch events or commands) or modifying and filtering data 
 before delivering it to users.
 
 ## Prerequisites
 
-The only requirement for running the demo is the presence of a working install of JDK 17 and Maven. 
+The only requirement for running the demo is the presence of a working installation of JDK 21 and Maven. 
 Also, port 8080 (for the demo application) and port 8888 (used by the embedded MongoDB) must be available when running the demo.
 
 ## Running the Demo
@@ -511,10 +511,10 @@ data:{"id":"0","name":"Mona Vance","latestIcd11Code":"1B95","latestDiagnosisText
 data:{"id":"0","name":"Mona Vance","latestIcd11Code":"1Bâ–ˆâ–ˆ","latestDiagnosisText":"Brâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ","ward":"NONE","updatedAt":"2022-09-06T23:08:15.054Z"}
 ```
 
-In this case, first Mona was assigned to the ICCU and then got discharged by a doctor. Thus Mona was assigned to no ward. And as karl can only see medical data of patients assigned to the ICCU, the updated ```PatientDocument``` was delivered with blackened fields.
+In this case, first Mona was assigned to the ICCU and then got discharged by a doctor. Thus, Mona was assigned to no ward. And as karl can only see medical data of patients assigned to the ICCU, the updated ```PatientDocument``` was delivered with blackened fields.
 
 This is implemented with the same policy used for ```FetchAllPatients```. The obligation was applied to each individual subscription update. 
-This is expressed in ```src/main/resources/policies/fetchAll.sapl```. This document is a policy set, which is applicable for both queries. As can been seen in the ```for``` clause of the policy set:
+This is expressed in ```src/main/resources/policies/fetchAll.sapl```. This document is a policy set, which is applicable for both queries. As can be seen in the ```for``` clause of the policy set:
 
 ```
 set "fetch patient list policy set"

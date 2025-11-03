@@ -140,7 +140,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * @param obligation Current Obligation or Advice
      * @param handlerBundle Handler bundle to add the handlers
      * @param isObligation Set to true if param obligation is an obligation or to
-     * false if param obligation is an advice.
+     * false if param obligation is advice.
      * @param vaadinPep vaadinPep containing additional local constraint handler
      */
     private void addConstraintHandlerToHandlerBundle(JsonNode obligation, VaadinConstraintHandlerBundle handlerBundle,
@@ -161,7 +161,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      *
      * @param constraint Obligation or Advice
      * @param isObligation Set to true if param obligation is an obligation or to
-     * false if param obligation is an advice.
+     * false if param obligation is advice.
      * @param vaadinPep vaadinPep containing additional local constraint handler
      */
     private List<Function<UI, Mono<Boolean>>> constructVaadinFunctionHandlersForConstraint(JsonNode constraint,
@@ -176,7 +176,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      *
      * @param constraint Obligation or Advice
      * @param isObligation Set to true if param obligation is an obligation or to
-     * false if param obligation is an advice.
+     * false if param obligation is advice.
      * @param vaadinPep vaadinPep containing additional local constraint handler
      */
     private List<Consumer<UI>> constructConsumerHandlersForConstraint(JsonNode constraint, boolean isObligation,
@@ -191,7 +191,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      *
      * @param constraint Obligation or Advice
      * @param isObligation Set to true if param obligation is an obligation or to
-     * false if param obligation is an advice.
+     * false if param obligation is advice.
      * @param vaadinPep vaadinPep containing additional local constraint handler
      */
     private List<Runnable> constructRunnableHandlersForConstraint(JsonNode constraint, boolean isObligation,

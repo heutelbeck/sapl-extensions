@@ -412,7 +412,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.5.18</version>
+      <version>1.5.20</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -564,7 +564,7 @@
     <dependency>
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
-      <version>3.7.11</version>
+      <version>3.7.12</version>
       <scope>test</scope>
     </dependency>
     <dependency>

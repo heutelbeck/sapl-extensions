@@ -18,7 +18,7 @@ The entry point when using the library is the PepBuilderService, it should be au
 
 To link a Vaadin component, the function "with()" of the PepBuilderService needs to be used. This returns a specific pep builder of the given component.
 With this builder, it is then possible to set subject, action and resource with the functions "subject()", "action()" and "resource()".
-Afterwards, it needs to be specified, what to do when a decision occurs, for example with the methods:
+Afterward, it needs to be specified, what to do when a decision occurs, for example with the methods:
   - onDecisionDo
   - onPermitDo
   - onDenyDo
@@ -32,7 +32,7 @@ See the section "Change the enabled property of a button based on policy" for a 
 To construct multi subscriptions, a MultiBuilder instance is needed. One may be created with PepBuilderService.getMultiBuilder().
 First, a subject may be set with the "subject()" function. Then, as with single subscriptions, the "with()" function needs to be used with a Vaadin component object to create a VaadinMultiComponentPepBuilder.
 With this builder, it is then possible to set subject, action and resource with the functions "subject()", "action()" and "resource()".
-Afterwards, it needs to be specified, what is done when a decision occurs (See Single Subscription section).
+Afterward, it needs to be specified, what is done when a decision occurs (See Single Subscription section).
 
 When a component is done configuring, either the function "and()" may be used to add another subscription, or when fully done the function "build()" needs to be called.
 
@@ -229,7 +229,7 @@ functions "subject()", "action()", "resource()", "environment()". If subject, ac
 manually, subject will be automatically set to the current user role, action to "beforeEnter" or "beforeLeave",
 depending on the use case, and resource to the path from source root.
 
-Afterwards, it needs to be specified, what to do when a decision occurs, for example with the methods:
+Afterward, it needs to be specified, what to do when a decision occurs, for example with the methods:
 
 - onDecisionDo
 - onPermitDo

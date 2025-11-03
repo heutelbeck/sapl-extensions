@@ -395,9 +395,9 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.concat(
 						Flux.just(AuthorizationDecision.PERMIT),
-						// next half time between 5th and 6th
+						// next half-time between 5th and 6th
 						Flux.just(AuthorizationDecision.DENY).delayElements(Duration.ofMillis(initialEmitDelayMs + emitIntervallMs * 5L + emitIntervallMs / 2L)),
-						// next half time between 10th and 11th
+						// next half-time between 10th and 11th
 						Flux.just(AuthorizationDecision.PERMIT).delayElements(Duration.ofMillis(emitIntervallMs * 5L))
 						));
 		// @formatter:on
@@ -427,9 +427,9 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.concat(
 						Flux.just(AuthorizationDecision.PERMIT),
-						// next half time between 5th and 6th
+						// next half-time between 5th and 6th
 						Flux.just(AuthorizationDecision.DENY).delayElements(Duration.ofMillis(emitIntervallMs * 5L + emitIntervallMs / 2L)),
-						// next half time between 10th and 11th
+						// next half-time between 10th and 11th
 						Flux.just(AuthorizationDecision.PERMIT).delayElements(Duration.ofMillis(emitIntervallMs * 5L))
 						));
 		// @formatter:on
@@ -466,9 +466,9 @@ public abstract class QueryTestsuite {
 		when(pdp.decide(any(AuthorizationSubscription.class)))
 				.thenReturn(Flux.concat(
 						Flux.just(AuthorizationDecision.PERMIT),
-						// next half time between 5th and 6th
+						// next half-time between 5th and 6th
 						Flux.just(AuthorizationDecision.DENY).delayElements(Duration.ofMillis(emitIntervallMs * 5L + emitIntervallMs / 2L)),
-						// next half time between 10th and 11th
+						// next half-time between 10th and 11th
 						Flux.just(AuthorizationDecision.PERMIT).delayElements(Duration.ofMillis(emitIntervallMs * 5L))
 						));
 		// @formatter:on

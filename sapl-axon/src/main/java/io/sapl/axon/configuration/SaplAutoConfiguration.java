@@ -199,7 +199,7 @@ public class SaplAutoConfiguration {
      *
      * @param mapper The applications ObjectMapper.
      * @param parameterResolver The Axon ParameterResolverFactory for injecting
-     * arguments in command handler methods..
+     * arguments in command handler methods.
      * @param globalRunnableProviders All OnDecisionConstraintHandlerProvider
      * implementation in the ApplicationContext.
      * @param globalCommandMessageMappingProviders All

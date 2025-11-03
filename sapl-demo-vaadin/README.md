@@ -22,10 +22,8 @@ Download the latest build from [here](https://s01.oss.sonatype.org/content/repos
 -->
 
 1) Start the app by running the Spring Boot `VaadinDemoApplication.java` file, or from the command line with the command
-
 ```
 mvn spring-boot:run
 ```
-
 2) Connect to localhost:8080
 3) Choose a user ("user" or "admin") to login

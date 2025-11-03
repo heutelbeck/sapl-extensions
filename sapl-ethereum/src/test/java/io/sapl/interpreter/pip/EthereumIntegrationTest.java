@@ -75,7 +75,7 @@ import reactor.test.StepVerifier;
  *
  * The accounts used for testing are publicly known from the besu website
  * (https://besu.hyperledger.org/en/stable/Reference/Accounts-for-Testing/) <br>
- * DO NOT USE THESES ACCOUNTS IN THE MAIN NET. ANY ETHER SENT TO THESE ACCOUNTS
+ * DO NOT USE THESE ACCOUNTS IN THE MAIN NET. ANY ETHER SENT TO THESE ACCOUNTS
  * WILL BE LOST.
  *
  * For these tests to be applied automatically, the maven profile
@@ -127,7 +127,7 @@ public class EthereumIntegrationTest {
     private static TransactionReceipt             transactionReceiptUser3;
 
     @ClassRule
-    @SuppressWarnings("resource") // Fine for tests which are short lived
+    @SuppressWarnings("resource") // Fine for tests which are short-lived
     public static final GenericContainer<? extends GenericContainer<?>> besuContainer = new GenericContainer<>(
             "hyperledger/besu:latest").withExposedPorts(8545, 8546)
             .withCommand("--miner-enabled", "--miner-coinbase=" + USER1_ADDRESS, "--rpc-http-enabled", "--network=dev")

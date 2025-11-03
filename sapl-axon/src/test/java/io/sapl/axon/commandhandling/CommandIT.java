@@ -36,7 +36,7 @@ public class CommandIT extends CommandTestsuite {
     private static final int AXON_SERVER_GRPC_PORT = 8124;
 
     @Container
-    @SuppressWarnings("resource") // Fine for tests which are short lived
+    @SuppressWarnings("resource") // Fine for tests which are short-lived
     static final AxonServerContainer AXON_SERVER = new AxonServerContainer(
             DockerImageName.parse("axoniq/axonserver:latest-dev"))
             .waitingFor(Wait.forListeningPorts(AXON_SERVER_GRPC_PORT));

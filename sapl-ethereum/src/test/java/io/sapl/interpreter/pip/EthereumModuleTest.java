@@ -915,9 +915,8 @@ public class EthereumModuleTest {
                 "0x344f2ffa4934f578489ca6c2f2c0fe6372dbe6cb10f9875e8bed4ad3e3a95a04",
                 "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421", null,
                 "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73", null, "0x100", "0x128536", "0x", "0x514",
-                "0x9007199254740991", "0x0", "0x1578657799",
-                Collections.singletonList(createTransactionObject()), stringList,
-                null);
+                "0x9007199254740991", "0x0", "0x1578657799", Collections.singletonList(createTransactionObject()),
+                stringList, null);
     }
 
     private static TransactionObject createTransactionObject() {

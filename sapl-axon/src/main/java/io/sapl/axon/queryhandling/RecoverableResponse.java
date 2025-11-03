@@ -69,7 +69,7 @@ public class RecoverableResponse<U> {
      *
      * @param <T> The Response type.
      * @param responseType The Response type.
-     * @return An access denied response.
+     * @return Access denied response.
      */
     public static <T> RecoverableResponse<T> accessDenied(ResponseType<T> responseType) {
         return new RecoverableResponse<>(responseType, null);
