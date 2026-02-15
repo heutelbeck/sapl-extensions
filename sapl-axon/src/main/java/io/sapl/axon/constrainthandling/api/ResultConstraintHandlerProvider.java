@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -30,8 +30,7 @@ import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.QueryResponseMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import io.sapl.api.model.Value;
 import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
 
@@ -55,7 +54,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
      * @return The handler triggering all required side effects and potentially
      * changing the result.
      */
-    default Function<Object, Object> getHandler(JsonNode constraint) {
+    default Function<Object, Object> getHandler(Value constraint) {
         return result -> {
             if (result instanceof ResultMessage)
                 return getResultMessageHandler((ResultMessage<?>) result, constraint);
@@ -72,7 +71,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
      * @return Potentially updated message.
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    default ResultMessage<?> getResultMessageHandler(ResultMessage<?> result, JsonNode constraint) {
+    default ResultMessage<?> getResultMessageHandler(ResultMessage<?> result, Value constraint) {
         accept(result, constraint);
         var           newMetaData = mapMetadata(result.getMetaData(), constraint);
         ResultMessage resultMessage;
@@ -104,7 +103,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
      * @param message The message.
      * @param constraint The constraint.
      */
-    default void accept(ResultMessage<?> message, JsonNode constraint) {
+    default void accept(ResultMessage<?> message, Value constraint) {
         // NOOP
     }
 
@@ -115,7 +114,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
      * @param constraint The constraint.
      * @return Potentially updated Exception.
      */
-    default Throwable mapThrowable(Throwable exceptionResult, JsonNode constraint) {
+    default Throwable mapThrowable(Throwable exceptionResult, Value constraint) {
         return exceptionResult;
     }
 
@@ -126,7 +125,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
      * @param constraint The constraint.
      * @return A potentially updated payload type.
      */
-    default Class<?> mapPayloadType(Class<?> payloadType, JsonNode constraint) {
+    default Class<?> mapPayloadType(Class<?> payloadType, Value constraint) {
         return payloadType;
     }
 
@@ -138,7 +137,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
      * @param constraint The constraint.
      * @return A potentially updated payload.
      */
-    default Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
+    default Object mapPayload(Object payload, Class<?> clazz, Value constraint) {
         return payload;
     }
 
@@ -149,7 +148,7 @@ public interface ResultConstraintHandlerProvider extends Responsible, HasPriorit
      * @param constraint The constraint.
      * @return Potentially updated metadata.
      */
-    default MetaData mapMetadata(MetaData originalMetadata, JsonNode constraint) {
+    default MetaData mapMetadata(MetaData originalMetadata, Value constraint) {
         return originalMetadata;
     }
 

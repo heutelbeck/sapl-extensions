@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -48,8 +48,6 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCo
 import com.hivemq.embedded.EmbeddedHiveMQ;
 import com.nimbusds.jose.util.StandardCharset;
 
-import io.sapl.interpreter.InitializationException;
-
 class WildcardSubscriptionEnforcementIT {
 
     @TempDir
@@ -64,7 +62,7 @@ class WildcardSubscriptionEnforcementIT {
     private Mqtt5BlockingClient subscribeClient;
 
     @BeforeEach
-    void beforeEach() throws InitializationException {
+    void beforeEach() {
         mqttBroker      = buildAndStartBroker(dataFolder, configFolder, extensionFolder);
         publishClient   = buildAndStartMqttClient("WILDCARD_MQTT_CLIENT_PUBLISH");
         subscribeClient = buildAndStartMqttClient("WILDCARD_MQTT_CLIENT_SUBSCRIBE");

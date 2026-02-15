@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,7 @@ import java.util.function.Predicate;
 
 import org.axonframework.messaging.ResultMessage;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import io.sapl.api.model.Value;
 import io.sapl.spring.constraints.api.Responsible;
 
 /**
@@ -44,6 +43,6 @@ public interface UpdateFilterConstraintHandlerProvider extends Responsible, Resp
      * @param constraint The constraint.
      * @return A filter predicate.
      */
-    Predicate<ResultMessage<?>> getHandler(JsonNode constraint);
+    Predicate<ResultMessage<?>> getHandler(Value constraint);
 
 }

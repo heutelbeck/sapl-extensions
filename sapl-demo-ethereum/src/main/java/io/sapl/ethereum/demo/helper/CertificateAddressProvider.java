@@ -24,8 +24,8 @@ import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.tx.gas.StaticGasProvider;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import io.sapl.ethereum.demo.helper.contracts.GraftenOneCertificate;
 import io.sapl.ethereum.demo.helper.contracts.Ultimaker2ExtendedCertificate;
@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class CertificateAddressProvider {
 
-	private static final ObjectMapper mapper = new ObjectMapper();
+	private static final JsonMapper mapper = JsonMapper.builder().build();
 
 	private static final String CONFIG_PATH = "classpath:policies/pdp.json";
 
@@ -70,13 +70,13 @@ public class CertificateAddressProvider {
 			if (ethPipConfig != null) {
 				JsonNode uAddress = ethPipConfig.get(MainView.ULTIMAKER);
 				if (uAddress != null)
-					ultimakerAddress = uAddress.textValue();
+					ultimakerAddress = uAddress.stringValue();
 				JsonNode gAddress = ethPipConfig.get(MainView.GRAFTEN);
 				if (gAddress != null)
-					graftenAddress = gAddress.textValue();
+					graftenAddress = gAddress.stringValue();
 				JsonNode zAddress = ethPipConfig.get(MainView.ZMORPH);
 				if (zAddress != null)
-					zmorphAddress = zAddress.textValue();
+					zmorphAddress = zAddress.stringValue();
 			}
 		}
 

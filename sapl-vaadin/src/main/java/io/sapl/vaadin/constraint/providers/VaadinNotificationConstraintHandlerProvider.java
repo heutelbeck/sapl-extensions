@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,10 +21,13 @@ import java.util.function.Function;
 
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.notification.Notification;
 
+import io.sapl.api.model.NumberValue;
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.TextValue;
+import io.sapl.api.model.Value;
 import io.sapl.vaadin.constraint.VaadinFunctionConstraintHandlerProvider;
 import reactor.core.publisher.Mono;
 
@@ -40,26 +43,25 @@ import reactor.core.publisher.Mono;
 public class VaadinNotificationConstraintHandlerProvider implements VaadinFunctionConstraintHandlerProvider {
 
     @Override
-    public boolean isResponsible(JsonNode constraint) {
-        if (constraint == null) {
+    public boolean isResponsible(Value constraint) {
+        if (!(constraint instanceof ObjectValue obj)) {
             return false;
         }
-        return constraint.has("type") && "saplVaadin".equals(constraint.get("type").asText()) && constraint.has("id")
-                && "showNotification".equals(constraint.get("id").asText());
+        return obj.containsKey("type") && obj.get("type") instanceof TextValue(var type) && "saplVaadin".equals(type)
+                && obj.containsKey("id") && obj.get("id") instanceof TextValue(var id) && "showNotification".equals(id);
     }
 
     @Override
-    public Function<UI, Mono<Boolean>> getHandler(JsonNode constraint) {
-        if (constraint == null) {
+    public Function<UI, Mono<Boolean>> getHandler(Value constraint) {
+        if (!(constraint instanceof ObjectValue obj)) {
             return null;
         }
         return ui -> {
-            String                message  = constraint.has("message") ? constraint.get("message").asText() : "";
-            int                   duration = constraint.has("duration") ? constraint.get("duration").asInt() : 5000;
+            String                message  = obj.get("message") instanceof TextValue(var m) ? m : "";
+            int                   duration = obj.get("duration") instanceof NumberValue(var d) ? d.intValue() : 5000;
             Notification.Position position;
             try {
-                position = constraint.has("position")
-                        ? Notification.Position.valueOf(constraint.get("position").asText())
+                position = obj.get("position") instanceof TextValue(var p) ? Notification.Position.valueOf(p)
                         : Notification.Position.TOP_STRETCH;
             } catch (IllegalArgumentException e) {
                 position = Notification.Position.TOP_STRETCH;

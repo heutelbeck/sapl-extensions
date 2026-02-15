@@ -1,40 +1,35 @@
-import org.demo.pip.EthereumPrinterPip as printer
+import org.demo.pip.EthereumPrinterPip.certified as certified
 
 set "printerPolicies"
-deny-unless-permit
+priority permit or deny
 
 policy "printWithUltimaker"
 permit
-  action=="start" & resource=="Ultimaker 2 Extended+"
-where
+  action=="start" & resource=="Ultimaker 2 Extended+";
   var request = {"address":subject.ethereumAddress, "printer":resource};
-  request.<printer.certified>;
-  
+  request.<certified>;
+
 policy "printWithGraftenOne"
 permit
-  action=="start" & resource=="Graften One"
-where
+  action=="start" & resource=="Graften One";
   var request = {"address":subject.ethereumAddress, "printer":resource};
-  request.<printer.certified>;
-  
+  request.<certified>;
+
 policy "printWithZmorphVX"
 permit
-  action=="start" & resource=="Zmorph VX"
-where
+  action=="start" & resource=="Zmorph VX";
   var request = {"address":subject.ethereumAddress, "printer":resource};
-  request.<printer.certified>;
-  
+  request.<certified>;
+
 policy "crowdTemplate"
 permit
-  action=="access" & resource=="crowdTemplate"
-where
+  action=="access" & resource=="crowdTemplate";
   var request = {"address":subject.<ethereum.coinbase>};
   request.<ethereum.balance> >= 108000000000000000000;
-  
+
 policy "paidTemplate"
 permit
-  action=="access" & resource=="paidTemplate"
-where
+  action=="access" & resource=="paidTemplate";
   var request = {
                  "transactionHash":subject.transactionHash,
                  "fromAccount":subject.ethereumAddress,

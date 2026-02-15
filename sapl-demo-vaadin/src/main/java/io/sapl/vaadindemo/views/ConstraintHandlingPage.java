@@ -6,8 +6,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import io.sapl.api.model.NumberValue;
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.TextValue;
+import io.sapl.api.model.Value;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
@@ -143,17 +145,22 @@ public final class ConstraintHandlingPage extends VerticalLayout {
                                 .bindField(pepperoni).bindField(email).bindField(time).bindField(beer))
                 .addConsumerConstraintHandlerProvider(new ConsumerConstraintHandlerProvider<>() {
                     @Override
-                    public Consumer<UI> getHandler(JsonNode constraint) {
-                        return params -> minPizza = constraint.get("min").asInt();
+                    public Consumer<UI> getHandler(Value constraint) {
+                        return params -> {
+                            if (constraint instanceof ObjectValue obj
+                                    && obj.get("min") instanceof NumberValue(var min)) {
+                                minPizza = min.intValue();
+                            }
+                        };
                     }
 
                     @Override
-                    public boolean isResponsible(JsonNode constraint) {
-                        if (constraint == null) {
-                            return false;
-                        }
-                        return constraint.has("type") && "saplVaadin".equals(constraint.get("type").asText())
-                                && constraint.has("id") && "minPizza".equals(constraint.get("id").asText());
+                    public boolean isResponsible(Value constraint) {
+                        return constraint instanceof ObjectValue obj
+                                && obj.get("type") instanceof TextValue(String type)
+                                && "saplVaadin".equals(type)
+                                && obj.get("id") instanceof TextValue(String id)
+                                && "minPizza".equals(id);
                     }
 
                     @Override
@@ -162,7 +169,7 @@ public final class ConstraintHandlingPage extends VerticalLayout {
                     }
                 })
                 .onDecisionDo(
-                        authorizationDecision -> submitAllowed = authorizationDecision.getDecision() == Decision.PERMIT)
+                        authorizationDecision -> submitAllowed = authorizationDecision.decision() == Decision.PERMIT)
                 .build();
 
         // additional validations need to be added before binding
@@ -179,9 +186,10 @@ public final class ConstraintHandlingPage extends VerticalLayout {
      * outside opening hours.
      */
     private void enforceOpeningHours() {
-        var resourceNode = JsonNodeFactory.instance.objectNode();
-        resourceNode.put("startTime", "10:00");
-        resourceNode.put("endTime", "16:00");
+        var resourceNode = ObjectValue.builder()
+                .put("startTime", Value.of("10:00"))
+                .put("endTime", Value.of("16:00"))
+                .build();
         this.pepBuilderService.with(this).resource(resourceNode).action("opening_hours_dialog")
                 .onDecisionDo((authorizationDecision, component) -> {
                 }).build();

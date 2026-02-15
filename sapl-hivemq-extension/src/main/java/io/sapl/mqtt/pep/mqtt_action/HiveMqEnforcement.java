@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -61,7 +61,7 @@ public class HiveMqEnforcement {
         // An exception will be thrown when the async operation timed out before the
         // authorization process finished
         try {
-            if (authzDecision.getDecision() == PERMIT && hasHandledObligationsSuccessfully) {
+            if (authzDecision.decision() == PERMIT && hasHandledObligationsSuccessfully) {
                 authnOutput.authenticateSuccessfully();
                 log.info("Permit connection of client '{}'", mqttSaplId.getMqttClientId());
                 return true;
@@ -94,7 +94,7 @@ public class HiveMqEnforcement {
         // An exception will be thrown when the async operation timed out before the
         // authorization process finished
         try {
-            if (authzDecision.getDecision() == PERMIT && hasHandledObligationsSuccessfully) {
+            if (authzDecision.decision() == PERMIT && hasHandledObligationsSuccessfully) {
                 subscriptionAuthorizerOutput.authorizeSuccessfully();
                 log.info("Permit subscription of topic '{}' for client '{}'", mqttSaplId.getTopic(),
                         mqttSaplId.getMqttClientId());
@@ -125,7 +125,7 @@ public class HiveMqEnforcement {
         // An exception will be thrown when the async operation timed out before the
         // authorization process finished
         try {
-            if (authzDecision.getDecision() == PERMIT && hasHandledObligationsSuccessfully) {
+            if (authzDecision.decision() == PERMIT && hasHandledObligationsSuccessfully) {
                 log.info("Permit publish of topic '{}' for client '{}'", mqttSaplId.getTopic(),
                         mqttSaplId.getMqttClientId());
             } else {

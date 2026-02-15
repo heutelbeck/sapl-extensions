@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -27,8 +27,8 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.Value;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 
 class ConnectionConstraintsTests {
@@ -36,8 +36,8 @@ class ConnectionConstraintsTests {
     @Test
     void when_specifiedConstraintTypeIsNotTextual_then_signalConstraintCouldNotBeHandled() {
         // GIVEN
-        var constraintDetails = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision());
-        var constraint        = JsonNodeFactory.instance.objectNode().put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, 4);
+        var constraintDetails = new ConstraintDetails("clientId", IdentifiableAuthorizationDecision.INDETERMINATE);
+        var constraint        = ObjectValue.builder().put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, Value.of(4)).build();
 
         // WHEN
         var wasSuccessfullyHandled = ConnectionConstraints.enforceConnectionConstraintEntries(constraintDetails,
@@ -50,11 +50,11 @@ class ConnectionConstraintsTests {
     @Test
     void when_settingTimeLimitAndTimeLimitIsNotANumber_then_signalConstraintCouldNotBeHandled() {
         // GIVEN
-        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision());
+        var constraintDetails    = new ConstraintDetails("clientId", IdentifiableAuthorizationDecision.INDETERMINATE);
         var constraintDetailsSpy = spy(constraintDetails);
-        var constraint           = JsonNodeFactory.instance.objectNode()
-                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION)
-                .put(ENVIRONMENT_TIME_LIMIT, "five");
+        var constraint           = ObjectValue.builder()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, Value.of(ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION))
+                .put(ENVIRONMENT_TIME_LIMIT, Value.of("five")).build();
 
         // WHEN
         var wasSuccessfullyHandled = ConnectionConstraints.enforceConnectionConstraintEntries(constraintDetailsSpy,
@@ -68,11 +68,11 @@ class ConnectionConstraintsTests {
     @Test
     void when_settingTimeLimitAndTimeLimitIsBelowOne_then_signalConstraintCouldNotBeHandled() {
         // GIVEN
-        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision());
+        var constraintDetails    = new ConstraintDetails("clientId", IdentifiableAuthorizationDecision.INDETERMINATE);
         var constraintDetailsSpy = spy(constraintDetails);
-        var constraint           = JsonNodeFactory.instance.objectNode()
-                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION)
-                .put(ENVIRONMENT_TIME_LIMIT, 0);
+        var constraint           = ObjectValue.builder()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, Value.of(ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION))
+                .put(ENVIRONMENT_TIME_LIMIT, Value.of(0)).build();
 
         // WHEN
         var wasSuccessfullyHandled = ConnectionConstraints.enforceConnectionConstraintEntries(constraintDetailsSpy,
@@ -86,10 +86,10 @@ class ConnectionConstraintsTests {
     @Test
     void when_settingTimeLimitAndTimeLimitIsNotSpecified_then_signalConstraintCouldNotBeHandled() {
         // GIVEN
-        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision());
+        var constraintDetails    = new ConstraintDetails("clientId", IdentifiableAuthorizationDecision.INDETERMINATE);
         var constraintDetailsSpy = spy(constraintDetails);
-        var constraint           = JsonNodeFactory.instance.objectNode().put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE,
-                ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION);
+        var constraint           = ObjectValue.builder()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, Value.of(ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION)).build();
 
         // WHEN
         var wasSuccessfullyHandled = ConnectionConstraints.enforceConnectionConstraintEntries(constraintDetailsSpy,

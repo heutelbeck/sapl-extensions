@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -52,8 +52,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
@@ -66,11 +64,14 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCo
 import com.hivemq.embedded.EmbeddedHiveMQ;
 import com.nimbusds.jose.util.StandardCharset;
 
+import io.sapl.api.model.ArrayValue;
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.Value;
 import io.sapl.api.pdp.AuthorizationDecision;
+import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 import io.sapl.api.pdp.MultiAuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
-import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.MqttPep;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
 import reactor.core.publisher.Flux;
@@ -91,7 +92,7 @@ class ConstraintHandlingIT {
     @Test
     @Timeout(30)
     void when_mqttSubscriptionTimeoutIsSetAndNoSaplDecisionOccursWhileMqttSubscriptionExists_then_timeoutMqttSubscription()
-            throws InitializationException, InterruptedException {
+            throws InterruptedException {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -100,17 +101,15 @@ class ConstraintHandlingIT {
         String subscriptionClientMqttPublishSaplSubscriptionId      = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.PUBLISH_AUTHZ_ACTION, TOPIC);
 
-        ArrayNode mqttSubscriptionTimeLimitObligation = JsonNodeFactory.instance.arrayNode()
-                .add(JsonNodeFactory.instance.objectNode()
-                        .put(ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION)
-                        .put(ENVIRONMENT_TIME_LIMIT, 1));
+        ArrayValue mqttSubscriptionTimeLimitObligation = buildTimeLimitObligation(1);
 
         Flux<IdentifiableAuthorizationDecision> subscriptionClientConnectionDecisionFlux       = Flux
                 .<IdentifiableAuthorizationDecision>never().mergeWith(Flux.just(new IdentifiableAuthorizationDecision(
                         subscriptionClientMqttConnectionSaplSubscriptionId, AuthorizationDecision.PERMIT)));
         Flux<IdentifiableAuthorizationDecision> subscriptionClientMqttSubscriptionDecisionFlux = Flux.just(
                 new IdentifiableAuthorizationDecision(subscriptionClientMqttSubscriptionSaplSubscriptionId,
-                        AuthorizationDecision.PERMIT.withObligations(mqttSubscriptionTimeLimitObligation)),
+                        new AuthorizationDecision(Decision.PERMIT, mqttSubscriptionTimeLimitObligation,
+                                Value.EMPTY_ARRAY, Value.UNDEFINED)),
                 new IdentifiableAuthorizationDecision(subscriptionClientMqttConnectionSaplSubscriptionId,
                         AuthorizationDecision.PERMIT));
         Flux<IdentifiableAuthorizationDecision> subscriptionClientMqttPublishDecisionFlux      = Flux
@@ -153,8 +152,7 @@ class ConstraintHandlingIT {
 
     @Test
     @Timeout(30)
-    void when_constraintResubscribeMqttSubscriptionsIsSetAndSaplDecisionChangesToPermit_then_resubscribeClientToTopic()
-            throws InitializationException {
+    void when_constraintResubscribeMqttSubscriptionsIsSetAndSaplDecisionChangesToPermit_then_resubscribeClientToTopic() {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -166,10 +164,11 @@ class ConstraintHandlingIT {
         String publishClientMqttPublishSaplSubscriptionId           = SaplSubscriptionUtility
                 .buildSubscriptionId(publishClientId, MqttPep.PUBLISH_AUTHZ_ACTION, TOPIC);
 
-        ArrayNode resubscribeObligation = JsonNodeFactory.instance.arrayNode()
-                .add(JsonNodeFactory.instance.objectNode()
-                        .put(ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION)
-                        .put(ENVIRONMENT_STATUS, ENVIRONMENT_ENABLED));
+        ArrayValue resubscribeObligation = ArrayValue.builder()
+                .add(ObjectValue.builder()
+                        .put(ENVIRONMENT_CONSTRAINT_TYPE, Value.of(ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION))
+                        .put(ENVIRONMENT_STATUS, Value.of(ENVIRONMENT_ENABLED)).build())
+                .build();
 
         Flux<IdentifiableAuthorizationDecision> subscriptionClientConnectionDecisionFlux                 = Flux
                 .just(new IdentifiableAuthorizationDecision(subscriptionClientMqttConnectionSaplSubscriptionId,
@@ -182,7 +181,8 @@ class ConstraintHandlingIT {
                         new IdentifiableAuthorizationDecision(subscriptionClientMqttSubscriptionSaplSubscriptionId,
                                 AuthorizationDecision.DENY),
                         new IdentifiableAuthorizationDecision(subscriptionClientMqttSubscriptionSaplSubscriptionId,
-                                AuthorizationDecision.PERMIT.withObligations(resubscribeObligation)))
+                                new AuthorizationDecision(Decision.PERMIT, resubscribeObligation, Value.EMPTY_ARRAY,
+                                        Value.UNDEFINED)))
                 .delayElements(Duration.ofSeconds(2))
                 .startWith(new IdentifiableAuthorizationDecision(subscriptionClientMqttConnectionSaplSubscriptionId,
                         AuthorizationDecision.PERMIT))
@@ -232,15 +232,15 @@ class ConstraintHandlingIT {
 
     @Test
     @Timeout(30)
-    void when_obligationForMqttSubscriptionFailed_then_denyMqttSubscription() throws InitializationException {
+    void when_obligationForMqttSubscriptionFailed_then_denyMqttSubscription() {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
         String subscriptionClientMqttSubscriptionSaplSubscriptionId = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.SUBSCRIBE_AUTHZ_ACTION, TOPIC);
 
-        ArrayNode illegalConstraint = JsonNodeFactory.instance.arrayNode()
-                .add(JsonNodeFactory.instance.objectNode().put("illegalConstraint", 5));
+        ArrayValue illegalConstraint = ArrayValue.builder()
+                .add(ObjectValue.builder().put("illegalConstraint", Value.of(5)).build()).build();
 
         Flux<IdentifiableAuthorizationDecision> subscriptionClientConnectionDecisionFlux       = Flux
                 .just(new IdentifiableAuthorizationDecision(subscriptionClientMqttConnectionSaplSubscriptionId,
@@ -249,7 +249,8 @@ class ConstraintHandlingIT {
                 new IdentifiableAuthorizationDecision(subscriptionClientMqttConnectionSaplSubscriptionId,
                         AuthorizationDecision.PERMIT),
                 new IdentifiableAuthorizationDecision(subscriptionClientMqttSubscriptionSaplSubscriptionId,
-                        AuthorizationDecision.PERMIT.withObligations(illegalConstraint)));
+                        new AuthorizationDecision(Decision.PERMIT, illegalConstraint, Value.EMPTY_ARRAY,
+                                Value.UNDEFINED)));
 
         PolicyDecisionPoint pdpMock = mock(PolicyDecisionPoint.class);
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class)))
@@ -276,14 +277,15 @@ class ConstraintHandlingIT {
     @Timeout(30)
     void when_obligationForMqttConnectionFailed_then_cancelMqttSubscription() {
         // GIVEN
-        String    subscriptionClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility
+        String     subscriptionClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
-        ArrayNode illegalConstraint                                  = JsonNodeFactory.instance.arrayNode()
-                .add(JsonNodeFactory.instance.objectNode().put("illegalConstraint", 5));
+        ArrayValue illegalConstraint                                  = ArrayValue.builder()
+                .add(ObjectValue.builder().put("illegalConstraint", Value.of(5)).build()).build();
 
         Flux<IdentifiableAuthorizationDecision> subscriptionClientConnectionDecisionFlux = Flux
                 .just(new IdentifiableAuthorizationDecision(subscriptionClientMqttConnectionSaplSubscriptionId,
-                        AuthorizationDecision.PERMIT.withObligations(illegalConstraint)));
+                        new AuthorizationDecision(Decision.PERMIT, illegalConstraint, Value.EMPTY_ARRAY,
+                                Value.UNDEFINED)));
 
         PolicyDecisionPoint pdpMock = mock(PolicyDecisionPoint.class);
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class)))
@@ -307,18 +309,14 @@ class ConstraintHandlingIT {
 
     @Test
     @Timeout(30)
-    void when_mqttSubscriptionTimeoutIsSetAndSaplDecisionOccursAfterAsyncProcessingTimeout_then_doNotBuildTimeout()
-            throws InitializationException {
+    void when_mqttSubscriptionTimeoutIsSetAndSaplDecisionOccursAfterAsyncProcessingTimeout_then_doNotBuildTimeout() {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
         String subscriptionClientMqttSubscriptionSaplSubscriptionId = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.SUBSCRIBE_AUTHZ_ACTION, TOPIC);
 
-        ArrayNode mqttSubscriptionTimeLimitObligation = JsonNodeFactory.instance.arrayNode()
-                .add(JsonNodeFactory.instance.objectNode()
-                        .put(ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION)
-                        .put(ENVIRONMENT_TIME_LIMIT, 1));
+        ArrayValue mqttSubscriptionTimeLimitObligation = buildTimeLimitObligation(1);
 
         Flux<IdentifiableAuthorizationDecision>       subscriptionClientConnectionDecisionFlux = Flux
                 .<IdentifiableAuthorizationDecision>never().mergeWith(Flux.just(new IdentifiableAuthorizationDecision(
@@ -342,9 +340,9 @@ class ConstraintHandlingIT {
                 () -> subscribeClient.subscribe(subscribeMessage));
         assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
 
-        emitterUndefined
-                .tryEmitNext(new IdentifiableAuthorizationDecision(subscriptionClientMqttSubscriptionSaplSubscriptionId,
-                        AuthorizationDecision.PERMIT.withObligations(mqttSubscriptionTimeLimitObligation)));
+        emitterUndefined.tryEmitNext(new IdentifiableAuthorizationDecision(
+                subscriptionClientMqttSubscriptionSaplSubscriptionId, new AuthorizationDecision(Decision.PERMIT,
+                        mqttSubscriptionTimeLimitObligation, Value.EMPTY_ARRAY, Value.UNDEFINED)));
 
         // THEN
         verify(pdpMock, times(2)).decide(any(MultiAuthorizationSubscription.class));
@@ -352,5 +350,13 @@ class ConstraintHandlingIT {
 
         // FINALLY
         stopBroker(mqttBroker);
+    }
+
+    private static ArrayValue buildTimeLimitObligation(long timeLimitSeconds) {
+        return ArrayValue.builder()
+                .add(ObjectValue.builder()
+                        .put(ENVIRONMENT_CONSTRAINT_TYPE, Value.of(ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION))
+                        .put(ENVIRONMENT_TIME_LIMIT, Value.of(timeLimitSeconds)).build())
+                .build();
     }
 }

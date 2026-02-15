@@ -20,9 +20,9 @@ import java.util.Set;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -87,7 +87,7 @@ public class MainView extends VerticalLayout {
 
     private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
-    private final ObjectMapper mapper;
+    private final JsonMapper mapper;
 
     private final Set<String> disabledItems = new LinkedHashSet<>();
 
@@ -108,7 +108,7 @@ public class MainView extends VerticalLayout {
     private Image printerImage;
 
     public MainView(PrintService service, AccessCertificate accessCertificate, PolicyDecisionPoint pdp,
-            ObjectMapper mapper, EthConnect ethConnect, AuthenticatedUser authnUser) {
+            JsonMapper mapper, EthConnect ethConnect, AuthenticatedUser authnUser) {
         this.mapper = mapper;
 
         addClassName("main-view");
@@ -195,14 +195,14 @@ public class MainView extends VerticalLayout {
         VaadinPEP<Button> printerPep = new VaadinPEP<>(printerButton, printerSub(printerSelect.getValue()), pdp,
                 UI.getCurrent());
         printerPep.onPermit((component, decision) -> {
-            log.info("New printer access decision: {}", decision.getDecision());
+            log.info("New printer access decision: {}", decision.decision());
             component.setEnabled(true);
             printerStatus.setText("You are certified for the current printer.");
             printerStatus.getStyle().set("color", "green");
 
         });
         printerPep.onDeny((component, decision) -> {
-            log.info("New printer access decision: {}", decision.getDecision());
+            log.info("New printer access decision: {}", decision.decision());
             component.setEnabled(false);
             printerStatus.setText("You are not certified for the current printer.");
             printerStatus.getStyle().set("color", "red");
@@ -213,22 +213,22 @@ public class MainView extends VerticalLayout {
     private VaadinPEP<Select<String>> createCrowdPep(PolicyDecisionPoint pdp) {
         VaadinPEP<Select<String>> crowdPep = new VaadinPEP<>(templateSelect, crowdSub(), pdp, UI.getCurrent());
         crowdPep.onPermit((component, decision) -> {
-            log.info("New crowd access decision: {}", decision.getDecision());
+            log.info("New crowd access decision: {}", decision.decision());
             disabledItems.remove(BALL);
             component.setItemEnabledProvider(this::itemEnabledCheck);
         });
-        crowdPep.onDeny((component, decision) -> log.info("New crowd access decision: {}", decision.getDecision()));
+        crowdPep.onDeny((component, decision) -> log.info("New crowd access decision: {}", decision.decision()));
         return crowdPep;
     }
 
     private VaadinPEP<Select<String>> createPaymentPep(PolicyDecisionPoint pdp) {
         VaadinPEP<Select<String>> paymentPep = new VaadinPEP<>(templateSelect, paidSub(), pdp, UI.getCurrent());
         paymentPep.onPermit((component, decision) -> {
-            log.info("New paid access decision: {}", decision.getDecision());
+            log.info("New paid access decision: {}", decision.decision());
             disabledItems.remove(CUBES);
             component.setItemEnabledProvider(this::itemEnabledCheck);
         });
-        paymentPep.onDeny((component, decision) -> log.info("New paid access decision: {}", decision.getDecision()));
+        paymentPep.onDeny((component, decision) -> log.info("New paid access decision: {}", decision.decision()));
         return paymentPep;
     }
 
@@ -322,8 +322,8 @@ public class MainView extends VerticalLayout {
     }
 
     private AuthorizationSubscription buildSubscription(String action, String resource) {
-        return new AuthorizationSubscription(mapper.convertValue(user, JsonNode.class), JSON.textNode(action),
-                JSON.textNode(resource), null);
+        return AuthorizationSubscription.of(mapper.convertValue(user, JsonNode.class), JSON.stringNode(action),
+                JSON.stringNode(resource), null);
     }
 
     private AuthorizationSubscription paidSub() {

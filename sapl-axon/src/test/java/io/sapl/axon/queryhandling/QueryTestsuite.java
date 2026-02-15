@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,15 +17,10 @@
  */
 package io.sapl.axon.queryhandling;
 
-import static com.spotify.hamcrest.jackson.JsonMatchers.jsonObject;
-import static com.spotify.hamcrest.jackson.JsonMatchers.jsonText;
-import static com.spotify.hamcrest.pojo.IsPojo.pojo;
 import static io.sapl.axon.TestUtilities.isAccessDenied;
 import static io.sapl.axon.TestUtilities.isCausedBy;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.axonframework.messaging.responsetypes.ResponseTypes.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -49,7 +44,6 @@ import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryHandler;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
-import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -63,13 +57,16 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.json.JsonMapper;
 
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.TextValue;
+import io.sapl.api.model.UndefinedValue;
+import io.sapl.api.model.Value;
+import io.sapl.api.model.ValueJsonMarshaller;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.AuthorizationSubscription;
+import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.axon.annotation.EnforceDropUpdatesWhileDenied;
 import io.sapl.axon.annotation.EnforceRecoverableUpdatesIfDenied;
@@ -123,13 +120,8 @@ public abstract class QueryTestsuite {
     private static final String ON_DECISION_DO                   = "onDecisionDo";
     private static final String MAP_UPDATE_PAYLOAD_TO_UPPERCASE  = "map update payload to uppercase";
 
-    private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
-
     @MockitoBean
     PolicyDecisionPoint pdp;
-
-    @Autowired
-    ObjectMapper mapper;
 
     @Autowired
     SaplQueryGateway queryGateway;
@@ -178,10 +170,11 @@ public abstract class QueryTestsuite {
         create(result).expectNext(QUERY).verifyComplete();
 
         verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-        assertThatSubject(is(jsonObject().where("username", is(jsonText("user1")))));
-        assertThatAction(is(jsonText(PRE_HANDLE_QUERY)));
-        assertThatResource(is(jsonText(RESOURCE)));
-        assertThatEnvironmentNotPresent();
+        var subscription = captureAuthzSubscription();
+        assertThat(((ObjectValue) subscription.subject()).get("username")).isEqualTo(Value.of("user1"));
+        assertThat(subscription.action()).isEqualTo(Value.of(PRE_HANDLE_QUERY));
+        assertThat(subscription.resource()).isEqualTo(Value.of(RESOURCE));
+        assertThat(subscription.environment()).isInstanceOf(UndefinedValue.class);
     }
 
     @Test
@@ -193,10 +186,11 @@ public abstract class QueryTestsuite {
         create(result).expectNext(QUERY).verifyComplete();
 
         verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-        assertThatSubject(is(jsonText(ANONYMOUS)));
-        assertThatAction(is(jsonText(DROP_QUERY)));
-        assertThatResource(is(jsonText(RESOURCE)));
-        assertThatEnvironmentNotPresent();
+        var subscription2 = captureAuthzSubscription();
+        assertThat(subscription2.subject()).isEqualTo(Value.of(ANONYMOUS));
+        assertThat(subscription2.action()).isEqualTo(Value.of(DROP_QUERY));
+        assertThat(subscription2.resource()).isEqualTo(Value.of(RESOURCE));
+        assertThat(subscription2.environment()).isInstanceOf(UndefinedValue.class);
     }
 
     @Test
@@ -208,10 +202,11 @@ public abstract class QueryTestsuite {
         create(result).expectNext(QUERY).verifyComplete();
 
         verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-        assertThatSubject(is(jsonText(ANONYMOUS)));
-        assertThatAction(is(jsonText(RECOVERABLE_QUERY)));
-        assertThatResource(is(jsonText(RESOURCE)));
-        assertThatEnvironmentNotPresent();
+        var subscription3 = captureAuthzSubscription();
+        assertThat(subscription3.subject()).isEqualTo(Value.of(ANONYMOUS));
+        assertThat(subscription3.action()).isEqualTo(Value.of(RECOVERABLE_QUERY));
+        assertThat(subscription3.resource()).isEqualTo(Value.of(RESOURCE));
+        assertThat(subscription3.environment()).isInstanceOf(UndefinedValue.class);
     }
 
     @Test
@@ -244,17 +239,19 @@ public abstract class QueryTestsuite {
     @Test
     void when_postHandlerSecuredQueryAndPermitWithResource_then_resultReturnsAndPdpIsCalledWithSubscriptionAndReplacementIsReturned() {
         when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withResource(JSON.textNode(I_WAS_REPLACED))));
+                .thenReturn(Flux.just(new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, Value.EMPTY_ARRAY,
+                        Value.of(I_WAS_REPLACED))));
 
         var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
         create(result).expectNext(I_WAS_REPLACED).verifyComplete();
 
         verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-        assertThatSubject(is(jsonText(ANONYMOUS)));
-        assertThatAction(is(jsonText(POST_HANDLE_QUERY)));
-        assertThatResource(is(jsonText(RESOURCE)));
-        assertThatEnvironmentNotPresent();
+        var subscription4 = captureAuthzSubscription();
+        assertThat(subscription4.subject()).isEqualTo(Value.of(ANONYMOUS));
+        assertThat(subscription4.action()).isEqualTo(Value.of(POST_HANDLE_QUERY));
+        assertThat(subscription4.resource()).isEqualTo(Value.of(RESOURCE));
+        assertThat(subscription4.environment()).isInstanceOf(UndefinedValue.class);
     }
 
     @Test
@@ -267,16 +264,18 @@ public abstract class QueryTestsuite {
         create(result).expectNext(QUERY).verifyComplete();
 
         verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-        assertThatSubject(is(jsonText(ANONYMOUS)));
-        assertThatAction(is(jsonText(POST_HANDLE_NO_RESOURCE_QUERY)));
-        assertThatResource(is(jsonText(RESOURCE)));
-        assertThatEnvironmentNotPresent();
+        var subscription5 = captureAuthzSubscription();
+        assertThat(subscription5.subject()).isEqualTo(Value.of(ANONYMOUS));
+        assertThat(subscription5.action()).isEqualTo(Value.of(POST_HANDLE_NO_RESOURCE_QUERY));
+        assertThat(subscription5.resource()).isEqualTo(Value.of(RESOURCE));
+        assertThat(subscription5.environment()).isInstanceOf(UndefinedValue.class);
     }
 
     @Test
     void when_postHandlerSecuredQueryAndPermitWithResourceAndResourceMarshallingPails_then_accessDenied() {
         when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withResource(JSON.textNode(I_WAS_REPLACED))));
+                .thenReturn(Flux.just(new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, Value.EMPTY_ARRAY,
+                        Value.of(I_WAS_REPLACED))));
 
         var result = Mono.fromFuture(
                 () -> queryGateway.query(BAD_RESOURCE_SERIALIZATION_QUERY, QUERY, instanceOf(Integer.class)));
@@ -284,10 +283,11 @@ public abstract class QueryTestsuite {
         create(result).expectErrorMatches(isAccessDenied()).verify();
 
         verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
-        assertThatSubject(is(jsonText(ANONYMOUS)));
-        assertThatAction(is(jsonText(BAD_RESOURCE_SERIALIZATION_QUERY)));
-        assertThatResource(is(jsonText(RESOURCE)));
-        assertThatEnvironmentNotPresent();
+        var subscription6 = captureAuthzSubscription();
+        assertThat(subscription6.subject()).isEqualTo(Value.of(ANONYMOUS));
+        assertThat(subscription6.action()).isEqualTo(Value.of(BAD_RESOURCE_SERIALIZATION_QUERY));
+        assertThat(subscription6.resource()).isEqualTo(Value.of(RESOURCE));
+        assertThat(subscription6.environment()).isInstanceOf(UndefinedValue.class);
     }
 
     @Test
@@ -499,10 +499,9 @@ public abstract class QueryTestsuite {
 
     @Test
     void when_preHandlerSecuredQueryAndPermitWithUnknownAdvice_then_accessGranted() {
-        var constraints = JSON.arrayNode();
-        constraints.add(JSON.textNode("unknown constraint"));
-        when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withAdvice(constraints)));
+        var advice = Value.ofArray(Value.of("unknown constraint"));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, advice, Value.UNDEFINED)));
 
         var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
@@ -513,10 +512,9 @@ public abstract class QueryTestsuite {
 
     @Test
     void when_preHandlerSecuredQueryAndPermitWithUnknownObligation_then_accessDenied() {
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode("unknown obligation"));
-        when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+        var obligations = Value.ofArray(Value.of("unknown obligation"));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED)));
 
         var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
@@ -527,10 +525,9 @@ public abstract class QueryTestsuite {
 
     @Test
     void when_preHandlerSecuredQueryAndPermitWithOnDecisionObligation_then_accessGranted() {
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode(ON_DECISION_DO));
-        when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+        var obligations = Value.ofArray(Value.of(ON_DECISION_DO));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED)));
 
         var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
@@ -542,10 +539,9 @@ public abstract class QueryTestsuite {
 
     @Test
     void when_preHandlerSecuredQueryAndPermitWithQueryMapperObligation_then_accessGrantedAndHandlerEnforced() {
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode(MODIFY_QUERY));
-        when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+        var obligations = Value.ofArray(Value.of(MODIFY_QUERY));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED)));
 
         var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
@@ -557,10 +553,9 @@ public abstract class QueryTestsuite {
 
     @Test
     void when_preHandlerSecuredQueryAndPermitWithResultMapperObligation_then_accessGrantedAndHandlerEnforced() {
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
-        when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+        var obligations = Value.ofArray(Value.of(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED)));
 
         var result = Mono.fromFuture(() -> queryGateway.query(PRE_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
@@ -572,10 +567,9 @@ public abstract class QueryTestsuite {
 
     @Test
     void when_preHandlerSecuredQueryAndPermitWithErrorObligation_then_failsWithModifiedError() {
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode(MODIFY_ERROR));
-        when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+        var obligations = Value.ofArray(Value.of(MODIFY_ERROR));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED)));
 
         var result = Mono.fromFuture(() -> queryGateway.query(FAILING_PRE_QUERY, QUERY, instanceOf(String.class)));
 
@@ -587,10 +581,9 @@ public abstract class QueryTestsuite {
 
     @Test
     void when_postHandlerSecuredQueryAndPermitWithUnknownAdvice_then_accessGranted() {
-        var advice = JSON.arrayNode();
-        advice.add(JSON.textNode("unknown constraint"));
-        when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withAdvice(advice)));
+        var advice = Value.ofArray(Value.of("unknown constraint"));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, advice, Value.UNDEFINED)));
 
         var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
@@ -601,10 +594,9 @@ public abstract class QueryTestsuite {
 
     @Test
     void when_postHandlerSecuredQueryAndPermitWithUnknownObligation_then_accessDenied() {
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode("unknown constraint"));
-        when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+        var obligations = Value.ofArray(Value.of("unknown constraint"));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED)));
 
         var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
@@ -615,10 +607,9 @@ public abstract class QueryTestsuite {
 
     @Test
     void when_postHandlerSecuredQueryAndPermitWithQueryMapperObligation_then_accessDeniedCauseOfNotAbleToHandle() {
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode(MODIFY_QUERY));
-        when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+        var obligations = Value.ofArray(Value.of(MODIFY_QUERY));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED)));
 
         var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
@@ -630,10 +621,9 @@ public abstract class QueryTestsuite {
 
     @Test
     void when_postHandlerSecuredQueryAndPermitWithResultMapperObligation_then_accessGrantedAndHandlerEnforced() {
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
-        when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+        var obligations = Value.ofArray(Value.of(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED)));
 
         var result = Mono.fromFuture(() -> queryGateway.query(POST_HANDLE_QUERY, QUERY, instanceOf(String.class)));
 
@@ -645,10 +635,9 @@ public abstract class QueryTestsuite {
 
     @Test
     void when_postHandlerSecuredQueryAndPermitWithErrorObligation_then_failsWithModifiedError() {
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode(MODIFY_ERROR));
-        when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+        var obligations = Value.ofArray(Value.of(MODIFY_ERROR));
+        when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED)));
 
         var result = Mono.fromFuture(() -> queryGateway.query(FAILING_POST_QUERY, QUERY, instanceOf(String.class)));
 
@@ -683,18 +672,13 @@ public abstract class QueryTestsuite {
         var numberOfUpdates = 20L;
         var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
-        var constraints = JSON.arrayNode();
-        constraints.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
-        constraints.add(JSON.textNode(ONLY_EVEN_NUMBERS));
-        constraints.add(JSON.textNode(MODIFY_ERROR));
-
-        var constraints2 = JSON.arrayNode();
-        constraints2.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
-        constraints2.add(JSON.textNode(MODIFY_ERROR));
+        var constraints  = Value.ofArray(Value.of(MAP_UPDATE_PAYLOAD_TO_UPPERCASE), Value.of(ONLY_EVEN_NUMBERS),
+                Value.of(MODIFY_ERROR));
+        var constraints2 = Value.ofArray(Value.of(MAP_UPDATE_PAYLOAD_TO_UPPERCASE), Value.of(MODIFY_ERROR));
 
         Flux<AuthorizationDecision> decisions = Flux.concat(
-                Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints)),
-                Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints2))
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, constraints, Value.EMPTY_ARRAY, Value.UNDEFINED)),
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, constraints2, Value.EMPTY_ARRAY, Value.UNDEFINED))
                         .delayElements(Duration.ofMillis(10 * emitIntervallMs + emitIntervallMs / 2)));
 
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
@@ -721,20 +705,15 @@ public abstract class QueryTestsuite {
         var numberOfUpdates = 15L;
         var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
-        var constraints = JSON.arrayNode();
-        constraints.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
-        constraints.add(JSON.textNode(ONLY_EVEN_NUMBERS));
-        constraints.add(JSON.textNode(MODIFY_ERROR));
-
-        var constraints2 = JSON.arrayNode();
-        constraints2.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
-        constraints2.add(JSON.textNode(MODIFY_ERROR));
+        var constraints  = Value.ofArray(Value.of(MAP_UPDATE_PAYLOAD_TO_UPPERCASE), Value.of(ONLY_EVEN_NUMBERS),
+                Value.of(MODIFY_ERROR));
+        var constraints2 = Value.ofArray(Value.of(MAP_UPDATE_PAYLOAD_TO_UPPERCASE), Value.of(MODIFY_ERROR));
 
         Flux<AuthorizationDecision> decisions = Flux.concat(
-                Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints)),
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, constraints, Value.EMPTY_ARRAY, Value.UNDEFINED)),
                 Flux.just(AuthorizationDecision.DENY)
                         .delayElements(Duration.ofMillis(5 * emitIntervallMs + emitIntervallMs / 2)),
-                Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints2))
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, constraints2, Value.EMPTY_ARRAY, Value.UNDEFINED))
                         .delayElements(Duration.ofMillis(3 * emitIntervallMs)));
 
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
@@ -759,20 +738,16 @@ public abstract class QueryTestsuite {
         var numberOfUpdates = 20L;
         var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
-        var constraints = JSON.arrayNode();
-        constraints.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
-        constraints.add(JSON.textNode(ONLY_EVEN_NUMBERS));
-        constraints.add(JSON.textNode(MODIFY_ERROR));
+        var constraints = Value.ofArray(Value.of(MAP_UPDATE_PAYLOAD_TO_UPPERCASE), Value.of(ONLY_EVEN_NUMBERS),
+                Value.of(MODIFY_ERROR));
 
-        var constraints2 = JSON.arrayNode();
-        constraints2.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
-        constraints2.add(JSON.textNode(MODIFY_ERROR));
+        var constraints2 = Value.ofArray(Value.of(MAP_UPDATE_PAYLOAD_TO_UPPERCASE), Value.of(MODIFY_ERROR));
 
         Flux<AuthorizationDecision> decisions = Flux.concat(
-                Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints)),
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, constraints, Value.EMPTY_ARRAY, Value.UNDEFINED)),
                 Flux.just(AuthorizationDecision.DENY)
                         .delayElements(Duration.ofMillis(5 * emitIntervallMs + emitIntervallMs / 2)),
-                Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints2))
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, constraints2, Value.EMPTY_ARRAY, Value.UNDEFINED))
                         .delayElements(Duration.ofMillis(3 * emitIntervallMs)));
 
         var accessDeniedHandler = mock(Runnable.class);
@@ -798,20 +773,15 @@ public abstract class QueryTestsuite {
         var numberOfUpdates = 20L;
         var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
-        var constraints = JSON.arrayNode();
-        constraints.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
-        constraints.add(JSON.textNode(ONLY_EVEN_NUMBERS));
-        constraints.add(JSON.textNode(MODIFY_ERROR));
-
-        var constraints2 = JSON.arrayNode();
-        constraints2.add(JSON.textNode(MAP_UPDATE_PAYLOAD_TO_UPPERCASE));
-        constraints2.add(JSON.textNode(MODIFY_ERROR));
+        var constraints  = Value.ofArray(Value.of(MAP_UPDATE_PAYLOAD_TO_UPPERCASE), Value.of(ONLY_EVEN_NUMBERS),
+                Value.of(MODIFY_ERROR));
+        var constraints2 = Value.ofArray(Value.of(MAP_UPDATE_PAYLOAD_TO_UPPERCASE), Value.of(MODIFY_ERROR));
 
         Flux<AuthorizationDecision> decisions                  = Flux.concat(
-                Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints)),
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, constraints, Value.EMPTY_ARRAY, Value.UNDEFINED)),
                 Flux.just(AuthorizationDecision.DENY)
                         .delayElements(Duration.ofMillis(5 * emitIntervallMs + emitIntervallMs / 2)),
-                Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints2))
+                Flux.just(new AuthorizationDecision(Decision.PERMIT, constraints2, Value.EMPTY_ARRAY, Value.UNDEFINED))
                         .delayElements(Duration.ofMillis(3 * emitIntervallMs - emitIntervallMs / 4)));
         var                         accessDeniedHandler        = mock(Runnable.class);
         @SuppressWarnings("unchecked")
@@ -836,14 +806,13 @@ public abstract class QueryTestsuite {
     }
 
     @Test
-    void when_constraintWantsCollectionFilter_then_CollectionsAreFiltered() throws JsonProcessingException {
+    void when_constraintWantsCollectionFilter_then_CollectionsAreFiltered() {
         var emitIntervallMs = 20L;
         var queryPayload    = "caseCX1";
         var numberOfUpdates = 20L;
         var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));
 
-        var constraints = JSON.arrayNode();
-        constraints.add(mapper.readTree("""
+        var filterConstraint = ValueJsonMarshaller.json("""
                 {
                   "type"    : "filterMessagePayloadContent",
                   "actions" : [
@@ -858,10 +827,11 @@ public abstract class QueryTestsuite {
                     }
                   ]
                  }
-                """));
-        constraints.add(mapper.readTree("\"" + REMOVE_YOUNGER_THAN18 + "\""));
+                """);
+        var constraints      = Value.ofArray(filterConstraint, Value.of(REMOVE_YOUNGER_THAN18));
 
-        var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(constraints));
+        var decisions = Flux
+                .just(new AuthorizationDecision(Decision.PERMIT, constraints, Value.EMPTY_ARRAY, Value.UNDEFINED));
 
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
 
@@ -974,8 +944,8 @@ public abstract class QueryTestsuite {
     static class ResultFilterProvider implements UpdateFilterConstraintHandlerProvider {
 
         @Override
-        public boolean isResponsible(JsonNode constraint) {
-            return constraint.isTextual() && ONLY_EVEN_NUMBERS.equals(constraint.textValue());
+        public boolean isResponsible(Value constraint) {
+            return constraint instanceof TextValue(var text) && ONLY_EVEN_NUMBERS.equals(text);
         }
 
         @Override
@@ -984,7 +954,7 @@ public abstract class QueryTestsuite {
         }
 
         @Override
-        public Predicate<ResultMessage<?>> getHandler(JsonNode constraint) {
+        public Predicate<ResultMessage<?>> getHandler(Value constraint) {
             return update -> {
                 String[] split = ((String) update.getPayload()).split("-");
                 return Integer.parseInt(split[1]) % 2 == 0;
@@ -996,8 +966,8 @@ public abstract class QueryTestsuite {
     static class ResultMessageMappingProvider implements ResultConstraintHandlerProvider {
 
         @Override
-        public boolean isResponsible(JsonNode constraint) {
-            return constraint.isTextual() && MAP_UPDATE_PAYLOAD_TO_UPPERCASE.equals(constraint.textValue());
+        public boolean isResponsible(Value constraint) {
+            return constraint instanceof TextValue(var text) && MAP_UPDATE_PAYLOAD_TO_UPPERCASE.equals(text);
         }
 
         @Override
@@ -1006,7 +976,7 @@ public abstract class QueryTestsuite {
         }
 
         @Override
-        public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
+        public Object mapPayload(Object payload, Class<?> clazz, Value constraint) {
             return ((String) payload).toUpperCase();
         }
     }
@@ -1014,12 +984,12 @@ public abstract class QueryTestsuite {
     static class OnDecisionProvider implements OnDecisionConstraintHandlerProvider {
 
         @Override
-        public boolean isResponsible(JsonNode constraint) {
-            return constraint.isTextual() && ON_DECISION_DO.equals(constraint.textValue());
+        public boolean isResponsible(Value constraint) {
+            return constraint instanceof TextValue(var text) && ON_DECISION_DO.equals(text);
         }
 
         @Override
-        public BiConsumer<AuthorizationDecision, Message<?>> getHandler(JsonNode constraint) {
+        public BiConsumer<AuthorizationDecision, Message<?>> getHandler(Value constraint) {
             return this::accept;
         }
 
@@ -1032,12 +1002,12 @@ public abstract class QueryTestsuite {
     static class QueryMappingProvider implements QueryConstraintHandlerProvider {
 
         @Override
-        public boolean isResponsible(JsonNode constraint) {
-            return constraint.isTextual() && MODIFY_QUERY.equals(constraint.textValue());
+        public boolean isResponsible(Value constraint) {
+            return constraint instanceof TextValue(var text) && MODIFY_QUERY.equals(text);
         }
 
         @Override
-        public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
+        public Object mapPayload(Object payload, Class<?> clazz, Value constraint) {
             return MODIFIED_QUERY;
         }
 
@@ -1046,8 +1016,8 @@ public abstract class QueryTestsuite {
     public static class ResultMappingProvider implements MappingConstraintHandlerProvider<String> {
 
         @Override
-        public boolean isResponsible(JsonNode constraint) {
-            return constraint.isTextual() && MODIFY_RESULT.equals(constraint.textValue());
+        public boolean isResponsible(Value constraint) {
+            return constraint instanceof TextValue(var text) && MODIFY_RESULT.equals(text);
         }
 
         @Override
@@ -1056,7 +1026,7 @@ public abstract class QueryTestsuite {
         }
 
         @Override
-        public UnaryOperator<String> getHandler(JsonNode constraint) {
+        public UnaryOperator<String> getHandler(Value constraint) {
             return this::map;
         }
 
@@ -1069,12 +1039,12 @@ public abstract class QueryTestsuite {
     public static class ErrorMappingProvider implements ErrorMappingConstraintHandlerProvider {
 
         @Override
-        public boolean isResponsible(JsonNode constraint) {
-            return constraint.isTextual() && MODIFY_ERROR.equals(constraint.textValue());
+        public boolean isResponsible(Value constraint) {
+            return constraint instanceof TextValue(var text) && MODIFY_ERROR.equals(text);
         }
 
         @Override
-        public UnaryOperator<Throwable> getHandler(JsonNode constraint) {
+        public UnaryOperator<Throwable> getHandler(Value constraint) {
             return this::map;
         }
 
@@ -1088,8 +1058,8 @@ public abstract class QueryTestsuite {
             implements CollectionAndOptionalFilterPredicateProvider<DataPoint> {
 
         @Override
-        public boolean isResponsible(JsonNode constraint) {
-            return constraint.isTextual() && REMOVE_YOUNGER_THAN18.equals(constraint.textValue());
+        public boolean isResponsible(Value constraint) {
+            return constraint instanceof TextValue(var text) && REMOVE_YOUNGER_THAN18.equals(text);
         }
 
         @Override
@@ -1098,31 +1068,10 @@ public abstract class QueryTestsuite {
         }
 
         @Override
-        public boolean test(DataPoint o, JsonNode constraint) {
+        public boolean test(DataPoint o, Value constraint) {
             return o.getAge() >= 18;
         }
 
-    }
-
-    private void assertThatSubject(Matcher<JsonNode> matcher) {
-        assertThatAuthzSubscriptionProperty("subject", matcher);
-    }
-
-    private void assertThatAction(Matcher<JsonNode> matcher) {
-        assertThatAuthzSubscriptionProperty("action", matcher);
-    }
-
-    private void assertThatResource(Matcher<JsonNode> matcher) {
-        assertThatAuthzSubscriptionProperty("resource", matcher);
-    }
-
-    private void assertThatEnvironmentNotPresent() {
-        assertThat(captureAuthzSubscription().getEnvironment(), is(nullValue()));
-    }
-
-    private void assertThatAuthzSubscriptionProperty(String authzSubscriptionProperty, Matcher<JsonNode> matcher) {
-        assertThat(captureAuthzSubscription(),
-                is(pojo(AuthorizationSubscription.class).withProperty(authzSubscriptionProperty, matcher)));
     }
 
     private AuthorizationSubscription captureAuthzSubscription() {
@@ -1146,7 +1095,7 @@ public abstract class QueryTestsuite {
         }
 
         @Bean
-        ResponseMessagePayloadFilterProvider responseMessagePayloadFilterProvider(ObjectMapper mapper) {
+        ResponseMessagePayloadFilterProvider responseMessagePayloadFilterProvider(JsonMapper mapper) {
             return new ResponseMessagePayloadFilterProvider(mapper);
         }
 

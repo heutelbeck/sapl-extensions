@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,7 +17,8 @@
  */
 package io.sapl.mqtt.pep.constraint;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.sapl.api.model.UndefinedValue;
+import io.sapl.api.model.Value;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -70,32 +71,34 @@ public class ConstraintHandler {
     }
 
     private static void enforceObligations(ConstraintDetails constraintDetails) {
-        constraintDetails.getAuthzDecision().getObligations().ifPresent(obligations -> {
+        var obligations = constraintDetails.getAuthzDecision().obligations();
+        if (!obligations.isEmpty()) {
             constraintDetails.getActionType().loggingConstraints(obligations, constraintDetails);
             obligations.forEach(obligation -> enforceObligation(constraintDetails, obligation));
-        });
+        }
     }
 
     private static void enforceAdvices(ConstraintDetails constraintDetails) {
-        constraintDetails.getAuthzDecision().getAdvice().ifPresent(advices -> {
+        var advices = constraintDetails.getAuthzDecision().advice();
+        if (!advices.isEmpty()) {
             constraintDetails.getActionType().loggingConstraints(advices, constraintDetails);
             advices.forEach(advice -> enforceAdvice(constraintDetails, advice));
-        });
+        }
     }
 
-    private static void enforceObligation(ConstraintDetails constraintDetails, JsonNode obligation) {
+    private static void enforceObligation(ConstraintDetails constraintDetails, Value obligation) {
         boolean isSuccessful = constraintDetails.getActionType().enforceConstraint(constraintDetails, obligation);
         if (!isSuccessful) {
             constraintDetails.setHasHandledObligationsSuccessfully(false);
         }
     }
 
-    private static void enforceAdvice(ConstraintDetails constraintDetails, JsonNode advice) {
+    private static void enforceAdvice(ConstraintDetails constraintDetails, Value advice) {
         constraintDetails.getActionType().enforceConstraint(constraintDetails, advice);
     }
 
     private static void enforceResourceObligation(ConstraintDetails constraintDetails) {
-        if (constraintDetails.getAuthzDecision().getResource().isPresent()) { // resource constraints aren't supported
+        if (!(constraintDetails.getAuthzDecision().resource() instanceof UndefinedValue)) {
             log.warn(
                     "The authorization decision for client '{}' for mqtt action '{}'"
                             + "contained a resource. Handling of resource obligations isn't supported.",

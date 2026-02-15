@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -48,11 +48,16 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.security.access.AccessDeniedException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+
+import tools.jackson.databind.type.TypeFactory;
+
+import io.sapl.api.model.ArrayValue;
+import io.sapl.api.model.UndefinedValue;
+import io.sapl.api.model.Value;
+import io.sapl.api.model.ValueJsonMarshaller;
 import com.google.common.base.Functions;
 
 import io.sapl.api.pdp.AuthorizationDecision;
@@ -94,7 +99,7 @@ public class ConstraintHandlerService {
 
     private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
-    private final ObjectMapper                                mapper;
+    private final JsonMapper                                  mapper;
     private final ParameterResolverFactory                    parameterResolverFactory;
     private final List<OnDecisionConstraintHandlerProvider>   globalRunnableProviders;
     private final List<CommandConstraintHandlerProvider>      globalCommandMessageMappingProviders;
@@ -107,7 +112,7 @@ public class ConstraintHandlerService {
     /**
      * Instantiate the ConstraintHandlerService.
      *
-     * @param mapper The systems ObjectMapper
+     * @param mapper The systems JsonMapper
      * @param parameterResolverFactory Axon parameter resolver factory.
      * @param onDecisionProviders All OnDecisionConstraintHandlerProvider instances.
      * @param globalCommandProviders All CommandConstraintHandlerProvider instances.
@@ -119,7 +124,7 @@ public class ConstraintHandlerService {
      * UpdateFilterConstraintHandlerProvider instances.
      * @param updateMappingProviders All ResultConstraintHandlerProvider instances.
      */
-    public ConstraintHandlerService(ObjectMapper mapper,
+    public ConstraintHandlerService(JsonMapper mapper,
             ParameterResolverFactory parameterResolverFactory,
             List<OnDecisionConstraintHandlerProvider> onDecisionProviders,
             List<CommandConstraintHandlerProvider> globalCommandProviders,
@@ -176,26 +181,27 @@ public class ConstraintHandlerService {
      * deserialization fails.
      */
     @SuppressWarnings("unchecked")
-    public <T> Object deserializeResource(JsonNode resource, ResponseType<T> type) {
+    public <T> Object deserializeResource(Value resource, ResponseType<T> type) {
+        var resourceJson = ValueJsonMarshaller.toJsonNode(resource);
 
         if (InstanceResponseType.class.isAssignableFrom(type.getClass())) {
             try {
-                return mapper.treeToValue(resource, (Class<T>) type.getExpectedResponseType());
-            } catch (JsonProcessingException | IllegalArgumentException e) {
+                return mapper.treeToValue(resourceJson, (Class<T>) type.getExpectedResponseType());
+            } catch (JacksonException | IllegalArgumentException e) {
                 log.error(FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION, e.getLocalizedMessage());
                 throw new AccessDeniedException(ACCESS_DENIED, e);
             }
         } else if (MultipleInstancesResponseType.class.isAssignableFrom(type.getClass())) {
 
-            if (!ArrayNode.class.isAssignableFrom(resource.getClass())) {
+            if (!(resource instanceof ArrayValue)) {
                 log.error("resource is no array, however a MultipleInstancesResponseType was expected!");
                 throw new AccessDeniedException(ACCESS_DENIED);
             }
 
             var deserialized = List.of();
             try {
-                deserialized = mapper.treeToValue(resource, List.class);
-            } catch (JsonProcessingException | IllegalArgumentException e) {
+                deserialized = mapper.treeToValue(resourceJson, List.class);
+            } catch (JacksonException | IllegalArgumentException e) {
                 log.error(FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION, e.getLocalizedMessage());
                 throw new AccessDeniedException(ACCESS_DENIED, e);
             }
@@ -210,8 +216,8 @@ public class ConstraintHandlerService {
             return deserialized;
         } else if (OptionalResponseType.class.isAssignableFrom(type.getClass())) {
             try {
-                return Optional.ofNullable(mapper.treeToValue(resource, (Class<T>) type.getExpectedResponseType()));
-            } catch (JsonProcessingException | IllegalArgumentException e) {
+                return Optional.ofNullable(mapper.treeToValue(resourceJson, (Class<T>) type.getExpectedResponseType()));
+            } catch (JacksonException | IllegalArgumentException e) {
                 log.error(FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION, e.getLocalizedMessage());
                 throw new AccessDeniedException(ACCESS_DENIED, e);
             }
@@ -235,13 +241,13 @@ public class ConstraintHandlerService {
             AuthorizationDecision decision, T handlerObject, Optional<Executable> executable,
             CommandMessage<?> command) {
 
-        if (decision.getResource().isPresent()) {
+        if (!(decision.resource() instanceof UndefinedValue)) {
             log.warn("PDP decision contained resource object for command handler. Access Denied. {}", decision);
             throw new AccessDeniedException(ACCESS_DENIED);
         }
 
-        var obligationsWithoutHandler = new HashSet<JsonNode>();
-        decision.getObligations().ifPresent(obligations -> obligations.forEach(obligationsWithoutHandler::add));
+        var obligationsWithoutHandler = new HashSet<Value>();
+        decision.obligations().forEach(obligationsWithoutHandler::add);
 
         Optional<Class<?>> returnType = executable.map(Executable::getAnnotatedReturnType).map(AnnotatedType::getType)
                 .map(TypeFactory::rawClass);
@@ -276,8 +282,8 @@ public class ConstraintHandlerService {
     public QueryConstraintHandlerBundle<?> buildQueryPreHandlerBundle(AuthorizationDecision decision,
             ResponseType<?> responseType, Optional<ResponseType<?>> updateType) {
 
-        var obligationsWithoutHandler = new HashSet<JsonNode>();
-        decision.getObligations().ifPresent(obligations -> obligations.forEach(obligationsWithoutHandler::add));
+        var obligationsWithoutHandler = new HashSet<Value>();
+        decision.obligations().forEach(obligationsWithoutHandler::add);
 
         var onDecisionHandlers    = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
         var queryMappingHandlers  = constructQueryMessageMappingHandlers(decision, obligationsWithoutHandler);
@@ -305,21 +311,21 @@ public class ConstraintHandlerService {
     }
 
     private <T> UnaryOperator<Object> constructResultMessageMappingHandlers(AuthorizationDecision decision,
-            HashSet<JsonNode> obligationsWithoutHandler, ResponseType<T> responseType) {
-        var obligationFun = constructResultMessageMappingHandlers(decision.getObligations(),
+            HashSet<Value> obligationsWithoutHandler, ResponseType<T> responseType) {
+        var obligationFun = constructResultMessageMappingHandlers(decision.obligations(),
                 obligationsWithoutHandler::remove, responseType);
-        var adviceFun     = constructResultMessageMappingHandlers(decision.getAdvice(), x -> {}, responseType);
+        var adviceFun     = constructResultMessageMappingHandlers(decision.advice(), x -> {}, responseType);
 
         return result -> {
             var newResult = result;
             try {
-                newResult = obligationFun.orElseGet(Functions::identity).apply(result);
+                newResult = obligationFun.apply(result);
             } catch (Exception e) {
                 log.error(FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
                 throw new AccessDeniedException(ACCESS_DENIED, e);
             }
             try {
-                newResult = adviceFun.orElseGet(Functions::identity).apply(newResult);
+                newResult = adviceFun.apply(newResult);
             } catch (Exception e) {
                 log.error(FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
             }
@@ -327,25 +333,22 @@ public class ConstraintHandlerService {
         };
     }
 
-    private <T> Optional<Function<Object, Object>> constructResultMessageMappingHandlers(
-            Optional<ArrayNode> constraints, Consumer<JsonNode> onHandlerFound, ResponseType<T> responseType) {
-        return constraints.map(constraintsArray -> {
-            var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<Object, Object>>>(
-                    constraintsArray.size());
+    private <T> Function<Object, Object> constructResultMessageMappingHandlers(ArrayValue constraints,
+            Consumer<Value> onHandlerFound, ResponseType<T> responseType) {
+        var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<Object, Object>>>(constraints.size());
 
-            for (var constraint : constraintsArray) {
-                for (var provider : updateMappingProviders) {
-                    if (provider.supports(responseType) && provider.isResponsible(constraint)) {
-                        onHandlerFound.accept(constraint);
-                        handlersWithPriority.add(
-                                new HandlerWithPriority<>(provider.getHandler(constraint), provider.getPriority()));
-                    }
+        for (var constraint : constraints) {
+            for (var provider : updateMappingProviders) {
+                if (provider.supports(responseType) && provider.isResponsible(constraint)) {
+                    onHandlerFound.accept(constraint);
+                    handlersWithPriority
+                            .add(new HandlerWithPriority<>(provider.getHandler(constraint), provider.getPriority()));
                 }
             }
-            Collections.sort(handlersWithPriority);
+        }
+        Collections.sort(handlersWithPriority);
 
-            return mapAll(handlersWithPriority);
-        });
+        return mapAll(handlersWithPriority);
     }
 
     @Data
@@ -361,30 +364,31 @@ public class ConstraintHandlerService {
     }
 
     private <T> Predicate<T> constructFilterPredicateHandlers(AuthorizationDecision decision,
-            HashSet<JsonNode> obligationsWithoutHandler, ResponseType<T> responseType) {
-        Predicate<T> obligationFilterPredicate = constructPredicate(decision.getObligations(), responseType,
+            HashSet<Value> obligationsWithoutHandler, ResponseType<T> responseType) {
+        Predicate<T> obligationFilterPredicate = constructPredicate(decision.obligations(), responseType,
                 obligationsWithoutHandler::remove);
-        Predicate<T> adviceFilterPredicate     = constructPredicate(decision.getAdvice(), responseType,
+        Predicate<T> adviceFilterPredicate     = constructPredicate(decision.advice(), responseType,
                 obligationsWithoutHandler::remove);
         return t -> onErrorFallbackTo(obligationFilterPredicate, false).test(t)
                 && onErrorFallbackTo(adviceFilterPredicate, true).test(t);
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Predicate<T> constructPredicate(Optional<ArrayNode> constraints, ResponseType<T> responseType,
-            Consumer<JsonNode> onHandlerFound) {
-        return constraints.map(constraintsArray -> {
-            var handlers = new ArrayList<Predicate<T>>(constraintsArray.size());
-            for (var constraint : constraintsArray) {
-                for (var provider : updatePredicateProviders) {
-                    if (provider.supports(responseType) && provider.isResponsible(constraint)) {
-                        onHandlerFound.accept(constraint);
-                        handlers.add((Predicate<T>) provider.getHandler(constraint));
-                    }
+    private <T> Predicate<T> constructPredicate(ArrayValue constraints, ResponseType<T> responseType,
+            Consumer<Value> onHandlerFound) {
+        if (constraints.isEmpty()) {
+            return x -> true;
+        }
+        var handlers = new ArrayList<Predicate<T>>(constraints.size());
+        for (var constraint : constraints) {
+            for (var provider : updatePredicateProviders) {
+                if (provider.supports(responseType) && provider.isResponsible(constraint)) {
+                    onHandlerFound.accept(constraint);
+                    handlers.add((Predicate<T>) provider.getHandler(constraint));
                 }
             }
-            return andAll(handlers);
-        }).orElse(x -> true);
+        }
+        return andAll(handlers);
     }
 
     /**
@@ -398,8 +402,8 @@ public class ConstraintHandlerService {
     public QueryConstraintHandlerBundle<?> buildQueryPostHandlerBundle(AuthorizationDecision decision,
             ResponseType<?> responseType) {
 
-        var obligationsWithoutHandler = new HashSet<JsonNode>();
-        decision.getObligations().ifPresent(obligations -> obligations.forEach(obligationsWithoutHandler::add));
+        var obligationsWithoutHandler = new HashSet<Value>();
+        decision.obligations().forEach(obligationsWithoutHandler::add);
 
         var onDecisionHandlers    = constructOnDecisionHandlers(decision, obligationsWithoutHandler);
         var errorMappingHandlers  = constructErrorMappingHandlers(decision, obligationsWithoutHandler);
@@ -416,20 +420,20 @@ public class ConstraintHandlerService {
     }
 
     private UnaryOperator<Throwable> constructErrorMappingHandlers(AuthorizationDecision decision,
-            HashSet<JsonNode> obligationsWithoutHandler) {
-        var obligationFun = constructErrorMappingHandlers(decision.getObligations(), obligationsWithoutHandler::remove);
-        var adviceFun     = constructErrorMappingHandlers(decision.getAdvice(), x -> {});
+            HashSet<Value> obligationsWithoutHandler) {
+        var obligationFun = constructErrorMappingHandlers(decision.obligations(), obligationsWithoutHandler::remove);
+        var adviceFun     = constructErrorMappingHandlers(decision.advice(), x -> {});
 
         return error -> {
             var newError = error;
             try {
-                newError = obligationFun.orElseGet(Functions::identity).apply(newError);
+                newError = obligationFun.apply(newError);
             } catch (Exception e) {
                 log.error(FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
                 throw new AccessDeniedException(ACCESS_DENIED);
             }
             try {
-                newError = adviceFun.orElseGet(Functions::identity).apply(newError);
+                newError = adviceFun.apply(newError);
             } catch (Exception e) {
                 log.error(FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
             }
@@ -437,42 +441,40 @@ public class ConstraintHandlerService {
         };
     }
 
-    private Optional<Function<Throwable, Throwable>> constructErrorMappingHandlers(Optional<ArrayNode> constraints,
-            Consumer<JsonNode> onHandlerFound) {
-        return constraints.map(constraintsArray -> {
-            var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<Throwable, Throwable>>>(
-                    constraintsArray.size());
+    private Function<Throwable, Throwable> constructErrorMappingHandlers(ArrayValue constraints,
+            Consumer<Value> onHandlerFound) {
+        var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<Throwable, Throwable>>>(
+                constraints.size());
 
-            for (var constraint : constraintsArray) {
-                for (var provider : globalErrorMappingHandlerProviders) {
-                    if (provider.isResponsible(constraint)) {
-                        onHandlerFound.accept(constraint);
-                        handlersWithPriority.add(
-                                new HandlerWithPriority<>(provider.getHandler(constraint), provider.getPriority()));
-                    }
+        for (var constraint : constraints) {
+            for (var provider : globalErrorMappingHandlerProviders) {
+                if (provider.isResponsible(constraint)) {
+                    onHandlerFound.accept(constraint);
+                    handlersWithPriority
+                            .add(new HandlerWithPriority<>(provider.getHandler(constraint), provider.getPriority()));
                 }
             }
-            Collections.sort(handlersWithPriority);
-            return mapAll(handlersWithPriority);
-        });
+        }
+        Collections.sort(handlersWithPriority);
+        return mapAll(handlersWithPriority);
     }
 
     private UnaryOperator<CommandMessage<?>> constructCommandMessageMappingHandlers(AuthorizationDecision decision,
-            HashSet<JsonNode> obligationsWithoutHandler) {
-        var obligationFun = constructCommandMessageMappingHandlers(decision.getObligations(),
+            HashSet<Value> obligationsWithoutHandler) {
+        var obligationFun = constructCommandMessageMappingHandlers(decision.obligations(),
                 obligationsWithoutHandler::remove);
-        var adviceFun     = constructCommandMessageMappingHandlers(decision.getAdvice(), x -> {});
+        var adviceFun     = constructCommandMessageMappingHandlers(decision.advice(), x -> {});
 
         return command -> {
             var newCommand = command;
             try {
-                newCommand = obligationFun.orElseGet(Functions::identity).apply(newCommand);
+                newCommand = obligationFun.apply(newCommand);
             } catch (Exception e) {
                 log.error(FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
                 throw new AccessDeniedException(ACCESS_DENIED);
             }
             try {
-                newCommand = adviceFun.orElseGet(Functions::identity).apply(newCommand);
+                newCommand = adviceFun.apply(newCommand);
             } catch (Exception e) {
                 log.error(FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
             }
@@ -480,42 +482,40 @@ public class ConstraintHandlerService {
         };
     }
 
-    private Optional<Function<CommandMessage<?>, CommandMessage<?>>> constructCommandMessageMappingHandlers(
-            Optional<ArrayNode> constraints, Consumer<JsonNode> onHandlerFound) {
-        return constraints.map(constraintsArray -> {
-            var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<CommandMessage<?>, CommandMessage<?>>>>(
-                    constraintsArray.size());
+    private Function<CommandMessage<?>, CommandMessage<?>> constructCommandMessageMappingHandlers(
+            ArrayValue constraints, Consumer<Value> onHandlerFound) {
+        var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<CommandMessage<?>, CommandMessage<?>>>>(
+                constraints.size());
 
-            for (var constraint : constraintsArray) {
-                for (var provider : globalCommandMessageMappingProviders) {
-                    if (provider.isResponsible(constraint)) {
-                        onHandlerFound.accept(constraint);
-                        handlersWithPriority.add(
-                                new HandlerWithPriority<>(provider.getHandler(constraint), provider.getPriority()));
-                    }
+        for (var constraint : constraints) {
+            for (var provider : globalCommandMessageMappingProviders) {
+                if (provider.isResponsible(constraint)) {
+                    onHandlerFound.accept(constraint);
+                    handlersWithPriority
+                            .add(new HandlerWithPriority<>(provider.getHandler(constraint), provider.getPriority()));
                 }
             }
-            Collections.sort(handlersWithPriority);
-            return mapAll(handlersWithPriority);
-        });
+        }
+        Collections.sort(handlersWithPriority);
+        return mapAll(handlersWithPriority);
     }
 
     private UnaryOperator<QueryMessage<?, ?>> constructQueryMessageMappingHandlers(AuthorizationDecision decision,
-            HashSet<JsonNode> obligationsWithoutHandler) {
-        var obligationFun = constructQueryMessageMappingHandlers(decision.getObligations(),
+            HashSet<Value> obligationsWithoutHandler) {
+        var obligationFun = constructQueryMessageMappingHandlers(decision.obligations(),
                 obligationsWithoutHandler::remove);
-        var adviceFun     = constructQueryMessageMappingHandlers(decision.getAdvice(), x -> {});
+        var adviceFun     = constructQueryMessageMappingHandlers(decision.advice(), x -> {});
 
         return query -> {
             var newQuery = query;
             try {
-                newQuery = obligationFun.orElseGet(Functions::identity).apply(newQuery);
+                newQuery = obligationFun.apply(newQuery);
             } catch (Exception e) {
                 log.error(FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
                 throw new AccessDeniedException(ACCESS_DENIED);
             }
             try {
-                newQuery = adviceFun.orElseGet(Functions::identity).apply(newQuery);
+                newQuery = adviceFun.apply(newQuery);
             } catch (Exception e) {
                 log.error(FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
             }
@@ -523,43 +523,41 @@ public class ConstraintHandlerService {
         };
     }
 
-    private Optional<Function<QueryMessage<?, ?>, QueryMessage<?, ?>>> constructQueryMessageMappingHandlers(
-            Optional<ArrayNode> constraints, Consumer<JsonNode> onHandlerFound) {
-        return constraints.map(constraintsArray -> {
-            var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<QueryMessage<?, ?>, QueryMessage<?, ?>>>>(
-                    constraintsArray.size());
+    private Function<QueryMessage<?, ?>, QueryMessage<?, ?>> constructQueryMessageMappingHandlers(
+            ArrayValue constraints, Consumer<Value> onHandlerFound) {
+        var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<QueryMessage<?, ?>, QueryMessage<?, ?>>>>(
+                constraints.size());
 
-            for (var constraint : constraintsArray) {
-                for (var provider : globalQueryMessageMappingProviders) {
-                    if (provider.isResponsible(constraint)) {
-                        onHandlerFound.accept(constraint);
-                        handlersWithPriority.add(
-                                new HandlerWithPriority<>(provider.getHandler(constraint), provider.getPriority()));
-                    }
+        for (var constraint : constraints) {
+            for (var provider : globalQueryMessageMappingProviders) {
+                if (provider.isResponsible(constraint)) {
+                    onHandlerFound.accept(constraint);
+                    handlersWithPriority
+                            .add(new HandlerWithPriority<>(provider.getHandler(constraint), provider.getPriority()));
                 }
             }
-            Collections.sort(handlersWithPriority);
-            return mapAll(handlersWithPriority);
-        });
+        }
+        Collections.sort(handlersWithPriority);
+        return mapAll(handlersWithPriority);
     }
 
     @SuppressWarnings("unchecked")
     private <T> UnaryOperator<T> constructResultMappingHandlers(AuthorizationDecision decision,
-            HashSet<JsonNode> obligationsWithoutHandler, Class<?> type) {
-        var obligationFun = constructResultMappingHandlers(decision.getObligations(), obligationsWithoutHandler::remove,
+            HashSet<Value> obligationsWithoutHandler, Class<?> type) {
+        var obligationFun = constructResultMappingHandlers(decision.obligations(), obligationsWithoutHandler::remove,
                 type);
-        var adviceFun     = constructResultMappingHandlers(decision.getAdvice(), x -> {}, type);
+        var adviceFun     = constructResultMappingHandlers(decision.advice(), x -> {}, type);
 
         return result -> {
             var newResult = result;
             try {
-                newResult = (T) obligationFun.orElseGet(Functions::identity).apply(result);
+                newResult = (T) obligationFun.apply(result);
             } catch (Exception e) {
                 log.error(FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
                 throw new AccessDeniedException(ACCESS_DENIED);
             }
             try {
-                newResult = (T) adviceFun.orElseGet(Functions::identity).apply(newResult);
+                newResult = (T) adviceFun.apply(newResult);
             } catch (Exception e) {
                 log.error(FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
             }
@@ -568,76 +566,66 @@ public class ConstraintHandlerService {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Optional<Function<T, T>> constructResultMappingHandlers(Optional<ArrayNode> constraints,
-            Consumer<JsonNode> onHandlerFound, Class<?> responseType) {
-        return constraints.map(constraintsArray -> {
-            var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<T, T>>>(constraintsArray.size());
+    private <T> Function<T, T> constructResultMappingHandlers(ArrayValue constraints, Consumer<Value> onHandlerFound,
+            Class<?> responseType) {
+        var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<T, T>>>(constraints.size());
 
-            for (var constraint : constraintsArray) {
-                for (var provider : globalMappingProviders) {
-                    if (provider.getSupportedType().isAssignableFrom(responseType)
-                            && provider.isResponsible(constraint)) {
-                        onHandlerFound.accept(constraint);
-                        handlersWithPriority.add(new HandlerWithPriority<>(
-                                (Function<T, T>) provider.getHandler(constraint), provider.getPriority()));
-                    }
+        for (var constraint : constraints) {
+            for (var provider : globalMappingProviders) {
+                if (provider.getSupportedType().isAssignableFrom(responseType) && provider.isResponsible(constraint)) {
+                    onHandlerFound.accept(constraint);
+                    handlersWithPriority.add(new HandlerWithPriority<>((Function<T, T>) provider.getHandler(constraint),
+                            provider.getPriority()));
                 }
             }
-            Collections.sort(handlersWithPriority);
-            return mapAll(handlersWithPriority);
-        });
+        }
+        Collections.sort(handlersWithPriority);
+        return mapAll(handlersWithPriority);
     }
 
     private BiConsumer<AuthorizationDecision, Message<?>> constructOnDecisionHandlers(AuthorizationDecision decision,
-            Set<JsonNode> obligationsWithoutHandler) {
-        var onDecisionObligationHandlers = onDecisionHandlers(decision.getObligations(),
+            Set<Value> obligationsWithoutHandler) {
+        var onDecisionObligationHandlers = onDecisionHandlers(decision.obligations(),
                 obligationsWithoutHandler::remove);
-        var onDecisionAdviceHandlers     = onDecisionHandlers(decision.getAdvice(), x -> {});
+        var onDecisionAdviceHandlers     = onDecisionHandlers(decision.advice(), x -> {});
 
         return (authzDecision, message) -> {
-            onDecisionObligationHandlers.map(biConsumer -> (Runnable) (() -> biConsumer.accept(authzDecision, message)))
-                    .map(this::obligation).ifPresent(Runnable::run);
-            onDecisionAdviceHandlers.map(biConsumer -> (Runnable) (() -> biConsumer.accept(authzDecision, message)))
-                    .map(this::advice).ifPresent(Runnable::run);
+            obligation(() -> onDecisionObligationHandlers.accept(authzDecision, message)).run();
+            advice(() -> onDecisionAdviceHandlers.accept(authzDecision, message)).run();
         };
     }
 
-    private Optional<BiConsumer<AuthorizationDecision, Message<?>>> onDecisionHandlers(Optional<ArrayNode> constraints,
-            Consumer<JsonNode> onHandlerFound) {
-        return constraints.map(obligations -> {
-            var handlers = new ArrayList<BiConsumer<AuthorizationDecision, Message<?>>>(obligations.size());
-            for (var constraint : obligations) {
-                for (var provider : globalRunnableProviders) {
-                    if (provider.isResponsible(constraint)) {
-                        onHandlerFound.accept(constraint);
-                        handlers.add(provider.getHandler(constraint));
-                    }
+    private BiConsumer<AuthorizationDecision, Message<?>> onDecisionHandlers(ArrayValue constraints,
+            Consumer<Value> onHandlerFound) {
+        var handlers = new ArrayList<BiConsumer<AuthorizationDecision, Message<?>>>(constraints.size());
+        for (var constraint : constraints) {
+            for (var provider : globalRunnableProviders) {
+                if (provider.isResponsible(constraint)) {
+                    onHandlerFound.accept(constraint);
+                    handlers.add(provider.getHandler(constraint));
                 }
             }
-            return (decision, message) -> handlers.forEach(handler -> handler.accept(decision, message));
-        });
+        }
+        return (decision, message) -> handlers.forEach(handler -> handler.accept(decision, message));
     }
 
     private <T> Runnable constructObjectConstraintHandlers(T aggregate, CommandMessage<?> command,
-            AuthorizationDecision decision, Set<JsonNode> obligationsWithoutHandler) {
-        var obligationHandlers = collectConstraintHandlerMethods(decision.getObligations(), aggregate, command,
-                decision, obligationsWithoutHandler::remove);
-        var adviceHandlers     = collectConstraintHandlerMethods(decision.getAdvice(), aggregate, command, decision,
+            AuthorizationDecision decision, Set<Value> obligationsWithoutHandler) {
+        var obligationHandlers = collectConstraintHandlerMethods(decision.obligations(), aggregate, command, decision,
+                obligationsWithoutHandler::remove);
+        var adviceHandlers     = collectConstraintHandlerMethods(decision.advice(), aggregate, command, decision,
                 x -> {});
 
         return () -> {
-            obligationHandlers.map(this::obligation).ifPresent(Runnable::run);
-            adviceHandlers.map(this::advice).ifPresent(Runnable::run);
+            obligation(obligationHandlers).run();
+            advice(adviceHandlers).run();
         };
     }
 
-    private Optional<Runnable> collectConstraintHandlerMethods(Optional<ArrayNode> constraints, Object handlerObject,
-            CommandMessage<?> command, AuthorizationDecision decision, Consumer<JsonNode> onHandlerFound) {
-        if (constraints.isEmpty())
-            return Optional.empty();
-
+    private Runnable collectConstraintHandlerMethods(ArrayValue constraints, Object handlerObject,
+            CommandMessage<?> command, AuthorizationDecision decision, Consumer<Value> onHandlerFound) {
         var handlers = new ArrayList<Runnable>();
-        for (var constraint : constraints.get()) {
+        for (var constraint : constraints) {
             var methods = responsibleConstraintHandlerMethods(handlerObject, command, constraint);
 
             if (methods.isEmpty())
@@ -650,11 +638,11 @@ public class ConstraintHandlerService {
                 handlers.add(task);
             }
         }
-        return Optional.of(runAll(handlers));
+        return runAll(handlers);
     }
 
     private static List<Method> responsibleConstraintHandlerMethods(Object handlerObject, CommandMessage<?> command,
-            JsonNode constraint) {
+            Value constraint) {
         log.debug("Examining object for constraint handlers: {}", handlerObject);
         if (handlerObject == null) // constructor command
             return List.of();
@@ -663,7 +651,7 @@ public class ConstraintHandlerService {
                 .filter(method -> isMethodResponsible(method, constraint, command, handlerObject)).toList();
     }
 
-    private static <U extends CommandMessage<?>, T> boolean isMethodResponsible(Method method, JsonNode constraint,
+    private static <U extends CommandMessage<?>, T> boolean isMethodResponsible(Method method, Value constraint,
             U command, T handlerObject) {
         var annotation = method.getAnnotation(ConstraintHandler.class);
 
@@ -699,24 +687,24 @@ public class ConstraintHandlerService {
     }
 
     private Runnable runMethod(Method method, Object contextObject, Message<?> message, AuthorizationDecision decision,
-            JsonNode constraint) {
+            Value constraint) {
         return () -> invokeMethod(method, contextObject, message, decision, constraint);
     }
 
     @SneakyThrows
     private void invokeMethod(Method method, Object contextObject, Message<?> message, AuthorizationDecision decision,
-            JsonNode constraint) {
+            Value constraint) {
         var arguments = resolveArgumentsForMethodParameters(method, message, decision, constraint);
         method.invoke(contextObject, arguments);
     }
 
     private Object[] resolveArgumentsForMethodParameters(Method method, Message<?> message,
-            AuthorizationDecision decision, JsonNode constraint) {
+            AuthorizationDecision decision, Value constraint) {
         var parameters     = method.getParameters();
         var arguments      = new Object[parameters.length];
         var parameterIndex = 0;
         for (var parameter : parameters) {
-            if (JsonNode.class.isAssignableFrom(parameter.getType())) {
+            if (Value.class.isAssignableFrom(parameter.getType())) {
                 arguments[parameterIndex++] = constraint;
             } else if (AuthorizationDecision.class.isAssignableFrom(parameter.getType())) {
                 arguments[parameterIndex++] = decision;

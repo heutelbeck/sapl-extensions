@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -19,7 +19,7 @@ package io.sapl.axon.authentication.servlet;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import io.sapl.axon.authentication.AuthnUtil;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,7 @@ import lombok.SneakyThrows;
 @RequiredArgsConstructor
 public class ServletAuthenticationSupplier implements AuthenticationSupplier {
 
-    private final ObjectMapper mapper;
+    private final JsonMapper mapper;
 
     /**
      * Extracts the authentication information from the Spring SecurityContext.

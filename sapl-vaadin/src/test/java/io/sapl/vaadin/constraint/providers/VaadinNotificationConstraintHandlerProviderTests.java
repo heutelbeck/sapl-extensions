@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -32,11 +32,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.notification.Notification;
 
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.Value;
 import io.sapl.vaadin.UIMock;
 import reactor.core.publisher.Mono;
 
@@ -52,9 +52,8 @@ class VaadinNotificationConstraintHandlerProviderTests {
     @Test
     void when_constraintIsTaggedCorrectly_then_providerIsResponsible() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "saplVaadin");
-        node.put("id", "showNotification");
+        ObjectValue node = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("showNotification")).build();
 
         // WHEN
         boolean isResponsibleResult = this.vaadinNotificationConstraintHandlerProvider.isResponsible(node);
@@ -66,9 +65,7 @@ class VaadinNotificationConstraintHandlerProviderTests {
     @Test
     void when_constraintHasIncorrectID_then_providerIsNotResponsible() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "saplVaadin");
-        node.put("id", "log");
+        ObjectValue node = ObjectValue.builder().put("type", Value.of("saplVaadin")).put("id", Value.of("log")).build();
 
         // WHEN
         boolean isResponsibleResult = this.vaadinNotificationConstraintHandlerProvider.isResponsible(node);
@@ -80,8 +77,7 @@ class VaadinNotificationConstraintHandlerProviderTests {
     @Test
     void when_constraintHasNoID_then_providerIsNotResponsible() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "saplVaadin");
+        ObjectValue node = ObjectValue.builder().put("type", Value.of("saplVaadin")).build();
 
         // WHEN
         boolean isResponsibleResult = this.vaadinNotificationConstraintHandlerProvider.isResponsible(node);
@@ -93,9 +89,8 @@ class VaadinNotificationConstraintHandlerProviderTests {
     @Test
     void when_constraintHasIncorrectType_then_providerIsNotResponsible() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "test");
-        node.put("id", "showNotification");
+        ObjectValue node = ObjectValue.builder().put("type", Value.of("test")).put("id", Value.of("showNotification"))
+                .build();
 
         // WHEN
         boolean isResponsibleResult = this.vaadinNotificationConstraintHandlerProvider.isResponsible(node);
@@ -107,8 +102,7 @@ class VaadinNotificationConstraintHandlerProviderTests {
     @Test
     void when_constraintHasNoType_then_providerIsNotResponsible() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("id", "showNotification");
+        ObjectValue node = ObjectValue.builder().put("id", Value.of("showNotification")).build();
 
         // WHEN
         boolean isResponsibleResult = this.vaadinNotificationConstraintHandlerProvider.isResponsible(node);
@@ -120,10 +114,8 @@ class VaadinNotificationConstraintHandlerProviderTests {
     @Test
     void when_constraintIsNull_then_providerIsNotResponsible() {
         // GIVEN
-        ObjectNode node = null;
-
         // WHEN
-        boolean isResponsibleResult = this.vaadinNotificationConstraintHandlerProvider.isResponsible(node);
+        boolean isResponsibleResult = this.vaadinNotificationConstraintHandlerProvider.isResponsible(null);
 
         // THEN
         assertFalse(isResponsibleResult);
@@ -132,10 +124,8 @@ class VaadinNotificationConstraintHandlerProviderTests {
     @Test
     void when_constraintIsNull_then_getHandlerReturnsNull() {
         // GIVEN
-        ObjectNode node = null;
-
         // WHEN
-        Function<UI, Mono<Boolean>> handler = this.vaadinNotificationConstraintHandlerProvider.getHandler(node);
+        Function<UI, Mono<Boolean>> handler = this.vaadinNotificationConstraintHandlerProvider.getHandler(null);
 
         // THEN
         assertNull(handler);
@@ -144,20 +134,17 @@ class VaadinNotificationConstraintHandlerProviderTests {
     @Test
     void when_constraintHasCustomValues_then_notificationsIsShownAndReturnsTrue() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "saplVaadin");
-        node.put("id", "showNotification");
-        node.put("message", "text message");
-        node.put("duration", 6000);
-        node.put("position", "TOP_START");
-        var mockedUI = UIMock.getMockedUI();
+        ObjectValue node     = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("showNotification")).put("message", Value.of("text message"))
+                .put("duration", Value.of(6000)).put("position", Value.of("TOP_START")).build();
+        var         mockedUI = UIMock.getMockedUI();
 
         // mock Notification.show()
         MockedStatic<Notification> notificationMock = mockStatic(Notification.class);
         notificationMock.when(() -> Notification.show(anyString(), anyInt(), any(Notification.Position.class)))
                 .then(invocationOnMock -> {
-                    assertEquals(node.get("message").asText(), invocationOnMock.getArgument(0));
-                    assertEquals(node.get("duration").asInt(), (Integer) invocationOnMock.getArgument(1));
+                    assertEquals("text message", invocationOnMock.getArgument(0));
+                    assertEquals(6000, (Integer) invocationOnMock.getArgument(1));
                     assertEquals(Notification.Position.TOP_START, invocationOnMock.getArgument(2));
                     return null;
                 });
@@ -173,18 +160,16 @@ class VaadinNotificationConstraintHandlerProviderTests {
     @Test
     void when_constraintHasCustomValuesAndInvalidPosition_then_notificationsIsShownAndReturnsTrue() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "saplVaadin");
-        node.put("id", "showNotification");
-        node.put("message", "text message");
-        node.put("position", "invalid_value");
-        var mockedUI = UIMock.getMockedUI();
+        ObjectValue node     = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("showNotification")).put("message", Value.of("text message"))
+                .put("position", Value.of("invalid_value")).build();
+        var         mockedUI = UIMock.getMockedUI();
 
         // mock Notification.show()
         MockedStatic<Notification> notificationMock = mockStatic(Notification.class);
         notificationMock.when(() -> Notification.show(anyString(), anyInt(), any(Notification.Position.class)))
                 .then(invocationOnMock -> {
-                    assertEquals(node.get("message").asText(), invocationOnMock.getArgument(0));
+                    assertEquals("text message", invocationOnMock.getArgument(0));
                     assertEquals(5000, (Integer) invocationOnMock.getArgument(1));
                     assertEquals(Notification.Position.TOP_STRETCH, invocationOnMock.getArgument(2));
                     return null;
@@ -201,10 +186,9 @@ class VaadinNotificationConstraintHandlerProviderTests {
     @Test
     void when_constraintHasCustomValuesAndNoPosition_then_notificationsIsShownAndReturnsTrue() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "saplVaadin");
-        node.put("id", "showNotification");
-        var mockedUI = UIMock.getMockedUI();
+        ObjectValue node     = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("showNotification")).build();
+        var         mockedUI = UIMock.getMockedUI();
 
         // mock Notification.show()
         MockedStatic<Notification> notificationMock = mockStatic(Notification.class);

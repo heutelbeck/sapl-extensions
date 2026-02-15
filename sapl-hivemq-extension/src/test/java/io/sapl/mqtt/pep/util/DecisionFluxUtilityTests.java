@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -50,8 +50,7 @@ class DecisionFluxUtilityTests {
         // GIVEN
         var subscriptionId        = "testSubscription";
         var identAuthzDecisionMap = new HashMap<String, IdentifiableAuthorizationDecision>();
-        identAuthzDecisionMap.put(null,
-                new IdentifiableAuthorizationDecision(null, AuthorizationDecision.INDETERMINATE));
+        identAuthzDecisionMap.put("", new IdentifiableAuthorizationDecision("", AuthorizationDecision.INDETERMINATE));
         identAuthzDecisionMap.put(subscriptionId,
                 new IdentifiableAuthorizationDecision(subscriptionId, AuthorizationDecision.PERMIT));
 
@@ -59,7 +58,7 @@ class DecisionFluxUtilityTests {
         var identAuthzDecision = DecisionFluxUtility.getIdentAuthzDecision(subscriptionId, identAuthzDecisionMap);
 
         // THEN
-        assertEquals(Decision.INDETERMINATE, identAuthzDecision.getAuthorizationDecision().getDecision());
+        assertEquals(Decision.INDETERMINATE, identAuthzDecision.decision().decision());
     }
 
     @Test

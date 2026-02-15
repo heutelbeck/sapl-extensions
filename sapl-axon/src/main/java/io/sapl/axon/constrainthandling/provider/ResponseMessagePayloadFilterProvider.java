@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,18 +17,18 @@
  */
 package io.sapl.axon.constrainthandling.provider;
 
-import java.util.Objects;
 import java.util.Set;
 
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import io.sapl.api.model.Value;
+import io.sapl.api.model.ValueJsonMarshaller;
 import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
+import io.sapl.spring.constraints.providers.ConstraintResponsibility;
 import io.sapl.spring.constraints.providers.ContentFilter;
 import lombok.RequiredArgsConstructor;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * This provider offers the manipulation of ResultMessage payloads.
@@ -48,24 +48,15 @@ import lombok.RequiredArgsConstructor;
 public class ResponseMessagePayloadFilterProvider implements ResultConstraintHandlerProvider {
 
     private static final String               CONSTRAINT_TYPE = "filterMessagePayloadContent";
-    private static final String               TYPE            = "type";
     private static final Set<ResponseType<?>> SUPPORTED_TYPES = Set.of(ResponseTypes.instanceOf(Object.class),
             ResponseTypes.optionalInstanceOf(Object.class), ResponseTypes.multipleInstancesOf(Object.class),
             ResponseTypes.publisherOf(Object.class));
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
     @Override
-    public boolean isResponsible(JsonNode constraint) {
-        if (constraint == null || !constraint.isObject())
-            return false;
-
-        var type = constraint.get(TYPE);
-
-        if (Objects.isNull(type) || !type.isTextual())
-            return false;
-
-        return CONSTRAINT_TYPE.equals(type.asText());
+    public boolean isResponsible(Value constraint) {
+        return ConstraintResponsibility.isResponsible(constraint, CONSTRAINT_TYPE);
     }
 
     @Override
@@ -74,8 +65,9 @@ public class ResponseMessagePayloadFilterProvider implements ResultConstraintHan
     }
 
     @Override
-    public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
-        return ContentFilter.getHandler(constraint, objectMapper).apply(payload);
+    public Object mapPayload(Object payload, Class<?> clazz, Value constraint) {
+        var jsonNode = ValueJsonMarshaller.toJsonNode(constraint);
+        return ContentFilter.getHandler(jsonNode, objectMapper).apply(payload);
     }
 
 }

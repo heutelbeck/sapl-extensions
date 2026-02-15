@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,7 +17,7 @@
  */
 package io.sapl.vaadin;
 
-import static io.sapl.api.interpreter.Val.JSON;
+import tools.jackson.databind.node.JsonNodeFactory;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -38,7 +38,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.server.Command;
 
 import io.sapl.api.pdp.AuthorizationDecision;
-import io.sapl.api.pdp.Decision;
 import io.sapl.vaadin.base.SecurityHelper;
 
 class VaadinPepEnforceHasValueAndElementTests {
@@ -47,7 +46,7 @@ class VaadinPepEnforceHasValueAndElementTests {
 
     @BeforeAll
     static void beforeAll() {
-        var subject = JSON.objectNode();
+        var subject = JsonNodeFactory.instance.objectNode();
         subject.put("username", "dummy");
         securityHelperMock = mockStatic(SecurityHelper.class);
         securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
@@ -89,10 +88,8 @@ class VaadinPepEnforceHasValueAndElementTests {
     void when_EnforceHasValueAndElementOnDecisionReadOnlyOrReadWrite_then_ComponentSetReadWrite() {
         // GIVEN
         VaadinPepBuilderHasValueAndElementMock vaadinPepBuilderHasValueAndElementMock = new VaadinPepBuilderHasValueAndElementMock();
-        AuthorizationDecision                  ad                                     = mock(
-                AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.PERMIT);
-        TextField textField = getTextFieldMockWithUI();
+        var                                    ad                                     = AuthorizationDecision.PERMIT;
+        TextField                              textField                              = getTextFieldMockWithUI();
 
         // WHEN
         vaadinPepBuilderHasValueAndElementMock.onDecisionReadOnlyOrReadWrite();
@@ -106,10 +103,8 @@ class VaadinPepEnforceHasValueAndElementTests {
     void when_EnforceHasValueAndElementOnDecisionReadOnlyOrReadWrite_then_ComponentSetReadOnly() {
         // GIVEN
         VaadinPepBuilderHasValueAndElementMock vaadinPepBuilderHasValueAndElementMock = new VaadinPepBuilderHasValueAndElementMock();
-        AuthorizationDecision                  ad                                     = mock(
-                AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.DENY);
-        TextField textField = getTextFieldMockWithUI();
+        var                                    ad                                     = AuthorizationDecision.DENY;
+        TextField                              textField                              = getTextFieldMockWithUI();
 
         // WHEN
         vaadinPepBuilderHasValueAndElementMock.onDecisionReadOnlyOrReadWrite();

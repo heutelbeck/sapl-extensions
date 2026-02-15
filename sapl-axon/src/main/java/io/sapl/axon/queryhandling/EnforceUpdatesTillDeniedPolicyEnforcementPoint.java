@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -29,6 +29,7 @@ import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.springframework.security.access.AccessDeniedException;
 
+import io.sapl.api.model.UndefinedValue;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
@@ -147,16 +148,16 @@ public class EnforceUpdatesTillDeniedPolicyEnforcementPoint<U> extends Flux<Subs
             return;
         }
 
-        if (decision.getDecision() != Decision.PERMIT) {
+        if (decision.decision() != Decision.PERMIT) {
             sink.error(constraintHandler.get().executeOnErrorHandlers(new AccessDeniedException("Access Denied")));
             disposeDecisionsAndResourceAccessPoint();
             return;
         }
 
-        if (decision.getResource().isPresent()) {
+        if (!(decision.resource() instanceof UndefinedValue)) {
             try {
-                sink.next(new GenericSubscriptionQueryUpdateMessage<>((U) constraintHandlerService
-                        .deserializeResource(decision.getResource().get(), updateResponseType)));
+                sink.next(new GenericSubscriptionQueryUpdateMessage<>(
+                        (U) constraintHandlerService.deserializeResource(decision.resource(), updateResponseType)));
             } catch (AccessDeniedException e) {
                 log.error("Error replacing stream with resource. Ending Stream.", e);
                 sink.error(e);

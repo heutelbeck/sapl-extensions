@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -57,9 +57,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
+import io.sapl.api.model.Value;
+import io.sapl.api.model.ValueJsonMarshaller;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.api.pdp.Decision;
@@ -157,7 +159,7 @@ class QueryPolicyEnforcementPointTests {
         }
     }
 
-    private ObjectMapper             mapper;
+    private JsonMapper               mapper;
     private ParameterResolverFactory factory;
 
     private MessageHandlingMember<HandlingObject>   delegate;
@@ -176,7 +178,7 @@ class QueryPolicyEnforcementPointTests {
     @BeforeEach
     @SuppressWarnings("unchecked")
     void beforeEach() throws NoSuchMethodException {
-        mapper = new ObjectMapper();
+        mapper = JsonMapper.builder().build();
         var executable = HandlingObject.class.getDeclaredMethod("handle1", TestQueryPayload.class);
         factory = new DefaultParameterResolverFactory();
 
@@ -191,7 +193,7 @@ class QueryPolicyEnforcementPointTests {
         handlingInstance                 = spy(new HandlingObject(DEFAULT_RESPONSE));
 
         setField(axonConstraintEnforcementService, MAPPER_FILED_NAME, mapper);
-        when(axonConstraintEnforcementService.deserializeResource(any(JsonNode.class), any(ResponseType.class)))
+        when(axonConstraintEnforcementService.deserializeResource(any(Value.class), any(ResponseType.class)))
                 .thenCallRealMethod();
         when(axonConstraintEnforcementService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class),
                 any(ResponseType.class), any(Optional.class))).thenReturn(queryConstraintHandlerBundle);
@@ -200,7 +202,8 @@ class QueryPolicyEnforcementPointTests {
         when(emitter.activeSubscriptions()).thenReturn(Set.of());
         when(subscriptionBuilder.constructAuthorizationSubscriptionForQuery(any(QueryMessage.class),
                 any(Annotation.class), any(Executable.class), any(Optional.class)))
-                .thenReturn(new AuthorizationSubscription());
+                .thenReturn(AuthorizationSubscription.of(Value.UNDEFINED, Value.UNDEFINED, Value.UNDEFINED,
+                        Value.UNDEFINED));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just());
         when(queryConstraintHandlerBundle.executePreHandlingHandlers(DEFAULT_QUERY_MESSAGE))
                 .thenReturn(DEFAULT_QUERY_MESSAGE);
@@ -399,7 +402,8 @@ class QueryPolicyEnforcementPointTests {
     @Test
     void when_handle_with_preEnforce_and_resourceInDecision_then_replaceResult() {
         var resource = new TestResponseType("some special text");
-        var decision = AuthorizationDecision.PERMIT.withResource(asTree(resource));
+        var decision = new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, Value.EMPTY_ARRAY,
+                ValueJsonMarshaller.fromJsonNode(asTree(resource)));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(decision));
         when(queryConstraintHandlerBundle.executePostHandlingHandlers(resource)).thenReturn(resource);
 
@@ -645,7 +649,8 @@ class QueryPolicyEnforcementPointTests {
                 subscriptionBuilder, properties);
 
         var resourceResponse = new TestResponseType("ResourceText");
-        var decision         = new AuthorizationDecision(Decision.PERMIT).withResource(asTree(resourceResponse));
+        var decision         = new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, Value.EMPTY_ARRAY,
+                ValueJsonMarshaller.fromJsonNode(asTree(resourceResponse)));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(decision));
         when(queryConstraintHandlerBundle.executePostHandlingHandlers(resourceResponse)).thenReturn(resourceResponse);
 
@@ -670,9 +675,10 @@ class QueryPolicyEnforcementPointTests {
                 subscriptionBuilder, properties);
 
         var resourceResponse = new TestResponseType("ResourceText");
-        var decision         = new AuthorizationDecision(Decision.PERMIT).withResource(asTree(resourceResponse));
+        var decision         = new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, Value.EMPTY_ARRAY,
+                ValueJsonMarshaller.fromJsonNode(asTree(resourceResponse)));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(decision));
-        when(axonConstraintEnforcementService.deserializeResource(any(JsonNode.class), any(ResponseType.class)))
+        when(axonConstraintEnforcementService.deserializeResource(any(Value.class), any(ResponseType.class)))
                 .thenThrow(ACCESS_DENIED);
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(RuntimeException.class)))
                 .thenReturn(new RuntimeException("some special throwable message"));

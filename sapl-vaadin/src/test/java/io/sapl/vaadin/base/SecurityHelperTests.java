@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -37,7 +37,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ArrayNode;
 
 class SecurityHelperTests {
 
@@ -53,7 +53,7 @@ class SecurityHelperTests {
         when(authMock.getName()).thenReturn("user");
 
         // WHEN
-        String username = SecurityHelper.getSubject().get("username").asText();
+        String username = SecurityHelper.getSubject().get("username").asString();
 
         // THEN
         assertEquals("user", username);
@@ -90,7 +90,7 @@ class SecurityHelperTests {
         ArrayNode roles = (ArrayNode) SecurityHelper.getSubject().get("roles");
 
         // THEN
-        assertEquals("userRole", roles.get(0).asText());
+        assertEquals("userRole", roles.get(0).asString());
 
         contextHolderMock.close();
     }

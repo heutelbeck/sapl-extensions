@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,7 +17,7 @@
  */
 package io.sapl.vaadin;
 
-import static io.sapl.api.interpreter.Val.JSON;
+import tools.jackson.databind.node.JsonNodeFactory;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -47,7 +47,7 @@ class VaadinPepEnforceHasTextTests {
 
     @BeforeAll
     static void beforeAll() {
-        var subject = JSON.objectNode();
+        var subject = JsonNodeFactory.instance.objectNode();
         subject.put("username", "dummy");
         securityHelperMock = mockStatic(SecurityHelper.class);
         securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
@@ -73,7 +73,7 @@ class VaadinPepEnforceHasTextTests {
         @Override
         public VaadinPepBuilderHasTextMock onPermitDo(BiConsumer<AuthorizationDecision, Button> biConsumer) {
             return onDecisionDo((authznDecision, component) -> {
-                if (authznDecision.getDecision() == Decision.PERMIT) {
+                if (authznDecision.decision() == Decision.PERMIT) {
                     biConsumer.accept(authznDecision, component);
                 }
             });
@@ -82,7 +82,7 @@ class VaadinPepEnforceHasTextTests {
         @Override
         public VaadinPepBuilderHasTextMock onDenyDo(BiConsumer<AuthorizationDecision, Button> biConsumer) {
             return onDecisionDo((authznDecision, component) -> {
-                if (authznDecision.getDecision() == Decision.DENY) {
+                if (authznDecision.decision() == Decision.DENY) {
                     biConsumer.accept(authznDecision, component);
                 }
             });
@@ -93,10 +93,9 @@ class VaadinPepEnforceHasTextTests {
     void when_EnforceHasTextOnDecisionSetTextWithPermit_then_ComponentSetTextIsCalledWithPermitText() {
         // GIVEN
         VaadinPepBuilderHasTextMock vaadinPepBuilderHasTextMock = new VaadinPepBuilderHasTextMock();
-        AuthorizationDecision       ad                          = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.PERMIT);
-        Button button     = getButtonMockWithUI();
-        String permitText = "permit";
+        var                         ad                          = AuthorizationDecision.PERMIT;
+        Button                      button                      = getButtonMockWithUI();
+        String                      permitText                  = "permit";
 
         // WHEN
         vaadinPepBuilderHasTextMock.onDecisionSetText(permitText, "deny");
@@ -110,10 +109,9 @@ class VaadinPepEnforceHasTextTests {
     void when_EnforceHasTextOnDecisionSetTextWithDeny_then_ComponentSetTextIsCalledWithDenyText() {
         // GIVEN
         VaadinPepBuilderHasTextMock vaadinPepBuilderHasTextMock = new VaadinPepBuilderHasTextMock();
-        AuthorizationDecision       ad                          = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.DENY);
-        Button button   = getButtonMockWithUI();
-        String denyText = "deny";
+        var                         ad                          = AuthorizationDecision.DENY;
+        Button                      button                      = getButtonMockWithUI();
+        String                      denyText                    = "deny";
 
         // WHEN
         vaadinPepBuilderHasTextMock.onDecisionSetText("permit", denyText);
@@ -127,10 +125,9 @@ class VaadinPepEnforceHasTextTests {
     void when_EnforceHasTextOnPermitSetTextWithPermit_then_ComponentSetTextIsCalled() {
         // GIVEN
         VaadinPepBuilderHasTextMock vaadinPepBuilderHasTextMock = new VaadinPepBuilderHasTextMock();
-        AuthorizationDecision       ad                          = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.PERMIT);
-        Button button     = getButtonMockWithUI();
-        String permitText = "permit";
+        var                         ad                          = AuthorizationDecision.PERMIT;
+        Button                      button                      = getButtonMockWithUI();
+        String                      permitText                  = "permit";
 
         // WHEN
         vaadinPepBuilderHasTextMock.onPermitSetText(permitText);
@@ -144,10 +141,9 @@ class VaadinPepEnforceHasTextTests {
     void when_EnforceHasTextOnPermitSetTextWithDeny_then_ComponentSetTextIsNotCalled() {
         // GIVEN
         VaadinPepBuilderHasTextMock vaadinPepBuilderHasTextMock = new VaadinPepBuilderHasTextMock();
-        AuthorizationDecision       ad                          = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.DENY);
-        Button button     = getButtonMockWithUI();
-        String permitText = "permit";
+        var                         ad                          = AuthorizationDecision.DENY;
+        Button                      button                      = getButtonMockWithUI();
+        String                      permitText                  = "permit";
 
         // WHEN
         vaadinPepBuilderHasTextMock.onPermitSetText(permitText);
@@ -161,10 +157,9 @@ class VaadinPepEnforceHasTextTests {
     void when_EnforceHasTextOnDenySetTextWithDeny_then_ComponentSetTextIsCalled() {
         // GIVEN
         VaadinPepBuilderHasTextMock vaadinPepBuilderHasTextMock = new VaadinPepBuilderHasTextMock();
-        AuthorizationDecision       ad                          = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.DENY);
-        Button button   = getButtonMockWithUI();
-        String denyText = "deny";
+        var                         ad                          = AuthorizationDecision.DENY;
+        Button                      button                      = getButtonMockWithUI();
+        String                      denyText                    = "deny";
 
         // WHEN
         vaadinPepBuilderHasTextMock.onDenySetText(denyText);
@@ -178,10 +173,9 @@ class VaadinPepEnforceHasTextTests {
     void when_EnforceHasTextOnDenySetTextWithPermit_then_ComponentSetTextIsNotCalled() {
         // GIVEN
         VaadinPepBuilderHasTextMock vaadinPepBuilderHasTextMock = new VaadinPepBuilderHasTextMock();
-        AuthorizationDecision       ad                          = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.PERMIT);
-        Button button   = getButtonMockWithUI();
-        String denyText = "deny";
+        var                         ad                          = AuthorizationDecision.PERMIT;
+        Button                      button                      = getButtonMockWithUI();
+        String                      denyText                    = "deny";
 
         // WHEN
         vaadinPepBuilderHasTextMock.onDenySetText(denyText);

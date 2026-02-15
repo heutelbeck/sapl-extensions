@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -38,13 +38,11 @@ import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import io.sapl.api.model.Value;
 
 class DefaultResultConstraintHandlerProviderTests {
 
-    private static final JsonNode         DEFAULT_CONSTRAINT          = JsonNodeFactory.instance
-            .textNode("default test constraint");
+    private static final Value            DEFAULT_CONSTRAINT          = Value.of("default test constraint");
     private static final String           DEFAULT_RESULT              = "default test result";
     private static final Throwable        DEFAULT_THROWABLE           = new Throwable("default test throwable");
     private static final ResultMessage<?> DEFAULT_RESULT_MESSAGE      = new GenericResultMessage<String>(
@@ -57,13 +55,12 @@ class DefaultResultConstraintHandlerProviderTests {
     @BeforeEach
     void beforeEach() {
         defaultProvider = mock(ResultConstraintHandlerProvider.class);
-        when(defaultProvider.getHandler(any(JsonNode.class))).thenCallRealMethod();
-        when(defaultProvider.getResultMessageHandler(any(ResultMessage.class), any(JsonNode.class)))
-                .thenCallRealMethod();
-        when(defaultProvider.mapThrowable(any(Throwable.class), any(JsonNode.class))).thenCallRealMethod();
-        when(defaultProvider.mapPayloadType(any(Class.class), any(JsonNode.class))).thenCallRealMethod();
-        when(defaultProvider.mapPayload(any(Object.class), any(Class.class), any(JsonNode.class))).thenCallRealMethod();
-        when(defaultProvider.mapMetadata(any(MetaData.class), any(JsonNode.class))).thenCallRealMethod();
+        when(defaultProvider.getHandler(any(Value.class))).thenCallRealMethod();
+        when(defaultProvider.getResultMessageHandler(any(ResultMessage.class), any(Value.class))).thenCallRealMethod();
+        when(defaultProvider.mapThrowable(any(Throwable.class), any(Value.class))).thenCallRealMethod();
+        when(defaultProvider.mapPayloadType(any(Class.class), any(Value.class))).thenCallRealMethod();
+        when(defaultProvider.mapPayload(any(Object.class), any(Class.class), any(Value.class))).thenCallRealMethod();
+        when(defaultProvider.mapMetadata(any(MetaData.class), any(Value.class))).thenCallRealMethod();
     }
 
     @Test
@@ -78,7 +75,7 @@ class DefaultResultConstraintHandlerProviderTests {
     @Test
     void when_default_with_mappedMetadata_then_newMetaData() {
         var metaData = new MetaData(Map.of("key1", "value1", "key2", "value2"));
-        when(defaultProvider.mapMetadata(any(MetaData.class), any(JsonNode.class))).thenReturn(metaData);
+        when(defaultProvider.mapMetadata(any(MetaData.class), any(Value.class))).thenReturn(metaData);
 
         var handler       = defaultProvider.getHandler(DEFAULT_CONSTRAINT);
         var handledResult = handler.apply(DEFAULT_RESULT_MESSAGE);
@@ -104,7 +101,7 @@ class DefaultResultConstraintHandlerProviderTests {
     @Test
     void when_default_with_exceptionalResult_and_mappedThrowable_then_newThrowable() {
         var throwable = new Throwable("message1");
-        when(defaultProvider.mapThrowable(any(Throwable.class), any(JsonNode.class))).thenReturn(throwable);
+        when(defaultProvider.mapThrowable(any(Throwable.class), any(Value.class))).thenReturn(throwable);
 
         var handler       = defaultProvider.getHandler(DEFAULT_CONSTRAINT);
         var handledResult = handler.apply(DEFAULT_EXCEPTIONAL_MESSAGE);

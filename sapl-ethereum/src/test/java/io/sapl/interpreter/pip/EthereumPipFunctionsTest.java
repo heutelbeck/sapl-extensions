@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -19,15 +19,15 @@ package io.sapl.interpreter.pip;
 
 import static io.sapl.interpreter.pip.EthereumPipFunctions.createEncodedFunction;
 import static io.sapl.interpreter.pip.EthereumPipFunctions.getEthFilterFrom;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Bool;
@@ -137,11 +137,11 @@ import org.web3j.abi.datatypes.primitive.Char;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.methods.request.EthFilter;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class EthereumPipFunctionsTest {
 
@@ -163,7 +163,7 @@ public class EthereumPipFunctionsTest {
     private static final String          TEST_FUNCTION_NAME = "testFunctionName";
     private static final JsonNodeFactory JSON               = JsonNodeFactory.instance;
     private static final JsonNode        TEST_OUTPUT_PARAM  = JSON.arrayNode().add(BOOL);
-    private static final ObjectMapper    MAPPER             = new ObjectMapper();
+    private static final JsonMapper      MAPPER             = JsonMapper.builder().build();
 
     // convertToType
 
@@ -173,8 +173,8 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, 25);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(false));
-        assertEquals("ConvertToType didn't return null when type field was not present in input.", encodedTestFunction,
-                encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction,
+                "ConvertToType didn't return null when type field was not present in input.");
 
     }
 
@@ -184,8 +184,8 @@ public class EthereumPipFunctionsTest {
         inputParam.put(TYPE, "aString");
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(false));
-        assertEquals("ConvertToType didn't return null when field value was not present in input.", encodedTestFunction,
-                encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction,
+                "ConvertToType didn't return null when field value was not present in input.");
 
     }
 
@@ -196,7 +196,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, TEST_ADDRESS);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Address(TEST_ADDRESS));
-        assertEquals("ConvertToType didn't return the Address correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Address correctly.");
     }
 
     @Test
@@ -206,7 +206,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, true);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(true));
-        assertEquals("ConvertToType didn't return the Bool correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bool correctly.");
     }
 
     @Test
@@ -216,7 +216,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, SOME_STRING);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Utf8String(SOME_STRING));
-        assertEquals("ConvertToType didn't return the String correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the String correctly.");
     }
 
     @Test
@@ -226,7 +226,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, BYTE_ARRAY);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new DynamicBytes(BYTE_ARRAY));
-        assertEquals("ConvertToType didn't return the DynamicBytes correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the DynamicBytes correctly.");
     }
 
     @Test
@@ -237,7 +237,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, testByte);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new org.web3j.abi.datatypes.primitive.Byte(testByte));
-        assertEquals("ConvertToType didn't return the Byte correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Byte correctly.");
     }
 
     @Test
@@ -247,7 +247,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, "a");
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Char('a'));
-        assertEquals("ConvertToType didn't return the Char correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Char correctly.");
     }
 
     @Test
@@ -257,7 +257,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, "");
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(false));
-        assertEquals("ConvertToType didn't return the Char correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Char correctly.");
     }
 
     @Test
@@ -267,7 +267,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, Double.valueOf(1.789));
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(false));
-        assertEquals("ConvertToType didn't return the Double correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Double correctly.");
     }
 
     @Test
@@ -277,7 +277,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, Float.valueOf("7.654321"));
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(false));
-        assertEquals("ConvertToType didn't return the Float correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Float correctly.");
     }
 
     @Test
@@ -287,7 +287,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, TEST_BIG_INT);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint(TEST_BIG_INT));
-        assertEquals("ConvertToType didn't return the Uint correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint correctly.");
     }
 
     @Test
@@ -297,7 +297,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, TEST_BIG_INT);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int(TEST_BIG_INT));
-        assertEquals("ConvertToType didn't return the Int correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int correctly.");
     }
 
     @Test
@@ -307,7 +307,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, Long.valueOf(9786135));
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new org.web3j.abi.datatypes.primitive.Long(9786135L));
-        assertEquals("ConvertToType didn't return the Long correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Long correctly.");
     }
 
     @Test
@@ -318,7 +318,7 @@ public class EthereumPipFunctionsTest {
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(
                 new org.web3j.abi.datatypes.primitive.Short(Short.parseShort("111")));
-        assertEquals("ConvertToType didn't return the Short correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Short correctly.");
     }
 
     @Test
@@ -328,7 +328,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint8(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint8 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint8 correctly.");
     }
 
     @Test
@@ -338,7 +338,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int8(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int8 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int8 correctly.");
     }
 
     @Test
@@ -348,7 +348,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint16(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint16 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint16 correctly.");
     }
 
     @Test
@@ -358,7 +358,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int16(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int16 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int16 correctly.");
     }
 
     @Test
@@ -368,7 +368,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint24(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint24 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint24 correctly.");
     }
 
     @Test
@@ -378,7 +378,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int24(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int24 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int24 correctly.");
     }
 
     @Test
@@ -388,7 +388,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint32(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint32 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint32 correctly.");
     }
 
     @Test
@@ -398,7 +398,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int32(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int32 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int32 correctly.");
     }
 
     @Test
@@ -408,7 +408,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint40(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint40 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint40 correctly.");
     }
 
     @Test
@@ -418,7 +418,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int40(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int40 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int40 correctly.");
     }
 
     @Test
@@ -428,7 +428,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint48(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint48 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint48 correctly.");
     }
 
     @Test
@@ -438,7 +438,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int48(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int48 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int48 correctly.");
     }
 
     @Test
@@ -448,7 +448,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint56(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint56 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint56 correctly.");
     }
 
     @Test
@@ -458,7 +458,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int56(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int56 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int56 correctly.");
     }
 
     @Test
@@ -468,7 +468,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint64(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint64 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint64 correctly.");
     }
 
     @Test
@@ -478,7 +478,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int64(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int64 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int64 correctly.");
     }
 
     @Test
@@ -488,7 +488,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint72(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint72 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint72 correctly.");
     }
 
     @Test
@@ -498,7 +498,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int72(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int72 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int72 correctly.");
     }
 
     @Test
@@ -508,7 +508,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint80(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint80 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint80 correctly.");
     }
 
     @Test
@@ -518,7 +518,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int80(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int80 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int80 correctly.");
     }
 
     @Test
@@ -528,7 +528,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint88(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint88 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint88 correctly.");
     }
 
     @Test
@@ -538,7 +538,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int88(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int88 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int88 correctly.");
     }
 
     @Test
@@ -548,7 +548,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint96(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint96 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint96 correctly.");
     }
 
     @Test
@@ -558,7 +558,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int96(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int96 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int96 correctly.");
     }
 
     @Test
@@ -568,7 +568,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint104(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint104 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint104 correctly.");
     }
 
     @Test
@@ -578,7 +578,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int104(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int104 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int104 correctly.");
     }
 
     @Test
@@ -588,7 +588,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint112(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint112 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint112 correctly.");
     }
 
     @Test
@@ -598,7 +598,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int112(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int112 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int112 correctly.");
     }
 
     @Test
@@ -608,7 +608,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint120(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint120 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint120 correctly.");
     }
 
     @Test
@@ -618,7 +618,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int120(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int120 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int120 correctly.");
     }
 
     @Test
@@ -628,7 +628,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint128(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint128 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint128 correctly.");
     }
 
     @Test
@@ -638,7 +638,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int128(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int128 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int128 correctly.");
     }
 
     @Test
@@ -648,7 +648,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint136(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint136 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint136 correctly.");
     }
 
     @Test
@@ -658,7 +658,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int136(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int136 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int136 correctly.");
     }
 
     @Test
@@ -668,7 +668,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint144(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint144 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint144 correctly.");
     }
 
     @Test
@@ -678,7 +678,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int144(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int144 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int144 correctly.");
     }
 
     @Test
@@ -688,7 +688,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint152(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint152 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint152 correctly.");
     }
 
     @Test
@@ -698,7 +698,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int152(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int152 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int152 correctly.");
     }
 
     @Test
@@ -708,7 +708,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint160(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint160 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint160 correctly.");
     }
 
     @Test
@@ -718,7 +718,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int160(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int160 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int160 correctly.");
     }
 
     @Test
@@ -728,7 +728,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint168(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint168 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint168 correctly.");
     }
 
     @Test
@@ -738,7 +738,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int168(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int168 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int168 correctly.");
     }
 
     @Test
@@ -748,7 +748,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint176(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint176 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint176 correctly.");
     }
 
     @Test
@@ -758,7 +758,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int176(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int176 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int176 correctly.");
     }
 
     @Test
@@ -768,7 +768,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint184(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint184 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint184 correctly.");
     }
 
     @Test
@@ -778,7 +778,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int184(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int184 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int184 correctly.");
     }
 
     @Test
@@ -788,7 +788,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint192(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint192 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint192 correctly.");
     }
 
     @Test
@@ -798,7 +798,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int192(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int192 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int192 correctly.");
     }
 
     @Test
@@ -808,7 +808,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint200(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint200 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint200 correctly.");
     }
 
     @Test
@@ -818,7 +818,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int200(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int200 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int200 correctly.");
     }
 
     @Test
@@ -828,7 +828,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint208(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint208 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint208 correctly.");
     }
 
     @Test
@@ -838,7 +838,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int208(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int208 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int208 correctly.");
     }
 
     @Test
@@ -848,7 +848,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint216(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint216 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint216 correctly.");
     }
 
     @Test
@@ -858,7 +858,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int216(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int216 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int216 correctly.");
     }
 
     @Test
@@ -868,7 +868,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint224(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint224 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint224 correctly.");
     }
 
     @Test
@@ -878,7 +878,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int224(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int224 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int224 correctly.");
     }
 
     @Test
@@ -888,7 +888,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint232(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint232 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint232 correctly.");
     }
 
     @Test
@@ -898,7 +898,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int232(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int232 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int232 correctly.");
     }
 
     @Test
@@ -908,7 +908,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint240(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint240 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint240 correctly.");
     }
 
     @Test
@@ -918,7 +918,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int240(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int240 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int240 correctly.");
     }
 
     @Test
@@ -928,7 +928,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint248(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint248 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint248 correctly.");
     }
 
     @Test
@@ -938,7 +938,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int248(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int248 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int248 correctly.");
     }
 
     @Test
@@ -948,7 +948,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint256(UINT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Uint256 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint256 correctly.");
     }
 
     @Test
@@ -958,7 +958,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int256(INT_TEST_VALUE));
-        assertEquals("ConvertToType didn't return the Int256 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int256 correctly.");
     }
 
     @Test
@@ -970,7 +970,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes1(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes1 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes1 correctly.");
     }
 
     @Test
@@ -982,7 +982,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes2(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes2 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes2 correctly.");
     }
 
     @Test
@@ -993,7 +993,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes3(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes3 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes3 correctly.");
     }
 
     @Test
@@ -1004,7 +1004,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes4(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes4 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes4 correctly.");
     }
 
     @Test
@@ -1015,7 +1015,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes5(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes5 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes5 correctly.");
     }
 
     @Test
@@ -1026,7 +1026,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes6(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes6 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes6 correctly.");
     }
 
     @Test
@@ -1037,7 +1037,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes7(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes7 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes7 correctly.");
     }
 
     @Test
@@ -1048,7 +1048,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes8(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes8 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes8 correctly.");
     }
 
     @Test
@@ -1059,7 +1059,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes9(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes9 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes9 correctly.");
     }
 
     @Test
@@ -1070,7 +1070,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes10(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes10 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes10 correctly.");
     }
 
     @Test
@@ -1081,7 +1081,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes11(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes11 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes11 correctly.");
     }
 
     @Test
@@ -1092,7 +1092,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes12(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes12 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes12 correctly.");
     }
 
     @Test
@@ -1103,7 +1103,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes13(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes13 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes13 correctly.");
     }
 
     @Test
@@ -1114,7 +1114,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes14(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes14 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes14 correctly.");
     }
 
     @Test
@@ -1125,7 +1125,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes15(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes15 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes15 correctly.");
     }
 
     @Test
@@ -1136,7 +1136,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes16(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes16 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes16 correctly.");
     }
 
     @Test
@@ -1147,7 +1147,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes17(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes17 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes17 correctly.");
     }
 
     @Test
@@ -1158,7 +1158,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes18(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes18 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes18 correctly.");
     }
 
     @Test
@@ -1169,7 +1169,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes19(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes19 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes19 correctly.");
     }
 
     @Test
@@ -1180,7 +1180,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes20(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes20 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes20 correctly.");
     }
 
     @Test
@@ -1191,7 +1191,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes21(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes21 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes21 correctly.");
     }
 
     @Test
@@ -1202,7 +1202,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes22(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes22 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes22 correctly.");
     }
 
     @Test
@@ -1213,7 +1213,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes23(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes23 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes23 correctly.");
     }
 
     @Test
@@ -1224,7 +1224,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes24(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes24 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes24 correctly.");
     }
 
     @Test
@@ -1235,7 +1235,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes25(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes25 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes25 correctly.");
     }
 
     @Test
@@ -1246,7 +1246,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes26(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes26 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes26 correctly.");
     }
 
     @Test
@@ -1257,7 +1257,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes27(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes27 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes27 correctly.");
     }
 
     @Test
@@ -1268,7 +1268,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes28(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes28 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes28 correctly.");
     }
 
     @Test
@@ -1279,7 +1279,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes29(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes29 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes29 correctly.");
     }
 
     @Test
@@ -1290,7 +1290,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes30(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes30 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes30 correctly.");
     }
 
     @Test
@@ -1301,7 +1301,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes31(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes31 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes31 correctly.");
     }
 
     @Test
@@ -1312,7 +1312,7 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes32(bytesArray));
-        assertEquals("ConvertToType didn't return the Bytes32 correctly.", encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes32 correctly.");
     }
 
     @Test
@@ -1322,8 +1322,8 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, "anyValue");
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(false));
-        assertEquals("ConvertToType didn't return null when non-existing solidity type was provided.",
-                encodedTestFunction, encodedFunction);
+        assertEquals(encodedTestFunction, encodedFunction,
+                "ConvertToType didn't return null when non-existing solidity type was provided.");
     }
 
     // getEthFilterFrom
@@ -1336,8 +1336,8 @@ public class EthereumPipFunctionsTest {
         EthFilter filter     = getEthFilterFrom(saplObject);
         EthFilter testFilter = getTestEthFilter(TEST_FROM_BLOCK, TEST_TO_BLOCK,
                 Collections.singletonList(TEST_ADDRESS));
-        assertTrue("The getEthFilterFrom method didn't return the correct filter.",
-                filtersAreEqual(testFilter, filter));
+        assertTrue(filtersAreEqual(testFilter, filter),
+                "The getEthFilterFrom method didn't return the correct filter.");
     }
 
     @Test
@@ -1346,8 +1346,8 @@ public class EthereumPipFunctionsTest {
                 Collections.singletonList(TEST_ADDRESS));
         JsonNode  saplObject = MAPPER.convertValue(testFilter, JsonNode.class);
         EthFilter filter     = getEthFilterFrom(saplObject);
-        assertTrue("The getEthFilterFrom method didn't return the correct filter.",
-                filtersAreEqual(testFilter, filter));
+        assertTrue(filtersAreEqual(testFilter, filter),
+                "The getEthFilterFrom method didn't return the correct filter.");
     }
 
     @Test
@@ -1357,8 +1357,8 @@ public class EthereumPipFunctionsTest {
         saplObject.set(ADDRESS, JSON.arrayNode().add(TEST_ADDRESS));
         EthFilter filter     = getEthFilterFrom(saplObject);
         EthFilter testFilter = new EthFilter();
-        assertTrue("The getEthFilterFrom method didn't return the correct filter.",
-                filtersAreEqual(testFilter, filter));
+        assertTrue(filtersAreEqual(testFilter, filter),
+                "The getEthFilterFrom method didn't return the correct filter.");
     }
 
     @Test
@@ -1368,8 +1368,8 @@ public class EthereumPipFunctionsTest {
         saplObject.set(ADDRESS, JSON.arrayNode().add(TEST_ADDRESS));
         EthFilter filter     = getEthFilterFrom(saplObject);
         EthFilter testFilter = new EthFilter();
-        assertTrue("The getEthFilterFrom method didn't return the correct filter.",
-                filtersAreEqual(testFilter, filter));
+        assertTrue(filtersAreEqual(testFilter, filter),
+                "The getEthFilterFrom method didn't return the correct filter.");
     }
 
     @Test
@@ -1379,8 +1379,8 @@ public class EthereumPipFunctionsTest {
         saplObject.put(TO_BLOCK, TEST_TO_BLOCK);
         EthFilter filter     = getEthFilterFrom(saplObject);
         EthFilter testFilter = new EthFilter();
-        assertTrue("The getEthFilterFrom method didn't return the correct filter.",
-                filtersAreEqual(testFilter, filter));
+        assertTrue(filtersAreEqual(testFilter, filter),
+                "The getEthFilterFrom method didn't return the correct filter.");
     }
 
     private static byte[] hexStringToByteArray(String s) {

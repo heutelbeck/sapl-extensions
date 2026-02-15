@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,7 +17,6 @@
  */
 package io.sapl.vaadin;
 
-import static io.sapl.api.interpreter.Val.JSON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -27,7 +26,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -36,6 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 
+import io.sapl.api.model.Value;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.spring.constraints.api.ConsumerConstraintHandlerProvider;
@@ -100,62 +99,56 @@ class VaadinConstraintEnforcementServiceTests {
     @Test
     void when_enforceConstraintsOfDecisionWithEmptyDecisionAndNoProvider_then_DoNothingAndReturnMonoWithDecision() {
         // GIVEN
-        var decisionMock  = mock(AuthorizationDecision.class);
+        var decision      = new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, Value.EMPTY_ARRAY,
+                Value.UNDEFINED);
         var uiMock        = mock(UI.class);
         var vaadinPepMock = mock(VaadinPep.class);
 
         // WHEN
-        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decisionMock, uiMock, vaadinPepMock);
+        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        verify(decisionMock, times(1)).getAdvice();
-        verify(decisionMock, times(1)).getObligations();
-        assertEquals(decisionMock, returnValue.block());
+        assertEquals(decision, returnValue.block());
     }
 
     @Test
     void when_enforceConstraintsOfDecisionWithObligationInDecisionAndNoHandler_then_ThrowReturnEmptyDecisionWithDeny() {
         // GIVEN
-        var decisionMock = mock(AuthorizationDecision.class);
-        addObligation(decisionMock);
+        var decision      = decisionWithObligation();
         var uiMock        = mock(UI.class);
         var vaadinPepMock = mock(VaadinPep.class);
 
         // WHEN
-        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decisionMock, uiMock, vaadinPepMock);
+        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(Decision.DENY, returnValue.block().getDecision());
-        assertEquals(Optional.empty(), returnValue.block().getObligations());
+        assertEquals(Decision.DENY, returnValue.block().decision());
     }
 
     @Test
     void when_enforceConstraintsOfDecisionWithObligationInDecisionAndRunnableHandler_then_runnableIsCalledAndDecisionIsReturned() {
         // GIVEN
-        var decisionMock = mock(AuthorizationDecision.class);
-        addObligation(decisionMock);
-        var                               uiMock                                = mock(UI.class);
-        var                               vaadinPepMock                         = mock(VaadinPep.class);
-        RunnableConstraintHandlerProvider runnableConstraintHandlerProviderMock = mock(
-                RunnableConstraintHandlerProvider.class);
-        Runnable                          runnableMock                          = mock(Runnable.class);
+        var decision                              = decisionWithObligation();
+        var uiMock                                = mock(UI.class);
+        var vaadinPepMock                         = mock(VaadinPep.class);
+        var runnableConstraintHandlerProviderMock = mock(RunnableConstraintHandlerProvider.class);
+        var runnableMock                          = mock(Runnable.class);
         when(runnableConstraintHandlerProviderMock.getHandler(any())).thenReturn(runnableMock);
         when(runnableConstraintHandlerProviderMock.isResponsible(any())).thenReturn(true);
         sut.addGlobalRunnableProviders(runnableConstraintHandlerProviderMock);
 
         // WHEN
-        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decisionMock, uiMock, vaadinPepMock);
+        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
         verify(runnableMock, times(1)).run();
-        assertEquals(decisionMock, returnValue.block());
+        assertEquals(decision, returnValue.block());
     }
 
     @Test
     void when_enforceConstraintsOfDecisionWithObligationInDecisionAndNullRunnableHandler_then_throwAccessDeniedAndReturnDenied() {
         // GIVEN
-        var decisionMock = mock(AuthorizationDecision.class);
-        addObligation(decisionMock);
+        var decision                              = decisionWithObligation();
         var uiMock                                = mock(UI.class);
         var vaadinPepMock                         = mock(VaadinPep.class);
         var runnableConstraintHandlerProviderMock = mock(RunnableConstraintHandlerProvider.class);
@@ -164,17 +157,16 @@ class VaadinConstraintEnforcementServiceTests {
         sut.addGlobalRunnableProviders(runnableConstraintHandlerProviderMock);
 
         // WHEN
-        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decisionMock, uiMock, vaadinPepMock);
+        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(Decision.DENY, returnValue.block().getDecision());
+        assertEquals(Decision.DENY, returnValue.block().decision());
     }
 
     @Test
     void when_enforceConstraintsOfDecisionWithAdviceInDecisionAndNullRunnableHandler_then_resumeWorkflowAndReturnAuthroizationDecision() {
         // GIVEN
-        var decisionMock = mock(AuthorizationDecision.class);
-        addAdvice(decisionMock);
+        var decision                              = decisionWithAdvice();
         var uiMock                                = mock(UI.class);
         var vaadinPepMock                         = mock(VaadinPep.class);
         var runnableConstraintHandlerProviderMock = mock(RunnableConstraintHandlerProvider.class);
@@ -183,17 +175,16 @@ class VaadinConstraintEnforcementServiceTests {
         sut.addGlobalRunnableProviders(runnableConstraintHandlerProviderMock);
 
         // WHEN
-        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decisionMock, uiMock, vaadinPepMock);
+        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(decisionMock, returnValue.block());
+        assertEquals(decision, returnValue.block());
     }
 
     @Test
     void when_enforceConstraintsOfDecisionWithObligationInDecisionAndNullVaadinConstraintHandler_then_throwAccessDeniedAndReturnDenied() {
         // GIVEN
-        var decisionMock = mock(AuthorizationDecision.class);
-        addObligation(decisionMock);
+        var decision                                    = decisionWithObligation();
         var uiMock                                      = mock(UI.class);
         var vaadinPepMock                               = mock(VaadinPep.class);
         var vaadinFunctionConstraintHandlerProviderMock = mock(VaadinFunctionConstraintHandlerProvider.class);
@@ -202,17 +193,16 @@ class VaadinConstraintEnforcementServiceTests {
         sut.addGlobalVaadinFunctionProvider(vaadinFunctionConstraintHandlerProviderMock);
 
         // WHEN
-        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decisionMock, uiMock, vaadinPepMock);
+        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(Decision.DENY, returnValue.block().getDecision());
+        assertEquals(Decision.DENY, returnValue.block().decision());
     }
 
     @Test
     void when_enforceConstraintsOfDecisionWithAdviceInDecisionAndNullVaadinConstraintHandler_then_resumeWorkflowAndReturnAuthorizationDecision() {
         // GIVEN
-        var decisionMock = mock(AuthorizationDecision.class);
-        addAdvice(decisionMock);
+        var                         decision                                    = decisionWithAdvice();
         var                         uiMock                                      = mock(UI.class);
         var                         vaadinPepMock                               = mock(VaadinPep.class);
         var                         vaadinFunctionConstraintHandlerProviderMock = mock(
@@ -226,17 +216,16 @@ class VaadinConstraintEnforcementServiceTests {
         sut.addGlobalVaadinFunctionProvider(vaadinFunctionConstraintHandlerProviderMock);
 
         // WHEN
-        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decisionMock, uiMock, vaadinPepMock);
+        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(decisionMock, returnValue.block());
+        assertEquals(decision, returnValue.block());
     }
 
     @Test
     void when_enforceConstraintsOfDecisionWithAdviceInDecisionAndNullVaadinConstraintHandler_then_resumeWorkflowAndDenyAuthroizationDecision() {
         // GIVEN
-        var decisionMock = mock(AuthorizationDecision.class);
-        addAdvice(decisionMock);
+        var decision                                    = decisionWithAdvice();
         var uiMock                                      = mock(UI.class);
         var vaadinPepMock                               = mock(VaadinPep.class);
         var vaadinFunctionConstraintHandlerProviderMock = mock(VaadinFunctionConstraintHandlerProvider.class);
@@ -245,18 +234,17 @@ class VaadinConstraintEnforcementServiceTests {
         sut.addGlobalVaadinFunctionProvider(vaadinFunctionConstraintHandlerProviderMock);
 
         // WHEN
-        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decisionMock, uiMock, vaadinPepMock);
+        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(Decision.DENY, returnValue.block().getDecision());
+        assertEquals(Decision.DENY, returnValue.block().decision());
     }
 
     @Test
     @SuppressWarnings("unchecked") // suppress mocks
     void when_enforceConstraintsOfDecisionWithObligationInDecisionAndConsumerConstraintHandler_then_runnableIsCalledAndDecisionIsReturned() {
         // GIVEN
-        var decisionMock = mock(AuthorizationDecision.class);
-        addObligation(decisionMock);
+        var                                   decision                              = decisionWithObligation();
         var                                   uiMock                                = mock(UI.class);
         var                                   vaadinPepMock                         = mock(VaadinPep.class);
         ConsumerConstraintHandlerProvider<UI> consumerConstraintHandlerProviderMock = mock(
@@ -267,18 +255,17 @@ class VaadinConstraintEnforcementServiceTests {
         sut.addGlobalConsumerProviders(consumerConstraintHandlerProviderMock);
 
         // WHEN
-        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decisionMock, uiMock, vaadinPepMock);
+        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
         verify(consumerMock, times(1)).accept(any());
-        assertEquals(decisionMock, returnValue.block());
+        assertEquals(decision, returnValue.block());
     }
 
     @Test
     void when_enforceConstraintsOfDecisionWithObligationInDecisionAndNullConsumerConstraintHandler_then_throwAccessDeniedAndReturnDenied() {
         // GIVEN
-        var decisionMock = mock(AuthorizationDecision.class);
-        addObligation(decisionMock);
+        var                                   decision                              = decisionWithObligation();
         var                                   uiMock                                = mock(UI.class);
         var                                   vaadinPepMock                         = mock(VaadinPep.class);
         @SuppressWarnings("unchecked") // suppress mock
@@ -289,17 +276,16 @@ class VaadinConstraintEnforcementServiceTests {
         sut.addGlobalConsumerProviders(consumerConstraintHandlerProviderMock);
 
         // WHEN
-        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decisionMock, uiMock, vaadinPepMock);
+        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(Decision.DENY, returnValue.block().getDecision());
+        assertEquals(Decision.DENY, returnValue.block().decision());
     }
 
     @Test
     void when_enforceConstraintsOfDecisionWithAdviceInDecisionAndNullConsumerConstraintHandler_then_resumeWorkflowAndReturnAuthroizationDecision() {
         // GIVEN
-        var decisionMock = mock(AuthorizationDecision.class);
-        addAdvice(decisionMock);
+        var                                   decision                              = decisionWithAdvice();
         var                                   uiMock                                = mock(UI.class);
         var                                   vaadinPepMock                         = mock(VaadinPep.class);
         @SuppressWarnings("unchecked") // suppress mock
@@ -310,16 +296,17 @@ class VaadinConstraintEnforcementServiceTests {
         sut.addGlobalConsumerProviders(consumerConstraintHandlerProviderMock);
 
         // WHEN
-        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decisionMock, uiMock, vaadinPepMock);
+        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(decisionMock, returnValue.block());
+        assertEquals(decision, returnValue.block());
     }
 
     @Test
     void when_enforceConstraintsOfDecisionWithAllProvidersButEmptyDecision_then_DoNothingAndReturnMonoWithDecision() {
         // GIVEN
-        var decisionMock                          = mock(AuthorizationDecision.class);
+        var decision                              = new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY,
+                Value.EMPTY_ARRAY, Value.UNDEFINED);
         var uiMock                                = mock(UI.class);
         var vaadinPepMock                         = mock(VaadinPep.class);
         var runnableConstraintHandlerProviderMock = mock(RunnableConstraintHandlerProvider.class);
@@ -332,23 +319,20 @@ class VaadinConstraintEnforcementServiceTests {
         sut.addGlobalConsumerProviders(consumerConstraintHandlerProviderMock);
 
         // WHEN
-        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decisionMock, uiMock, vaadinPepMock);
+        Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        verify(decisionMock, times(1)).getAdvice();
-        verify(decisionMock, times(1)).getObligations();
-        assertEquals(decisionMock, returnValue.block());
+        assertEquals(decision, returnValue.block());
     }
 
-    private void addObligation(AuthorizationDecision decisionMock) {
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode("obligation"));
-        when(decisionMock.getObligations()).thenReturn(Optional.of(obligations));
+    private AuthorizationDecision decisionWithObligation() {
+        var obligations = Value.ofArray(Value.of("obligation"));
+        return new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
     }
 
-    private void addAdvice(AuthorizationDecision decisionMock) {
-        var advice = JSON.arrayNode().add(JSON.textNode("advice"));
-        when(decisionMock.getAdvice()).thenReturn(Optional.of(advice));
+    private AuthorizationDecision decisionWithAdvice() {
+        var advice = Value.ofArray(Value.of("advice"));
+        return new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, advice, Value.UNDEFINED);
     }
 
 }

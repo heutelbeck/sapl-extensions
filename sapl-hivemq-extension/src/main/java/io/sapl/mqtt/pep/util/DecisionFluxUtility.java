@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -131,12 +131,11 @@ public class DecisionFluxUtility {
      */
     public static Map<String, IdentifiableAuthorizationDecision> saveIdentAuthzDecisionAndTransformToMap(
             MqttClientState mqttClientState, IdentifiableAuthorizationDecision identAuthzDecision) {
-        if (identAuthzDecision.getAuthorizationSubscriptionId() != null) {
-            // remove indeterminate decision (id is always null)
-            mqttClientState.removeIdentAuthzDecisionFromMap(null);
+        if (!identAuthzDecision.subscriptionId().isEmpty()) {
+            // remove indeterminate decision (id is always empty)
+            mqttClientState.removeIdentAuthzDecisionFromMap("");
         }
-        mqttClientState.addIdentAuthzDecisionToMap(identAuthzDecision.getAuthorizationSubscriptionId(),
-                identAuthzDecision);
+        mqttClientState.addIdentAuthzDecisionToMap(identAuthzDecision.subscriptionId(), identAuthzDecision);
         return mqttClientState.getIdentAuthzDecisionMap();
     }
 
@@ -152,8 +151,8 @@ public class DecisionFluxUtility {
      */
     public static IdentifiableAuthorizationDecision getIdentAuthzDecision(String subscriptionId,
             Map<String, IdentifiableAuthorizationDecision> identAuthzDecisionMap) {
-        if (identAuthzDecisionMap.containsKey(null)) {
-            return identAuthzDecisionMap.get(null);
+        if (identAuthzDecisionMap.containsKey("")) {
+            return identAuthzDecisionMap.get("");
         } else {
             return identAuthzDecisionMap.get(subscriptionId);
         }
@@ -170,7 +169,7 @@ public class DecisionFluxUtility {
      */
     public static boolean hasHandledObligationsSuccessfully(MqttClientState mqttClientState, String subscriptionId) {
         var hasHandledObligationsSuccessfully = false;
-        if (subscriptionId != null) {
+        if (!subscriptionId.isEmpty()) {
             var constraintDetails = getConstraintDetailsFromCache(mqttClientState, subscriptionId);
             if (constraintDetails != null) {
                 hasHandledObligationsSuccessfully = constraintDetails.isHasHandledObligationsSuccessfully();
@@ -192,7 +191,7 @@ public class DecisionFluxUtility {
      */
     public static boolean containsAuthzDecisionOfSubscriptionIdOrNull(String subscriptionId,
             Map<String, IdentifiableAuthorizationDecision> identAuthzDecisionMap) {
-        return identAuthzDecisionMap.containsKey(subscriptionId) || identAuthzDecisionMap.containsKey(null);
+        return identAuthzDecisionMap.containsKey(subscriptionId) || identAuthzDecisionMap.containsKey("");
     }
 
     /**

@@ -1,27 +1,24 @@
-import filter as filter
+import filter.blacken
 
 set "constraint_policy_set"
-first-applicable
+first or abstain errors propagate
 
 policy "constraint_subscription_policy"
 permit
-  subject.clientId == "CONSTRAINT_MQTT_CLIENT_SUBSCRIBE"
-where
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_SUBSCRIBE";
   action.type == "mqtt.subscribe";
   resource.topic in ["topic", "retain", "messageExpiry", "contentTopic", "payloadTopic", "contentPayloadTopic",
   "adviceContentPayloadTopic", "illegalObligation", "illegalAdvice", "resourceTransformation", "blackenTopic"];
 
 policy "constraint_publish_policy"
 permit
-  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
-where
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH";
   action.type == "mqtt.publish";
   resource.topic == "time_limit";
 
 policy "constraint_qos_publish_policy"
 permit
-  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
-where
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH";
   action.type == "mqtt.publish";
   resource.topic == "topic";
 obligation
@@ -32,8 +29,7 @@ obligation
 
 policy "constraint_retain_publish_policy"
 permit
-  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
-where
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH";
   action.type == "mqtt.publish";
   resource.topic == "retain";
 obligation
@@ -44,8 +40,7 @@ obligation
 
 policy "constraint_message_expiry_publish_policy"
 permit
-  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
-where
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH";
   action.type == "mqtt.publish";
   resource.topic == "messageExpiry";
 obligation
@@ -56,8 +51,7 @@ obligation
 
 policy "constraint_content_type_publish_policy"
 permit
-  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
-where
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH";
   action.type == "mqtt.publish";
   resource.topic == "contentTopic";
 obligation
@@ -68,8 +62,7 @@ obligation
 
 policy "constraint_payload_publish_policy"
 permit
-  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
-where
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH";
   action.type == "mqtt.publish";
   resource.topic == "payloadTopic";
 obligation
@@ -80,8 +73,7 @@ obligation
 
 policy "obligation_illegal_publish_policy"
 permit
-  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
-where
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH";
   action.type == "mqtt.publish";
   resource.topic == "illegalObligation";
 obligation
@@ -91,8 +83,7 @@ obligation
 
 policy "advice_illegal_publish_policy"
 permit
-  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
-where
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH";
   action.type == "mqtt.publish";
   resource.topic == "illegalAdvice";
 advice
@@ -102,8 +93,7 @@ advice
 
 policy "limit_connection_time_policy"
 permit
-  subject.clientId == "CONSTRAINT_MQTT_CLIENT_CONNECT"
-where
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_CONNECT";
   action.type == "mqtt.connect";
 obligation
     {
@@ -113,8 +103,7 @@ obligation
 
 policy "limit_subscription_time_policy"
 permit
-  subject.clientId == "CONSTRAINT_MQTT_CLIENT_SUBSCRIBE"
-where
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_SUBSCRIBE";
   action.type == "mqtt.subscribe";
   resource.topic == "time_limit";
 obligation
@@ -125,8 +114,7 @@ obligation
 
 policy "blacken_textual_payload_policy"
 permit
-  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
-where
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH";
   action.type == "mqtt.publish";
   resource.topic == "blackenTopic";
 obligation
@@ -139,9 +127,8 @@ obligation
 
 policy "transform_resource_policy"
 permit
-  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH"
-where
+  subject.clientId == "CONSTRAINT_MQTT_CLIENT_PUBLISH";
   action.type == "mqtt.publish";
   resource.topic == "resourceTransformation";
 transform
-  resource.topic |- filter.blacken
+  resource.topic |- blacken

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -31,8 +31,7 @@ import org.axonframework.modelling.command.AggregateMember;
 import org.axonframework.modelling.command.EntityId;
 import org.axonframework.spring.stereotype.Aggregate;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import io.sapl.api.model.Value;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.axon.annotation.ConstraintHandler;
 import io.sapl.axon.annotation.PreHandleEnforce;
@@ -76,9 +75,9 @@ public class TestAggregate {
         apply(new AggregateModified(id));
     }
 
-    @ConstraintHandler("#constraint.textValue() == 'something' && data == 'some data'")
-    public void handle(ModifyAggregate command, JsonNode constraint, AuthorizationDecision decision,
-            CommandBus commandBus, MetaData metaData) {
+    @ConstraintHandler("#constraint.value() == 'something' && data == 'some data'")
+    public void handle(ModifyAggregate command, Value constraint, AuthorizationDecision decision, CommandBus commandBus,
+            MetaData metaData) {
         log.trace("ConstraintHandler On Aggregate");
     }
 
@@ -93,14 +92,14 @@ public class TestAggregate {
             log.trace("updated {}", memberId);
         }
 
-        @ConstraintHandler("#constraint.textValue() == 'somethingWithMember' && memberId == 'A'")
-        public void handle(UpdateMember command, JsonNode constraint, AuthorizationDecision decision,
+        @ConstraintHandler("#constraint.value() == 'somethingWithMember' && memberId == 'A'")
+        public void handle(UpdateMember command, Value constraint, AuthorizationDecision decision,
                 CommandBus commandBus, MetaData metaData) {
             log.trace("ConstraintHandler on entity A");
         }
 
-        @ConstraintHandler("#constraint.textValue() == 'somethingWithMember' && memberId != 'A'")
-        public void handle(JsonNode constraint) {
+        @ConstraintHandler("#constraint.value() == 'somethingWithMember' && memberId != 'A'")
+        public void handle(Value constraint) {
             log.trace("ConstraintHandler on entity B");
         }
 

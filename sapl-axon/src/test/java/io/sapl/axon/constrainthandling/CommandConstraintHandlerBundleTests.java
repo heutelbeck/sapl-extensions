@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -36,7 +36,7 @@ class CommandConstraintHandlerBundleTests {
     void testAllInvocations() {
         var onDecisionCounter      = new AtomicInteger();
         var handlerOnObjectCounter = new AtomicInteger();
-        var decision               = new AuthorizationDecision();
+        var decision               = AuthorizationDecision.INDETERMINATE;
         var message                = new GenericCommandMessage<>("message payload");
         var exception              = new Exception("another exception message");
         var result                 = "some result";

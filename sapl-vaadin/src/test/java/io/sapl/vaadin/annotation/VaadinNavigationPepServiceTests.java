@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,7 +17,7 @@
  */
 package io.sapl.vaadin.annotation;
 
-import static io.sapl.api.interpreter.Val.JSON;
+import tools.jackson.databind.node.JsonNodeFactory;
 import static io.sapl.vaadin.annotation.VaadinNavigationPepService.NavigationType.REROUTE;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -47,7 +47,7 @@ class VaadinNavigationPepServiceTests {
 
     @BeforeAll
     static void beforeAll() {
-        var subject = JSON.objectNode();
+        var subject = JsonNodeFactory.instance.objectNode();
         subject.put("username", "dummy");
         mockSpringContextHolderAuthentication();
     }

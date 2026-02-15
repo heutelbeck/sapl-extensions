@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -61,7 +61,6 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 import com.hivemq.embedded.EmbeddedExtension;
 import com.hivemq.embedded.EmbeddedHiveMQ;
 
-import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 import lombok.SneakyThrows;
 
@@ -91,7 +90,7 @@ class RemotePdpUsageIT {
             .withExposedPorts(8080);
 
     @BeforeEach
-    void beforeEach() throws InitializationException, ParserConfigurationException, TransformerException {
+    void beforeEach() throws ParserConfigurationException, TransformerException {
         if (!SAPL_SERVER_LT.isRunning()) {
             SAPL_SERVER_LT.start();
         }

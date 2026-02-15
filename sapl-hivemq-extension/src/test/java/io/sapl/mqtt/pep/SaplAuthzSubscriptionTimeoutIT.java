@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -58,7 +58,6 @@ import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 import io.sapl.api.pdp.MultiAuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
-import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.cache.MqttClientState;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
 import reactor.core.publisher.Flux;
@@ -77,8 +76,7 @@ class SaplAuthzSubscriptionTimeoutIT {
     private static final String TOPIC                  = "testTopic";
 
     @Test
-    void when_saplSubscriptionTimedOutBeforeFirstAuthzDecisionOnPublishEnforcement_then_unsubscribeSaplSubscription()
-            throws InitializationException {
+    void when_saplSubscriptionTimedOutBeforeFirstAuthzDecisionOnPublishEnforcement_then_unsubscribeSaplSubscription() {
         // keep in mind that the asynchronous mqtt publish enforcement will time out
         // first
         // GIVEN
@@ -131,8 +129,7 @@ class SaplAuthzSubscriptionTimeoutIT {
     }
 
     @Test
-    void when_saplSubscriptionTimedOutAfterPermitDecisionOnPublishEnforcement_then_unsubscribeSaplSubscription()
-            throws InitializationException {
+    void when_saplSubscriptionTimedOutAfterPermitDecisionOnPublishEnforcement_then_unsubscribeSaplSubscription() {
         // GIVEN
         String publishClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility
                 .buildSubscriptionId(PUBLISH_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -184,8 +181,7 @@ class SaplAuthzSubscriptionTimeoutIT {
     }
 
     @Test
-    void when_saplSubscriptionTimedOutAfterDenyDecisionOnPublishEnforcement_then_unsubscribeSaplSubscription()
-            throws InitializationException {
+    void when_saplSubscriptionTimedOutAfterDenyDecisionOnPublishEnforcement_then_unsubscribeSaplSubscription() {
         // GIVEN
         String publishClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility
                 .buildSubscriptionId(PUBLISH_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -234,8 +230,7 @@ class SaplAuthzSubscriptionTimeoutIT {
     }
 
     @Test
-    void when_saplSubscriptionTimedOutBeforeFirstAuthzDecisionOnSubscriptionEnforcement_then_unsubscribeSaplSubscription()
-            throws InitializationException {
+    void when_saplSubscriptionTimedOutBeforeFirstAuthzDecisionOnSubscriptionEnforcement_then_unsubscribeSaplSubscription() {
         // keep in mind that the asynchronous mqtt subscription enforcement will time
         // out first
         // GIVEN
@@ -290,8 +285,7 @@ class SaplAuthzSubscriptionTimeoutIT {
     }
 
     @Test
-    void when_saplSubscriptionTimedOutAfterInitialAuthzDecisionDenyOnSubscriptionEnforcement_then_unsubscribeSaplSubscription()
-            throws InitializationException {
+    void when_saplSubscriptionTimedOutAfterInitialAuthzDecisionDenyOnSubscriptionEnforcement_then_unsubscribeSaplSubscription() {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -348,8 +342,7 @@ class SaplAuthzSubscriptionTimeoutIT {
     }
 
     @Test
-    void when_saplSubscriptionTimedOutAfterInitialPermitDecisionOnDenyOnSubscriptionEnforcement_then_unsubscribeSaplSubscription()
-            throws InitializationException {
+    void when_saplSubscriptionTimedOutAfterInitialPermitDecisionOnDenyOnSubscriptionEnforcement_then_unsubscribeSaplSubscription() {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -401,8 +394,7 @@ class SaplAuthzSubscriptionTimeoutIT {
     }
 
     @Test
-    void when_saplSubscriptionTimedOutAfterUnsubscribeOnSubscriptionEnforcement_then_unsubscribeSaplSubscription()
-            throws InitializationException {
+    void when_saplSubscriptionTimedOutAfterUnsubscribeOnSubscriptionEnforcement_then_unsubscribeSaplSubscription() {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);

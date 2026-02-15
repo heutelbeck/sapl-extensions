@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,7 +17,7 @@
  */
 package io.sapl.vaadin;
 
-import static io.sapl.api.interpreter.Val.JSON;
+import tools.jackson.databind.node.JsonNodeFactory;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -48,7 +48,7 @@ class VaadinPepBuilderBaseTests {
 
     @BeforeAll
     static void beforeAll() {
-        var subject = JSON.objectNode();
+        var subject = JsonNodeFactory.instance.objectNode();
         subject.put("username", "dummy");
         securityHelperMock = mockStatic(SecurityHelper.class);
         securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
@@ -74,7 +74,7 @@ class VaadinPepBuilderBaseTests {
         @Override
         public VaadinPepBuilderMock onPermitDo(BiConsumer<AuthorizationDecision, Component> biConsumer) {
             return onDecisionDo((authznDecision, component) -> {
-                if (authznDecision.getDecision() == Decision.PERMIT) {
+                if (authznDecision.decision() == Decision.PERMIT) {
                     biConsumer.accept(authznDecision, component);
                 }
             });
@@ -83,7 +83,7 @@ class VaadinPepBuilderBaseTests {
         @Override
         public VaadinPepBuilderMock onDenyDo(BiConsumer<AuthorizationDecision, Component> biConsumer) {
             return onDecisionDo((authznDecision, component) -> {
-                if (authznDecision.getDecision() == Decision.DENY) {
+                if (authznDecision.decision() == Decision.DENY) {
                     biConsumer.accept(authznDecision, component);
                 }
             });
@@ -103,7 +103,7 @@ class VaadinPepBuilderBaseTests {
         VaadinPepBuilderMock            vaadinPepBuilderMock = new VaadinPepBuilderMock();
         @SuppressWarnings("unchecked")
         Consumer<AuthorizationDecision> consumer             = (Consumer<AuthorizationDecision>) mock(Consumer.class);
-        AuthorizationDecision           ad                   = mock(AuthorizationDecision.class);
+        var                             ad                   = AuthorizationDecision.PERMIT;
 
         // WHEN
         vaadinPepBuilderMock.onDecisionDo(consumer);
@@ -124,12 +124,11 @@ class VaadinPepBuilderBaseTests {
     @Test
     void when_VaadinPepBuilderBaseOnPermitDoConsumerWithPermit_then_ConsumerAcceptedByBiConsumer() {
         // GIVEN
-        VaadinPepBuilderMock  vaadinPepBuilderMock = new VaadinPepBuilderMock();
+        VaadinPepBuilderMock vaadinPepBuilderMock = new VaadinPepBuilderMock();
         @SuppressWarnings("unchecked")
-        Consumer<Component>   consumer             = (Consumer<Component>) mock(Consumer.class);
-        AuthorizationDecision ad                   = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.PERMIT);
-        Component component = mock(Component.class);
+        Consumer<Component>  consumer             = (Consumer<Component>) mock(Consumer.class);
+        var                  ad                   = AuthorizationDecision.PERMIT;
+        Component            component            = mock(Component.class);
 
         // WHEN
         vaadinPepBuilderMock.onPermitDo(consumer);
@@ -150,11 +149,10 @@ class VaadinPepBuilderBaseTests {
     @Test
     void when_VaadinPepBuilderBaseOnPermitDoConsumerWithDeny_then_ConsumerNotAcceptedByBiConsumer() {
         // GIVEN
-        VaadinPepBuilderMock  vaadinPepBuilderMock = new VaadinPepBuilderMock();
+        VaadinPepBuilderMock vaadinPepBuilderMock = new VaadinPepBuilderMock();
         @SuppressWarnings("unchecked")
-        Consumer<Component>   consumer             = (Consumer<Component>) mock(Consumer.class);
-        AuthorizationDecision ad                   = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.DENY);
+        Consumer<Component>  consumer             = (Consumer<Component>) mock(Consumer.class);
+        var                  ad                   = AuthorizationDecision.DENY;
 
         // WHEN
         vaadinPepBuilderMock.onPermitDo(consumer);
@@ -176,10 +174,9 @@ class VaadinPepBuilderBaseTests {
     @Test
     void when_VaadinPepBuilderBaseOnPermitDoRunnableWithPermit_then_RunnableCalledByBiConsumer() {
         // GIVEN
-        VaadinPepBuilderMock  vaadinPepBuilderMock = new VaadinPepBuilderMock();
-        AuthorizationDecision ad                   = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.PERMIT);
-        Runnable runnable = mock(Runnable.class);
+        VaadinPepBuilderMock vaadinPepBuilderMock = new VaadinPepBuilderMock();
+        var                  ad                   = AuthorizationDecision.PERMIT;
+        Runnable             runnable             = mock(Runnable.class);
 
         // WHEN
         vaadinPepBuilderMock.onPermitDo(runnable);
@@ -200,10 +197,9 @@ class VaadinPepBuilderBaseTests {
     @Test
     void when_VaadinPepBuilderBaseOnPermitDoRunnableWithDeny_then_RunnableNotCalledByBiConsumer() {
         // GIVEN
-        VaadinPepBuilderMock  vaadinPepBuilderMock = new VaadinPepBuilderMock();
-        AuthorizationDecision ad                   = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.DENY);
-        Runnable runnable = mock(Runnable.class);
+        VaadinPepBuilderMock vaadinPepBuilderMock = new VaadinPepBuilderMock();
+        var                  ad                   = AuthorizationDecision.DENY;
+        Runnable             runnable             = mock(Runnable.class);
 
         // WHEN
         vaadinPepBuilderMock.onPermitDo(runnable);
@@ -224,12 +220,11 @@ class VaadinPepBuilderBaseTests {
     @Test
     void when_VaadinPepBuilderBaseOnDenyDoConsumerWithDeny_then_ConsumerAcceptedByBiConsumer() {
         // GIVEN
-        VaadinPepBuilderMock  vaadinPepBuilderMock = new VaadinPepBuilderMock();
+        VaadinPepBuilderMock vaadinPepBuilderMock = new VaadinPepBuilderMock();
         @SuppressWarnings("unchecked")
-        Consumer<Component>   consumer             = (Consumer<Component>) mock(Consumer.class);
-        AuthorizationDecision ad                   = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.DENY);
-        Component component = mock(Component.class);
+        Consumer<Component>  consumer             = (Consumer<Component>) mock(Consumer.class);
+        var                  ad                   = AuthorizationDecision.DENY;
+        Component            component            = mock(Component.class);
 
         // WHEN
         vaadinPepBuilderMock.onDenyDo(consumer);
@@ -250,11 +245,10 @@ class VaadinPepBuilderBaseTests {
     @Test
     void when_VaadinPepBuilderBaseOnDenyDoConsumerWithPermit_then_ConsumerNotAcceptedByBiConsumer() {
         // GIVEN
-        VaadinPepBuilderMock  vaadinPepBuilderMock = new VaadinPepBuilderMock();
+        VaadinPepBuilderMock vaadinPepBuilderMock = new VaadinPepBuilderMock();
         @SuppressWarnings("unchecked")
-        Consumer<Component>   consumer             = (Consumer<Component>) mock(Consumer.class);
-        AuthorizationDecision ad                   = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.PERMIT);
+        Consumer<Component>  consumer             = (Consumer<Component>) mock(Consumer.class);
+        var                  ad                   = AuthorizationDecision.PERMIT;
 
         // WHEN
         vaadinPepBuilderMock.onDenyDo(consumer);
@@ -276,10 +270,9 @@ class VaadinPepBuilderBaseTests {
     @Test
     void when_VaadinPepBuilderBaseOnDenyDoRunnableWithDeny_then_RunnableCalledByBiConsumer() {
         // GIVEN
-        VaadinPepBuilderMock  vaadinPepBuilderMock = new VaadinPepBuilderMock();
-        AuthorizationDecision ad                   = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.DENY);
-        Runnable runnable = mock(Runnable.class);
+        VaadinPepBuilderMock vaadinPepBuilderMock = new VaadinPepBuilderMock();
+        var                  ad                   = AuthorizationDecision.DENY;
+        Runnable             runnable             = mock(Runnable.class);
 
         // WHEN
         vaadinPepBuilderMock.onDenyDo(runnable);
@@ -300,10 +293,9 @@ class VaadinPepBuilderBaseTests {
     @Test
     void when_VaadinPepBuilderBaseOnDenyDoRunnableWithPermit_then_RunnableNotCalledByBiConsumer() {
         // GIVEN
-        VaadinPepBuilderMock  vaadinPepBuilderMock = new VaadinPepBuilderMock();
-        AuthorizationDecision ad                   = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.PERMIT);
-        Runnable runnable = mock(Runnable.class);
+        VaadinPepBuilderMock vaadinPepBuilderMock = new VaadinPepBuilderMock();
+        var                  ad                   = AuthorizationDecision.PERMIT;
+        Runnable             runnable             = mock(Runnable.class);
 
         // WHEN
         vaadinPepBuilderMock.onDenyDo(runnable);
@@ -316,10 +308,9 @@ class VaadinPepBuilderBaseTests {
     @Test
     void when_VaadinPepBuilderBaseOnDecisionVisibleOrHiddenWithPermit_then_ComponentIsVisible() {
         // GIVEN
-        VaadinPepBuilderMock  vaadinPepBuilderMock = new VaadinPepBuilderMock();
-        AuthorizationDecision ad                   = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.PERMIT);
-        Component component = getComponentMockWithUI();
+        VaadinPepBuilderMock vaadinPepBuilderMock = new VaadinPepBuilderMock();
+        var                  ad                   = AuthorizationDecision.PERMIT;
+        Component            component            = getComponentMockWithUI();
 
         // WHEN
         vaadinPepBuilderMock.onDecisionVisibleOrHidden();
@@ -332,10 +323,9 @@ class VaadinPepBuilderBaseTests {
     @Test
     void when_VaadinPepBuilderBaseOnDecisionVisibleOrHiddenWithDeny_then_ComponentIsNotVisible() {
         // GIVEN
-        VaadinPepBuilderMock  vaadinPepBuilderMock = new VaadinPepBuilderMock();
-        AuthorizationDecision ad                   = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.DENY);
-        Component component = getComponentMockWithUI();
+        VaadinPepBuilderMock vaadinPepBuilderMock = new VaadinPepBuilderMock();
+        var                  ad                   = AuthorizationDecision.DENY;
+        Component            component            = getComponentMockWithUI();
 
         // WHEN
         vaadinPepBuilderMock.onDecisionVisibleOrHidden();

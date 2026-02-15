@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,7 +17,7 @@
  */
 package io.sapl.vaadin;
 
-import static io.sapl.api.interpreter.Val.JSON;
+import tools.jackson.databind.node.JsonNodeFactory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,12 +46,14 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.Command;
 
+import io.sapl.api.model.Value;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.vaadin.base.SecurityHelper;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 class VaadinPepSinglePepBuilderTests {
 
@@ -60,7 +62,7 @@ class VaadinPepSinglePepBuilderTests {
 
     @BeforeAll
     static void beforeAll() {
-        var subject = JSON.objectNode();
+        var subject = JsonNodeFactory.instance.objectNode();
         subject.put("username", "dummy");
         securityHelperMock = mockStatic(SecurityHelper.class);
         securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
@@ -89,7 +91,7 @@ class VaadinPepSinglePepBuilderTests {
         vaadinSinglePepBuilder.subject("subject");
 
         // THEN
-        assertEquals("subject", vaadinSinglePepBuilder.vaadinPep.getAuthorizationSubscription().getSubject().asText());
+        assertEquals(Value.of("subject"), vaadinSinglePepBuilder.vaadinPep.getAuthorizationSubscription().subject());
     }
 
     @Test
@@ -110,8 +112,8 @@ class VaadinPepSinglePepBuilderTests {
         vaadinSinglePepBuilder.environment("environment");
 
         // THEN
-        assertEquals("environment",
-                vaadinSinglePepBuilder.vaadinPep.getAuthorizationSubscription().getEnvironment().asText());
+        assertEquals(Value.of("environment"),
+                vaadinSinglePepBuilder.vaadinPep.getAuthorizationSubscription().environment());
     }
 
     @Test
@@ -128,6 +130,8 @@ class VaadinPepSinglePepBuilderTests {
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(flux);
         VaadinConstraintEnforcementService nextVaadinConstraintEnforcementServiceMock = mock(
                 VaadinConstraintEnforcementService.class);
+        when(nextVaadinConstraintEnforcementServiceMock.enforceConstraintsOfDecision(any(), any(), any()))
+                .thenReturn(Mono.just(AuthorizationDecision.PERMIT));
 
         VaadinPep.VaadinSinglePepBuilder<Object, Component> vaadinSinglePepBuilder = (VaadinPep.VaadinSinglePepBuilder<Object, Component>) mock(
                 VaadinPep.VaadinSinglePepBuilder.class, withSettings()
@@ -153,11 +157,12 @@ class VaadinPepSinglePepBuilderTests {
         Flux<AuthorizationDecision> flux = createFluxWithAuthorizationDescription();
         PolicyDecisionPoint         pdp  = mock(PolicyDecisionPoint.class);
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(flux);
-        VaadinConstraintEnforcementService                  nextVaadinConstraintEnforcementServiceMock = mock(
+        VaadinConstraintEnforcementService nextVaadinConstraintEnforcementServiceMock = mock(
                 VaadinConstraintEnforcementService.class);
-        AttachEvent                                         eventMock                                  = mock(
-                AttachEvent.class);
-        VaadinPep.VaadinSinglePepBuilder<Object, Component> vaadinSinglePepBuilder                     = (VaadinPep.VaadinSinglePepBuilder<Object, Component>) mock(
+        when(nextVaadinConstraintEnforcementServiceMock.enforceConstraintsOfDecision(any(), any(), any()))
+                .thenReturn(Mono.just(AuthorizationDecision.PERMIT));
+        AttachEvent                                         eventMock              = mock(AttachEvent.class);
+        VaadinPep.VaadinSinglePepBuilder<Object, Component> vaadinSinglePepBuilder = (VaadinPep.VaadinSinglePepBuilder<Object, Component>) mock(
                 VaadinPep.VaadinSinglePepBuilder.class, withSettings()
                         // useConstructor() -> calls actual constructor which will create a VaadinPep
                         // object
@@ -406,7 +411,6 @@ class VaadinPepSinglePepBuilderTests {
     }
 
     private Flux<AuthorizationDecision> createFluxWithAuthorizationDescription() {
-        AuthorizationDecision authorizationDecisionMock = mock(AuthorizationDecision.class);
-        return Flux.just(authorizationDecisionMock);
+        return Flux.just(AuthorizationDecision.PERMIT);
     }
 }

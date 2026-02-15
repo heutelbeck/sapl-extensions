@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -22,11 +22,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
 
-import io.sapl.api.interpreter.Val;
+import io.sapl.api.model.Value;
+import io.sapl.api.model.ValueJsonMarshaller;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -34,15 +35,15 @@ public class EthereumBasicFunctions {
 
     private static final String INPUT_WARNING = "The input JsonNode for the policy didn't contain a field of type {}, although this was expected. Ignore this message if the field was optional.";
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final JsonMapper mapper = JsonMapper.builder().build();
 
     private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
     private EthereumBasicFunctions() {
     }
 
-    protected static Val toVal(Object o) {
-        return Val.of(mapper.convertValue(o, JsonNode.class));
+    protected static Value toVal(Object o) {
+        return ValueJsonMarshaller.fromJsonNode(mapper.convertValue(o, JsonNode.class));
     }
 
     protected static BigInteger getBigIntFrom(JsonNode saplObject, String bigIntegerName) {
@@ -87,7 +88,7 @@ public class EthereumBasicFunctions {
             List<String> returnList = new ArrayList<>();
             JsonNode     array      = saplObject.get(listName);
             if (array.isArray()) {
-                array.forEach(s -> returnList.add(s.textValue()));
+                array.forEach(s -> returnList.add(s.stringValue()));
             }
             return returnList;
         }
@@ -97,7 +98,7 @@ public class EthereumBasicFunctions {
 
     protected static String getStringFrom(JsonNode saplObject, String stringName) {
         if (saplObject.has(stringName)) {
-            return saplObject.get(stringName).textValue();
+            return saplObject.get(stringName).stringValue();
         }
         log.warn(INPUT_WARNING, stringName);
         return null;

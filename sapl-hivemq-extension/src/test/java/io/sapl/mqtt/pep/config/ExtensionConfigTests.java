@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -23,9 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 
-import javax.xml.bind.DataBindingException;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.DataBindingException;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

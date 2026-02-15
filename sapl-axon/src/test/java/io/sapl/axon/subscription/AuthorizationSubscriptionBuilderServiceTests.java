@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -18,7 +18,6 @@
 package io.sapl.axon.subscription;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
@@ -37,14 +36,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.expression.spel.SpelEvaluationException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
 
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.Value;
+import io.sapl.api.model.ValueJsonMarshaller;
 import io.sapl.axon.annotation.PostHandleEnforce;
 import io.sapl.axon.annotation.PreHandleEnforce;
 import lombok.AllArgsConstructor;
-import lombok.Value;
 
 class AuthorizationSubscriptionBuilderServiceTests {
     private static final String ACTION_TYPE          = "actionType";
@@ -73,32 +73,32 @@ class AuthorizationSubscriptionBuilderServiceTests {
     private static final String TEST_AGGREGATE_TYPE       = "testAggregateType";
     private static final String TEST_ENVIRONMENT          = "testEnvironment";
 
-    @Value
+    @lombok.Value
     private static class TestCommand {
         @TargetAggregateIdentifier
         Object targetAggregateIdentifier;
         Object someOtherField = "someOtherValue";
     }
 
-    @Value
+    @lombok.Value
     private static class NonAnnotatedTestCommand {
         Object nonAnnotatedTargetAggregateIdentifier;
         Object someOtherField = "someOtherValue";
     }
 
-    @Value
+    @lombok.Value
     private static class TestQuery {
         Object targetDocumentIdentifier;
         Object someOtherField = "someOtherValue";
     }
 
-    @Value
+    @lombok.Value
     private static class TestQueryResult {
         Object documentIdentifier;
         Object someOtherField = "someOtherField";
     }
 
-    @Value
+    @lombok.Value
     private static class TestQueryUpdate {
         Object documentIdentifier;
         Object someOtherField = "someOtherField";
@@ -307,12 +307,12 @@ class AuthorizationSubscriptionBuilderServiceTests {
         }
     }
 
-    private static ObjectMapper                            mapper;
+    private static JsonMapper                              mapper;
     private static AuthorizationSubscriptionBuilderService service;
 
     @BeforeAll
     static void beforeAll() {
-        mapper  = new ObjectMapper();
+        mapper  = JsonMapper.builder().build();
         service = new AuthorizationSubscriptionBuilderService(mapper);
     }
 
@@ -332,20 +332,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(TEST_ANONYMOUS, subscription1.getSubject().asText());
-        assertEquals(TEST_ANONYMOUS, subscription2.getSubject().asText());
-        assertEquals(COMMAND, subscription1.getAction().get(ACTION_TYPE).asText());
-        assertEquals(COMMAND, subscription2.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(COMMAND_NAME).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(COMMAND_NAME).asText());
-        assertEquals(asTree(payload), subscription1.getAction().get(PAYLOAD));
-        assertEquals(asTree(payload), subscription2.getAction().get(PAYLOAD));
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(aggregateInfo(), subscription1.getResource());
-        assertEquals(handlerInfo(), subscription2.getResource());
-        assertNull(subscription1.getEnvironment());
-        assertNull(subscription2.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        var action1 = (ObjectValue) subscription1.action();
+        var action2 = (ObjectValue) subscription2.action();
+        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
+        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
+        assertEquals(asValue(payload), action1.get(PAYLOAD));
+        assertEquals(asValue(payload), action2.get(PAYLOAD));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
+        assertEquals(aggregateInfo(), subscription1.resource());
+        assertEquals(handlerInfo(), subscription2.resource());
+        assertEquals(Value.UNDEFINED, subscription1.environment());
+        assertEquals(Value.UNDEFINED, subscription2.environment());
     }
 
     @Test
@@ -383,20 +385,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(TEST_SUBJECT, subscription1.getSubject().asText());
-        assertEquals(TEST_SUBJECT, subscription2.getSubject().asText());
-        assertEquals(COMMAND, subscription1.getAction().get(ACTION_TYPE).asText());
-        assertEquals(COMMAND, subscription2.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(COMMAND_NAME).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(COMMAND_NAME).asText());
-        assertEquals(asTree(payload), subscription1.getAction().get(PAYLOAD));
-        assertEquals(asTree(payload), subscription2.getAction().get(PAYLOAD));
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(aggregateInfo(), subscription1.getResource());
-        assertEquals(handlerInfo(), subscription2.getResource());
-        assertNull(subscription1.getEnvironment());
-        assertNull(subscription2.getEnvironment());
+        assertEquals(Value.of(TEST_SUBJECT), subscription1.subject());
+        assertEquals(Value.of(TEST_SUBJECT), subscription2.subject());
+        var action1 = (ObjectValue) subscription1.action();
+        var action2 = (ObjectValue) subscription2.action();
+        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
+        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
+        assertEquals(asValue(payload), action1.get(PAYLOAD));
+        assertEquals(asValue(payload), action2.get(PAYLOAD));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
+        assertEquals(aggregateInfo(), subscription1.resource());
+        assertEquals(handlerInfo(), subscription2.resource());
+        assertEquals(Value.UNDEFINED, subscription1.environment());
+        assertEquals(Value.UNDEFINED, subscription2.environment());
     }
 
     @Test
@@ -434,14 +438,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(TEST_ANONYMOUS, subscription1.getSubject().asText());
-        assertEquals(TEST_ANONYMOUS, subscription2.getSubject().asText());
-        assertEquals(TEST_ACTION, subscription1.getAction().asText());
-        assertEquals(TEST_ACTION, subscription2.getAction().asText());
-        assertEquals(aggregateInfo(), subscription1.getResource());
-        assertEquals(handlerInfo(), subscription2.getResource());
-        assertNull(subscription1.getEnvironment());
-        assertNull(subscription2.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        assertEquals(Value.of(TEST_ACTION), subscription1.action());
+        assertEquals(Value.of(TEST_ACTION), subscription2.action());
+        assertEquals(aggregateInfo(), subscription1.resource());
+        assertEquals(handlerInfo(), subscription2.resource());
+        assertEquals(Value.UNDEFINED, subscription1.environment());
+        assertEquals(Value.UNDEFINED, subscription2.environment());
     }
 
     @Test
@@ -479,20 +483,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(TEST_ANONYMOUS, subscription1.getSubject().asText());
-        assertEquals(TEST_ANONYMOUS, subscription2.getSubject().asText());
-        assertEquals(COMMAND, subscription1.getAction().get(ACTION_TYPE).asText());
-        assertEquals(COMMAND, subscription2.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(COMMAND_NAME).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(COMMAND_NAME).asText());
-        assertEquals(asTree(payload), subscription1.getAction().get(PAYLOAD));
-        assertEquals(asTree(payload), subscription2.getAction().get(PAYLOAD));
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(TEST_RESOURCE, subscription1.getResource().asText());
-        assertEquals(TEST_RESOURCE, subscription2.getResource().asText());
-        assertNull(subscription1.getEnvironment());
-        assertNull(subscription2.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        var action1 = (ObjectValue) subscription1.action();
+        var action2 = (ObjectValue) subscription2.action();
+        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
+        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
+        assertEquals(asValue(payload), action1.get(PAYLOAD));
+        assertEquals(asValue(payload), action2.get(PAYLOAD));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
+        assertEquals(Value.of(TEST_RESOURCE), subscription1.resource());
+        assertEquals(Value.of(TEST_RESOURCE), subscription2.resource());
+        assertEquals(Value.UNDEFINED, subscription1.environment());
+        assertEquals(Value.UNDEFINED, subscription2.environment());
     }
 
     @Test
@@ -509,20 +515,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, null, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, null, annotation2);
 
-        assertEquals(TEST_ANONYMOUS, subscription1.getSubject().asText());
-        assertEquals(TEST_ANONYMOUS, subscription2.getSubject().asText());
-        assertEquals(COMMAND, subscription1.getAction().get(ACTION_TYPE).asText());
-        assertEquals(COMMAND, subscription2.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(COMMAND_NAME).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(COMMAND_NAME).asText());
-        assertEquals(asTree(payload), subscription1.getAction().get(PAYLOAD));
-        assertEquals(asTree(payload), subscription2.getAction().get(PAYLOAD));
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(handlerInfo(), subscription1.getResource());
-        assertEquals(handlerInfo(), subscription2.getResource());
-        assertNull(subscription1.getEnvironment());
-        assertNull(subscription2.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        var action1 = (ObjectValue) subscription1.action();
+        var action2 = (ObjectValue) subscription2.action();
+        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
+        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
+        assertEquals(asValue(payload), action1.get(PAYLOAD));
+        assertEquals(asValue(payload), action2.get(PAYLOAD));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
+        assertEquals(handlerInfo(), subscription1.resource());
+        assertEquals(handlerInfo(), subscription2.resource());
+        assertEquals(Value.UNDEFINED, subscription1.environment());
+        assertEquals(Value.UNDEFINED, subscription2.environment());
     }
 
     @Test
@@ -541,20 +549,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(TEST_ANONYMOUS, subscription1.getSubject().asText());
-        assertEquals(TEST_ANONYMOUS, subscription2.getSubject().asText());
-        assertEquals(COMMAND, subscription1.getAction().get(ACTION_TYPE).asText());
-        assertEquals(COMMAND, subscription2.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(COMMAND_NAME).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(COMMAND_NAME).asText());
-        assertEquals(asTree(payload), subscription1.getAction().get(PAYLOAD));
-        assertEquals(asTree(payload), subscription2.getAction().get(PAYLOAD));
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(info(TEST_AGGREGATE_TYPE), subscription1.getResource());
-        assertEquals(info(TEST_AGGREGATE_TYPE), subscription2.getResource());
-        assertNull(subscription1.getEnvironment());
-        assertNull(subscription2.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        var action1 = (ObjectValue) subscription1.action();
+        var action2 = (ObjectValue) subscription2.action();
+        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
+        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
+        assertEquals(asValue(payload), action1.get(PAYLOAD));
+        assertEquals(asValue(payload), action2.get(PAYLOAD));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
+        assertEquals(info(TEST_AGGREGATE_TYPE), subscription1.resource());
+        assertEquals(info(TEST_AGGREGATE_TYPE), subscription2.resource());
+        assertEquals(Value.UNDEFINED, subscription1.environment());
+        assertEquals(Value.UNDEFINED, subscription2.environment());
     }
 
     @Test
@@ -573,20 +583,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(TEST_ANONYMOUS, subscription1.getSubject().asText());
-        assertEquals(TEST_ANONYMOUS, subscription2.getSubject().asText());
-        assertEquals(COMMAND, subscription1.getAction().get(ACTION_TYPE).asText());
-        assertEquals(COMMAND, subscription2.getAction().get(ACTION_TYPE).asText());
-        assertEquals(NonAnnotatedTestCommand.class.getName(), subscription1.getAction().get(COMMAND_NAME).asText());
-        assertEquals(NonAnnotatedTestCommand.class.getName(), subscription2.getAction().get(COMMAND_NAME).asText());
-        assertEquals(asTree(payload), subscription1.getAction().get(PAYLOAD));
-        assertEquals(asTree(payload), subscription2.getAction().get(PAYLOAD));
-        assertEquals(NonAnnotatedTestCommand.class.getName(), subscription1.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(NonAnnotatedTestCommand.class.getName(), subscription2.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(aggregateInfoWithoutIdentifier(), subscription1.getResource());
-        assertEquals(handlerInfoWithoutIdentifier(), subscription2.getResource());
-        assertNull(subscription1.getEnvironment());
-        assertNull(subscription2.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        var action1 = (ObjectValue) subscription1.action();
+        var action2 = (ObjectValue) subscription2.action();
+        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
+        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
+        assertEquals(Value.of(NonAnnotatedTestCommand.class.getName()), action1.get(COMMAND_NAME));
+        assertEquals(Value.of(NonAnnotatedTestCommand.class.getName()), action2.get(COMMAND_NAME));
+        assertEquals(asValue(payload), action1.get(PAYLOAD));
+        assertEquals(asValue(payload), action2.get(PAYLOAD));
+        assertEquals(Value.of(NonAnnotatedTestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
+        assertEquals(Value.of(NonAnnotatedTestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
+        assertEquals(aggregateInfoWithoutIdentifier(), subscription1.resource());
+        assertEquals(handlerInfoWithoutIdentifier(), subscription2.resource());
+        assertEquals(Value.UNDEFINED, subscription1.environment());
+        assertEquals(Value.UNDEFINED, subscription2.environment());
     }
 
     @Test
@@ -624,20 +636,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(TEST_ANONYMOUS, subscription1.getSubject().asText());
-        assertEquals(TEST_ANONYMOUS, subscription2.getSubject().asText());
-        assertEquals(COMMAND, subscription1.getAction().get(ACTION_TYPE).asText());
-        assertEquals(COMMAND, subscription2.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(COMMAND_NAME).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(COMMAND_NAME).asText());
-        assertEquals(asTree(payload), subscription1.getAction().get(PAYLOAD));
-        assertEquals(asTree(payload), subscription2.getAction().get(PAYLOAD));
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(aggregateInfo(), subscription1.getResource());
-        assertEquals(handlerInfo(), subscription2.getResource());
-        assertEquals(TEST_ENVIRONMENT, subscription1.getEnvironment().asText());
-        assertEquals(TEST_ENVIRONMENT, subscription2.getEnvironment().asText());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        var action1 = (ObjectValue) subscription1.action();
+        var action2 = (ObjectValue) subscription2.action();
+        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
+        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
+        assertEquals(asValue(payload), action1.get(PAYLOAD));
+        assertEquals(asValue(payload), action2.get(PAYLOAD));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
+        assertEquals(aggregateInfo(), subscription1.resource());
+        assertEquals(handlerInfo(), subscription2.resource());
+        assertEquals(Value.of(TEST_ENVIRONMENT), subscription1.environment());
+        assertEquals(Value.of(TEST_ENVIRONMENT), subscription2.environment());
     }
 
     @Test
@@ -657,22 +671,24 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(TEST_ANONYMOUS, subscription1.getSubject().asText());
-        assertEquals(TEST_ANONYMOUS, subscription2.getSubject().asText());
-        assertEquals(COMMAND, subscription1.getAction().get(ACTION_TYPE).asText());
-        assertEquals(COMMAND, subscription2.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(COMMAND_NAME).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(COMMAND_NAME).asText());
-        assertEquals(asTree(payload), subscription1.getAction().get(PAYLOAD));
-        assertEquals(asTree(payload), subscription2.getAction().get(PAYLOAD));
-        assertEquals(TestCommand.class.getName(), subscription1.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(TestCommand.class.getName(), subscription2.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(asTree(metaData), subscription1.getAction().get(METADATA));
-        assertEquals(asTree(metaData), subscription2.getAction().get(METADATA));
-        assertEquals(aggregateInfo(), subscription1.getResource());
-        assertEquals(handlerInfo(), subscription2.getResource());
-        assertNull(subscription1.getEnvironment());
-        assertNull(subscription2.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        var action1 = (ObjectValue) subscription1.action();
+        var action2 = (ObjectValue) subscription2.action();
+        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
+        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
+        assertEquals(asValue(payload), action1.get(PAYLOAD));
+        assertEquals(asValue(payload), action2.get(PAYLOAD));
+        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
+        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
+        assertEquals(asValue(metaData), action1.get(METADATA));
+        assertEquals(asValue(metaData), action2.get(METADATA));
+        assertEquals(aggregateInfo(), subscription1.resource());
+        assertEquals(handlerInfo(), subscription2.resource());
+        assertEquals(Value.UNDEFINED, subscription1.environment());
+        assertEquals(Value.UNDEFINED, subscription2.environment());
     }
 
     @Test
@@ -688,13 +704,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(TEST_ANONYMOUS, subscription.getSubject().asText());
-        assertEquals(QUERY, subscription.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(QUERY_NAME).asText());
-        assertEquals(asTree(payload), subscription.getAction().get(PAYLOAD));
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(projectionInfo("handle1"), subscription.getResource());
-        assertNull(subscription.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        var action = (ObjectValue) subscription.action();
+        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
+        assertEquals(asValue(payload), action.get(PAYLOAD));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
+        assertEquals(projectionInfo("handle1"), subscription.resource());
+        assertEquals(Value.UNDEFINED, subscription.environment());
     }
 
     @Test
@@ -724,13 +741,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(TEST_SUBJECT, subscription.getSubject().asText());
-        assertEquals(QUERY, subscription.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(QUERY_NAME).asText());
-        assertEquals(asTree(payload), subscription.getAction().get(PAYLOAD));
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(projectionInfo("handle3"), subscription.getResource());
-        assertNull(subscription.getEnvironment());
+        assertEquals(Value.of(TEST_SUBJECT), subscription.subject());
+        var action = (ObjectValue) subscription.action();
+        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
+        assertEquals(asValue(payload), action.get(PAYLOAD));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
+        assertEquals(projectionInfo("handle3"), subscription.resource());
+        assertEquals(Value.UNDEFINED, subscription.environment());
     }
 
     @Test
@@ -760,10 +778,10 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(TEST_ANONYMOUS, subscription.getSubject().asText());
-        assertEquals(TEST_ACTION, subscription.getAction().asText());
-        assertEquals(projectionInfo("handle5"), subscription.getResource());
-        assertNull(subscription.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        assertEquals(Value.of(TEST_ACTION), subscription.action());
+        assertEquals(projectionInfo("handle5"), subscription.resource());
+        assertEquals(Value.UNDEFINED, subscription.environment());
     }
 
     @Test
@@ -793,13 +811,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(TEST_ANONYMOUS, subscription.getSubject().asText());
-        assertEquals(QUERY, subscription.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(QUERY_NAME).asText());
-        assertEquals(asTree(payload), subscription.getAction().get(PAYLOAD));
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(TEST_RESOURCE, subscription.getResource().asText());
-        assertNull(subscription.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        var action = (ObjectValue) subscription.action();
+        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
+        assertEquals(asValue(payload), action.get(PAYLOAD));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
+        assertEquals(Value.of(TEST_RESOURCE), subscription.resource());
+        assertEquals(Value.UNDEFINED, subscription.environment());
     }
 
     @Test
@@ -815,13 +834,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(TEST_ANONYMOUS, subscription.getSubject().asText());
-        assertEquals(QUERY, subscription.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(QUERY_NAME).asText());
-        assertEquals(asTree(payload), subscription.getAction().get(PAYLOAD));
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(postEnforceResourceNode(), subscription.getResource());
-        assertNull(subscription.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        var action = (ObjectValue) subscription.action();
+        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
+        assertEquals(asValue(payload), action.get(PAYLOAD));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
+        assertEquals(postEnforceResourceNode(), subscription.resource());
+        assertEquals(Value.UNDEFINED, subscription.environment());
     }
 
     @Test
@@ -837,13 +857,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(TEST_ANONYMOUS, subscription.getSubject().asText());
-        assertEquals(QUERY, subscription.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(QUERY_NAME).asText());
-        assertEquals(asTree(payload), subscription.getAction().get(PAYLOAD));
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(projectionInfo("handle9", queryResult.get()), subscription.getResource());
-        assertNull(subscription.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        var action = (ObjectValue) subscription.action();
+        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
+        assertEquals(asValue(payload), action.get(PAYLOAD));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
+        assertEquals(projectionInfo("handle9", queryResult.get()), subscription.resource());
+        assertEquals(Value.UNDEFINED, subscription.environment());
     }
 
     @Test
@@ -861,13 +882,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(TEST_ANONYMOUS, subscription.getSubject().asText());
-        assertEquals(QUERY, subscription.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(QUERY_NAME).asText());
-        assertEquals(asTree(payload), subscription.getAction().get(PAYLOAD));
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(projectionInfoWithUpdateType("handle1"), subscription.getResource());
-        assertNull(subscription.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        var action = (ObjectValue) subscription.action();
+        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
+        assertEquals(asValue(payload), action.get(PAYLOAD));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
+        assertEquals(projectionInfoWithUpdateType("handle1"), subscription.resource());
+        assertEquals(Value.UNDEFINED, subscription.environment());
     }
 
     @Test
@@ -883,13 +905,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(TEST_ANONYMOUS, subscription.getSubject().asText());
-        assertEquals(QUERY, subscription.getAction().get(ACTION_TYPE).asText());
-        assertEquals(NonEnclosedTestQuery.class.getName(), subscription.getAction().get(QUERY_NAME).asText());
-        assertEquals(asTree(payload), subscription.getAction().get(PAYLOAD));
-        assertEquals(NonEnclosedTestQuery.class.getName(), subscription.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(projectionInfoOnNonEnclosedPayload("handle10"), subscription.getResource());
-        assertNull(subscription.getEnvironment());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        var action = (ObjectValue) subscription.action();
+        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
+        assertEquals(Value.of(NonEnclosedTestQuery.class.getName()), action.get(QUERY_NAME));
+        assertEquals(asValue(payload), action.get(PAYLOAD));
+        assertEquals(Value.of(NonEnclosedTestQuery.class.getName()), action.get(PAYLOAD_TYPE));
+        assertEquals(projectionInfoOnNonEnclosedPayload("handle10"), subscription.resource());
+        assertEquals(Value.UNDEFINED, subscription.environment());
     }
 
     @Test
@@ -919,56 +942,57 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(TEST_ANONYMOUS, subscription.getSubject().asText());
-        assertEquals(QUERY, subscription.getAction().get(ACTION_TYPE).asText());
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(QUERY_NAME).asText());
-        assertEquals(asTree(payload), subscription.getAction().get(PAYLOAD));
-        assertEquals(TestQuery.class.getName(), subscription.getAction().get(PAYLOAD_TYPE).asText());
-        assertEquals(projectionInfo("handle12"), subscription.getResource());
-        assertEquals(TEST_ENVIRONMENT, subscription.getEnvironment().asText());
+        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        var action = (ObjectValue) subscription.action();
+        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
+        assertEquals(asValue(payload), action.get(PAYLOAD));
+        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
+        assertEquals(projectionInfo("handle12"), subscription.resource());
+        assertEquals(Value.of(TEST_ENVIRONMENT), subscription.environment());
     }
 
-    private static JsonNode aggregateInfo() {
+    private static Value aggregateInfo() {
         var node = JsonNodeFactory.instance.objectNode();
         node.put(AGGREGATE_TYPE, TestAggregate.class.getSimpleName());
         node.put(AGGREGATE_IDENTIFIER, TEST_AGGREGATE_IDENTIFIER);
-        return node;
+        return ValueJsonMarshaller.fromJsonNode(node);
     }
 
-    private static JsonNode info(String aggregateType) {
+    private static Value info(String aggregateType) {
         var node = JsonNodeFactory.instance.objectNode();
         node.put(AGGREGATE_TYPE, aggregateType);
         node.put(AGGREGATE_IDENTIFIER, TEST_AGGREGATE_IDENTIFIER);
-        return node;
+        return ValueJsonMarshaller.fromJsonNode(node);
     }
 
-    private static JsonNode aggregateInfoWithoutIdentifier() {
+    private static Value aggregateInfoWithoutIdentifier() {
         var node = JsonNodeFactory.instance.objectNode();
         node.put(AGGREGATE_TYPE, TestAggregate.class.getSimpleName());
-        return node;
+        return ValueJsonMarshaller.fromJsonNode(node);
     }
 
-    private static JsonNode handlerInfo() {
+    private static Value handlerInfo() {
         var node = JsonNodeFactory.instance.objectNode();
         node.put(AGGREGATE_IDENTIFIER, TEST_AGGREGATE_IDENTIFIER);
-        return node;
+        return ValueJsonMarshaller.fromJsonNode(node);
     }
 
-    private static JsonNode handlerInfoWithoutIdentifier() {
-        return JsonNodeFactory.instance.objectNode();
+    private static Value handlerInfoWithoutIdentifier() {
+        return ValueJsonMarshaller.fromJsonNode(JsonNodeFactory.instance.objectNode());
     }
 
-    private static JsonNode projectionInfo(String methodName) {
+    private static Value projectionInfo(String methodName) {
         var node = JsonNodeFactory.instance.objectNode();
         node.put(PROJECTION_CLASS, TestProjection.class.getSimpleName());
         node.put(METHOD_NAME, methodName);
         node.put(RESPONSE_TYPE, TestQueryResult.class.getSimpleName());
         node.put(QUERY_NAME, TestQuery.class.getSimpleName());
         node.put(CLASS_NAME, AuthorizationSubscriptionBuilderServiceTests.class.getSimpleName());
-        return node;
+        return ValueJsonMarshaller.fromJsonNode(node);
     }
 
-    private static JsonNode projectionInfo(String methodName, Object queryResult) {
+    private static Value projectionInfo(String methodName, Object queryResult) {
         var node = JsonNodeFactory.instance.objectNode();
         node.put(PROJECTION_CLASS, TestProjection.class.getSimpleName());
         node.put(METHOD_NAME, methodName);
@@ -976,10 +1000,10 @@ class AuthorizationSubscriptionBuilderServiceTests {
         node.put(QUERY_NAME, TestQuery.class.getSimpleName());
         node.set(QUERY_RESULT, mapper.valueToTree(queryResult));
         node.put(CLASS_NAME, AuthorizationSubscriptionBuilderServiceTests.class.getSimpleName());
-        return node;
+        return ValueJsonMarshaller.fromJsonNode(node);
     }
 
-    private static JsonNode projectionInfoWithUpdateType(String methodName) {
+    private static Value projectionInfoWithUpdateType(String methodName) {
         var node = JsonNodeFactory.instance.objectNode();
         node.put(PROJECTION_CLASS, TestProjection.class.getSimpleName());
         node.put(METHOD_NAME, methodName);
@@ -987,25 +1011,25 @@ class AuthorizationSubscriptionBuilderServiceTests {
         node.put(QUERY_NAME, TestQuery.class.getSimpleName());
         node.put(QUERY_RESULT, TestQueryUpdate.class.getSimpleName());
         node.put(CLASS_NAME, AuthorizationSubscriptionBuilderServiceTests.class.getSimpleName());
-        return node;
+        return ValueJsonMarshaller.fromJsonNode(node);
     }
 
-    private static JsonNode projectionInfoOnNonEnclosedPayload(String methodName) {
+    private static Value projectionInfoOnNonEnclosedPayload(String methodName) {
         var node = JsonNodeFactory.instance.objectNode();
         node.put(PROJECTION_CLASS, TestProjection.class.getSimpleName());
         node.put(METHOD_NAME, methodName);
         node.put(RESPONSE_TYPE, TestQueryResult.class.getSimpleName());
         node.put(QUERY_NAME, NonEnclosedTestQuery.class.getSimpleName());
-        return node;
+        return ValueJsonMarshaller.fromJsonNode(node);
     }
 
-    private static JsonNode postEnforceResourceNode() {
+    private static Value postEnforceResourceNode() {
         var node = JsonNodeFactory.instance.objectNode();
-        node.set(TEST_RESOURCE, asTree(new TestQueryResult(TEST_DOCUMENT_IDENTIFIER)));
-        return node;
+        node.set(TEST_RESOURCE, mapper.valueToTree(new TestQueryResult(TEST_DOCUMENT_IDENTIFIER)));
+        return ValueJsonMarshaller.fromJsonNode(node);
     }
 
-    private static JsonNode asTree(Object obj) {
-        return mapper.valueToTree(obj);
+    private static Value asValue(Object obj) {
+        return ValueJsonMarshaller.fromJsonNode(mapper.valueToTree(obj));
     }
 }

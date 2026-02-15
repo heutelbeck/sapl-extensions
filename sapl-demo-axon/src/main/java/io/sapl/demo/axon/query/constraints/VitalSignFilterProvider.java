@@ -8,8 +8,9 @@ import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.TextValue;
+import io.sapl.api.model.Value;
 import io.sapl.axon.constrainthandling.api.UpdateFilterConstraintHandlerProvider;
 import io.sapl.demo.axon.query.vitals.api.VitalSignMeasurement;
 
@@ -20,18 +21,11 @@ public class VitalSignFilterProvider implements UpdateFilterConstraintHandlerPro
     private static final String BLOCK_TYPE      = "blockType";
 
     @Override
-    public boolean isResponsible(JsonNode constraint) {
-        if (!constraint.isObject()) {
-            return false;
-        }
-        if (!(constraint.has(CONSTRAINT_TYPE) || constraint.has(BLOCK_TYPE))) {
-            return false;
-        }
-        var constraintType = constraint.get(CONSTRAINT_TYPE);
-        if (!constraintType.isTextual() || !"filter vital sign type".equals(constraintType.textValue())) {
-            return false;
-        }
-        return constraint.get(BLOCK_TYPE).isTextual();
+    public boolean isResponsible(Value constraint) {
+        return constraint instanceof ObjectValue obj
+                && obj.get(CONSTRAINT_TYPE) instanceof TextValue(String type)
+                && "filter vital sign type".equals(type)
+                && obj.get(BLOCK_TYPE) instanceof TextValue;
     }
 
     @Override
@@ -40,8 +34,8 @@ public class VitalSignFilterProvider implements UpdateFilterConstraintHandlerPro
     }
 
     @Override
-    public Predicate<ResultMessage<?>> getHandler(JsonNode constraint) {
-        var blockedType = constraint.get(BLOCK_TYPE).textValue();
+    public Predicate<ResultMessage<?>> getHandler(Value constraint) {
+        var blockedType = ((TextValue) ((ObjectValue) constraint).get(BLOCK_TYPE)).value();
 
         return measurement -> !blockedType.equals(((VitalSignMeasurement) measurement.getPayload()).type().toString());
     }

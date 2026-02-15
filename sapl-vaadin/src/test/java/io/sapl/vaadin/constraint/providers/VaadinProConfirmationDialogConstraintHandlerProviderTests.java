@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -36,12 +36,12 @@ import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.Value;
 import io.sapl.vaadin.UIMock;
 import reactor.core.publisher.Mono;
 
@@ -67,9 +67,8 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
     @Test
     void when_constraintIsTaggedCorrectly_then_providerIsResponsible() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "saplVaadin");
-        node.put("id", "requestConfirmation");
+        ObjectValue node = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("requestConfirmation")).build();
 
         // WHEN
         boolean isResponsibleResult = this.defaultVaadinConfirmationDialogConstraintHandlerProvider.isResponsible(node);
@@ -81,9 +80,7 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
     @Test
     void when_constraintHasIncorrectID_then_providerIsNotResponsible() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "saplVaadin");
-        node.put("id", "log");
+        ObjectValue node = ObjectValue.builder().put("type", Value.of("saplVaadin")).put("id", Value.of("log")).build();
 
         // WHEN
         boolean isResponsibleResult = this.defaultVaadinConfirmationDialogConstraintHandlerProvider.isResponsible(node);
@@ -95,8 +92,7 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
     @Test
     void when_constraintHasNoID_then_providerIsNotResponsible() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "saplVaadin");
+        ObjectValue node = ObjectValue.builder().put("type", Value.of("saplVaadin")).build();
 
         // WHEN
         boolean isResponsibleResult = this.defaultVaadinConfirmationDialogConstraintHandlerProvider.isResponsible(node);
@@ -108,9 +104,8 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
     @Test
     void when_constraintHasIncorrectType_then_providerIsNotResponsible() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "test");
-        node.put("id", "requestConfirmation");
+        ObjectValue node = ObjectValue.builder().put("type", Value.of("test"))
+                .put("id", Value.of("requestConfirmation")).build();
 
         // WHEN
         boolean isResponsibleResult = this.defaultVaadinConfirmationDialogConstraintHandlerProvider.isResponsible(node);
@@ -122,8 +117,7 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
     @Test
     void when_constraintHasNoType_then_providerIsNotResponsible() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("id", "requestConfirmation");
+        ObjectValue node = ObjectValue.builder().put("id", Value.of("requestConfirmation")).build();
 
         // WHEN
         boolean isResponsibleResult = this.defaultVaadinConfirmationDialogConstraintHandlerProvider.isResponsible(node);
@@ -135,11 +129,9 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
     @Test
     void when_constraintIsNull_then_getHandlerReturnsNull() {
         // GIVEN
-        ObjectNode node = null;
-
         // WHEN
         Function<UI, Mono<Boolean>> handler = this.defaultVaadinConfirmationDialogConstraintHandlerProvider
-                .getHandler(node);
+                .getHandler(null);
 
         // THEN
         assertNull(handler);
@@ -149,9 +141,8 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
     @SuppressWarnings("unchecked") // suppress mock
     void when_constraintHasDefaultValuesAndDialogIsConfirmed_then_getHandlerReturnsTrue() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "saplVaadin");
-        node.put("id", "requestConfirmation");
+        ObjectValue node = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("requestConfirmation")).build();
 
         UI mockedUI = UIMock.getMockedUI();
         doAnswer(invocation -> {
@@ -171,13 +162,10 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
     @SuppressWarnings("unchecked") // suppress mock
     void when_constraintHasCustomValuesAndDialogIsConfirmed_then_getHandlerReturnsTrue() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "saplVaadin");
-        node.put("id", "requestConfirmation");
-        node.put("header", "test header");
-        node.put("text", "test text");
-        node.put("confirmText", "test confirmText");
-        node.put("cancelText", "test cancelText");
+        ObjectValue node = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("requestConfirmation")).put("header", Value.of("test header"))
+                .put("text", Value.of("test text")).put("confirmText", Value.of("test confirmText"))
+                .put("cancelText", Value.of("test cancelText")).build();
 
         UI mockedUI = UIMock.getMockedUI();
         doAnswer(invocation -> {
@@ -197,9 +185,8 @@ class VaadinProConfirmationDialogConstraintHandlerProviderTests {
     @SuppressWarnings("unchecked")
     void when_constraintHasDefaultValuesAndDialogIsClosed_then_getHandlerReturnsFalse() {
         // GIVEN
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("type", "saplVaadin");
-        node.put("id", "requestConfirmation");
+        ObjectValue node = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("requestConfirmation")).build();
 
         UI mockedUI = UIMock.getMockedUI();
         doAnswer(invocation -> {

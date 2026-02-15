@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -38,6 +38,7 @@ import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.reactivestreams.Publisher;
 import org.springframework.security.access.AccessDeniedException;
 
+import io.sapl.api.model.UndefinedValue;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
@@ -217,7 +218,7 @@ public final class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandling
             } catch (AccessDeniedException error) {
                 return Mono.error(constraintHandler.executeOnErrorHandlers(error));
             }
-            if (decision.getDecision() != Decision.PERMIT) {
+            if (decision.decision() != Decision.PERMIT) {
                 var error = new AccessDeniedException(ACCESS_DENIED);
                 return Mono.error(constraintHandler.executeOnErrorHandlers(error));
             }
@@ -235,8 +236,8 @@ public final class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandling
     private Function<Object, Object> replaceResourceIfRequired(AuthorizationDecision decision,
             QueryMessage<?, ?> message) {
         return o -> {
-            if (decision.getResource().isPresent())
-                return axonConstraintEnforcementService.deserializeResource(decision.getResource().get(),
+            if (!(decision.resource() instanceof UndefinedValue))
+                return axonConstraintEnforcementService.deserializeResource(decision.resource(),
                         message.getResponseType());
             return o;
         };
@@ -262,7 +263,7 @@ public final class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandling
                 return Mono.error(constraintHandler.executeOnErrorHandlers(e));
             }
 
-            if (decision.getDecision() != Decision.PERMIT) {
+            if (decision.decision() != Decision.PERMIT) {
                 var e = new AccessDeniedException(ACCESS_DENIED);
                 return Mono.error(constraintHandler.executeOnErrorHandlers(e));
             }
@@ -291,15 +292,15 @@ public final class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandling
                 return Mono.error(constraintHandler.executeOnErrorHandlers(error));
             }
 
-            if (decision.getDecision() != Decision.PERMIT) {
+            if (decision.decision() != Decision.PERMIT) {
                 var error = new AccessDeniedException(ACCESS_DENIED);
                 return Mono.error(constraintHandler.executeOnErrorHandlers(error));
             }
 
             var resultObject = returnObject;
-            if (decision.getResource().isPresent()) {
+            if (!(decision.resource() instanceof UndefinedValue)) {
                 try {
-                    resultObject = axonConstraintEnforcementService.deserializeResource(decision.getResource().get(),
+                    resultObject = axonConstraintEnforcementService.deserializeResource(decision.resource(),
                             message.getResponseType());
                 } catch (AccessDeniedException e) {
                     return Mono.error(constraintHandler.executeOnErrorHandlers(e));

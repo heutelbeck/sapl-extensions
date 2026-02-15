@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,7 +17,7 @@
  */
 package io.sapl.axon.constrainthandling.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.sapl.api.model.Value;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import reactor.core.publisher.Flux;
@@ -32,7 +32,7 @@ import java.util.Set;
  * This type of constraint handler provider will remove all content from a
  * {@code Collection} or {@code Optional} not satisfying the predicate indicated
  * by the
- * {@code CollectionAndOptionalFilterPredicateProvider#test(Object, JsonNode)}
+ * {@code CollectionAndOptionalFilterPredicateProvider#test(Object, Value)}
  * method.
  *
  * @param <T> pay load type
@@ -55,7 +55,7 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
 
     @Override
     @SuppressWarnings("unchecked")
-    default Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
+    default Object mapPayload(Object payload, Class<?> clazz, Value constraint) {
         if (payload instanceof Optional) {
             return filterOptional((Optional<T>) payload, constraint);
         }
@@ -76,7 +76,7 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
      * @param constraint the constraint
      * @return a Flux only containing elements where the predicate is true
      */
-    default Object filterFlux(Flux<T> payload, JsonNode constraint) {
+    default Object filterFlux(Flux<T> payload, Value constraint) {
         return payload.filter(x -> test(x, constraint));
     }
 
@@ -86,15 +86,15 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
      * @return The original if the predicate was true for the content, else an empty
      * Mono.
      */
-    default Object filterMono(Mono<T> payload, JsonNode constraint) {
+    default Object filterMono(Mono<T> payload, Value constraint) {
         return payload.filter(x -> test(x, constraint));
     }
 
-    private Optional<T> filterOptional(Optional<T> payload, JsonNode constraint) {
+    private Optional<T> filterOptional(Optional<T> payload, Value constraint) {
         return payload.filter(x -> test(x, constraint));
     }
 
-    private List<T> filterCollection(Collection<T> payload, JsonNode constraint) {
+    private List<T> filterCollection(Collection<T> payload, Value constraint) {
         return payload.stream().filter(x -> test(x, constraint)).toList();
     }
 
@@ -108,5 +108,5 @@ public interface CollectionAndOptionalFilterPredicateProvider<T> extends ResultC
      * @param constraint The constraint
      * @return true to indicate that {@code o} should stay in the container.
      */
-    boolean test(T o, JsonNode constraint);
+    boolean test(T o, Value constraint);
 }

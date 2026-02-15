@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -43,7 +43,7 @@ class QueryConstraintHandlerBundleTests {
     @Test
     void testAllInvocations() {
         var onDecisionCounter = new AtomicInteger();
-        var decision          = new AuthorizationDecision();
+        var decision          = AuthorizationDecision.INDETERMINATE;
         var message           = new GenericQueryMessage<>("message payload", ResponseTypes.instanceOf(String.class));
         var exception         = new Exception("another exception message");
         var result            = "some result";

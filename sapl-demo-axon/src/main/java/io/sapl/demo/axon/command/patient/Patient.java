@@ -10,7 +10,7 @@ import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.spring.stereotype.Aggregate;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import io.sapl.axon.annotation.ConstraintHandler;
 import io.sapl.axon.annotation.PreHandleEnforce;
@@ -82,10 +82,10 @@ public class Patient {
 		apply(new MonitorDisconnectedFromPatient(cmd.id(), cmd.monitorDeviceId()));
 	}
 
-	@ConstraintHandler("#constraint.get('type').textValue() == 'documentSuspisiousManipulation'")
+	@ConstraintHandler("#constraint.get('type').stringValue() == 'documentSuspisiousManipulation'")
 	public void handleSuspiciousManipulation(JsonNode constraint) {
 		log.debug("Handling constraint: {}", constraint);
-		apply(new SuspiciousManipulation(id, constraint.get("username").textValue()));
+		apply(new SuspiciousManipulation(id, constraint.get("username").stringValue()));
 	}
 
 	@EventSourcingHandler

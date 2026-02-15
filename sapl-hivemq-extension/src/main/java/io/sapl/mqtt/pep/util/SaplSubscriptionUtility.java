@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -25,11 +25,11 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 import com.hivemq.extension.sdk.api.auth.parameter.SimpleAuthInput;
 import com.hivemq.extension.sdk.api.auth.parameter.SubscriptionAuthorizerInput;
 import com.hivemq.extension.sdk.api.interceptor.publish.parameter.PublishInboundInput;
@@ -178,8 +178,8 @@ public class SaplSubscriptionUtility {
             userName = mqttClientState.getUserName();
         }
         ObjectNode node = JSON.objectNode();
-        node.set(ENVIRONMENT_CLIENT_ID, JSON.textNode(mqttClientState.getClientId()));
-        node.set(ENVIRONMENT_USER_NAME, JSON.textNode(userName));
+        node.set(ENVIRONMENT_CLIENT_ID, JSON.stringNode(mqttClientState.getClientId()));
+        node.set(ENVIRONMENT_USER_NAME, JSON.stringNode(userName));
         return node;
     }
 
@@ -220,7 +220,7 @@ public class SaplSubscriptionUtility {
         } else if (lastWillFormatIndicator.equals(PayloadFormatIndicator.UTF_8.toString().toLowerCase())) { // payload
                                                                                                             // is utf-8
                                                                                                             // encoded
-            lastWillPayloadFormatted = JSON.textNode(new String(lastWillPayload.array(), StandardCharsets.UTF_8));
+            lastWillPayloadFormatted = JSON.stringNode(new String(lastWillPayload.array(), StandardCharsets.UTF_8));
         } else {
             var lastWillPayloadBytes = new byte[lastWillPayload.remaining()];
             lastWillPayloadFormatted = JSON.binaryNode(lastWillPayloadBytes);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -39,7 +39,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import com.thoughtworks.xstream.XStream;
 
 import io.sapl.api.pdp.PolicyDecisionPoint;
@@ -100,11 +100,11 @@ public class SaplAutoConfiguration {
      * responsible for identifying the user triggering a Command or Query and to
      * provide matching metadata to be added by dispatch interceptors.
      *
-     * @param mapper The applications ObjectMapper.
+     * @param mapper The applications JsonMapper.
      * @return An AuthenticationMetadataProvider.
      */
     @Bean
-    AuthenticationSupplier authenticationMetadataProvider(ObjectMapper mapper) {
+    AuthenticationSupplier authenticationMetadataProvider(JsonMapper mapper) {
         log.trace("Deploy Spring ServletAuthenticationSupplier");
         return new ServletAuthenticationSupplier(mapper);
     }
@@ -115,12 +115,12 @@ public class SaplAutoConfiguration {
      * responsible for identifying the user triggering a Command or Query and to
      * provide matching metadata to be added by dispatch interceptors.
      *
-     * @param mapper The applications ObjectMapper.
+     * @param mapper The applications JsonMapper.
      * @return An AuthenticationMetadataProvider.
      */
     @Bean
     @ConditionalOnClass(ReactorMessageDispatchInterceptor.class)
-    ReactiveAuthenticationSupplier reactiveAuthenticationMetadataProvider(ObjectMapper mapper) {
+    ReactiveAuthenticationSupplier reactiveAuthenticationMetadataProvider(JsonMapper mapper) {
         log.trace("Deploy Spring ReactiveAuthenticationSupplier");
         return new ReactorAuthenticationSupplier(mapper);
     }
@@ -197,7 +197,7 @@ public class SaplAutoConfiguration {
      * PDP and to create customized bundles of handlers for individual authorization
      * decisions.
      *
-     * @param mapper The applications ObjectMapper.
+     * @param mapper The applications JsonMapper.
      * @param parameterResolver The Axon ParameterResolverFactory for injecting
      * arguments in command handler methods.
      * @param globalRunnableProviders All OnDecisionConstraintHandlerProvider
@@ -218,8 +218,7 @@ public class SaplAutoConfiguration {
      * @return The ConstraintHandlerService.
      */
     @Bean
-    ConstraintHandlerService axonConstraintHandlerService(ObjectMapper mapper,
-            ParameterResolverFactory parameterResolver,
+    ConstraintHandlerService axonConstraintHandlerService(JsonMapper mapper, ParameterResolverFactory parameterResolver,
             List<OnDecisionConstraintHandlerProvider> globalRunnableProviders,
             List<CommandConstraintHandlerProvider> globalCommandMessageMappingProviders,
             List<QueryConstraintHandlerProvider> globalQueryMappingProviders,
@@ -261,33 +260,33 @@ public class SaplAutoConfiguration {
     @Bean
     SaplHandlerEnhancer saplEnhancer(PolicyDecisionPoint pdp, ConstraintHandlerService axonConstraintEnforcementService,
             SaplQueryUpdateEmitter emitter, AuthorizationSubscriptionBuilderService subscriptionBuilder,
-            ObjectMapper mapper, SaplAxonProperties properties) {
+            JsonMapper mapper, SaplAxonProperties properties) {
         log.trace("Deploy SaplHandlerEnhancer");
         return new SaplHandlerEnhancer(pdp, axonConstraintEnforcementService, emitter, subscriptionBuilder, properties);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    AuthorizationSubscriptionBuilderService subscriptionBuilder(ObjectMapper mapper) {
+    AuthorizationSubscriptionBuilderService subscriptionBuilder(JsonMapper mapper) {
         log.trace("Deploy AuthorizationSubscriptionBuilderService");
         return new AuthorizationSubscriptionBuilderService(mapper);
     }
 
     /**
-     * @param mapper The application's ObjectMapper.
+     * @param mapper The application's JsonMapper.
      * @return ResponseMessagePayloadFilterProvider for filtering obligations.
      */
     @Bean
-    ResponseMessagePayloadFilterProvider responsePayloadFilterProvider(ObjectMapper mapper) {
+    ResponseMessagePayloadFilterProvider responsePayloadFilterProvider(JsonMapper mapper) {
         return new ResponseMessagePayloadFilterProvider(mapper);
     }
 
     /**
-     * @param mapper The application's ObjectMapper.
+     * @param mapper The application's JsonMapper.
      * @return ResponseMessagePayloadFilterProvider for filtering obligations.
      */
     @Bean
-    ResponseMessagePayloadFilterPredicateProvider responseMessagePayloadFilterPredicateProvider(ObjectMapper mapper) {
+    ResponseMessagePayloadFilterPredicateProvider responseMessagePayloadFilterPredicateProvider(JsonMapper mapper) {
         return new ResponseMessagePayloadFilterPredicateProvider(mapper);
     }
 

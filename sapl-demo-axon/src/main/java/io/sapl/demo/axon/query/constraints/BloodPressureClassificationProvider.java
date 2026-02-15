@@ -6,8 +6,8 @@ import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import io.sapl.api.model.TextValue;
+import io.sapl.api.model.Value;
 import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
 import io.sapl.demo.axon.query.vitals.api.VitalSignMeasurement;
 
@@ -17,8 +17,9 @@ public class BloodPressureClassificationProvider implements ResultConstraintHand
 	private static final String BLOOD_PRESSURE_CATEGORY = "Blood Pressure Category";
 
     @Override
-	public boolean isResponsible(JsonNode constraint) {
-		return constraint.isTextual() && "catrgorise blood pressure".equals(constraint.textValue());
+	public boolean isResponsible(Value constraint) {
+		return constraint instanceof TextValue(String text)
+				&& "catrgorise blood pressure".equals(text);
 	}
 
 	@Override
@@ -27,7 +28,7 @@ public class BloodPressureClassificationProvider implements ResultConstraintHand
 	}
 
 	@Override
-	public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
+	public Object mapPayload(Object payload, Class<?> clazz, Value constraint) {
 		var measurement = (VitalSignMeasurement) payload;
 		var split       = measurement.value().split("/");
 		var systolic    = Double.valueOf(split[0]);

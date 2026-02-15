@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,103 +17,67 @@
  */
 package io.sapl.vaadin.constraint;
 
-import static com.helger.commons.mock.CommonsAssert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.util.Iterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.flow.component.UI;
 
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.Value;
 import reactor.core.publisher.Mono;
 
 class VaadinFunctionConstraintHandlerProviderTests {
 
     @Test
-    void when_VaadinFunctionConstraintHandlerProviderWithPredicateAndFunctionIsResponsibleIsCalled_then_PredicateTestWithJsonNodeIsCalled() {
+    void when_VaadinFunctionConstraintHandlerProviderWithPredicateAndFunctionIsResponsibleIsCalled_then_PredicateTestWithValueIsCalled() {
         // GIVEN
         @SuppressWarnings("unchecked")
-        Predicate<JsonNode>         predicate = (Predicate<JsonNode>) mock(Predicate.class);
+        Predicate<Value>            predicate = (Predicate<Value>) mock(Predicate.class);
         @SuppressWarnings("unchecked")
         Function<UI, Mono<Boolean>> function  = (Function<UI, Mono<Boolean>>) mock(Function.class);
 
-        JsonNode jsonNode = mock(JsonNode.class);
+        Value constraint = Value.of("test");
 
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(predicate, function);
         // WHEN
-        vaadinFunctionConstraintHandlerProvider.isResponsible(jsonNode);
+        vaadinFunctionConstraintHandlerProvider.isResponsible(constraint);
 
         // THEN
-        verify(predicate).test(jsonNode);
+        verify(predicate).test(constraint);
     }
 
     @Test
     void when_VaadinFunctionConstraintHandlerProviderWithPredicateAndFunctionGetHandlerIsCalled_then_FunctionIsReturned() {
         // GIVEN
         @SuppressWarnings("unchecked")
-        Predicate<JsonNode>         predicate = (Predicate<JsonNode>) mock(Predicate.class);
+        Predicate<Value>            predicate = (Predicate<Value>) mock(Predicate.class);
         @SuppressWarnings("unchecked")
         Function<UI, Mono<Boolean>> function  = (Function<UI, Mono<Boolean>>) mock(Function.class);
 
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(predicate, function);
         // WHEN+THEN
-        assertEquals(function, vaadinFunctionConstraintHandlerProvider.getHandler(mock(JsonNode.class)));
+        assertEquals(function, vaadinFunctionConstraintHandlerProvider.getHandler(Value.of("test")));
     }
 
     @Test
-    void when_VaadinFunctionConstraintHandlerProviderWithJsonNodeAndConsumerAndEmptyFilterIsResponsibleIsCalled_then_TrueIsReturned() {
+    void when_VaadinFunctionConstraintHandlerProviderWithObjectValueAndConsumerAndEmptyFilterIsResponsibleIsCalled_then_TrueIsReturned() {
         // GIVEN
         @SuppressWarnings("unchecked")
-        Consumer<JsonNode> consumer = (Consumer<JsonNode>) mock(Consumer.class);
-        JsonNode           jsonNode = mock(JsonNode.class);
-        @SuppressWarnings("unchecked")
-        Iterator<String>   iter     = (Iterator<String>) mock(Iterator.class);
-        when(jsonNode.fieldNames()).thenReturn(iter);
-
-        VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
-                .of(jsonNode, consumer);
-        // WHEN + THEN
-        assertTrue(vaadinFunctionConstraintHandlerProvider.isResponsible(jsonNode));
-    }
-
-    @Test
-    void when_VaadinFunctionConstraintHandlerProviderWithJsonNodeAndConsumerIsResponsibleIsCalledWithFilterFieldInConstraint_then_TrueIsReturned() {
-        // GIVEN
-        @SuppressWarnings("unchecked")
-        Consumer<JsonNode> consumer         = (Consumer<JsonNode>) mock(Consumer.class);
-        JsonNode           constraintFilter = mock(JsonNode.class);
-        @SuppressWarnings("unchecked")
-        Iterator<String>   iterator         = (Iterator<String>) mock(Iterator.class);
-        when(constraintFilter.fieldNames()).thenReturn(iterator);
-
-        when(iterator.hasNext()).thenAnswer(new Answer<Boolean>() {
-            boolean trueOnce = true; // Return True only the first time hasNext() is called to prevent deadlock
-
-            @Override
-            public Boolean answer(InvocationOnMock invocation) {
-                boolean tmp = trueOnce;
-                trueOnce = false;
-                return tmp;
-            }
-        });
-        JsonNode constraint = mock(JsonNode.class);
-        when(constraint.has(any())).thenReturn(true);
-        when(constraint.get(any())).thenReturn(constraint);
-        when(constraintFilter.get(any())).thenReturn(constraint);
+        Consumer<Value> consumer         = (Consumer<Value>) mock(Consumer.class);
+        ObjectValue     constraintFilter = Value.EMPTY_OBJECT;
+        ObjectValue     constraint       = ObjectValue.builder().put("key", Value.of("value")).build();
 
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, consumer);
@@ -122,28 +86,26 @@ class VaadinFunctionConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_VaadinFunctionConstraintHandlerProviderWithJsonNodeAndConsumerIsResponsibleIsCalledWithFilterFieldNotMatching_then_FalseIsReturned() {
+    void when_VaadinFunctionConstraintHandlerProviderWithObjectValueAndConsumerIsResponsibleIsCalledWithFilterFieldInConstraint_then_TrueIsReturned() {
         // GIVEN
         @SuppressWarnings("unchecked")
-        Consumer<JsonNode> consumer         = (Consumer<JsonNode>) mock(Consumer.class);
-        JsonNode           constraintFilter = mock(JsonNode.class);
+        Consumer<Value> consumer         = (Consumer<Value>) mock(Consumer.class);
+        ObjectValue     constraintFilter = ObjectValue.builder().put("type", Value.of("saplVaadin")).build();
+        ObjectValue     constraint       = ObjectValue.builder().put("type", Value.of("saplVaadin")).build();
+
+        VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
+                .of(constraintFilter, consumer);
+        // WHEN + THEN
+        assertTrue(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint));
+    }
+
+    @Test
+    void when_VaadinFunctionConstraintHandlerProviderWithObjectValueAndConsumerIsResponsibleIsCalledWithFilterFieldNotMatching_then_FalseIsReturned() {
+        // GIVEN
         @SuppressWarnings("unchecked")
-        Iterator<String>   iterator         = (Iterator<String>) mock(Iterator.class);
-        when(constraintFilter.fieldNames()).thenReturn(iterator);
-
-        when(iterator.hasNext()).thenAnswer(new Answer<Boolean>() {
-            boolean trueOnce = true; // Return True only the first time hasNext() is called to prevent deadlock
-
-            @Override
-            public Boolean answer(InvocationOnMock invocation) {
-                boolean tmp = trueOnce;
-                trueOnce = false;
-                return tmp;
-            }
-        });
-        JsonNode constraint = mock(JsonNode.class);
-        when(constraint.has(any())).thenReturn(true);
-        when(constraint.get(any())).thenReturn(constraint);
+        Consumer<Value> consumer         = (Consumer<Value>) mock(Consumer.class);
+        ObjectValue     constraintFilter = ObjectValue.builder().put("type", Value.of("saplVaadin")).build();
+        ObjectValue     constraint       = ObjectValue.builder().put("type", Value.of("other")).build();
 
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, consumer);
@@ -152,28 +114,12 @@ class VaadinFunctionConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_VaadinFunctionConstraintHandlerProviderWithJsonNodeAndConsumerIsResponsibleIsCalledWithFilterFieldNotInConstraintAndNotMatching_then_FalseIsReturned() {
+    void when_VaadinFunctionConstraintHandlerProviderWithObjectValueAndConsumerIsResponsibleIsCalledWithFilterFieldNotInConstraintAndNotMatching_then_FalseIsReturned() {
         // GIVEN
         @SuppressWarnings("unchecked")
-        Consumer<JsonNode> consumer         = (Consumer<JsonNode>) mock(Consumer.class);
-        JsonNode           constraintFilter = mock(JsonNode.class);
-        @SuppressWarnings("unchecked")
-        Iterator<String>   iterator         = (Iterator<String>) mock(Iterator.class);
-        when(constraintFilter.fieldNames()).thenReturn(iterator);
-
-        when(iterator.hasNext()).thenAnswer(new Answer<Boolean>() {
-            boolean trueOnce = true; // Return True only the first time hasNext() is called to prevent deadlock
-
-            @Override
-            public Boolean answer(InvocationOnMock invocation) {
-                boolean tmp = trueOnce;
-                trueOnce = false;
-                return tmp;
-            }
-        });
-        JsonNode constraint = mock(JsonNode.class);
-        when(constraint.has(any())).thenReturn(false);
-        when(constraint.get(any())).thenReturn(constraint);
+        Consumer<Value> consumer         = (Consumer<Value>) mock(Consumer.class);
+        ObjectValue     constraintFilter = ObjectValue.builder().put("type", Value.of("saplVaadin")).build();
+        ObjectValue     constraint       = ObjectValue.builder().put("id", Value.of("other")).build();
 
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, consumer);
@@ -182,29 +128,13 @@ class VaadinFunctionConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_VaadinFunctionConstraintHandlerProviderWithJsonNodeAndConsumerIsResponsibleIsCalledWithFilterFieldNotInConstraintAndMatching_then_FalseIsReturned() {
+    void when_VaadinFunctionConstraintHandlerProviderWithObjectValueAndConsumerIsResponsibleIsCalledWithFilterFieldNotInConstraintAndMatching_then_FalseIsReturned() {
         // GIVEN
         @SuppressWarnings("unchecked")
-        Consumer<JsonNode> consumer         = (Consumer<JsonNode>) mock(Consumer.class);
-        JsonNode           constraintFilter = mock(JsonNode.class);
-        @SuppressWarnings("unchecked")
-        Iterator<String>   iterator         = (Iterator<String>) mock(Iterator.class);
-        when(constraintFilter.fieldNames()).thenReturn(iterator);
-
-        when(iterator.hasNext()).thenAnswer(new Answer<Boolean>() {
-            boolean trueOnce = true; // Return True only the first time hasNext() is called to prevent deadlock
-
-            @Override
-            public Boolean answer(InvocationOnMock invocation) {
-                boolean tmp = trueOnce;
-                trueOnce = false;
-                return tmp;
-            }
-        });
-        JsonNode constraint = mock(JsonNode.class);
-        when(constraint.has(any())).thenReturn(false);
-        when(constraint.get(any())).thenReturn(constraint);
-        when(constraintFilter.get(any())).thenReturn(constraint);
+        Consumer<Value> consumer         = (Consumer<Value>) mock(Consumer.class);
+        ObjectValue     constraintFilter = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("validation")).build();
+        ObjectValue     constraint       = ObjectValue.builder().put("type", Value.of("saplVaadin")).build();
 
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, consumer);
@@ -213,14 +143,28 @@ class VaadinFunctionConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_VaadinFunctionConstraintHandlerProviderWithJsonNodeAndConsumerGetHandlerIsCalled_then_FunctionThatCallsHandlerIsReturned() {
+    void when_VaadinFunctionConstraintHandlerProviderWithObjectValueAndConsumerIsResponsibleIsCalledWithNonObjectConstraint_then_FalseIsReturned() {
         // GIVEN
         @SuppressWarnings("unchecked")
-        Consumer<JsonNode> consumer   = (Consumer<JsonNode>) mock(Consumer.class);
-        JsonNode           constraint = mock(JsonNode.class);
+        Consumer<Value> consumer         = (Consumer<Value>) mock(Consumer.class);
+        ObjectValue     constraintFilter = ObjectValue.builder().put("type", Value.of("saplVaadin")).build();
+        Value           constraint       = Value.of("notAnObject");
 
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
-                .of(mock(JsonNode.class), consumer);
+                .of(constraintFilter, consumer);
+        // WHEN + THEN
+        assertFalse(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint));
+    }
+
+    @Test
+    void when_VaadinFunctionConstraintHandlerProviderWithObjectValueAndConsumerGetHandlerIsCalled_then_FunctionThatCallsHandlerIsReturned() {
+        // GIVEN
+        @SuppressWarnings("unchecked")
+        Consumer<Value> consumer   = (Consumer<Value>) mock(Consumer.class);
+        Value           constraint = Value.of("test");
+
+        VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
+                .of(Value.EMPTY_OBJECT, consumer);
         // WHEN
         vaadinFunctionConstraintHandlerProvider.getHandler(constraint).apply(mock(UI.class));
 
@@ -229,29 +173,14 @@ class VaadinFunctionConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_VaadinFunctionConstraintHandlerProviderWithJsonNodeAndFunctionIsResponsibleIsCalledWithFilterFieldInConstraint_then_TrueIsReturned() {
+    void when_VaadinFunctionConstraintHandlerProviderWithObjectValueAndFunctionIsResponsibleIsCalledWithFilterFieldInConstraint_then_TrueIsReturned() {
         // GIVEN
         @SuppressWarnings("unchecked")
-        Function<JsonNode, Mono<Boolean>> function         = (Function<JsonNode, Mono<Boolean>>) mock(Function.class);
-        JsonNode                          constraintFilter = mock(JsonNode.class);
-        @SuppressWarnings("unchecked")
-        Iterator<String>                  iterator         = (Iterator<String>) mock(Iterator.class);
-        when(constraintFilter.fieldNames()).thenReturn(iterator);
-
-        when(iterator.hasNext()).thenAnswer(new Answer<Boolean>() {
-            boolean trueOnce = true; // Return True only the first time hasNext() is called to prevent deadlock
-
-            @Override
-            public Boolean answer(InvocationOnMock invocation) {
-                boolean tmp = trueOnce;
-                trueOnce = false;
-                return tmp;
-            }
-        });
-        JsonNode constraint = mock(JsonNode.class);
-        when(constraint.has(any())).thenReturn(true);
-        when(constraint.get(any())).thenReturn(constraint);
-        when(constraintFilter.get(any())).thenReturn(constraint);
+        Function<Value, Mono<Boolean>> function         = (Function<Value, Mono<Boolean>>) mock(Function.class);
+        ObjectValue                    constraintFilter = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .build();
+        ObjectValue                    constraint       = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .build();
 
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, function);
@@ -260,28 +189,13 @@ class VaadinFunctionConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_VaadinFunctionConstraintHandlerProviderWithJsonNodeAndFunctionIsResponsibleIsCalledWithFilterFieldNotMatching_then_FalseIsReturned() {
+    void when_VaadinFunctionConstraintHandlerProviderWithObjectValueAndFunctionIsResponsibleIsCalledWithFilterFieldNotMatching_then_FalseIsReturned() {
         // GIVEN
         @SuppressWarnings("unchecked")
-        Function<JsonNode, Mono<Boolean>> function         = (Function<JsonNode, Mono<Boolean>>) mock(Function.class);
-        JsonNode                          constraintFilter = mock(JsonNode.class);
-        @SuppressWarnings("unchecked")
-        Iterator<String>                  iterator         = (Iterator<String>) mock(Iterator.class);
-        when(constraintFilter.fieldNames()).thenReturn(iterator);
-
-        when(iterator.hasNext()).thenAnswer(new Answer<Boolean>() {
-            boolean trueOnce = true; // Return True only the first time hasNext() is called to prevent deadlock
-
-            @Override
-            public Boolean answer(InvocationOnMock invocation) {
-                boolean tmp = trueOnce;
-                trueOnce = false;
-                return tmp;
-            }
-        });
-        JsonNode constraint = mock(JsonNode.class);
-        when(constraint.has(any())).thenReturn(true);
-        when(constraint.get(any())).thenReturn(constraint);
+        Function<Value, Mono<Boolean>> function         = (Function<Value, Mono<Boolean>>) mock(Function.class);
+        ObjectValue                    constraintFilter = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .build();
+        ObjectValue                    constraint       = ObjectValue.builder().put("type", Value.of("other")).build();
 
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, function);
@@ -290,28 +204,13 @@ class VaadinFunctionConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_VaadinFunctionConstraintHandlerProviderWithJsonNodeAndFunctionIsResponsibleIsCalledWithFilterFieldNotInConstraintAndNotMatching_then_FalseIsReturned() {
+    void when_VaadinFunctionConstraintHandlerProviderWithObjectValueAndFunctionIsResponsibleIsCalledWithFilterFieldNotInConstraintAndNotMatching_then_FalseIsReturned() {
         // GIVEN
         @SuppressWarnings("unchecked")
-        Function<JsonNode, Mono<Boolean>> function         = (Function<JsonNode, Mono<Boolean>>) mock(Function.class);
-        JsonNode                          constraintFilter = mock(JsonNode.class);
-        @SuppressWarnings("unchecked")
-        Iterator<String>                  iterator         = (Iterator<String>) mock(Iterator.class);
-        when(constraintFilter.fieldNames()).thenReturn(iterator);
-
-        when(iterator.hasNext()).thenAnswer(new Answer<Boolean>() {
-            boolean trueOnce = true; // Return True only the first time hasNext() is called to prevent deadlock
-
-            @Override
-            public Boolean answer(InvocationOnMock invocation) {
-                boolean tmp = trueOnce;
-                trueOnce = false;
-                return tmp;
-            }
-        });
-        JsonNode constraint = mock(JsonNode.class);
-        when(constraint.has(any())).thenReturn(false);
-        when(constraint.get(any())).thenReturn(constraint);
+        Function<Value, Mono<Boolean>> function         = (Function<Value, Mono<Boolean>>) mock(Function.class);
+        ObjectValue                    constraintFilter = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .build();
+        ObjectValue                    constraint       = ObjectValue.builder().put("id", Value.of("other")).build();
 
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, function);
@@ -320,29 +219,14 @@ class VaadinFunctionConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_VaadinFunctionConstraintHandlerProviderWithJsonNodeAndFunctionIsResponsibleIsCalledWithFilterFieldNotInConstraintAndMatching_then_FalseIsReturned() {
+    void when_VaadinFunctionConstraintHandlerProviderWithObjectValueAndFunctionIsResponsibleIsCalledWithFilterFieldNotInConstraintAndMatching_then_FalseIsReturned() {
         // GIVEN
         @SuppressWarnings("unchecked")
-        Function<JsonNode, Mono<Boolean>> function         = (Function<JsonNode, Mono<Boolean>>) mock(Function.class);
-        JsonNode                          constraintFilter = mock(JsonNode.class);
-        @SuppressWarnings("unchecked")
-        Iterator<String>                  iterator         = (Iterator<String>) mock(Iterator.class);
-        when(constraintFilter.fieldNames()).thenReturn(iterator);
-
-        when(iterator.hasNext()).thenAnswer(new Answer<Boolean>() {
-            boolean trueOnce = true; // Return True only the first time hasNext() is called to prevent deadlock
-
-            @Override
-            public Boolean answer(InvocationOnMock invocation) {
-                boolean tmp = trueOnce;
-                trueOnce = false;
-                return tmp;
-            }
-        });
-        JsonNode constraint = mock(JsonNode.class);
-        when(constraint.has(any())).thenReturn(false);
-        when(constraint.get(any())).thenReturn(constraint);
-        when(constraintFilter.get(any())).thenReturn(constraint);
+        Function<Value, Mono<Boolean>> function         = (Function<Value, Mono<Boolean>>) mock(Function.class);
+        ObjectValue                    constraintFilter = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("validation")).build();
+        ObjectValue                    constraint       = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .build();
 
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, function);
@@ -351,14 +235,14 @@ class VaadinFunctionConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_VaadinFunctionConstraintHandlerProviderWithJsonNodeAndFunctionGetHandlerIsCalled_then_FunctionThatCallsHandlerIsReturned() {
+    void when_VaadinFunctionConstraintHandlerProviderWithObjectValueAndFunctionGetHandlerIsCalled_then_FunctionThatCallsHandlerIsReturned() {
         // GIVEN
         @SuppressWarnings("unchecked")
-        Function<JsonNode, Mono<Boolean>> function   = (Function<JsonNode, Mono<Boolean>>) mock(Function.class);
-        JsonNode                          constraint = mock(JsonNode.class);
+        Function<Value, Mono<Boolean>> function   = (Function<Value, Mono<Boolean>>) mock(Function.class);
+        Value                          constraint = Value.of("test");
 
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
-                .of(mock(JsonNode.class), function);
+                .of(Value.EMPTY_OBJECT, function);
         // WHEN
         vaadinFunctionConstraintHandlerProvider.getHandler(constraint).apply(mock(UI.class));
 

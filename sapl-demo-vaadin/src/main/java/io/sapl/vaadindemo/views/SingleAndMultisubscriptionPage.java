@@ -1,6 +1,6 @@
 package io.sapl.vaadindemo.views;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.JsonNodeFactory;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;

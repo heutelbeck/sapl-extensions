@@ -4,12 +4,11 @@ The second is responsible for the annotation-page.
 The last policy permits every other page for users and admins.
 */
 set "lifecycle_event_constraint_policy"
-first-applicable
+first or abstain errors propagate
 
 // This policy routes via builderpattern. See Admin-Page for implementation
 policy "lifecycle_adminpage_for_admin_via_builder"
 deny
-where
     action == "enter";
     !("ROLE_Admin" in subject.roles);
     resource.target == "io.sapl.vaadindemo.views.AdminPage";
@@ -23,7 +22,6 @@ advice {
 // This policy routes via annotation. See Annotation-Page for implementation
 policy "lifecycle_reroute_users_via_annotation"
 deny
-where
     action == "navigate_to";
     !("ROLE_Admin" in subject.roles);
     resource.name ==  "io.sapl.vaadindemo.views.AnnotationPage";
@@ -36,7 +34,6 @@ advice {
 // This policy permits access to the AdminPage and opens a notification.
 policy "admin_notification"
 permit
-where
     "ROLE_Admin" in subject.roles;
     resource.target == "io.sapl.vaadindemo.views.AdminPage";
     action == "enter";
@@ -49,5 +46,4 @@ advice {
 // This policy permits every other request except the first two.
 policy "other"
 permit
-where
     action == "navigate_to";

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -53,8 +53,6 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscription;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCode;
 import com.hivemq.embedded.EmbeddedHiveMQ;
 
-import io.sapl.interpreter.InitializationException;
-
 class PublishSubscribeEnforcementIT {
 
     @TempDir
@@ -69,7 +67,7 @@ class PublishSubscribeEnforcementIT {
     private Mqtt5BlockingClient subscribeClient;
 
     @BeforeEach
-    void beforeEach() throws InitializationException {
+    void beforeEach() {
         mqttBroker      = buildAndStartBroker(dataFolder, configFolder, extensionFolder);
         publishClient   = buildAndStartMqttClient("MQTT_CLIENT_PUBLISH");
         subscribeClient = buildAndStartMqttClient("MQTT_CLIENT_SUBSCRIBE");

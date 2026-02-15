@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,7 +21,6 @@ import static io.sapl.interpreter.pip.EthereumBasicFunctions.getJsonList;
 import static io.sapl.interpreter.pip.EthereumBasicFunctions.getStringFrom;
 import static io.sapl.interpreter.pip.EthereumBasicFunctions.getStringListFrom;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -136,7 +135,7 @@ import org.web3j.abi.datatypes.primitive.Char;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.methods.request.EthFilter;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -196,8 +195,8 @@ public class EthereumPipFunctions {
 
     protected static EthFilter getEthFilterFrom(JsonNode saplObject) {
         if (saplObject.has(FROM_BLOCK) && saplObject.has(TO_BLOCK) && saplObject.has(ADDRESS)) {
-            String fromBlock = saplObject.get(FROM_BLOCK).textValue();
-            String toBlock   = saplObject.get(TO_BLOCK).textValue();
+            String fromBlock = saplObject.get(FROM_BLOCK).stringValue();
+            String toBlock   = saplObject.get(TO_BLOCK).stringValue();
             return new EthFilter(DefaultBlockParameter.valueOf(bigIntFromHex(fromBlock)),
                     DefaultBlockParameter.valueOf(bigIntFromHex(toBlock)), getStringListFrom(saplObject, ADDRESS));
         }
@@ -222,7 +221,7 @@ public class EthereumPipFunctions {
         List<TypeReference<?>> outputParameters = new ArrayList<>();
         if (outputNode.isArray()) {
             for (JsonNode solidityType : outputNode) {
-                outputParameters.add(TypeReference.makeTypeReference(solidityType.textValue()));
+                outputParameters.add(TypeReference.makeTypeReference(solidityType.stringValue()));
             }
             return outputParameters;
         }
@@ -234,10 +233,10 @@ public class EthereumPipFunctions {
     private static Type<?> convertToType(JsonNode inputParam) {
 
         if (inputParam != null && inputParam.has(TYPE) && inputParam.has(VALUE)) {
-            String     solidityType    = inputParam.get(TYPE).textValue();
+            String     solidityType    = inputParam.get(TYPE).stringValue();
             JsonNode   value           = inputParam.get(VALUE);
-            String     textValue       = value.textValue();
-            BigInteger bigIntegerValue = value.bigIntegerValue();
+            String     textValue       = value.isString() ? value.stringValue() : null;
+            BigInteger bigIntegerValue = value.isIntegralNumber() ? value.bigIntegerValue() : null;
             byte[]     binaryValue     = new byte[0];
 
             try {
@@ -250,7 +249,7 @@ public class EthereumPipFunctions {
                     return new Address(textValue);
                 }
                 case "bool", "boolean" -> {
-                    return new Bool(value.asBoolean());
+                    return new Bool(value.booleanValue());
                 }
                 case "string"          -> {
                     return new Utf8String(textValue);
@@ -259,7 +258,7 @@ public class EthereumPipFunctions {
                     return new DynamicBytes(binaryValue);
                 }
                 case "byte"            -> {
-                    return new org.web3j.abi.datatypes.primitive.Byte((byte) value.asInt());
+                    return new org.web3j.abi.datatypes.primitive.Byte((byte) value.intValue());
                 }
                 case "char"            -> {
                     return new Char(textValue.charAt(0));
@@ -281,7 +280,7 @@ public class EthereumPipFunctions {
                     return new org.web3j.abi.datatypes.Int(bigIntegerValue);
                 }
                 case "long"            -> {
-                    return new org.web3j.abi.datatypes.primitive.Long(value.asLong());
+                    return new org.web3j.abi.datatypes.primitive.Long(value.longValue());
                 }
                 case "short"           -> {
                     return new org.web3j.abi.datatypes.primitive.Short(value.shortValue());
@@ -579,7 +578,7 @@ public class EthereumPipFunctions {
                     return DEFAULT_RETURN_TYPE;
                 }
                 }
-            } catch (IOException | StringIndexOutOfBoundsException e) {
+            } catch (StringIndexOutOfBoundsException e) {
                 log.warn(
                         "The type {} with value {} couldn't be generated. Please make sure that you used correct spelling and the "
                                 + "value is correctly provided for this type. " + DEFAULT_RETURN_WARNING,
@@ -600,13 +599,13 @@ public class EthereumPipFunctions {
     private static DefaultBlockParameter createDefaultBlockParameter(JsonNode saplObject, String inputName) {
         if (saplObject != null && saplObject.has(inputName)) {
             JsonNode dbp = saplObject.get(inputName);
-            if (dbp.isTextual()) {
-                String dbpName = dbp.textValue();
+            if (dbp.isString()) {
+                String dbpName = dbp.stringValue();
                 if (EARLIEST.equals(dbpName) || LATEST.equals(dbpName) || PENDING.equals(dbpName))
                     return DefaultBlockParameter.valueOf(dbpName);
             }
-            if (dbp.isBigInteger())
-                return DefaultBlockParameter.valueOf(dbp.bigIntegerValue());
+            if (dbp.isNumber())
+                return DefaultBlockParameter.valueOf(dbp.decimalValue().toBigInteger());
         }
         log.info(NO_DBP_INFO);
         return DefaultBlockParameter.valueOf(LATEST);

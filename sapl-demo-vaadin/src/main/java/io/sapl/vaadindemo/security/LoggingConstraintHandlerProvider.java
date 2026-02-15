@@ -4,8 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.TextValue;
+import io.sapl.api.model.Value;
 import io.sapl.spring.constraints.api.RunnableConstraintHandlerProvider;
 
 /**
@@ -27,9 +28,10 @@ public class LoggingConstraintHandlerProvider implements RunnableConstraintHandl
     Logger logger = LoggerFactory.getLogger(LoggingConstraintHandlerProvider.class);
 
     @Override
-    public boolean isResponsible(JsonNode constraint) {
-        return constraint != null && constraint.has("type")
-                && "log".equals(constraint.findValue("type").asText());
+    public boolean isResponsible(Value constraint) {
+        return constraint instanceof ObjectValue obj
+                && obj.get("type") instanceof TextValue(String type)
+                && "log".equals(type);
     }
 
     @Override
@@ -41,10 +43,10 @@ public class LoggingConstraintHandlerProvider implements RunnableConstraintHandl
      * The handle method actually acts on the given constraint and logs the policy-defined message to console.
      */
     @Override
-    public Runnable getHandler(JsonNode constraint) {
+    public Runnable getHandler(Value constraint) {
         return () -> {
-            if (constraint != null && constraint.has("message")) {
-                var message = constraint.findValue("message").asText();
+            if (constraint instanceof ObjectValue obj
+                    && obj.get("message") instanceof TextValue(String message)) {
                 this.logger.info(message);
             }
         };

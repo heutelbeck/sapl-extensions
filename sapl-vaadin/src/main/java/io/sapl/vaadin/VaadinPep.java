@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -31,8 +31,8 @@ import java.util.function.Predicate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.JsonNodeFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasEnabled;
 import com.vaadin.flow.component.HasText;
@@ -51,6 +51,7 @@ import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveListener;
 import com.vaadin.flow.server.VaadinServletRequest;
 
+import io.sapl.api.model.Value;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.api.pdp.Decision;
@@ -272,7 +273,7 @@ public class VaadinPep {
          */
         default T onDecisionVisibleOrHidden() {
             return onDecisionDo((AuthorizationDecision authzDecision, C component) -> {
-                final boolean accessDenied = authzDecision.getDecision() == Decision.DENY;
+                final boolean accessDenied = authzDecision.decision() == Decision.DENY;
                 component.getUI().ifPresent(ui -> ui.access(() -> component.setVisible(!accessDenied)));
             });
         }
@@ -362,7 +363,7 @@ public class VaadinPep {
          */
         default T onDecisionEnableOrDisable() {
             return onDecisionDo((AuthorizationDecision authzDecision, C component) -> {
-                final boolean accessGranted = authzDecision.getDecision() == Decision.PERMIT;
+                final boolean accessGranted = authzDecision.decision() == Decision.PERMIT;
                 component.getUI().ifPresent(ui -> ui.access(() -> ((HasEnabled) component).setEnabled(accessGranted)));
             });
         }
@@ -393,7 +394,7 @@ public class VaadinPep {
          */
         default T onDecisionSetText(String permitText, String denyText) {
             return onDecisionDo((AuthorizationDecision authzDecision, C component) -> {
-                final boolean isPermit = authzDecision.getDecision() == Decision.PERMIT;
+                final boolean isPermit = authzDecision.decision() == Decision.PERMIT;
                 if (isPermit) {
                     component.getUI().ifPresent(ui -> ui.access(() -> component.setText(permitText)));
                 } else {
@@ -451,7 +452,7 @@ public class VaadinPep {
          */
         default T onDecisionReadOnlyOrReadWrite() {
             return onDecisionDo((AuthorizationDecision authzDecision, C component) -> {
-                final boolean isPermit = authzDecision.getDecision() == Decision.PERMIT;
+                final boolean isPermit = authzDecision.decision() == Decision.PERMIT;
                 component.setReadOnly(!isPermit);
             });
         }
@@ -535,7 +536,7 @@ public class VaadinPep {
          */
         public T onPermitDo(BiConsumer<AuthorizationDecision, C> biConsumer) {
             vaadinPep.decisionListenerList.add(authzDecision -> {
-                if (authzDecision.getDecision() == Decision.PERMIT) {
+                if (authzDecision.decision() == Decision.PERMIT) {
                     biConsumer.accept(authzDecision, component);
                 }
             });
@@ -551,7 +552,7 @@ public class VaadinPep {
          */
         public T onDenyDo(BiConsumer<AuthorizationDecision, C> biConsumer) {
             vaadinPep.decisionListenerList.add(authzDecision -> {
-                if (authzDecision.getDecision() == Decision.DENY) {
+                if (authzDecision.decision() == Decision.DENY) {
                     biConsumer.accept(authzDecision, component);
                 }
             });
@@ -598,13 +599,13 @@ public class VaadinPep {
         /**
          * Adds a constraint handler provider to the local consumer provider list
          *
-         * @param isResponsible predicate of JsonNode to determine the constraint the
+         * @param isResponsible predicate of Value to determine the constraint the
          * handler is responsible for
          * @param getHandler function that returns a Consumer handler for a specific
          * constraint
          * @return Current object (=this)
          */
-        public T addConstraintHandler(Predicate<JsonNode> isResponsible, Function<JsonNode, Consumer<UI>> getHandler) {
+        public T addConstraintHandler(Predicate<Value> isResponsible, Function<Value, Consumer<UI>> getHandler) {
             vaadinPep.localConsumerProviders.add(new ConsumerConstraintHandlerProvider<>() {
                 @Override
                 public Class<UI> getSupportedType() {
@@ -612,12 +613,12 @@ public class VaadinPep {
                 }
 
                 @Override
-                public boolean isResponsible(JsonNode constraint) {
+                public boolean isResponsible(Value constraint) {
                     return isResponsible.test(constraint);
                 }
 
                 @Override
-                public Consumer<UI> getHandler(JsonNode constraint) {
+                public Consumer<UI> getHandler(Value constraint) {
                     return getHandler.apply(constraint);
                 }
             });
@@ -1121,7 +1122,7 @@ public class VaadinPep {
 
         public L onPermitDo(BiConsumer<AuthorizationDecision, BeforeEvent> action) {
             this.onDecisionDo((decision, event) -> {
-                if (decision.getDecision() == Decision.PERMIT) {
+                if (decision.decision() == Decision.PERMIT) {
                     action.accept(decision, event);
                 }
             });
@@ -1137,7 +1138,7 @@ public class VaadinPep {
          */
         public L onDenyDo(BiConsumer<AuthorizationDecision, BeforeEvent> action) {
             this.onDecisionDo((decision, event) -> {
-                if (decision.getDecision() != Decision.PERMIT) {
+                if (decision.decision() != Decision.PERMIT) {
                     action.accept(decision, event);
                 }
             });

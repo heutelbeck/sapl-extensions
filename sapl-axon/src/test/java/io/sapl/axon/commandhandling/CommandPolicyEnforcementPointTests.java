@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -49,7 +49,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.AuthorizationSubscription;
@@ -128,7 +128,7 @@ class CommandPolicyEnforcementPointTests {
     @BeforeEach
     @SuppressWarnings("unchecked")
     void beforeEach() throws NoSuchMethodException {
-        var mapper = new ObjectMapper();
+        var mapper = JsonMapper.builder().build();
         factory = new DefaultParameterResolverFactory();
         var executable = HandlingObject.class.getDeclaredMethod("handle1", TestCommand.class);
         handlingObject = spy(new HandlingObject(DEFAULT_AGGREGATE_IDENTIFIER));

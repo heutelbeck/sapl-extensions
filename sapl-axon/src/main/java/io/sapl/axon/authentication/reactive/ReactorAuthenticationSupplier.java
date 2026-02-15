@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,7 +20,7 @@ package io.sapl.axon.authentication.reactive;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import io.sapl.axon.authentication.AuthnUtil;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +42,7 @@ public class ReactorAuthenticationSupplier implements ReactiveAuthenticationSupp
 
     private static final String ANONYMOUS = "\"anonymous\"";
 
-    private final ObjectMapper mapper;
+    private final JsonMapper mapper;
 
     /**
      * Extracts the authentication information from the Spring SecurityContext.

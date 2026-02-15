@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -32,13 +32,12 @@ import java.io.File;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.api.pdp.Decision;
-import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
-import io.sapl.pdp.PolicyDecisionPointFactory;
+import io.sapl.pdp.PolicyDecisionPointBuilder;
 
 class PdpInitUtilityTests {
 
@@ -77,7 +76,7 @@ class PdpInitUtilityTests {
         assertNotNull(pdp);
         var authzDecision = pdp.decide(AuthorizationSubscription.of(subject, action, resource)).blockFirst();
         assertNotNull(authzDecision);
-        assertEquals(Decision.PERMIT, authzDecision.getDecision());
+        assertEquals(Decision.PERMIT, authzDecision.decision());
     }
 
     @Test
@@ -99,18 +98,17 @@ class PdpInitUtilityTests {
         assertNotNull(pdp);
         var authzDecision = pdp.decide(AuthorizationSubscription.of(subject, action, resource)).blockFirst();
         assertNotNull(authzDecision);
-        assertEquals(Decision.PERMIT, authzDecision.getDecision());
+        assertEquals(Decision.PERMIT, authzDecision.decision());
     }
 
     @Test
-    void when_buildingEmbeddedPdpThrowsInitializationException_then_returnNull() {
+    void when_buildingEmbeddedPdpThrowsException_then_returnNull() {
         // GIVEN
         var saplMqttExtensionConfigMock = Mockito.mock(SaplMqttExtensionConfig.class);
         when(saplMqttExtensionConfigMock.getPdpImplementation()).thenReturn(PdpInitUtility.EMBEDDED_PDP_IDENTIFIER);
 
-        try (var pdpFactoryMock = Mockito.mockStatic(PolicyDecisionPointFactory.class)) {
-            pdpFactoryMock.when(() -> PolicyDecisionPointFactory.filesystemPolicyDecisionPoint(Mockito.anyString()))
-                    .thenThrow(InitializationException.class);
+        try (var pdpBuilderMock = Mockito.mockStatic(PolicyDecisionPointBuilder.class)) {
+            pdpBuilderMock.when(PolicyDecisionPointBuilder::withDefaults).thenThrow(RuntimeException.class);
 
             // WHEN
             var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, null, "/policies");

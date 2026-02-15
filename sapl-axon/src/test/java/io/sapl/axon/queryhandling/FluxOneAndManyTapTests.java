@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -96,9 +96,9 @@ class FluxOneAndManyTapTests {
         var ttl = 50L;
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
-        StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
+        StepVerifier.create(tap.one().map(AuthorizationDecision::decision)).expectNext(Decision.PERMIT)
                 .verifyComplete();
-        StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
+        StepVerifier.create(tap.many().map(AuthorizationDecision::decision))
                 .expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
                 .verifyComplete();
 
@@ -113,10 +113,10 @@ class FluxOneAndManyTapTests {
         var ttl = 200L;
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
-        StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
+        StepVerifier.create(tap.one().map(AuthorizationDecision::decision)).expectNext(Decision.PERMIT)
                 .verifyComplete();
         Thread.sleep(20L); // shorter than event delay and ttl
-        StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
+        StepVerifier.create(tap.many().map(AuthorizationDecision::decision))
                 .expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
                 .verifyComplete();
 
@@ -132,10 +132,10 @@ class FluxOneAndManyTapTests {
         var ttl = 200L;
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
-        StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
+        StepVerifier.create(tap.one().map(AuthorizationDecision::decision)).expectNext(Decision.PERMIT)
                 .verifyComplete();
         Thread.sleep(75); // longer than event delay shorter than ttl
-        StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
+        StepVerifier.create(tap.many().map(AuthorizationDecision::decision))
                 .expectNext(Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY).verifyComplete();
 
         Thread.sleep(ttl + 50L); // Wait for the cache to time out
@@ -150,10 +150,10 @@ class FluxOneAndManyTapTests {
         var ttl = 200L;
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
-        StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
+        StepVerifier.create(tap.one().map(AuthorizationDecision::decision)).expectNext(Decision.PERMIT)
                 .verifyComplete();
         Thread.sleep(250L); // longer than event delay and ttl
-        StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
+        StepVerifier.create(tap.many().map(AuthorizationDecision::decision))
                 .expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
                 .verifyComplete();
 
@@ -168,11 +168,10 @@ class FluxOneAndManyTapTests {
         var ttl = 200L;
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
-        StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
+        StepVerifier.create(tap.many().map(AuthorizationDecision::decision))
                 .expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
                 .verifyComplete();
-        StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.DENY)
-                .verifyComplete();
+        StepVerifier.create(tap.one().map(AuthorizationDecision::decision)).expectNext(Decision.DENY).verifyComplete();
 
         Thread.sleep(ttl + 50L); // Wait for the cache to time out
 
@@ -185,13 +184,12 @@ class FluxOneAndManyTapTests {
         var ttl = 200L;
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
-        StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
+        StepVerifier.create(tap.many().map(AuthorizationDecision::decision))
                 .expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
                 .verifyComplete();
         Thread.sleep(150L); // shorter than event delay and ttl
 
-        StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.DENY)
-                .verifyComplete();
+        StepVerifier.create(tap.one().map(AuthorizationDecision::decision)).expectNext(Decision.DENY).verifyComplete();
 
         Thread.sleep(ttl + 50L); // Wait for the cache to time out
 
@@ -205,12 +203,12 @@ class FluxOneAndManyTapTests {
         var ttl = 200L;
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(ttl));
 
-        StepVerifier.create(tap.many().map(AuthorizationDecision::getDecision))
+        StepVerifier.create(tap.many().map(AuthorizationDecision::decision))
                 .expectNext(Decision.PERMIT, Decision.INDETERMINATE, Decision.NOT_APPLICABLE, Decision.DENY)
                 .verifyComplete();
         Thread.sleep(250L); // longer than ttl
 
-        StepVerifier.create(tap.one().map(AuthorizationDecision::getDecision)).expectNext(Decision.PERMIT)
+        StepVerifier.create(tap.one().map(AuthorizationDecision::decision)).expectNext(Decision.PERMIT)
                 .verifyComplete();
 
         Thread.sleep(ttl + 50L); // Wait for the cache to time out

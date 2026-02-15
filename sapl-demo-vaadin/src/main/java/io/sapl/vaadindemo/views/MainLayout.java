@@ -7,6 +7,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -28,7 +30,7 @@ import io.sapl.vaadindemo.security.SecurityUtils;
 /**
  * The main view is a top-level placeholder for other views.
  */
-public class MainLayout extends AppLayout {
+public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     private static final long serialVersionUID = -5398634391624843809L;
 
@@ -143,8 +145,7 @@ public class MainLayout extends AppLayout {
     }
 
     @Override
-    protected void afterNavigation() {
-        super.afterNavigation();
+    public void afterNavigation(AfterNavigationEvent event) {
         viewTitle.setText(getCurrentPageTitle());
     }
 

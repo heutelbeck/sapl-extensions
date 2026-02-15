@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -33,14 +33,14 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class VaadinAuthorizationSubscriptionBuilderTests {
 
     MethodSecurityExpressionHandler               methodSecurityExpressionHandlerMock;
-    private final ObjectMapper                    mapper = new ObjectMapper();
+    private final JsonMapper                      mapper = JsonMapper.builder().build();
     VaadinAuthorizationSubscriptionBuilderService sut;
     private static final JsonNodeFactory          JSON   = JsonNodeFactory.instance;
 
@@ -184,10 +184,13 @@ class VaadinAuthorizationSubscriptionBuilderTests {
 
         // THEN
         var subject = mapper.createObjectNode();
-        subject.set("name", JSON.textNode("io.sapl.vaadin.base.VaadinAuthorizationSubscriptionBuilderTests"));
-        subject.set("canonicalName", JSON.textNode("io.sapl.vaadin.base.VaadinAuthorizationSubscriptionBuilderTests"));
-        subject.set("typeName", JSON.textNode("io.sapl.vaadin.base.VaadinAuthorizationSubscriptionBuilderTests"));
-        subject.set("simpleName", JSON.textNode("VaadinAuthorizationSubscriptionBuilderTests"));
+        subject.set("name",
+                JsonNodeFactory.instance.stringNode("io.sapl.vaadin.base.VaadinAuthorizationSubscriptionBuilderTests"));
+        subject.set("canonicalName",
+                JsonNodeFactory.instance.stringNode("io.sapl.vaadin.base.VaadinAuthorizationSubscriptionBuilderTests"));
+        subject.set("typeName",
+                JsonNodeFactory.instance.stringNode("io.sapl.vaadin.base.VaadinAuthorizationSubscriptionBuilderTests"));
+        subject.set("simpleName", JsonNodeFactory.instance.stringNode("VaadinAuthorizationSubscriptionBuilderTests"));
         assertEquals(subject, ret);
     }
 

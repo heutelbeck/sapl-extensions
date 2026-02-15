@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -114,7 +114,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
             throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED, t));
         }
 
-        if (decision.getDecision() != Decision.PERMIT) {
+        if (decision.decision() != Decision.PERMIT) {
             throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED));
         }
 

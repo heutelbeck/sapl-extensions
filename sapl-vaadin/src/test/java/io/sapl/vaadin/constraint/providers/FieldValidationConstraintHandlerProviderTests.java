@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -38,10 +38,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.json.JsonMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -49,11 +46,12 @@ import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.binder.Binder;
 
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.Value;
 import lombok.Data;
 import lombok.Getter;
 
 class FieldValidationConstraintHandlerProviderTests {
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private Binder<TestData> binder;
     private TestForm         form;
@@ -95,56 +93,39 @@ class FieldValidationConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_constraintIsTaggedCorrectly_then_providerIsResponsible() throws JsonProcessingException {
+    void when_constraintIsTaggedCorrectly_then_providerIsResponsible() {
         // GIVEN
         var sut        = new FieldValidationConstraintHandlerProvider(binder, form);
-        var constraint = MAPPER.readTree("""
-                {
-                  "type" : "saplVaadin",
-                  "id"   : "validation"
-                }
-                """);
+        var constraint = ObjectValue.builder().put("type", Value.of("saplVaadin")).put("id", Value.of("validation"))
+                .build();
         // WHEN+THEN
         assertTrue(sut.isResponsible(constraint));
     }
 
     @Test
-    void when_constraintIsTaggedIncorrectlyWithInvalidID_then_providerIsNotResponsible()
-            throws JsonProcessingException {
+    void when_constraintIsTaggedIncorrectlyWithInvalidID_then_providerIsNotResponsible() {
         // GIVEN
-        var sut        = new FieldValidationConstraintHandlerProvider(binder, form, new ObjectMapper());
-        var constraint = MAPPER.readTree("""
-                {
-                  "type" : "saplVaadin",
-                  "id"   : "showNotification"
-                }
-                """);
+        var sut        = new FieldValidationConstraintHandlerProvider(binder, form, JsonMapper.builder().build());
+        var constraint = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("showNotification")).build();
         // WHEN+THEN
         assertFalse(sut.isResponsible(constraint));
     }
 
     @Test
-    void when_constraintIsTaggedIncorrectlyWithoutType_then_providerIsNotResponsible() throws JsonProcessingException {
+    void when_constraintIsTaggedIncorrectlyWithoutType_then_providerIsNotResponsible() {
         // GIVEN
-        var sut        = new FieldValidationConstraintHandlerProvider(binder, form, new ObjectMapper());
-        var constraint = MAPPER.readTree("""
-                {
-                  "id" : "validation"
-                }
-                """);
+        var sut        = new FieldValidationConstraintHandlerProvider(binder, form, JsonMapper.builder().build());
+        var constraint = ObjectValue.builder().put("id", Value.of("validation")).build();
         // WHEN+THEN
         assertFalse(sut.isResponsible(constraint));
     }
 
     @Test
-    void when_constraintIsTaggedIncorrectlyWithoutID_then_providerIsNotResponsible() throws JsonProcessingException {
+    void when_constraintIsTaggedIncorrectlyWithoutID_then_providerIsNotResponsible() {
         // GIVEN
-        var sut        = new FieldValidationConstraintHandlerProvider(binder, form, new ObjectMapper());
-        var constraint = MAPPER.readTree("""
-                {
-                  "type" : "saplVaadin"
-                }
-                """);
+        var sut        = new FieldValidationConstraintHandlerProvider(binder, form, JsonMapper.builder().build());
+        var constraint = ObjectValue.builder().put("type", Value.of("saplVaadin")).build();
         // WHEN+THEN
         assertFalse(sut.isResponsible(constraint));
     }
@@ -152,8 +133,8 @@ class FieldValidationConstraintHandlerProviderTests {
     @Test
     void when_constraintIsEmptyOrNull_then_providerIsNotResponsible() {
         // GIVEN
-        var        sut        = new FieldValidationConstraintHandlerProvider(binder, form, new ObjectMapper());
-        ObjectNode constraint = JsonNodeFactory.instance.objectNode();
+        var sut        = new FieldValidationConstraintHandlerProvider(binder, form, JsonMapper.builder().build());
+        var constraint = Value.EMPTY_OBJECT;
         // WHEN+THEN
         assertFalse(sut.isResponsible(constraint));
         assertFalse(sut.isResponsible(null));
@@ -162,33 +143,25 @@ class FieldValidationConstraintHandlerProviderTests {
     @Test
     void when_getSupportedTypeIsCalled_then_resultIsValid() {
         // GIVEN
-        var sut = new FieldValidationConstraintHandlerProvider(binder, form, new ObjectMapper());
+        var sut = new FieldValidationConstraintHandlerProvider(binder, form, JsonMapper.builder().build());
         // WHEN+THEN
         assertNull(sut.getSupportedType());
     }
 
     @Test
-    void when_constraintInDecision_then_validValueIsDetectedCorrectly() throws JsonProcessingException {
+    void when_constraintInDecision_then_validValueIsDetectedCorrectly() {
         // GIVEN
         var sut = new FieldValidationConstraintHandlerProvider(binder, form);
         sut.bindField(form.integerField);
         binder.bindInstanceFields(form);
 
         // constraint
-        var constraint = MAPPER.readTree("""
-                {
-                  "type" : "saplVaadin",
-                  "id"   : "validation",
-                  "fields" : {
-                    "integerField" : {
-                      "$schema" : "http://json-schema.org/draft-07/schema#",
-                      "type"    : "number",
-                      "maximum" : 20,
-                      "message" : "maximum is limited to 20"
-                    }
-                  }
-                }
-                """);
+        var integerFieldSchema = ObjectValue.builder()
+                .put("$schema", Value.of("http://json-schema.org/draft-07/schema#")).put("type", Value.of("number"))
+                .put("maximum", Value.of(20)).put("message", Value.of("maximum is limited to 20")).build();
+        var fields             = ObjectValue.builder().put("integerField", integerFieldSchema).build();
+        var constraint         = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("validation")).put("fields", fields).build();
 
         // WHEN
         sut.getHandler(constraint).accept(defaultUi);
@@ -199,19 +172,15 @@ class FieldValidationConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_constraintHasNoFields_then_updateValidationSchemesDoNothing() throws JsonProcessingException {
+    void when_constraintHasNoFields_then_updateValidationSchemesDoNothing() {
         // GIVEN
         var mockedForm = spy(form);
         var sut        = new FieldValidationConstraintHandlerProvider(binder, mockedForm);
         sut.bindField(mockedForm.integerField);
 
         // constraint
-        var constraint = MAPPER.readTree("""
-                {
-                  "type" : "saplVaadin",
-                  "id"   : "validation"
-                }
-                """);
+        var constraint = ObjectValue.builder().put("type", Value.of("saplVaadin")).put("id", Value.of("validation"))
+                .build();
 
         // WHEN
         sut.getHandler(constraint).accept(defaultUi);
@@ -221,7 +190,7 @@ class FieldValidationConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_constraintInDecision_then_invalidValueIsDetected() throws JsonProcessingException {
+    void when_constraintInDecision_then_invalidValueIsDetected() {
         // GIVEN
         var sut = new FieldValidationConstraintHandlerProvider(binder, form);
         sut.bindField(form.integerField);
@@ -229,18 +198,11 @@ class FieldValidationConstraintHandlerProviderTests {
         UI ui = mock(UI.class);
 
         // constraint
-        var constraint = MAPPER.readTree("""
-                {
-                  "type" : "saplVaadin",
-                  "id"   : "validation",
-                  "fields" : {
-                    "integerField" : {
-                      "type"    : "number",
-                      "maximum" : 20
-                    }
-                  }
-                }
-                """);
+        var integerFieldSchema = ObjectValue.builder().put("type", Value.of("number")).put("maximum", Value.of(20))
+                .build();
+        var fields             = ObjectValue.builder().put("integerField", integerFieldSchema).build();
+        var constraint         = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("validation")).put("fields", fields).build();
 
         // WHEN
         sut.getHandler(constraint).accept(ui);
@@ -251,7 +213,7 @@ class FieldValidationConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_constraintInDecision_then_invalidValueIsDetectedWithCustomMessage() throws JsonProcessingException {
+    void when_constraintInDecision_then_invalidValueIsDetectedWithCustomMessage() {
         // GIVEN
         var sut = new FieldValidationConstraintHandlerProvider(binder, form);
         sut.bindField(form.integerField);
@@ -259,20 +221,12 @@ class FieldValidationConstraintHandlerProviderTests {
         UI ui = mock(UI.class);
 
         // constraint
-        var constraint = MAPPER.readTree("""
-                {
-                  "type" : "saplVaadin",
-                  "id"   : "validation",
-                  "fields" : {
-                    "integerField" : {
-                      "$schema" : "http://json-schema.org/draft-07/schema#",
-                      "type"    : "number",
-                      "maximum" : 20,
-                      "message" : "maximum is limited to 20"
-                    }
-                  }
-                }
-                """);
+        var integerFieldSchema = ObjectValue.builder()
+                .put("$schema", Value.of("http://json-schema.org/draft-07/schema#")).put("type", Value.of("number"))
+                .put("maximum", Value.of(20)).put("message", Value.of("maximum is limited to 20")).build();
+        var fields             = ObjectValue.builder().put("integerField", integerFieldSchema).build();
+        var constraint         = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("validation")).put("fields", fields).build();
 
         // WHEN
         sut.getHandler(constraint).accept(ui);
@@ -283,27 +237,19 @@ class FieldValidationConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_constraintForUnboundFieldInDecision_then_throwException() throws JsonProcessingException {
+    void when_constraintForUnboundFieldInDecision_then_throwException() {
         // GIVEN
         var sut = new FieldValidationConstraintHandlerProvider(binder, form);
         sut.bindField(form.integerField);
         binder.bindInstanceFields(form);
 
         // constraint
-        var constraint = MAPPER.readTree("""
-                {
-                  "type" : "saplVaadin",
-                  "id"   : "validation",
-                  "fields" : {
-                    "field42" : {
-                      "$schema" : "http://json-schema.org/draft-07/schema#",
-                      "type"    : "number",
-                      "maximum" : 20,
-                      "message" : "maximum is limited to 20"
-                    }
-                  }
-                }
-                """);
+        var field42Schema = ObjectValue.builder().put("$schema", Value.of("http://json-schema.org/draft-07/schema#"))
+                .put("type", Value.of("number")).put("maximum", Value.of(20))
+                .put("message", Value.of("maximum is limited to 20")).build();
+        var fields        = ObjectValue.builder().put("field42", field42Schema).build();
+        var constraint    = ObjectValue.builder().put("type", Value.of("saplVaadin")).put("id", Value.of("validation"))
+                .put("fields", fields).build();
         // WHEN+THEN
         assertThrows(AccessDeniedException.class, () -> sut.getHandler(constraint));
     }
@@ -320,25 +266,18 @@ class FieldValidationConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_constraintHasDateTimeFormat_then_constraintIsApplied() throws JsonProcessingException {
+    void when_constraintHasDateTimeFormat_then_constraintIsApplied() {
         // GIVEN
         var sut = new FieldValidationConstraintHandlerProvider(binder, form);
         sut.bindField(form.dateTimeField);
         binder.bindInstanceFields(form);
 
         // constraint
-        var constraint = MAPPER.readTree("""
-                {
-                  "type"   : "saplVaadin",
-                  "id"     : "validation",
-                  "fields" : {
-                    "dateTimeField" : {
-                      "type"  : "string",
-                      "format": "date-time"
-                    }
-                  }
-                }
-                """);
+        var dateTimeFieldSchema = ObjectValue.builder().put("type", Value.of("string"))
+                .put("format", Value.of("date-time")).build();
+        var fields              = ObjectValue.builder().put("dateTimeField", dateTimeFieldSchema).build();
+        var constraint          = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("validation")).put("fields", fields).build();
 
         // WHEN+THEN
         sut.getHandler(constraint).accept(defaultUi);
@@ -348,25 +287,18 @@ class FieldValidationConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_constraintHasTimeFormat_then_constraintIsApplied() throws JsonProcessingException {
+    void when_constraintHasTimeFormat_then_constraintIsApplied() {
         // GIVEN
         var sut = new FieldValidationConstraintHandlerProvider(binder, form);
         sut.bindField(form.timeField);
         binder.bindInstanceFields(form);
 
         // constraint
-        var constraint = MAPPER.readTree("""
-                {
-                  "type" : "saplVaadin",
-                  "id"   : "validation",
-                  "fields" : {
-                    "timeField" : {
-                      "type"   : "string",
-                      "format" : "time"
-                    }
-                  }
-                }
-                """);
+        var timeFieldSchema = ObjectValue.builder().put("type", Value.of("string")).put("format", Value.of("time"))
+                .build();
+        var fields          = ObjectValue.builder().put("timeField", timeFieldSchema).build();
+        var constraint      = ObjectValue.builder().put("type", Value.of("saplVaadin"))
+                .put("id", Value.of("validation")).put("fields", fields).build();
 
         // WHEN+THEN
         sut.getHandler(constraint).accept(defaultUi);
@@ -388,19 +320,15 @@ class FieldValidationConstraintHandlerProviderTests {
     }
 
     @Test
-    void when_constraintHasEmptyFields_then_updateValidationSchemesDoNothing() throws JsonProcessingException {
+    void when_constraintHasEmptyFields_then_updateValidationSchemesDoNothing() {
         // GIVEN
         var sut = new FieldValidationConstraintHandlerProvider(binder, form);
         sut.bindField(form.integerField);
         binder.bindInstanceFields(form);
 
         // constraint
-        var constraint = MAPPER.readTree("""
-                {
-                  "type" : "saplVaadin",
-                  "id"   : "validation"
-                }
-                """);
+        var constraint = ObjectValue.builder().put("type", Value.of("saplVaadin")).put("id", Value.of("validation"))
+                .build();
         // WHEN+THEN
         sut.getHandler(constraint).accept(defaultUi);
         // THEN

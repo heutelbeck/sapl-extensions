@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -58,9 +58,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
+import io.sapl.api.model.Value;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.axon.annotation.EnforceDropUpdatesWhileDenied;
 import io.sapl.axon.annotation.EnforceRecoverableUpdatesIfDenied;
@@ -116,12 +116,12 @@ class SaplQueryUpdateEmitterTests {
     @BeforeAll
     @SuppressWarnings("unchecked")
     static void setup() {
-        var mapper = new ObjectMapper();
+        var mapper = JsonMapper.builder().build();
         constraintHandlerService = mock(ConstraintHandlerService.class);
         setField(constraintHandlerService, MAPPER_FILED_NAME, mapper);
         when(constraintHandlerService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class),
                 any(ResponseType.class), any(Optional.class))).thenCallRealMethod();
-        when(constraintHandlerService.deserializeResource(any(JsonNode.class), any(ResponseType.class)))
+        when(constraintHandlerService.deserializeResource(any(Value.class), any(ResponseType.class)))
                 .thenCallRealMethod();
     }
 

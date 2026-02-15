@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -29,6 +29,7 @@ import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.springframework.security.access.AccessDeniedException;
 
+import io.sapl.api.model.UndefinedValue;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
@@ -144,16 +145,15 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
             // NOP
             return;
         }
-        if (decision.getDecision() != Decision.PERMIT) {
+        if (decision.decision() != Decision.PERMIT) {
             // NOP
             return;
         }
 
-        var decisionResource = decision.getResource();
-        if (decisionResource.isPresent()) {
+        var decisionResource = decision.resource();
+        if (!(decisionResource instanceof UndefinedValue)) {
             try {
-                var newResponse = constraintHandlerService.deserializeResource(decisionResource.get(),
-                        updateResponseType);
+                var newResponse = constraintHandlerService.deserializeResource(decisionResource, updateResponseType);
                 sink.next(new GenericSubscriptionQueryUpdateMessage<>((U) newResponse));
             } catch (AccessDeniedException e) {
                 sink.error(e);
@@ -180,7 +180,7 @@ public class EnforceDropUpdatesWhileDeniedPolicyEnforcementPoint<U> extends Flux
         if (stopped.get()) {
             return;
         }
-        if (latestDecision.get().getDecision() != Decision.PERMIT) {
+        if (latestDecision.get().decision() != Decision.PERMIT) {
             // Drop while not permitted
             return;
         }

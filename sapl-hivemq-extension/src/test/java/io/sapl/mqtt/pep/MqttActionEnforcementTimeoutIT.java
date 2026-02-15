@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -51,7 +51,6 @@ import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 import io.sapl.api.pdp.MultiAuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
-import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
 import reactor.core.publisher.Flux;
 
@@ -89,7 +88,7 @@ class MqttActionEnforcementTimeoutIT {
     }
 
     @Test
-    void when_timeoutWhileSubscribing_then_denySubscription() throws InitializationException {
+    void when_timeoutWhileSubscribing_then_denySubscription() {
         // GIVEN
         String subscriptionClientId                               = "MQTT_CLIENT_SUBSCRIBE";
         String subscriptionClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility
@@ -122,7 +121,7 @@ class MqttActionEnforcementTimeoutIT {
     }
 
     @Test
-    void when_timeoutWhilePublishing_then_denyPublish() throws InitializationException {
+    void when_timeoutWhilePublishing_then_denyPublish() {
         // GIVEN
         String publishClientId                               = "MQTT_CLIENT_PUBLISH";
         String publishClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -33,8 +33,8 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.Value;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 
 class SubscriptionConstraintsTests {
@@ -42,8 +42,9 @@ class SubscriptionConstraintsTests {
     @Test
     void when_specifiedConstraintTypeIsNotTextual_then_signalConstraintCouldNotBeHandled() {
         // GIVEN
-        var constraintDetails = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(), "testTopic");
-        var constraint        = JsonNodeFactory.instance.objectNode().put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, 4);
+        var constraintDetails = new ConstraintDetails("clientId", IdentifiableAuthorizationDecision.INDETERMINATE,
+                "testTopic");
+        var constraint        = ObjectValue.builder().put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, Value.of(4)).build();
 
         // WHEN
         var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetails,
@@ -56,12 +57,12 @@ class SubscriptionConstraintsTests {
     @Test
     void when_settingTimeLimitAndTimeLimitIsNotANumber_then_signalConstraintCouldNotBeHandled() {
         // GIVEN
-        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+        var constraintDetails    = new ConstraintDetails("clientId", IdentifiableAuthorizationDecision.INDETERMINATE,
                 "testTopic");
         var constraintDetailsSpy = spy(constraintDetails);
-        var constraint           = JsonNodeFactory.instance.objectNode()
-                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION)
-                .put(ENVIRONMENT_TIME_LIMIT, "five");
+        var constraint           = ObjectValue.builder()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, Value.of(ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION))
+                .put(ENVIRONMENT_TIME_LIMIT, Value.of("five")).build();
 
         // WHEN
         var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
@@ -75,12 +76,12 @@ class SubscriptionConstraintsTests {
     @Test
     void when_settingTimeLimitAndTimeLimitIsBelowOne_then_signalConstraintCouldNotBeHandled() {
         // GIVEN
-        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+        var constraintDetails    = new ConstraintDetails("clientId", IdentifiableAuthorizationDecision.INDETERMINATE,
                 "testTopic");
         var constraintDetailsSpy = spy(constraintDetails);
-        var constraint           = JsonNodeFactory.instance.objectNode()
-                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION)
-                .put(ENVIRONMENT_TIME_LIMIT, 0);
+        var constraint           = ObjectValue.builder()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, Value.of(ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION))
+                .put(ENVIRONMENT_TIME_LIMIT, Value.of(0)).build();
 
         // WHEN
         var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
@@ -94,11 +95,11 @@ class SubscriptionConstraintsTests {
     @Test
     void when_settingTimeLimitAndTimeLimitIsNotSpecified_then_signalConstraintCouldNotBeHandled() {
         // GIVEN
-        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+        var constraintDetails    = new ConstraintDetails("clientId", IdentifiableAuthorizationDecision.INDETERMINATE,
                 "testTopic");
         var constraintDetailsSpy = spy(constraintDetails);
-        var constraint           = JsonNodeFactory.instance.objectNode().put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE,
-                ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION);
+        var constraint           = ObjectValue.builder()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, Value.of(ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION)).build();
 
         // WHEN
         var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
@@ -112,11 +113,12 @@ class SubscriptionConstraintsTests {
     @Test
     void when_handlingResubscribeConstraintAndNoStatusIsSpecified_then_signalConstraintCouldNotBeHandled() {
         // GIVEN
-        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+        var constraintDetails    = new ConstraintDetails("clientId", IdentifiableAuthorizationDecision.INDETERMINATE,
                 "testTopic");
         var constraintDetailsSpy = spy(constraintDetails);
-        var constraint           = JsonNodeFactory.instance.objectNode().put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE,
-                ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION);
+        var constraint           = ObjectValue.builder()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, Value.of(ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION))
+                .build();
 
         // WHEN
         var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
@@ -130,12 +132,12 @@ class SubscriptionConstraintsTests {
     @Test
     void when_handlingResubscribeConstraintAndStatusIsNotTextual_then_signalConstraintCouldNotBeHandled() {
         // GIVEN
-        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+        var constraintDetails    = new ConstraintDetails("clientId", IdentifiableAuthorizationDecision.INDETERMINATE,
                 "testTopic");
         var constraintDetailsSpy = spy(constraintDetails);
-        var constraint           = JsonNodeFactory.instance.objectNode()
-                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION)
-                .put(ENVIRONMENT_STATUS, 1);
+        var constraint           = ObjectValue.builder()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, Value.of(ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION))
+                .put(ENVIRONMENT_STATUS, Value.of(1)).build();
 
         // WHEN
         var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
@@ -149,12 +151,12 @@ class SubscriptionConstraintsTests {
     @Test
     void when_handlingResubscribeConstraintAndStatusIsEnabled_then_setResubscribeAnSignalSuccessfulConstraintHandling() {
         // GIVEN
-        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+        var constraintDetails    = new ConstraintDetails("clientId", IdentifiableAuthorizationDecision.INDETERMINATE,
                 "testTopic");
         var constraintDetailsSpy = spy(constraintDetails);
-        var constraint           = JsonNodeFactory.instance.objectNode()
-                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION)
-                .put(ENVIRONMENT_STATUS, ENVIRONMENT_ENABLED);
+        var constraint           = ObjectValue.builder()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, Value.of(ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION))
+                .put(ENVIRONMENT_STATUS, Value.of(ENVIRONMENT_ENABLED)).build();
 
         // WHEN
         var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
@@ -168,12 +170,12 @@ class SubscriptionConstraintsTests {
     @Test
     void when_handlingResubscribeConstraintAndStatusIsDisabled_then_setResubscribeAnSignalSuccessfulConstraintHandling() {
         // GIVEN
-        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+        var constraintDetails    = new ConstraintDetails("clientId", IdentifiableAuthorizationDecision.INDETERMINATE,
                 "testTopic");
         var constraintDetailsSpy = spy(constraintDetails);
-        var constraint           = JsonNodeFactory.instance.objectNode()
-                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION)
-                .put(ENVIRONMENT_STATUS, ENVIRONMENT_DISABLED);
+        var constraint           = ObjectValue.builder()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, Value.of(ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION))
+                .put(ENVIRONMENT_STATUS, Value.of(ENVIRONMENT_DISABLED)).build();
 
         // WHEN
         var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,
@@ -187,12 +189,12 @@ class SubscriptionConstraintsTests {
     @Test
     void when_handlingResubscribeConstraintAndStatusIsNotAValidTextual_then_signalConstraintCouldNotBeHandled() {
         // GIVEN
-        var constraintDetails    = new ConstraintDetails("clientId", new IdentifiableAuthorizationDecision(),
+        var constraintDetails    = new ConstraintDetails("clientId", IdentifiableAuthorizationDecision.INDETERMINATE,
                 "testTopic");
         var constraintDetailsSpy = spy(constraintDetails);
-        var constraint           = JsonNodeFactory.instance.objectNode()
-                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION)
-                .put(ENVIRONMENT_STATUS, "illegalStatus");
+        var constraint           = ObjectValue.builder()
+                .put(Constraints.ENVIRONMENT_CONSTRAINT_TYPE, Value.of(ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION))
+                .put(ENVIRONMENT_STATUS, Value.of("illegalStatus")).build();
 
         // WHEN
         var wasSuccessfullyHandled = SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetailsSpy,

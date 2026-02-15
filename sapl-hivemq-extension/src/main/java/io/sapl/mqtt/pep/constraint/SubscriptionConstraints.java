@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,7 +20,10 @@ package io.sapl.mqtt.pep.constraint;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.sapl.api.model.NumberValue;
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.TextValue;
+import io.sapl.api.model.Value;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -36,11 +39,11 @@ public class SubscriptionConstraints {
     static final String ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION = "resubscribeMqttSubscription";
 
     @FunctionalInterface
-    private interface SubscriptionConstraintHandlingFunction<C, J> {
-        boolean fulfill(C constraintDetails, J constraint);
+    private interface SubscriptionConstraintHandlingFunction<C, V> {
+        boolean fulfill(C constraintDetails, V constraint);
     }
 
-    private static final Map<String, SubscriptionConstraintHandlingFunction<ConstraintDetails, JsonNode>> SUBSCRIPTION_CONSTRAINTS = new HashMap<>();
+    private static final Map<String, SubscriptionConstraintHandlingFunction<ConstraintDetails, ObjectValue>> SUBSCRIPTION_CONSTRAINTS = new HashMap<>();
 
     static {
         SUBSCRIPTION_CONSTRAINTS.put(Constraints.ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION,
@@ -49,36 +52,40 @@ public class SubscriptionConstraints {
                 SubscriptionConstraints::setStayUnsubscribed);
     }
 
-    static boolean enforceSubscriptionConstraintEntries(ConstraintDetails constraintDetails, JsonNode constraint) {
-        SubscriptionConstraintHandlingFunction<ConstraintDetails, JsonNode> subscriptionConstraintHandlingFunction = null;
-        if (constraint.has(Constraints.ENVIRONMENT_CONSTRAINT_TYPE)
-                && constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).isTextual()) {
-            String constraintType = constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).asText();
+    static boolean enforceSubscriptionConstraintEntries(ConstraintDetails constraintDetails, Value constraint) {
+        if (!(constraint instanceof ObjectValue obj)) {
+            log.warn("No valid constraint handler found for client '{}' and constraint '{}'. "
+                    + "Please check your policy specification.", constraintDetails.getClientId(), constraint);
+            return false;
+        }
+
+        SubscriptionConstraintHandlingFunction<ConstraintDetails, ObjectValue> subscriptionConstraintHandlingFunction = null;
+        if (obj.containsKey(Constraints.ENVIRONMENT_CONSTRAINT_TYPE)
+                && obj.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE) instanceof TextValue(var constraintType)) {
             subscriptionConstraintHandlingFunction = SUBSCRIPTION_CONSTRAINTS.get(constraintType);
         }
 
-        if (subscriptionConstraintHandlingFunction == null) { // returns false if the constraint entry couldn't be
-                                                              // handled
+        if (subscriptionConstraintHandlingFunction == null) {
             log.warn("No valid constraint handler found for client '{}' and constraint '{}'. "
                     + "Please check your policy specification.", constraintDetails.getClientId(), constraint);
             return false;
         } else {
-            return subscriptionConstraintHandlingFunction.fulfill(constraintDetails, constraint);
+            return subscriptionConstraintHandlingFunction.fulfill(constraintDetails, obj);
         }
     }
 
-    private static boolean setTimeLimit(ConstraintDetails constraintDetails, JsonNode constraint) {
-        JsonNode timeLimitJson = constraint.get(Constraints.ENVIRONMENT_TIME_LIMIT);
-        if (timeLimitJson != null) {
-            if (!timeLimitJson.canConvertToExactIntegral() || timeLimitJson.asLong() < 1) {
+    private static boolean setTimeLimit(ConstraintDetails constraintDetails, ObjectValue constraint) {
+        var timeLimitValue = constraint.get(Constraints.ENVIRONMENT_TIME_LIMIT);
+        if (timeLimitValue instanceof NumberValue(var timeLimitNum)) {
+            var timeLimitLong = timeLimitNum.longValue();
+            if (timeLimitLong < 1) {
                 log.warn("Illegal time limit for mqtt subscription of topic '{}' for client '{}' specified: {}",
-                        constraintDetails.getTopic(), constraintDetails.getClientId(), timeLimitJson);
+                        constraintDetails.getTopic(), constraintDetails.getClientId(), timeLimitValue);
                 return false;
             }
-            var timeLimitSec = timeLimitJson.asLong();
-            constraintDetails.setTimeLimitSec(timeLimitSec);
+            constraintDetails.setTimeLimitSec(timeLimitLong);
             log.info("Limit the mqtt subscription time of topic '{}' for client '{}'  to '{}' seconds.",
-                    constraintDetails.getTopic(), constraintDetails.getClientId(), timeLimitSec);
+                    constraintDetails.getTopic(), constraintDetails.getClientId(), timeLimitLong);
             return true;
         } else {
             log.warn(
@@ -90,17 +97,16 @@ public class SubscriptionConstraints {
         }
     }
 
-    private static boolean setStayUnsubscribed(ConstraintDetails constraintDetails, JsonNode constraint) {
-        JsonNode resubscribeMqttSubscriptionStatusJson = constraint.get(Constraints.ENVIRONMENT_STATUS);
-        if (resubscribeMqttSubscriptionStatusJson != null && resubscribeMqttSubscriptionStatusJson.isTextual()) {
-            var resubscribeMqttSubscriptionStatus = resubscribeMqttSubscriptionStatusJson.textValue();
-            if (Constraints.ENVIRONMENT_ENABLED.equals(resubscribeMqttSubscriptionStatus)) {
+    private static boolean setStayUnsubscribed(ConstraintDetails constraintDetails, ObjectValue constraint) {
+        var statusValue = constraint.get(Constraints.ENVIRONMENT_STATUS);
+        if (statusValue instanceof TextValue(var status)) {
+            if (Constraints.ENVIRONMENT_ENABLED.equals(status)) {
                 constraintDetails.setIsResubscribeMqttSubscriptionEnabled(Boolean.TRUE);
                 log.info("Enabled the resubscription of the client '{}' to topic '{}'.",
                         constraintDetails.getClientId(), constraintDetails.getTopic());
                 return true;
             }
-            if (Constraints.ENVIRONMENT_DISABLED.equals(resubscribeMqttSubscriptionStatus)) {
+            if (Constraints.ENVIRONMENT_DISABLED.equals(status)) {
                 constraintDetails.setIsResubscribeMqttSubscriptionEnabled(Boolean.FALSE);
                 log.info("Disabled the resubscription of the client '{}' to topic '{}'.",
                         constraintDetails.getClientId(), constraintDetails.getTopic());
@@ -108,7 +114,7 @@ public class SubscriptionConstraints {
             }
         }
         log.warn("Specified an illegal status for a potential resubscription of client '{}' to topic '{}': '{}'",
-                constraintDetails.getClientId(), constraintDetails.getTopic(), resubscribeMqttSubscriptionStatusJson);
+                constraintDetails.getClientId(), constraintDetails.getTopic(), statusValue);
         return false;
     }
 }

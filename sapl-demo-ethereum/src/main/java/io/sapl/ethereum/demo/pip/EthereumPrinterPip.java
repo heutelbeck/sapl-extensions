@@ -20,15 +20,15 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.web3j.protocol.Web3j;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
-import io.sapl.api.interpreter.Val;
-import io.sapl.api.pip.Attribute;
-import io.sapl.api.pip.PolicyInformationPoint;
-import io.sapl.api.validation.JsonObject;
+import io.sapl.api.attributes.Attribute;
+import io.sapl.api.attributes.PolicyInformationPoint;
+import io.sapl.api.model.Value;
+import io.sapl.api.model.ValueJsonMarshaller;
 import io.sapl.ethereum.demo.helper.CertificateAddressProvider;
 import io.sapl.ethereum.demo.views.mainview.MainView;
 import io.sapl.interpreter.pip.EthereumPolicyInformationPoint;
@@ -58,9 +58,9 @@ public class EthereumPrinterPip extends EthereumPolicyInformationPoint {
     }
 
     @Attribute(name = "certified", docs = "Checks, if the given address has a valid printer certificate.")
-    public Flux<Val> certified(@JsonObject Val saplObject, Map<String, Val> variables) {
-        String address         = saplObject.get().get(ADDRESS).textValue();
-        String printer         = saplObject.get().get("printer").textValue();
+    public Flux<Value> certified(Value saplObject, Map<String, Value> variables) {
+        String address         = ValueJsonMarshaller.toJsonNode(saplObject).get(ADDRESS).stringValue();
+        String printer         = ValueJsonMarshaller.toJsonNode(saplObject).get("printer").stringValue();
         String contractAddress = getContractAddress(printer, variables);
 
         ObjectNode requestNode = JSON.objectNode();
@@ -75,11 +75,12 @@ public class EthereumPrinterPip extends EthereumPolicyInformationPoint {
         ArrayNode outputParams = JSON.arrayNode();
         outputParams.add(BOOL);
         requestNode.set(OUTPUT_PARAMS, outputParams);
-        return loadContractInformation(Val.of(requestNode), variables).map(j -> j.get().get(0).get("value"))
-                .map(Val::of);
+        return loadContractInformation(ValueJsonMarshaller.fromJsonNode(requestNode), variables)
+                .map(j -> ValueJsonMarshaller.toJsonNode(j).get(0).get("value"))
+                .map(ValueJsonMarshaller::fromJsonNode);
     }
 
-    private String getContractAddress(String printer, Map<String, Val> variables) {
+    private String getContractAddress(String printer, Map<String, Value> variables) {
         if (MainView.ULTIMAKER.equals(printer)) {
             return getUltimakerAddress(variables);
         }
@@ -92,32 +93,32 @@ public class EthereumPrinterPip extends EthereumPolicyInformationPoint {
         return "";
     }
 
-    private String getZmorphAddress(Map<String, Val> variables) {
-        Val ethPipConfig = variables.get(ETH_PIP_CONFIG);
+    private String getZmorphAddress(Map<String, Value> variables) {
+        Value ethPipConfig = variables.get(ETH_PIP_CONFIG);
         if (ethPipConfig != null) {
-            JsonNode address = ethPipConfig.get().get(MainView.ZMORPH);
+            JsonNode address = ValueJsonMarshaller.toJsonNode(ethPipConfig).get(MainView.ZMORPH);
             if (address != null)
-                return address.textValue();
+                return address.stringValue();
         }
         return addressProvider.getZmorphAddress();
     }
 
-    private String getGraftenAddress(Map<String, Val> variables) {
-        Val ethPipConfig = variables.get(ETH_PIP_CONFIG);
+    private String getGraftenAddress(Map<String, Value> variables) {
+        Value ethPipConfig = variables.get(ETH_PIP_CONFIG);
         if (ethPipConfig != null) {
-            JsonNode address = ethPipConfig.get().get(MainView.GRAFTEN);
+            JsonNode address = ValueJsonMarshaller.toJsonNode(ethPipConfig).get(MainView.GRAFTEN);
             if (address != null)
-                return address.textValue();
+                return address.stringValue();
         }
         return addressProvider.getGraftenAddress();
     }
 
-    private String getUltimakerAddress(Map<String, Val> variables) {
-        Val ethPipConfig = variables.get(ETH_PIP_CONFIG);
+    private String getUltimakerAddress(Map<String, Value> variables) {
+        Value ethPipConfig = variables.get(ETH_PIP_CONFIG);
         if (ethPipConfig != null) {
-            JsonNode address = ethPipConfig.get().get(MainView.ULTIMAKER);
+            JsonNode address = ValueJsonMarshaller.toJsonNode(ethPipConfig).get(MainView.ULTIMAKER);
             if (address != null)
-                return address.textValue();
+                return address.stringValue();
         }
         return addressProvider.getUltimakerAddress();
     }

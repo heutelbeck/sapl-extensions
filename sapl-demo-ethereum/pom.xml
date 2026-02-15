@@ -24,13 +24,13 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.7</version>
+		<version>4.0.2</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
 	<groupId>io.sapl</groupId>
 	<artifactId>sapl-demo-ethereum</artifactId>
-	<version>3.1.0-SNAPSHOT</version>
+	<version>4.0.0-SNAPSHOT</version>
 
 	<name>SAPL Demo Ethereum</name>
 	<packaging>jar</packaging>
@@ -45,15 +45,15 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<jacoco.version>0.8.11</jacoco.version>
-		<vaadin.version>24.9.4</vaadin.version>
+		<vaadin.version>25.0.5</vaadin.version>
 		<version.lombok>1.18.42</version.lombok>
 		<failsafe.version>3.2.5</failsafe.version>
 		<selenium.version>4.8.3</selenium.version>
-		<sapl.version>3.1.0-SNAPSHOT</sapl.version>
+		<sapl.version>4.0.0-SNAPSHOT</sapl.version>
 		<spotbugs.version>4.9.8.1</spotbugs.version>
 		<sbcontrib.version>7.6.15</sbcontrib.version>
 		<springboot.version>3.4.2</springboot.version>
-		<version.testcontainers>1.20.4</version.testcontainers>
+		<version.testcontainers>2.0.3</version.testcontainers>
 
 		<maven.javadoc.skip>true</maven.javadoc.skip>
 
@@ -111,11 +111,7 @@
 		<!-- SAPL -->
 		<dependency>
 			<groupId>io.sapl</groupId>
-			<artifactId>sapl-spring-security</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.sapl</groupId>
-			<artifactId>sapl-spring-pdp-embedded</artifactId>
+			<artifactId>sapl-spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -152,7 +148,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>junit-jupiter</artifactId>
+			<artifactId>testcontainers-junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

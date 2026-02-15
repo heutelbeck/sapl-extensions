@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -24,8 +24,7 @@ import org.axonframework.commandhandling.GenericCommandMessage;
 import org.axonframework.messaging.GenericMessage;
 import org.axonframework.messaging.MetaData;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import io.sapl.api.model.Value;
 import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
 
@@ -50,7 +49,7 @@ public interface CommandConstraintHandlerProvider extends Responsible, HasPriori
      * changing the message.
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    default Function<CommandMessage<?>, CommandMessage<?>> getHandler(JsonNode constraint) {
+    default Function<CommandMessage<?>, CommandMessage<?>> getHandler(Value constraint) {
         return command -> {
             accept(command, constraint);
             var newPayload     = mapPayload(command.getPayload(), command.getPayloadType(), constraint);
@@ -68,7 +67,7 @@ public interface CommandConstraintHandlerProvider extends Responsible, HasPriori
      * @param message The message.
      * @param constraint The constraint.
      */
-    default void accept(CommandMessage<?> message, JsonNode constraint) {
+    default void accept(CommandMessage<?> message, Value constraint) {
         // NOOP
     }
 
@@ -79,7 +78,7 @@ public interface CommandConstraintHandlerProvider extends Responsible, HasPriori
      * @param constraint The constraint.
      * @return A potentially updated payload type.
      */
-    default Class<?> mapPayloadType(Class<?> payloadType, JsonNode constraint) {
+    default Class<?> mapPayloadType(Class<?> payloadType, Value constraint) {
         return payloadType;
     }
 
@@ -91,7 +90,7 @@ public interface CommandConstraintHandlerProvider extends Responsible, HasPriori
      * @param constraint The constraint.
      * @return A potentially updated payload.
      */
-    default Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
+    default Object mapPayload(Object payload, Class<?> clazz, Value constraint) {
         return payload;
     }
 
@@ -102,7 +101,7 @@ public interface CommandConstraintHandlerProvider extends Responsible, HasPriori
      * @param constraint The constraint.
      * @return A potentially updated commandName.
      */
-    default String mapCommandName(String commandName, JsonNode constraint) {
+    default String mapCommandName(String commandName, Value constraint) {
         return commandName;
     }
 
@@ -113,7 +112,7 @@ public interface CommandConstraintHandlerProvider extends Responsible, HasPriori
      * @param constraint The constraint.
      * @return Potentially updated metadata.
      */
-    default MetaData mapMetadata(MetaData originalMetadata, JsonNode constraint) {
+    default MetaData mapMetadata(MetaData originalMetadata, Value constraint) {
         return originalMetadata;
     }
 

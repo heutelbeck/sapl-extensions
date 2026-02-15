@@ -4,23 +4,21 @@ It is used for the button on the singlesubscription and the two buttons on the m
 The second policy is used for the texfield on the multisubscription-side. 
 */
 set "single and multi policies"
-first-applicable
+first or abstain errors propagate
 
 
 //sends alternately permit or deny in 5 second intervals.
 policy "grant_access_to_buttons_on_singleAndMultisubscription_page"
 permit
-    action == "view_component"
-where
+    action == "view_component";
 	resource.page =="SingleAndMultisubscription";
 	resource.object == "button";
-	<time.toggle(5000, 5000)>; 
+	<time.toggle(5000, 5000)>;
 
 //sends alternately permit or deny in 6 second intervals.
 policy "grant_access_to_textfields_on_singleAndMultisubscription_page"
 permit
-    action == "view_component"
-where
+    action == "view_component";
 	resource.page =="SingleAndMultisubscription";
 	resource.object == "textfield";
-	<time.toggle(6000, 6000)>; 
+	<time.toggle(6000, 6000)>;

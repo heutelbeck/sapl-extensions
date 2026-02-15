@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -31,6 +31,7 @@ import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.springframework.security.access.AccessDeniedException;
 
+import io.sapl.api.model.UndefinedValue;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
@@ -153,7 +154,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
 
         constraintHandler.set(newBundle);
 
-        if (implicitDecision.getDecision() != Decision.PERMIT)
+        if (implicitDecision.decision() != Decision.PERMIT)
             sink.next(newAccessDeniedUpdate());
 
         try {
@@ -165,10 +166,10 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
 
         latestDecision.set(implicitDecision);
 
-        var implicitDecisionResource = implicitDecision.getResource();
-        if (implicitDecisionResource.isPresent()) {
+        var implicitDecisionResource = implicitDecision.resource();
+        if (!(implicitDecisionResource instanceof UndefinedValue)) {
             try {
-                U newResponse = (U) constraintHandlerService.deserializeResource(implicitDecisionResource.get(),
+                U newResponse = (U) constraintHandlerService.deserializeResource(implicitDecisionResource,
                         updateResponseType);
                 sink.next(new GenericSubscriptionQueryUpdateMessage<>(
                         new RecoverableResponse<>(updateResponseType, newResponse)));
@@ -179,7 +180,7 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
             }
         }
 
-        if (implicitDecision.getDecision() == Decision.PERMIT && dataSubscription.get() == null)
+        if (implicitDecision.decision() == Decision.PERMIT && dataSubscription.get() == null)
             dataSubscription.set(wrapResourceAccessPointAndSubscribe());
     }
 
@@ -199,11 +200,11 @@ public class EnforceRecoverableIfDeniedPolicyEnforcementPoint<U>
 
         var decision = latestDecision.get();
 
-        if (decision.getDecision() != Decision.PERMIT)
+        if (decision.decision() != Decision.PERMIT)
             return;
 
         // drop elements while the last decision replaced data with resource
-        if (decision.getResource().isPresent())
+        if (!(decision.resource() instanceof UndefinedValue))
             return;
 
         try {

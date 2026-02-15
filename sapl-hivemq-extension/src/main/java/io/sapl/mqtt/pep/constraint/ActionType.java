@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,8 +17,8 @@
  */
 package io.sapl.mqtt.pep.constraint;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.sapl.api.model.ArrayValue;
+import io.sapl.api.model.Value;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,7 +40,7 @@ enum ActionType {
          * otherwise {@code false}
          */
         @Override
-        public boolean enforceConstraint(ConstraintDetails constraintDetails, JsonNode constraint) {
+        public boolean enforceConstraint(ConstraintDetails constraintDetails, Value constraint) {
             return ConnectionConstraints.enforceConnectionConstraintEntries(constraintDetails, constraint);
         }
 
@@ -52,7 +52,7 @@ enum ActionType {
          * sapl authorization decision
          */
         @Override
-        public void loggingConstraints(ArrayNode constraints, ConstraintDetails constraintDetails) {
+        public void loggingConstraints(ArrayValue constraints, ConstraintDetails constraintDetails) {
             log.debug("Enforcing constraints for mqtt connection of client '{}': {}", constraintDetails.getClientId(),
                     constraints);
         }
@@ -69,7 +69,7 @@ enum ActionType {
          * otherwise {@code false}
          */
         @Override
-        public boolean enforceConstraint(ConstraintDetails constraintDetails, JsonNode constraint) {
+        public boolean enforceConstraint(ConstraintDetails constraintDetails, Value constraint) {
             return SubscriptionConstraints.enforceSubscriptionConstraintEntries(constraintDetails, constraint);
         }
 
@@ -81,7 +81,7 @@ enum ActionType {
          * sapl authorization decision
          */
         @Override
-        public void loggingConstraints(ArrayNode constraints, ConstraintDetails constraintDetails) {
+        public void loggingConstraints(ArrayValue constraints, ConstraintDetails constraintDetails) {
             log.debug("Enforcing constraints for mqtt subscription of topic '{}' of client '{}': {}",
                     constraintDetails.getTopic(), constraintDetails.getClientId(), constraints);
         }
@@ -98,7 +98,7 @@ enum ActionType {
          * otherwise {@code false}
          */
         @Override
-        public boolean enforceConstraint(ConstraintDetails constraintDetails, JsonNode constraint) {
+        public boolean enforceConstraint(ConstraintDetails constraintDetails, Value constraint) {
             return PublishConstraints.enforcePublishConstraintEntries(constraintDetails, constraint);
         }
 
@@ -110,7 +110,7 @@ enum ActionType {
          * sapl authorization decision
          */
         @Override
-        public void loggingConstraints(ArrayNode constraints, ConstraintDetails constraintDetails) {
+        public void loggingConstraints(ArrayValue constraints, ConstraintDetails constraintDetails) {
             log.debug("Enforcing constraints for mqtt publish message of topic '{}' of client '{}': {}",
                     constraintDetails.getTopic(), constraintDetails.getClientId(), constraints);
         }
@@ -125,7 +125,7 @@ enum ActionType {
      * @return returns {@code true} in case the constraint was successfully handled,
      * otherwise {@code false}
      */
-    public abstract boolean enforceConstraint(ConstraintDetails constraintDetails, JsonNode constraint);
+    public abstract boolean enforceConstraint(ConstraintDetails constraintDetails, Value constraint);
 
     /**
      * Logs the provided constraints.
@@ -134,5 +134,5 @@ enum ActionType {
      * @param constraintDetails used to cache details about the constraints of a
      * sapl authorization decision
      */
-    public abstract void loggingConstraints(ArrayNode constraints, ConstraintDetails constraintDetails);
+    public abstract void loggingConstraints(ArrayValue constraints, ConstraintDetails constraintDetails);
 }

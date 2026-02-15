@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,7 +17,7 @@
  */
 package io.sapl.vaadin;
 
-import static io.sapl.api.interpreter.Val.JSON;
+import tools.jackson.databind.node.JsonNodeFactory;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -38,7 +38,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.server.Command;
 
 import io.sapl.api.pdp.AuthorizationDecision;
-import io.sapl.api.pdp.Decision;
 import io.sapl.vaadin.base.SecurityHelper;
 
 class VaadinPepEnforceHasEnabledTests {
@@ -47,7 +46,7 @@ class VaadinPepEnforceHasEnabledTests {
 
     @BeforeAll
     static void beforeAll() {
-        var subject = JSON.objectNode();
+        var subject = JsonNodeFactory.instance.objectNode();
         subject.put("username", "dummy");
         securityHelperMock = mockStatic(SecurityHelper.class);
         securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
@@ -84,10 +83,9 @@ class VaadinPepEnforceHasEnabledTests {
     @Test
     void when_EnforceHasEnabledOnDecisionEnableOrDisableWithPermit_then_ComponentIsEnabled() {
         // GIVEN
-        VaadinPepBuilderMock  vaadinPepBuilderMock = new VaadinPepBuilderMock();
-        AuthorizationDecision ad                   = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.PERMIT);
-        Button button = getButtonMockWithUI();
+        VaadinPepBuilderMock vaadinPepBuilderMock = new VaadinPepBuilderMock();
+        var                  ad                   = AuthorizationDecision.PERMIT;
+        Button               button               = getButtonMockWithUI();
 
         // WHEN
         vaadinPepBuilderMock.onDecisionEnableOrDisable();
@@ -100,10 +98,9 @@ class VaadinPepEnforceHasEnabledTests {
     @Test
     void when_EnforceHasEnabledOnDecisionEnableOrDisableWithDeny_then_ComponentIsDisabled() {
         // GIVEN
-        VaadinPepBuilderMock  vaadinPepBuilderMock = new VaadinPepBuilderMock();
-        AuthorizationDecision ad                   = mock(AuthorizationDecision.class);
-        when(ad.getDecision()).thenReturn(Decision.DENY);
-        Button button = getButtonMockWithUI();
+        VaadinPepBuilderMock vaadinPepBuilderMock = new VaadinPepBuilderMock();
+        var                  ad                   = AuthorizationDecision.DENY;
+        Button               button               = getButtonMockWithUI();
 
         // WHEN
         vaadinPepBuilderMock.onDecisionEnableOrDisable();

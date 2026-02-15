@@ -63,17 +63,17 @@ public class VaadinPEP<C> {
 	}
 
 	private void onDecision(AuthorizationDecision decision) {
-		if (decision.getDecision() == Decision.PERMIT) {
+		if (decision.decision() == Decision.PERMIT) {
 			ui.access(() -> permitListener.accept(component, decision));
-		} else if (decision.getDecision() == Decision.DENY) {
+		} else if (decision.decision() == Decision.DENY) {
 			ui.access(() -> denyListener.accept(component, decision));
-		} else if (decision.getDecision() == Decision.INDETERMINATE) {
+		} else if (decision.decision() == Decision.INDETERMINATE) {
 			if (indeterminateListener != null) {
 				ui.access(() -> indeterminateListener.accept(component, decision));
 			} else {
 				ui.access(() -> denyListener.accept(component, decision));
 			}
-		} else if (decision.getDecision() == Decision.NOT_APPLICABLE) {
+		} else if (decision.decision() == Decision.NOT_APPLICABLE) {
 			if (notApplicableListener != null) {
 				ui.access(() -> notApplicableListener.accept(component, decision));
 			} else {

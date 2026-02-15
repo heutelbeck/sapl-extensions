@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -47,11 +47,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-
+import io.sapl.api.model.TextValue;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.AuthorizationSubscription;
+import io.sapl.api.pdp.Decision;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.axon.annotation.ConstraintHandler;
 import io.sapl.axon.annotation.PreHandleEnforce;
@@ -80,8 +79,6 @@ public abstract class CommandTestsuite {
     private static final String MODIFIED_COMMAND = "modifiedCommand";
     private static final String MODIFY_COMMAND   = "modifyCommand";
     private static final String ON_DECISION_DO   = "onDecisionDo";
-
-    private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
 
     private static final long COMMAND_HANDLER_REGISTRATION_WAIT_TIME_MS = 750L;
     static boolean            isIntegrationTest                         = false;
@@ -129,10 +126,10 @@ public abstract class CommandTestsuite {
     @Test
     void when_securedCommandHandler_and_PermitWithUnknownObligation_then_accessDenied() {
         waitForCommandHandlerRegistration();
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode("unknown"));
+        var obligations = io.sapl.api.model.Value.ofArray(io.sapl.api.model.Value.of("unknown"));
         when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+                .thenReturn(Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
+                        io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED)));
         var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
         assertTrue(isAccessDenied().test(thrown));
     }
@@ -140,12 +137,11 @@ public abstract class CommandTestsuite {
     @Test
     void when_securedCommandHandler_and_PermitWithObligations_then_accessGrantedAndObligationsMet() {
         waitForCommandHandlerRegistration();
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode(MODIFY_RESULT));
-        obligations.add(JSON.textNode(ON_DECISION_DO));
-        obligations.add(JSON.textNode(MODIFY_COMMAND));
+        var obligations = io.sapl.api.model.Value.ofArray(io.sapl.api.model.Value.of(MODIFY_RESULT),
+                io.sapl.api.model.Value.of(ON_DECISION_DO), io.sapl.api.model.Value.of(MODIFY_COMMAND));
         when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+                .thenReturn(Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
+                        io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED)));
         assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is(MODIFIED_RESULT));
         verify(resultMappingProvider, times(1)).map(any());
         verify(onDecisionProvider, times(1)).accept(any(), any());
@@ -155,10 +151,10 @@ public abstract class CommandTestsuite {
     @Test
     void when_securedCommandHandler_and_PermitWithErrorMapObligations_then_accessGrantedAndChangedError() {
         waitForCommandHandlerRegistration();
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode(MODIFY_ERROR));
+        var obligations = io.sapl.api.model.Value.ofArray(io.sapl.api.model.Value.of(MODIFY_ERROR));
         when(pdp.decide(any(AuthorizationSubscription.class)))
-                .thenReturn(Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations)));
+                .thenReturn(Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
+                        io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED)));
 
         var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandTwo("foo")));
         assertTrue(isCausedBy(IllegalArgumentException.class).test(thrown));
@@ -185,9 +181,9 @@ public abstract class CommandTestsuite {
     void when_securedAggregateCreationAndFollowUpCommand_and_PermitWithObligation_then_accessGranted() {
         waitForCommandHandlerRegistration();
         var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
-        var obligations        = JSON.arrayNode();
-        obligations.add(JSON.textNode("something"));
-        var decisionsForModify = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
+        var obligations        = io.sapl.api.model.Value.ofArray(io.sapl.api.model.Value.of("something"));
+        var decisionsForModify = Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
+                io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForModify);
         assertThat(commandGateway.sendAndWait(new CreateAggregate("id4")), is("id4"));
         assertThat(commandGateway.sendAndWait(new ModifyAggregate("id4")), is(nullValue()));
@@ -196,9 +192,9 @@ public abstract class CommandTestsuite {
     @Test
     void when_securedCommandHandler_and_PermitWithObligation_then_accessGranted() {
         waitForCommandHandlerRegistration();
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode("serviceConstraint"));
-        var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
+        var obligations = io.sapl.api.model.Value.ofArray(io.sapl.api.model.Value.of("serviceConstraint"));
+        var decisions   = Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
+                io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
         assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is("OK (foo)"));
     }
@@ -206,9 +202,9 @@ public abstract class CommandTestsuite {
     @Test
     void when_securedCommandHandler_and_PermitWithObligationFailing_then_accessDenied() {
         waitForCommandHandlerRegistration();
-        var obligations = JSON.arrayNode();
-        obligations.add(JSON.textNode("failConstraint"));
-        var decisions = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
+        var obligations = io.sapl.api.model.Value.ofArray(io.sapl.api.model.Value.of("failConstraint"));
+        var decisions   = Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
+                io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
         var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
         assertTrue(isAccessDenied().test(thrown));
@@ -226,10 +222,11 @@ public abstract class CommandTestsuite {
     @Test
     void when_securedAggregateCreationAndFollowUpCommandToEntity_and_Permit_then_accessGranted() {
         waitForCommandHandlerRegistration();
-        var decisionsForCreate = Flux.just(AuthorizationDecision.PERMIT);
-        var obligations        = JSON.arrayNode();
-        obligations.add(JSON.textNode("somethingWithMember"));
-        var decisionsForMemberAccess = Flux.just(AuthorizationDecision.PERMIT.withObligations(obligations));
+        var decisionsForCreate       = Flux.just(AuthorizationDecision.PERMIT);
+        var obligations              = io.sapl.api.model.Value
+                .ofArray(io.sapl.api.model.Value.of("somethingWithMember"));
+        var decisionsForMemberAccess = Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
+                io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForMemberAccess);
         assertThat(commandGateway.sendAndWait(new CreateAggregate("id7")), is("id7"));
         assertThat(commandGateway.sendAndWait(new UpdateMember("id7", "A")), is(nullValue()));
@@ -274,9 +271,9 @@ public abstract class CommandTestsuite {
             throw new RuntimeException("I was a RuntimeException and now should be an IllegalArgumentException");
         }
 
-        @ConstraintHandler("#constraint.textValue() == 'serviceConstraint' && data == 'service data'")
-        public void handleConstraint(CommandOne command, JsonNode constraint, AuthorizationDecision decision,
-                CommandBus commandBus, MetaData metaData) {
+        @ConstraintHandler("#constraint.value() == 'serviceConstraint' && data == 'service data'")
+        public void handleConstraint(CommandOne command, io.sapl.api.model.Value constraint,
+                AuthorizationDecision decision, CommandBus commandBus, MetaData metaData) {
             log.trace("ConstraintHandler invoked");
             log.trace("command: {}", command);
             log.trace("constraint: {}", constraint);
@@ -285,7 +282,7 @@ public abstract class CommandTestsuite {
             log.trace("meta: {}", metaData);
         }
 
-        @ConstraintHandler("#constraint.textValue() == 'failConstraint'")
+        @ConstraintHandler("#constraint.value() == 'failConstraint'")
         public void handleConstraint() {
             throw new IllegalStateException("ERROR");
         }
@@ -295,12 +292,12 @@ public abstract class CommandTestsuite {
     static class OnDecisionProvider implements OnDecisionConstraintHandlerProvider {
 
         @Override
-        public boolean isResponsible(JsonNode constraint) {
-            return constraint.isTextual() && ON_DECISION_DO.equals(constraint.textValue());
+        public boolean isResponsible(io.sapl.api.model.Value constraint) {
+            return constraint instanceof TextValue(var text) && ON_DECISION_DO.equals(text);
         }
 
         @Override
-        public BiConsumer<AuthorizationDecision, Message<?>> getHandler(JsonNode constraint) {
+        public BiConsumer<AuthorizationDecision, Message<?>> getHandler(io.sapl.api.model.Value constraint) {
             return this::accept;
         }
 
@@ -313,12 +310,12 @@ public abstract class CommandTestsuite {
     static class CommandMappingProvider implements CommandConstraintHandlerProvider {
 
         @Override
-        public boolean isResponsible(JsonNode constraint) {
-            return constraint.isTextual() && MODIFY_COMMAND.equals(constraint.textValue());
+        public boolean isResponsible(io.sapl.api.model.Value constraint) {
+            return constraint instanceof TextValue(var text) && MODIFY_COMMAND.equals(text);
         }
 
         @Override
-        public Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
+        public Object mapPayload(Object payload, Class<?> clazz, io.sapl.api.model.Value constraint) {
             if (payload instanceof CommandOne) {
                 return new CommandOne(MODIFIED_COMMAND);
             }
@@ -330,8 +327,8 @@ public abstract class CommandTestsuite {
     public static class ResultMappingProvider implements MappingConstraintHandlerProvider<String> {
 
         @Override
-        public boolean isResponsible(JsonNode constraint) {
-            return constraint.isTextual() && MODIFY_RESULT.equals(constraint.textValue());
+        public boolean isResponsible(io.sapl.api.model.Value constraint) {
+            return constraint instanceof TextValue(var text) && MODIFY_RESULT.equals(text);
         }
 
         @Override
@@ -340,7 +337,7 @@ public abstract class CommandTestsuite {
         }
 
         @Override
-        public UnaryOperator<String> getHandler(JsonNode constraint) {
+        public UnaryOperator<String> getHandler(io.sapl.api.model.Value constraint) {
             return this::map;
         }
 
@@ -353,12 +350,12 @@ public abstract class CommandTestsuite {
     public static class ErrorMappingProvider implements ErrorMappingConstraintHandlerProvider {
 
         @Override
-        public boolean isResponsible(JsonNode constraint) {
-            return constraint.isTextual() && MODIFY_ERROR.equals(constraint.textValue());
+        public boolean isResponsible(io.sapl.api.model.Value constraint) {
+            return constraint instanceof TextValue(var text) && MODIFY_ERROR.equals(text);
         }
 
         @Override
-        public UnaryOperator<Throwable> getHandler(JsonNode constraint) {
+        public UnaryOperator<Throwable> getHandler(io.sapl.api.model.Value constraint) {
             return this::map;
         }
 

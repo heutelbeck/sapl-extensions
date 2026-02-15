@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -24,10 +24,10 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.core.Authentication;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,7 +40,7 @@ public class VaadinAuthorizationSubscriptionBuilderService {
 
     private static final JsonNodeFactory          JSON = JsonNodeFactory.instance;
     private final MethodSecurityExpressionHandler expressionHandler;
-    private final ObjectMapper                    mapper;
+    private final JsonMapper                      mapper;
 
     /**
      * Get subject by evaluating the subjectExpression against the provided
@@ -109,10 +109,10 @@ public class VaadinAuthorizationSubscriptionBuilderService {
      */
     public static JsonNode serializeTargetClassDescription(Class<?> clazz) {
         var result = JSON.objectNode();
-        result.set("name", JSON.textNode(clazz.getName()));
-        result.set("canonicalName", JSON.textNode(clazz.getCanonicalName()));
-        result.set("typeName", JSON.textNode(clazz.getTypeName()));
-        result.set("simpleName", JSON.textNode(clazz.getSimpleName()));
+        result.set("name", JSON.stringNode(clazz.getName()));
+        result.set("canonicalName", JSON.stringNode(clazz.getCanonicalName()));
+        result.set("typeName", JSON.stringNode(clazz.getTypeName()));
+        result.set("simpleName", JSON.stringNode(clazz.getSimpleName()));
         return result;
     }
 

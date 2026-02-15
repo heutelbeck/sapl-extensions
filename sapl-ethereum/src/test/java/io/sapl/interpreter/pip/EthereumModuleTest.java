@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,9 +17,11 @@
  */
 package io.sapl.interpreter.pip;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -32,13 +34,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
@@ -55,15 +58,19 @@ import org.web3j.protocol.core.methods.response.ShhMessages.SshMessage;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 import io.reactivex.Flowable;
-import io.sapl.api.interpreter.Val;
+import io.sapl.api.model.ArrayValue;
+import io.sapl.api.model.TextValue;
+import io.sapl.api.model.Value;
+import io.sapl.api.model.ValueJsonMarshaller;
 
+@ExtendWith(MockitoExtension.class)
 public class EthereumModuleTest {
 
     private static final String                   WRONG_NAME                         = "wrongName";
@@ -123,7 +130,7 @@ public class EthereumModuleTest {
     private static final String                   TEST_DATA_LCI_CONTRACT_ADDRESS     = "0x9a3dbca554e9f6b9257aaa24010da8377c57c17e";
     private static final String                   TEST_DATA_LCI_ENCODED_FUNCTION     = "0xfe9fbb80000000000000000000000000627306090abab3a6e1400e9345bc60c78a8bef57";
     private static final String                   TEST_DATA_LCI_RESULT               = "0x0000000000000000000000000000000000000000000000000000000000000001";
-    private static final ObjectMapper             MAPPER                             = new ObjectMapper();
+    private static final JsonMapper               MAPPER                             = JsonMapper.builder().build();
     private static final JsonNodeFactory          JSON                               = JsonNodeFactory.instance;
     private static EthereumPolicyInformationPoint ethPip;
 
@@ -136,13 +143,17 @@ public class EthereumModuleTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private Transaction transactionFromChain;
 
-    @Rule
-    public MockitoRule mockitoRule = MockitoJUnit.rule();
+    private MockedStatic<Web3j> web3jStaticMock;
 
-    @Before
-    public void setUp() {
-        mockStatic(Web3j.class);
-        ethPip = new EthereumPolicyInformationPoint(web3j);
+    @BeforeEach
+    void setUp() {
+        web3jStaticMock = mockStatic(Web3j.class);
+        ethPip          = new EthereumPolicyInformationPoint(web3j);
+    }
+
+    @AfterEach
+    void tearDown() {
+        web3jStaticMock.close();
     }
 
     // verifyTransaction
@@ -160,8 +171,10 @@ public class EthereumModuleTest {
         saplObject.put(FROM_ACCOUNT, TEST_FROM_ACCOUNT);
         saplObject.put(TO_ACCOUNT, TEST_TO_ACCOUNT);
         saplObject.put(TRANSACTION_VALUE, TEST_TRANSACTION_VALUE);
-        boolean result = ethPip.verifyTransaction(Val.of(saplObject), null).blockFirst().get().asBoolean();
-        assertTrue("Transaction was not validated as true although it is correct.", result);
+        boolean result = ValueJsonMarshaller
+                .toJsonNode(ethPip.verifyTransaction(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                .asBoolean();
+        assertTrue(result, "Transaction was not validated as true although it is correct.");
 
     }
 
@@ -178,8 +191,10 @@ public class EthereumModuleTest {
         saplObject.put(FROM_ACCOUNT, TEST_FROM_ACCOUNT);
         saplObject.put(TO_ACCOUNT, TEST_TO_ACCOUNT);
         saplObject.put(TRANSACTION_VALUE, new BigInteger("25"));
-        boolean result = ethPip.verifyTransaction(Val.of(saplObject), null).blockFirst().get().asBoolean();
-        assertFalse("Transaction was not validated as false although the value was false.", result);
+        boolean result = ValueJsonMarshaller
+                .toJsonNode(ethPip.verifyTransaction(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                .asBoolean();
+        assertFalse(result, "Transaction was not validated as false although the value was false.");
 
     }
 
@@ -195,8 +210,10 @@ public class EthereumModuleTest {
         saplObject.put(FROM_ACCOUNT, TEST_FALSE_ACCOUNT);
         saplObject.put(TO_ACCOUNT, TEST_TO_ACCOUNT);
         saplObject.put(TRANSACTION_VALUE, TEST_TRANSACTION_VALUE);
-        boolean result = ethPip.verifyTransaction(Val.of(saplObject), null).blockFirst().get().asBoolean();
-        assertFalse("Transaction was not validated as false although the sender was false.", result);
+        boolean result = ValueJsonMarshaller
+                .toJsonNode(ethPip.verifyTransaction(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                .asBoolean();
+        assertFalse(result, "Transaction was not validated as false although the sender was false.");
 
     }
 
@@ -213,8 +230,10 @@ public class EthereumModuleTest {
         saplObject.put(FROM_ACCOUNT, TEST_FROM_ACCOUNT);
         saplObject.put(TO_ACCOUNT, TEST_FALSE_ACCOUNT);
         saplObject.put(TRANSACTION_VALUE, TEST_TRANSACTION_VALUE);
-        boolean result = ethPip.verifyTransaction(Val.of(saplObject), null).blockFirst().get().asBoolean();
-        assertFalse("Transaction was not validated as false although the recipient was false.", result);
+        boolean result = ValueJsonMarshaller
+                .toJsonNode(ethPip.verifyTransaction(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                .asBoolean();
+        assertFalse(result, "Transaction was not validated as false although the recipient was false.");
 
     }
 
@@ -226,8 +245,10 @@ public class EthereumModuleTest {
         saplObject.put(FROM_ACCOUNT, TEST_FROM_ACCOUNT);
         saplObject.put(TO_ACCOUNT, TEST_TO_ACCOUNT);
         saplObject.put(TRANSACTION_VALUE, TEST_TRANSACTION_VALUE);
-        boolean result = ethPip.verifyTransaction(Val.of(saplObject), null).blockFirst().get().asBoolean();
-        assertFalse("Transaction was not validated as false although the TransactionHash was false.", result);
+        boolean result = ValueJsonMarshaller
+                .toJsonNode(ethPip.verifyTransaction(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                .asBoolean();
+        assertFalse(result, "Transaction was not validated as false although the TransactionHash was false.");
 
     }
 
@@ -235,8 +256,8 @@ public class EthereumModuleTest {
     public void verifyTransactionShouldReturnFalseWithNullInput() throws IOException {
         when(web3j.ethGetTransactionByHash(TEST_TRANSACTION_HASH).send()).thenReturn(ethTransaction);
         when(transactionFromChain.getValue()).thenReturn(TEST_TRANSACTION_VALUE);
-        boolean result = ethPip.verifyTransaction(null, null).blockFirst().get().asBoolean();
-        assertFalse("Transaction was not validated as false although the input was null.", result);
+        boolean result = ValueJsonMarshaller.toJsonNode(ethPip.verifyTransaction(null, null).blockFirst()).asBoolean();
+        assertFalse(result, "Transaction was not validated as false although the input was null.");
 
     }
 
@@ -248,8 +269,10 @@ public class EthereumModuleTest {
         saplObject.put(FROM_ACCOUNT, TEST_FROM_ACCOUNT);
         saplObject.put(TO_ACCOUNT, TEST_TO_ACCOUNT);
         saplObject.put(TRANSACTION_VALUE, TEST_TRANSACTION_VALUE);
-        boolean result = ethPip.verifyTransaction(Val.of(saplObject), null).blockFirst().get().asBoolean();
-        assertFalse("Transaction was not validated as false although the input was erroneous.", result);
+        boolean result = ValueJsonMarshaller
+                .toJsonNode(ethPip.verifyTransaction(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                .asBoolean();
+        assertFalse(result, "Transaction was not validated as false although the input was erroneous.");
 
     }
 
@@ -257,21 +280,23 @@ public class EthereumModuleTest {
 
     @Test
     public void loadContractInformationShouldReturnCorrectValue() throws IOException {
-        Val                                                 saplObject  = createSaplObject();
+        Value                                               saplObject  = createSaplObject();
         org.web3j.protocol.core.methods.request.Transaction transaction = org.web3j.protocol.core.methods.request.Transaction
                 .createEthCallTransaction(null, TEST_DATA_LCI_CONTRACT_ADDRESS, TEST_DATA_LCI_ENCODED_FUNCTION);
         DefaultBlockParameter                               dbp         = DefaultBlockParameter.valueOf(LATEST);
 
-        mockStatic(org.web3j.protocol.core.methods.request.Transaction.class);
-        when(org.web3j.protocol.core.methods.request.Transaction.createEthCallTransaction(null,
-                TEST_DATA_LCI_CONTRACT_ADDRESS, TEST_DATA_LCI_ENCODED_FUNCTION)).thenReturn(transaction);
-        when(web3j.ethCall(transaction, dbp).send().getValue()).thenReturn(TEST_DATA_LCI_RESULT);
+        try (var txMock = mockStatic(org.web3j.protocol.core.methods.request.Transaction.class)) {
+            txMock.when(() -> org.web3j.protocol.core.methods.request.Transaction.createEthCallTransaction(any(), any(),
+                    any())).thenReturn(transaction);
+            when(web3j.ethCall(any(), any(DefaultBlockParameter.class)).send().getValue())
+                    .thenReturn(TEST_DATA_LCI_RESULT);
 
-        JsonNode result = ethPip.loadContractInformation(saplObject, null).blockFirst().get();
+            JsonNode result = ValueJsonMarshaller
+                    .toJsonNode(ethPip.loadContractInformation(saplObject, null).blockFirst());
 
-        assertTrue("False was returned although user2 was authorized and result should have been true.",
-                result.get(0).get(VALUE).asBoolean());
-
+            assertTrue(result.get(0).get(VALUE).asBoolean(),
+                    "False was returned although user2 was authorized and result should have been true.");
+        }
     }
 
     // clientVersion
@@ -279,18 +304,20 @@ public class EthereumModuleTest {
     @Test
     public void web3ClientVersionShouldReturnTheClientVersion() throws IOException {
         when(web3j.web3ClientVersion().send().getWeb3ClientVersion()).thenReturn(TEST_DATA_CLIENT_VERSION);
-        String pipResult = ethPip.web3ClientVersion(null, null).blockFirst().get().asText();
-        assertEquals("The web3ClientVersion from the PIP was not loaded correctly.", TEST_DATA_CLIENT_VERSION,
-                pipResult);
+        String pipResult = ValueJsonMarshaller.toJsonNode(ethPip.web3ClientVersion(null, null).blockFirst())
+                .stringValue();
+        assertEquals(TEST_DATA_CLIENT_VERSION, pipResult,
+                "The web3ClientVersion from the PIP was not loaded correctly.");
     }
 
     // sha3
     @Test
     public void web3Sha3ShouldReturnCorrectValuer() throws IOException {
         when(web3j.web3Sha3(USER3_PRIVATE_KEY).send().getResult()).thenReturn(TEST_DATA_SHA3_RESULT);
-        Val    saplObject = Val.of(USER3_PRIVATE_KEY);
-        String pipResult  = ethPip.web3Sha3(saplObject, null).blockFirst().get().textValue();
-        assertEquals("The web3Sha3 method did not work correctly.", TEST_DATA_SHA3_RESULT, pipResult);
+        Value  saplObject = ValueJsonMarshaller.fromJsonNode(JSON.stringNode(USER3_PRIVATE_KEY));
+        String pipResult  = ValueJsonMarshaller.toJsonNode(ethPip.web3Sha3(saplObject, null).blockFirst())
+                .stringValue();
+        assertEquals(TEST_DATA_SHA3_RESULT, pipResult, "The web3Sha3 method did not work correctly.");
     }
 
     // netVersion
@@ -298,8 +325,8 @@ public class EthereumModuleTest {
     public void netVersionShouldReturnCorrectValue() throws IOException {
         String version = "2018";
         when(web3j.netVersion().send().getNetVersion()).thenReturn(version);
-        String pipResult = ethPip.netVersion(null, null).blockFirst().get().textValue();
-        assertEquals("The netVersion method did not work correctly.", version, pipResult);
+        String pipResult = ValueJsonMarshaller.toJsonNode(ethPip.netVersion(null, null).blockFirst()).stringValue();
+        assertEquals(version, pipResult, "The netVersion method did not work correctly.");
 
     }
 
@@ -307,8 +334,8 @@ public class EthereumModuleTest {
     @Test
     public void netListeningShouldReturnTrueWhenListeningToNetworkConnections() throws IOException {
         when(web3j.netListening().send().isListening()).thenReturn(true);
-        assertTrue("The netListening method did not return true although the Client by default is listening.",
-                ethPip.netListening(null, null).blockFirst().get().asBoolean());
+        assertTrue(ValueJsonMarshaller.toJsonNode(ethPip.netListening(null, null).blockFirst()).asBoolean(),
+                "The netListening method did not return true although the Client by default is listening.");
     }
 
     // peerCount
@@ -317,9 +344,10 @@ public class EthereumModuleTest {
         BigInteger peerCount = BigInteger.valueOf(5L);
         when(web3j.netPeerCount().send().getQuantity()).thenReturn(peerCount);
 
-        BigInteger pipResult = ethPip.netPeerCount(null, null).blockFirst().get().bigIntegerValue();
+        BigInteger pipResult = ValueJsonMarshaller.toJsonNode(ethPip.netPeerCount(null, null).blockFirst())
+                .bigIntegerValue();
 
-        assertEquals("The netPeerCount method did not return the correct number.", peerCount, pipResult);
+        assertEquals(peerCount, pipResult, "The netPeerCount method did not return the correct number.");
     }
 
     // protocolVersion
@@ -327,47 +355,50 @@ public class EthereumModuleTest {
     public void protocolVersionShouldReturnTheCorrectValue() throws IOException {
         String protocolVersion = "0x3f";
         when(web3j.ethProtocolVersion().send().getProtocolVersion()).thenReturn(protocolVersion);
-        String pipResult = ethPip.ethProtocolVersion(null, null).blockFirst().get().textValue();
-        assertEquals("The ethProtocolVersion method did not return the correct value.", protocolVersion, pipResult);
+        String pipResult = ValueJsonMarshaller.toJsonNode(ethPip.ethProtocolVersion(null, null).blockFirst())
+                .stringValue();
+        assertEquals(protocolVersion, pipResult, "The ethProtocolVersion method did not return the correct value.");
     }
 
     // syncing
     @Test
     public void ethSyncingShouldReturnTheCorrectValue() throws IOException {
         when(web3j.ethSyncing().send().isSyncing()).thenReturn(true);
-        boolean pipResult = ethPip.ethSyncing(null, null).blockFirst().get().asBoolean();
-        assertTrue("The ethSyncing method did not return the correct value.", pipResult);
+        boolean pipResult = ValueJsonMarshaller.toJsonNode(ethPip.ethSyncing(null, null).blockFirst()).asBoolean();
+        assertTrue(pipResult, "The ethSyncing method did not return the correct value.");
     }
 
     // coinbase
     @Test
     public void ethCoinbaseShouldReturnTheCorrectValue() throws IOException {
         when(web3j.ethCoinbase().send().getResult()).thenReturn(USER1_ADDRESS);
-        String pipResult = ethPip.ethCoinbase(null, null).blockFirst().get().textValue();
+        String pipResult = ValueJsonMarshaller.toJsonNode(ethPip.ethCoinbase(null, null).blockFirst()).stringValue();
 
-        assertEquals("The ethCoinbase method did not return the correct value.", USER1_ADDRESS, pipResult);
+        assertEquals(USER1_ADDRESS, pipResult, "The ethCoinbase method did not return the correct value.");
     }
 
     // mining
     @Test
     public void ethMiningShouldReturnTheCorrectValue() throws IOException {
         when(web3j.ethMining().send().isMining()).thenReturn(true);
-        boolean pipResult = ethPip.ethMining(null, new HashMap<>()).blockFirst().get().asBoolean();
-        assertTrue("The ethMining method did not return the correct value.", pipResult);
+        boolean pipResult = ValueJsonMarshaller.toJsonNode(ethPip.ethMining(null, new HashMap<>()).blockFirst())
+                .asBoolean();
+        assertTrue(pipResult, "The ethMining method did not return the correct value.");
     }
 
     // hashrate
     @Test
     public void ethHashrateShouldReturnTheCorrectValue() throws IOException {
-        BigInteger           testValue = BigInteger.valueOf(267L);
-        HashMap<String, Val> map       = new HashMap<>();
-        map.put(ETH_POLLING_INTERVAL, Val.of(1000L));
+        BigInteger             testValue = BigInteger.valueOf(267L);
+        HashMap<String, Value> map       = new HashMap<>();
+        map.put(ETH_POLLING_INTERVAL, ValueJsonMarshaller.fromJsonNode(JSON.numberNode(1000L)));
 
         when(web3j.ethHashrate().send().getHashrate()).thenReturn(testValue);
 
-        BigInteger pipResult = ethPip.ethHashrate(null, map).blockFirst().get().bigIntegerValue();
+        BigInteger pipResult = ValueJsonMarshaller.toJsonNode(ethPip.ethHashrate(null, map).blockFirst())
+                .bigIntegerValue();
 
-        assertEquals("The ethHashrate should be returned correctly.", testValue, pipResult);
+        assertEquals(testValue, pipResult, "The ethHashrate should be returned correctly.");
     }
 
     // gasPrice
@@ -375,9 +406,10 @@ public class EthereumModuleTest {
     public void ethGasPriceShouldReturnTheCorrectValue() throws IOException {
         BigInteger gasPrice = BigInteger.valueOf(1000L);
         when(web3j.ethGasPrice().send().getGasPrice()).thenReturn(gasPrice);
-        BigInteger pipResult = ethPip.ethGasPrice(null, null).blockFirst().get().bigIntegerValue();
+        BigInteger pipResult = ValueJsonMarshaller.toJsonNode(ethPip.ethGasPrice(null, null).blockFirst())
+                .bigIntegerValue();
 
-        assertEquals("The ethGasPrice method did not return the correct number.", gasPrice, pipResult);
+        assertEquals(gasPrice, pipResult, "The ethGasPrice method did not return the correct number.");
     }
 
     // accounts
@@ -386,11 +418,12 @@ public class EthereumModuleTest {
         List<String> accountList = Arrays.asList(USER1_ADDRESS, USER2_ADDRESS, USER3_ADDRESS);
         when(web3j.ethAccounts().send().getAccounts()).thenReturn(accountList);
 
-        List<JsonNode> result = new ArrayList<>();
-        ethPip.ethAccounts(null, null).blockFirst().get().elements().forEachRemaining(result::add);
-        List<String> pipResult = result.stream().map(JsonNode::textValue).toList();
+        var value = ethPip.ethAccounts(null, null).blockFirst();
+        assertInstanceOf(ArrayValue.class, value);
+        List<String> pipResult = ((ArrayValue) value).stream().filter(TextValue.class::isInstance)
+                .map(v -> ((TextValue) v).value()).toList();
 
-        assertEquals("The accounts method did not return the correct accounts.", accountList, pipResult);
+        assertEquals(accountList, pipResult, "The accounts method did not return the correct accounts.");
     }
 
     // blockNumber
@@ -398,9 +431,10 @@ public class EthereumModuleTest {
     public void ethBlockNumberShouldReturnTheCorrectValue() throws IOException {
         BigInteger blockNumber = BigInteger.valueOf(3002L);
         when(web3j.ethBlockNumber().send().getBlockNumber()).thenReturn(blockNumber);
-        BigInteger pipResult = ethPip.ethBlockNumber(null, null).blockFirst().get().bigIntegerValue();
+        BigInteger pipResult = ValueJsonMarshaller.toJsonNode(ethPip.ethBlockNumber(null, null).blockFirst())
+                .bigIntegerValue();
 
-        assertEquals("The ethBlockNumber method did not return the correct value.", blockNumber, pipResult);
+        assertEquals(blockNumber, pipResult, "The ethBlockNumber method did not return the correct value.");
     }
 
     // balance
@@ -413,10 +447,11 @@ public class EthereumModuleTest {
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(ADDRESS, USER1_ADDRESS);
         saplObject.put(DEFAULT_BLOCK_PARAMETER, LATEST);
-        JsonNode   pipRes    = ethPip.ethGetBalance(Val.of(saplObject), null).blockFirst().get();
+        JsonNode   pipRes    = ValueJsonMarshaller
+                .toJsonNode(ethPip.ethGetBalance(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst());
         BigInteger pipResult = pipRes.bigIntegerValue();
 
-        assertEquals("The ethGetBalance method did not return the correct value.", balance, pipResult);
+        assertEquals(balance, pipResult, "The ethGetBalance method did not return the correct value.");
     }
 
     // storage
@@ -429,10 +464,12 @@ public class EthereumModuleTest {
         saplObject.put(ADDRESS, TEST_DATA_STORAGE_ADDRESS);
         saplObject.put(POSITION, BigInteger.ZERO);
         saplObject.put(DEFAULT_BLOCK_PARAMETER, LATEST);
-        String pipResult = ethPip.ethGetStorageAt(Val.of(saplObject), null).blockFirst().get().textValue();
+        String pipResult = ValueJsonMarshaller
+                .toJsonNode(ethPip.ethGetStorageAt(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                .stringValue();
 
-        assertEquals("The ethGetStorageAt method did not return the correct value.", TEST_DATA_STORAGE_RETURN_VALUE,
-                pipResult);
+        assertEquals(TEST_DATA_STORAGE_RETURN_VALUE, pipResult,
+                "The ethGetStorageAt method did not return the correct value.");
     }
 
     // transactionCount
@@ -445,11 +482,13 @@ public class EthereumModuleTest {
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(ADDRESS, USER1_ADDRESS);
         saplObject.put(DEFAULT_BLOCK_PARAMETER, LATEST);
-        BigInteger pipResult = ethPip.ethGetTransactionCount(Val.of(saplObject), null).blockFirst().get()
+        BigInteger pipResult = ValueJsonMarshaller
+                .toJsonNode(
+                        ethPip.ethGetTransactionCount(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
                 .bigIntegerValue();
 
-        assertEquals("The ethGetTransactionCount method did not return the correct value.", transactionCount,
-                pipResult);
+        assertEquals(transactionCount, pipResult,
+                "The ethGetTransactionCount method did not return the correct value.");
     }
 
     // blockTransactionCountByHash
@@ -461,11 +500,12 @@ public class EthereumModuleTest {
 
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(BLOCK_HASH, TEST_DATA_BLOCKHASH);
-        BigInteger pipResult = ethPip.ethGetBlockTransactionCountByHash(Val.of(saplObject), null).blockFirst().get()
+        BigInteger pipResult = ValueJsonMarshaller.toJsonNode(ethPip
+                .ethGetBlockTransactionCountByHash(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
                 .bigIntegerValue();
 
-        assertEquals("The ethGetBlockTransactionCountByHash method did not return the correct value.", count,
-                pipResult);
+        assertEquals(count, pipResult,
+                "The ethGetBlockTransactionCountByHash method did not return the correct value.");
     }
 
     // blockTransactionCountByNumber
@@ -477,15 +517,19 @@ public class EthereumModuleTest {
         saplObject.put(DEFAULT_BLOCK_PARAMETER, blockNumber);
         DefaultBlockParameter dbp = DefaultBlockParameter.valueOf(blockNumber);
 
-        mockStatic(EthereumPipFunctions.class);
-        when(EthereumPipFunctions.getDefaultBlockParameter(saplObject)).thenReturn(dbp);
-        when(web3j.ethGetBlockTransactionCountByNumber(dbp).send().getTransactionCount()).thenReturn(count);
+        try (var pipFnMock = mockStatic(EthereumPipFunctions.class)) {
+            pipFnMock.when(() -> EthereumPipFunctions.getDefaultBlockParameter(any(JsonNode.class))).thenReturn(dbp);
+            when(web3j.ethGetBlockTransactionCountByNumber(any(DefaultBlockParameter.class)).send()
+                    .getTransactionCount()).thenReturn(count);
 
-        BigInteger pipResult = ethPip.ethGetBlockTransactionCountByNumber(Val.of(saplObject), null).blockFirst().get()
-                .bigIntegerValue();
+            BigInteger pipResult = ValueJsonMarshaller.toJsonNode(
+                    ethPip.ethGetBlockTransactionCountByNumber(ValueJsonMarshaller.fromJsonNode(saplObject), null)
+                            .blockFirst())
+                    .bigIntegerValue();
 
-        assertEquals("The ethGetBlockTransactionCountByNumber method did not return the correct value.", count,
-                pipResult);
+            assertEquals(count, pipResult,
+                    "The ethGetBlockTransactionCountByNumber method did not return the correct value.");
+        }
     }
 
     // uncleCountByBlockHash
@@ -495,11 +539,12 @@ public class EthereumModuleTest {
 
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(BLOCK_HASH, TEST_DATA_BLOCKHASH);
-        BigInteger pipResult = ethPip.ethGetUncleCountByBlockHash(Val.of(saplObject), null).blockFirst().get()
+        BigInteger pipResult = ValueJsonMarshaller.toJsonNode(
+                ethPip.ethGetUncleCountByBlockHash(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
                 .bigIntegerValue();
 
-        assertEquals("The ethGetUncleCountByBlockHash method did not return the correct value.", BigInteger.ONE,
-                pipResult);
+        assertEquals(BigInteger.ONE, pipResult,
+                "The ethGetUncleCountByBlockHash method did not return the correct value.");
     }
 
     // uncleCountByBlockNumber
@@ -511,16 +556,18 @@ public class EthereumModuleTest {
         ObjectNode            saplObject  = JSON.objectNode();
         saplObject.put(DEFAULT_BLOCK_PARAMETER, blockNumber);
 
-        mockStatic(EthereumPipFunctions.class);
-        when(EthereumPipFunctions.getDefaultBlockParameter(saplObject)).thenReturn(dbp);
-        when(web3j.ethGetUncleCountByBlockNumber(dbp).send().getUncleCount()).thenReturn(uncleCount);
+        try (var pipFnMock = mockStatic(EthereumPipFunctions.class)) {
+            pipFnMock.when(() -> EthereumPipFunctions.getDefaultBlockParameter(any(JsonNode.class))).thenReturn(dbp);
+            when(web3j.ethGetUncleCountByBlockNumber(any(DefaultBlockParameter.class)).send().getUncleCount())
+                    .thenReturn(uncleCount);
 
-        BigInteger pipResult = ethPip.ethGetUncleCountByBlockNumber(Val.of(saplObject), null).blockFirst().get()
-                .bigIntegerValue();
+            BigInteger pipResult = ValueJsonMarshaller.toJsonNode(ethPip
+                    .ethGetUncleCountByBlockNumber(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                    .bigIntegerValue();
 
-        assertEquals("The ethGetUncleCountByBlockNumber method did not return the correct value.", uncleCount,
-                pipResult);
-
+            assertEquals(uncleCount, pipResult,
+                    "The ethGetUncleCountByBlockNumber method did not return the correct value.");
+        }
     }
 
     // code
@@ -531,9 +578,11 @@ public class EthereumModuleTest {
 
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(ADDRESS, TEST_DATA_CONTRACT_ADDRESS);
-        String pipResult = ethPip.ethGetCode(Val.of(saplObject), null).blockFirst().get().textValue();
+        String pipResult = ValueJsonMarshaller
+                .toJsonNode(ethPip.ethGetCode(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                .stringValue();
 
-        assertEquals("The ethGetCode method did not return the correct value.", TEST_DATA_CODE_RETURN, pipResult);
+        assertEquals(TEST_DATA_CODE_RETURN, pipResult, "The ethGetCode method did not return the correct value.");
     }
 
     // call
@@ -544,13 +593,19 @@ public class EthereumModuleTest {
         saplObject.set(TRANSACTION, MAPPER.convertValue(transaction, JsonNode.class));
         DefaultBlockParameter dbp = DefaultBlockParameter.valueOf(LATEST);
 
-        mockStatic(EthereumPipFunctions.class);
-        when(EthereumPipFunctions.getDefaultBlockParameter(saplObject)).thenReturn(dbp);
-        when(EthereumPipFunctions.getTransactionFromJson(saplObject.get(TRANSACTION))).thenReturn(transaction);
-        when(web3j.ethCall(transaction, dbp).send().getValue()).thenReturn(TEST_DATA_CALL_RETURN_VALUE);
+        try (var pipFnMock = mockStatic(EthereumPipFunctions.class)) {
+            pipFnMock.when(() -> EthereumPipFunctions.getDefaultBlockParameter(any(JsonNode.class))).thenReturn(dbp);
+            pipFnMock.when(() -> EthereumPipFunctions.getTransactionFromJson(any(JsonNode.class)))
+                    .thenReturn(transaction);
+            when(web3j.ethCall(any(), any(DefaultBlockParameter.class)).send().getValue())
+                    .thenReturn(TEST_DATA_CALL_RETURN_VALUE);
 
-        String pipResult = ethPip.ethCall(Val.of(saplObject), null).blockFirst().get().textValue();
-        assertEquals("The ethCall method did not return the correct value.", TEST_DATA_CALL_RETURN_VALUE, pipResult);
+            String pipResult = ValueJsonMarshaller
+                    .toJsonNode(ethPip.ethCall(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                    .stringValue();
+            assertEquals(TEST_DATA_CALL_RETURN_VALUE, pipResult,
+                    "The ethCall method did not return the correct value.");
+        }
     }
 
     // estimateGas
@@ -561,13 +616,17 @@ public class EthereumModuleTest {
         ObjectNode                                          saplObject  = JSON.objectNode();
         saplObject.set(TRANSACTION, MAPPER.convertValue(transaction, JsonNode.class));
 
-        mockStatic(EthereumPipFunctions.class);
-        when(EthereumPipFunctions.getTransactionFromJson(saplObject.get(TRANSACTION))).thenReturn(transaction);
-        when(web3j.ethEstimateGas(transaction).send().getAmountUsed()).thenReturn(gas);
+        try (var pipFnMock = mockStatic(EthereumPipFunctions.class)) {
+            pipFnMock.when(() -> EthereumPipFunctions.getTransactionFromJson(any(JsonNode.class)))
+                    .thenReturn(transaction);
+            when(web3j.ethEstimateGas(any()).send().getAmountUsed()).thenReturn(gas);
 
-        BigInteger pipResult = ethPip.ethEstimateGas(Val.of(saplObject), null).blockFirst().get().bigIntegerValue();
+            BigInteger pipResult = ValueJsonMarshaller
+                    .toJsonNode(ethPip.ethEstimateGas(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                    .bigIntegerValue();
 
-        assertEquals("The ethEstimateGas method did not return the correct value.", gas, pipResult);
+            assertEquals(gas, pipResult, "The ethEstimateGas method did not return the correct value.");
+        }
     }
 
     // blockByHash
@@ -579,10 +638,12 @@ public class EthereumModuleTest {
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(BLOCK_HASH, TEST_DATA_BLOCKHASH);
         saplObject.put(RETURN_FULL_TRANSACTION_OBJECTS, false);
-        String pipResult = ethPip.ethGetBlockByHash(Val.of(saplObject), null).blockFirst().get().toString();
+        String pipResult = ValueJsonMarshaller
+                .toJsonNode(ethPip.ethGetBlockByHash(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                .toString();
 
-        assertEquals("The ethGetBlockByHash method did not return the correct value.",
-                MAPPER.convertValue(testBlock, JsonNode.class).toString(), pipResult);
+        assertEquals(MAPPER.convertValue(testBlock, JsonNode.class).toString(), pipResult,
+                "The ethGetBlockByHash method did not return the correct value.");
     }
 
     // blockByNumber
@@ -596,10 +657,11 @@ public class EthereumModuleTest {
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(DEFAULT_BLOCK_PARAMETER, EARLIEST);
         saplObject.put(RETURN_FULL_TRANSACTION_OBJECTS, false);
-        JsonNode pipResult = ethPip.ethGetBlockByNumber(Val.of(saplObject), null).blockFirst().get();
+        JsonNode pipResult = ValueJsonMarshaller.toJsonNode(
+                ethPip.ethGetBlockByNumber(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst());
 
-        assertEquals("The ethGetBlockByNumber method did not return the correct value.",
-                MAPPER.convertValue(testBlock, JsonNode.class), pipResult);
+        assertEquals(MAPPER.convertValue(testBlock, JsonNode.class).toString(), pipResult.toString(),
+                "The ethGetBlockByNumber method did not return the correct value.");
     }
 
     // transactionByHash
@@ -608,11 +670,12 @@ public class EthereumModuleTest {
         Transaction testTransaction = createTestResponseTransaction();
         when(web3j.ethGetTransactionByHash(TEST_DATA_TRANSACTION_HASH).send().getResult()).thenReturn(testTransaction);
 
-        JsonNode saplObject = JSON.textNode(TEST_DATA_TRANSACTION_HASH);
-        JsonNode pipResult  = ethPip.ethGetTransactionByHash(Val.of(saplObject), null).blockFirst().get();
+        JsonNode saplObject = JSON.stringNode(TEST_DATA_TRANSACTION_HASH);
+        JsonNode pipResult  = ValueJsonMarshaller.toJsonNode(
+                ethPip.ethGetTransactionByHash(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst());
 
-        assertEquals("The ethGetTransactionByHash method did not return the correct value.",
-                MAPPER.convertValue(testTransaction, JsonNode.class), pipResult);
+        assertEquals(MAPPER.convertValue(testTransaction, JsonNode.class).toString(), pipResult.toString(),
+                "The ethGetTransactionByHash method did not return the correct value.");
     }
 
     // transactionByBlockHashAndIndex
@@ -627,10 +690,11 @@ public class EthereumModuleTest {
         saplObject.put(BLOCK_HASH, TEST_DATA_BLOCKHASH);
         saplObject.put(TRANSACTION_INDEX, index);
 
-        JsonNode pipResult = ethPip.ethGetTransactionByBlockHashAndIndex(Val.of(saplObject), null).blockFirst().get();
+        JsonNode pipResult = ValueJsonMarshaller.toJsonNode(ethPip
+                .ethGetTransactionByBlockHashAndIndex(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst());
 
-        assertEquals("The ethGetTransactionByBlockHashAndIndex method did not return the correct value.",
-                MAPPER.convertValue(testTransaction, JsonNode.class), pipResult);
+        assertEquals(MAPPER.convertValue(testTransaction, JsonNode.class).toString(), pipResult.toString(),
+                "The ethGetTransactionByBlockHashAndIndex method did not return the correct value.");
     }
 
     // transactionByBlockNumberAndIndex
@@ -644,14 +708,18 @@ public class EthereumModuleTest {
         saplObject.put(DEFAULT_BLOCK_PARAMETER, blockNumber);
         saplObject.put(TRANSACTION_INDEX, index);
 
-        mockStatic(EthereumPipFunctions.class);
-        when(EthereumPipFunctions.getDefaultBlockParameter(saplObject)).thenReturn(dbp);
-        when(web3j.ethGetTransactionByBlockNumberAndIndex(dbp, index).send().getResult()).thenReturn(testTransaction);
+        try (var pipFnMock = mockStatic(EthereumPipFunctions.class)) {
+            pipFnMock.when(() -> EthereumPipFunctions.getDefaultBlockParameter(any(JsonNode.class))).thenReturn(dbp);
+            when(web3j.ethGetTransactionByBlockNumberAndIndex(any(DefaultBlockParameter.class), any(BigInteger.class))
+                    .send().getResult()).thenReturn(testTransaction);
 
-        JsonNode pipResult = ethPip.ethGetTransactionByBlockNumberAndIndex(Val.of(saplObject), null).blockFirst().get();
+            JsonNode pipResult = ValueJsonMarshaller.toJsonNode(
+                    ethPip.ethGetTransactionByBlockNumberAndIndex(ValueJsonMarshaller.fromJsonNode(saplObject), null)
+                            .blockFirst());
 
-        assertEquals("The ethGetTransactionByBlockNumberAndIndex method did not return the correct value.",
-                MAPPER.convertValue(testTransaction, JsonNode.class), pipResult);
+            assertEquals(MAPPER.convertValue(testTransaction, JsonNode.class).toString(), pipResult.toString(),
+                    "The ethGetTransactionByBlockNumberAndIndex method did not return the correct value.");
+        }
     }
 
     // transactionReceipt
@@ -660,11 +728,12 @@ public class EthereumModuleTest {
         TransactionReceipt receipt = createTestReceipt();
         when(web3j.ethGetTransactionReceipt(TEST_DATA_RECEIPT_TRANSACTION_HASH).send().getResult()).thenReturn(receipt);
 
-        JsonNode saplObject = JSON.textNode(TEST_DATA_RECEIPT_TRANSACTION_HASH);
-        JsonNode pipResult  = ethPip.ethGetTransactionReceipt(Val.of(saplObject), null).blockFirst().get();
+        JsonNode saplObject = JSON.stringNode(TEST_DATA_RECEIPT_TRANSACTION_HASH);
+        JsonNode pipResult  = ValueJsonMarshaller.toJsonNode(
+                ethPip.ethGetTransactionReceipt(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst());
 
-        assertEquals("The ethGetTransactionReceipt method did not return the correct value.",
-                MAPPER.convertValue(receipt, JsonNode.class), pipResult);
+        assertEquals(MAPPER.convertValue(receipt, JsonNode.class).toString(), pipResult.toString(),
+                "The ethGetTransactionReceipt method did not return the correct value.");
     }
 
     // pendingTransactions
@@ -673,10 +742,11 @@ public class EthereumModuleTest {
         when(web3j.ethPendingTransactionHashFlowable())
                 .thenReturn(Flowable.fromArray(TEST_DATA_TRANSACTION_HASH, TEST_DATA_TRANSACTION_HASH_2));
 
-        String pipResult = ethPip.ethPendingTransactions(null, null).blockFirst().get().textValue();
+        String pipResult = ValueJsonMarshaller.toJsonNode(ethPip.ethPendingTransactions(null, null).blockFirst())
+                .stringValue();
 
-        assertEquals("The ethPendingTransactions method did not return the correct value.", TEST_DATA_TRANSACTION_HASH,
-                pipResult);
+        assertEquals(TEST_DATA_TRANSACTION_HASH, pipResult,
+                "The ethPendingTransactions method did not return the correct value.");
     }
 
     // uncleByBlockHashAndIndex
@@ -690,10 +760,11 @@ public class EthereumModuleTest {
         saplObject.put(BLOCK_HASH, TEST_DATA_BLOCKHASH);
         saplObject.put(UNCLE_INDEX, index);
 
-        JsonNode pipResult = ethPip.ethGetUncleByBlockHashAndIndex(Val.of(saplObject), null).blockFirst().get();
+        JsonNode pipResult = ValueJsonMarshaller.toJsonNode(
+                ethPip.ethGetUncleByBlockHashAndIndex(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst());
 
-        assertEquals("The ethGetUncleByBlockHashAndIndex method did not return the correct value.",
-                MAPPER.convertValue(testBlock, JsonNode.class), pipResult);
+        assertEquals(MAPPER.convertValue(testBlock, JsonNode.class).toString(), pipResult.toString(),
+                "The ethGetUncleByBlockHashAndIndex method did not return the correct value.");
     }
 
     // uncleByBlockNumberAndIndex
@@ -706,14 +777,17 @@ public class EthereumModuleTest {
         saplObject.put(DEFAULT_BLOCK_PARAMETER, PENDING);
         saplObject.put(UNCLE_INDEX, index);
 
-        mockStatic(EthereumPipFunctions.class);
-        when(EthereumPipFunctions.getDefaultBlockParameter(saplObject)).thenReturn(dbp);
-        when(web3j.ethGetUncleByBlockNumberAndIndex(dbp, index).send().getBlock()).thenReturn(testBlock);
+        try (var pipFnMock = mockStatic(EthereumPipFunctions.class)) {
+            pipFnMock.when(() -> EthereumPipFunctions.getDefaultBlockParameter(any(JsonNode.class))).thenReturn(dbp);
+            when(web3j.ethGetUncleByBlockNumberAndIndex(any(DefaultBlockParameter.class), any(BigInteger.class)).send()
+                    .getBlock()).thenReturn(testBlock);
 
-        JsonNode pipResult = ethPip.ethGetUncleByBlockNumberAndIndex(Val.of(saplObject), null).blockFirst().get();
+            JsonNode pipResult = ValueJsonMarshaller.toJsonNode(ethPip
+                    .ethGetUncleByBlockNumberAndIndex(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst());
 
-        assertEquals("The ethGetUncleByBlockNumberAndIndex method did not return the correct value.",
-                MAPPER.convertValue(testBlock, JsonNode.class), pipResult);
+            assertEquals(MAPPER.convertValue(testBlock, JsonNode.class).toString(), pipResult.toString(),
+                    "The ethGetUncleByBlockNumberAndIndex method did not return the correct value.");
+        }
     }
 
     // ethFilterChanges
@@ -726,7 +800,8 @@ public class EthereumModuleTest {
 
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(FILTER_ID, filterId);
-        JsonNode     pipList   = ethPip.ethGetFilterChanges(Val.of(saplObject), null).blockFirst().get();
+        JsonNode     pipList   = ValueJsonMarshaller.toJsonNode(
+                ethPip.ethGetFilterChanges(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst());
         List<String> pipResult = new ArrayList<>();
         for (JsonNode json : pipList) {
             pipResult.add(json.toString());
@@ -735,7 +810,7 @@ public class EthereumModuleTest {
         List<String> logStringList = Collections
                 .singletonList(MAPPER.convertValue(createLogObject(), JsonNode.class).toString());
 
-        assertEquals("The ethGetFilterChanges method did not return the correct value.", logStringList, pipResult);
+        assertEquals(logStringList, pipResult, "The ethGetFilterChanges method did not return the correct value.");
     }
 
     // ethFilterLogs
@@ -749,7 +824,8 @@ public class EthereumModuleTest {
         when(web3j.ethGetFilterLogs(filterId).send().getLogs())
                 .thenReturn(Collections.singletonList(createLogObject()));
 
-        JsonNode     pipList   = ethPip.ethGetFilterLogs(Val.of(saplObject), null).blockFirst().get();
+        JsonNode     pipList   = ValueJsonMarshaller
+                .toJsonNode(ethPip.ethGetFilterLogs(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst());
         List<String> pipResult = new ArrayList<>();
         for (JsonNode json : pipList) {
             pipResult.add(json.toString());
@@ -758,7 +834,7 @@ public class EthereumModuleTest {
         List<String> logStringList = Collections
                 .singletonList(MAPPER.convertValue(createLogObject(), JsonNode.class).toString());
 
-        assertEquals("The ethGetFilterLogs method did not return the correct value.", logStringList, pipResult);
+        assertEquals(logStringList, pipResult, "The ethGetFilterLogs method did not return the correct value.");
     }
 
     // logs
@@ -767,20 +843,23 @@ public class EthereumModuleTest {
         EthFilter filter     = getTestFilter();
         JsonNode  saplObject = MAPPER.convertValue(filter, JsonNode.class);
 
-        mockStatic(EthereumPipFunctions.class);
-        when(EthereumPipFunctions.getEthFilterFrom(saplObject)).thenReturn(filter);
-        when(web3j.ethGetLogs(filter).send().getLogs()).thenReturn(Collections.singletonList(createLogObject()));
+        try (var pipFnMock = mockStatic(EthereumPipFunctions.class)) {
+            pipFnMock.when(() -> EthereumPipFunctions.getEthFilterFrom(any(JsonNode.class))).thenReturn(filter);
+            when(web3j.ethGetLogs(any(EthFilter.class)).send().getLogs())
+                    .thenReturn(Collections.singletonList(createLogObject()));
 
-        JsonNode     pipList   = ethPip.ethGetLogs(Val.of(saplObject), null).blockFirst().get();
-        List<String> pipResult = new ArrayList<>();
-        for (JsonNode json : pipList) {
-            pipResult.add(json.toString());
+            JsonNode     pipList   = ValueJsonMarshaller
+                    .toJsonNode(ethPip.ethGetLogs(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst());
+            List<String> pipResult = new ArrayList<>();
+            for (JsonNode json : pipList) {
+                pipResult.add(json.toString());
+            }
+
+            List<String> logStringList = Collections
+                    .singletonList(MAPPER.convertValue(createLogObject(), JsonNode.class).toString());
+
+            assertEquals(logStringList, pipResult, "The ethGetFilterLogs method did not return the correct value.");
         }
-
-        List<String> logStringList = Collections
-                .singletonList(MAPPER.convertValue(createLogObject(), JsonNode.class).toString());
-
-        assertEquals("The ethGetFilterLogs method did not return the correct value.", logStringList, pipResult);
     }
 
     // sign
@@ -792,8 +871,10 @@ public class EthereumModuleTest {
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(ADDRESS, TEST_DATA_SIGN_ADDRESS);
         saplObject.put(SHA3_HASH_OF_DATA_TO_SIGN, TEST_DATA_SIGN_MESSAGE);
-        String pipResult = ethPip.ethSign(Val.of(saplObject), null).blockFirst().get().textValue();
-        assertEquals("The ethSign method did not return the correct value.", TEST_DATA_SIGN_RESULT, pipResult);
+        String pipResult = ValueJsonMarshaller
+                .toJsonNode(ethPip.ethSign(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                .stringValue();
+        assertEquals(TEST_DATA_SIGN_RESULT, pipResult, "The ethSign method did not return the correct value.");
     }
 
     // shhFilterChanges
@@ -807,7 +888,8 @@ public class EthereumModuleTest {
         when(web3j.shhGetFilterChanges(filterId).send().getMessages()).thenReturn(sshList);
 
         JsonNode     saplObject = JSON.numberNode(filterId);
-        JsonNode     pipList    = ethPip.shhGetFilterChanges(Val.of(saplObject), null).blockFirst().get();
+        JsonNode     pipList    = ValueJsonMarshaller.toJsonNode(
+                ethPip.shhGetFilterChanges(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst());
         List<String> pipResult  = new ArrayList<>();
         for (JsonNode json : pipList) {
             pipResult.add(json.toString());
@@ -817,7 +899,7 @@ public class EthereumModuleTest {
         for (SshMessage sshMessage : sshList) {
             sshStringList.add(MAPPER.convertValue(sshMessage, JsonNode.class).toString());
         }
-        assertEquals("The shhGetFilterChanges method did not work correctly.", sshStringList, pipResult);
+        assertEquals(sshStringList, pipResult, "The shhGetFilterChanges method did not work correctly.");
 
     }
 
@@ -832,7 +914,8 @@ public class EthereumModuleTest {
         when(web3j.shhGetMessages(filterId).send().getMessages()).thenReturn(sshList);
 
         JsonNode     saplObject = JSON.numberNode(filterId);
-        JsonNode     pipList    = ethPip.shhGetMessages(Val.of(saplObject), null).blockFirst().get();
+        JsonNode     pipList    = ValueJsonMarshaller
+                .toJsonNode(ethPip.shhGetMessages(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst());
         List<String> pipResult  = new ArrayList<>();
         for (JsonNode json : pipList) {
             pipResult.add(json.toString());
@@ -842,7 +925,7 @@ public class EthereumModuleTest {
         for (SshMessage sshMessage : sshList) {
             sshStringList.add(MAPPER.convertValue(sshMessage, JsonNode.class).toString());
         }
-        assertEquals("The shhGetMessages method did not work correctly.", sshStringList, pipResult);
+        assertEquals(sshStringList, pipResult, "The shhGetMessages method did not work correctly.");
 
     }
 
@@ -850,8 +933,8 @@ public class EthereumModuleTest {
     @Test
     public void shhVersionShouldReturnCorrectValue() throws IOException {
         when(web3j.shhVersion().send().getVersion()).thenReturn(TEST_DATA_SHH_VERSION);
-        String pipResult = ethPip.shhVersion(null, null).blockFirst().get().textValue();
-        assertEquals("The shhVersion method did not work correctly.", TEST_DATA_SHH_VERSION, pipResult);
+        String pipResult = ValueJsonMarshaller.toJsonNode(ethPip.shhVersion(null, null).blockFirst()).stringValue();
+        assertEquals(TEST_DATA_SHH_VERSION, pipResult, "The shhVersion method did not work correctly.");
 
     }
 
@@ -861,12 +944,12 @@ public class EthereumModuleTest {
         List<String> ethWorkList = getEthWorkList();
         when(web3j.ethGetWork().send().getResult()).thenReturn(ethWorkList);
 
-        JsonNode     pipList   = ethPip.ethGetWork(null, null).blockFirst().get();
+        JsonNode     pipList   = ValueJsonMarshaller.toJsonNode(ethPip.ethGetWork(null, null).blockFirst());
         List<String> pipResult = new ArrayList<>();
         for (JsonNode json : pipList) {
-            pipResult.add(json.textValue());
+            pipResult.add(json.stringValue());
         }
-        assertEquals("The ethGetWork method did not work correctly.", ethWorkList, pipResult);
+        assertEquals(ethWorkList, pipResult, "The ethGetWork method did not work correctly.");
 
     }
 
@@ -874,12 +957,14 @@ public class EthereumModuleTest {
     @Test
     public void shhHasIdentityShouldReturnCorrectValue() throws IOException {
 
-        JsonNode saplObject = JSON.textNode(TEST_DATA_HAS_IDENTITY);
+        JsonNode saplObject = JSON.stringNode(TEST_DATA_HAS_IDENTITY);
 
         when(web3j.shhHasIdentity(TEST_DATA_HAS_IDENTITY).send().getResult()).thenReturn(true);
 
-        boolean pipResult = ethPip.shhHasIdentity(Val.of(saplObject), null).blockFirst().get().asBoolean();
-        assertTrue("The shhHasIdentity method did not work correctly.", pipResult);
+        boolean pipResult = ValueJsonMarshaller
+                .toJsonNode(ethPip.shhHasIdentity(ValueJsonMarshaller.fromJsonNode(saplObject), null).blockFirst())
+                .asBoolean();
+        assertTrue(pipResult, "The shhHasIdentity method did not work correctly.");
 
     }
 
@@ -962,7 +1047,7 @@ public class EthereumModuleTest {
                 addresses);
     }
 
-    private static Val createSaplObject() {
+    private static Value createSaplObject() {
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(CONTRACT_ADDRESS, TEST_DATA_LCI_CONTRACT_ADDRESS);
         saplObject.put(FUNCTION_NAME, IS_AUTHORIZED);
@@ -975,7 +1060,7 @@ public class EthereumModuleTest {
         ArrayNode outputParams = JSON.arrayNode();
         outputParams.add(BOOL);
         saplObject.set(OUTPUT_PARAMS, outputParams);
-        return Val.of(saplObject);
+        return ValueJsonMarshaller.fromJsonNode(saplObject);
     }
 
 }

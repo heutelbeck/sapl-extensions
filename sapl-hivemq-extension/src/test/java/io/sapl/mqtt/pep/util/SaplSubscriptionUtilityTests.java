@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -18,7 +18,7 @@
 package io.sapl.mqtt.pep.util;
 
 import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_LAST_WILL_LAST_WILL_PAYLOAD;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -42,6 +42,9 @@ import com.hivemq.extension.sdk.api.services.admin.AdminService;
 import com.hivemq.extension.sdk.api.services.admin.LicenseEdition;
 import com.hivemq.extension.sdk.api.services.admin.LicenseInformation;
 
+import io.sapl.api.model.NullValue;
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.TextValue;
 import io.sapl.mqtt.pep.cache.MqttClientState;
 import lombok.NonNull;
 
@@ -72,7 +75,8 @@ class SaplSubscriptionUtilityTests {
                     .buildSaplAuthzSubscriptionForMqttConnection(mqttClientStateMock, simpleAuthInputMock);
 
             // THEN
-            assertTrue(authzSubscription.getAction().get(ENVIRONMENT_LAST_WILL_LAST_WILL_PAYLOAD).isNull());
+            assertInstanceOf(NullValue.class,
+                    ((ObjectValue) authzSubscription.action()).get(ENVIRONMENT_LAST_WILL_LAST_WILL_PAYLOAD));
         }
     }
 
@@ -104,7 +108,8 @@ class SaplSubscriptionUtilityTests {
                     .buildSaplAuthzSubscriptionForMqttConnection(mqttClientStateMock, simpleAuthInputMock);
 
             // THEN
-            assertTrue(authzSubscription.getAction().get(ENVIRONMENT_LAST_WILL_LAST_WILL_PAYLOAD).isTextual());
+            assertInstanceOf(TextValue.class,
+                    ((ObjectValue) authzSubscription.action()).get(ENVIRONMENT_LAST_WILL_LAST_WILL_PAYLOAD));
         }
     }
 

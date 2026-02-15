@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -82,7 +82,7 @@ public class ConstraintDetails {
         this.hasHandledObligationsSuccessfully    = true;
         this.isResubscribeMqttSubscriptionEnabled = null;
         this.publishInboundOutput                 = publishInboundOutput;
-        this.authzDecision                        = identAuthzDecision.getAuthorizationDecision();
-        this.subscriptionId                       = identAuthzDecision.getAuthorizationSubscriptionId();
+        this.authzDecision                        = identAuthzDecision.decision();
+        this.subscriptionId                       = identAuthzDecision.subscriptionId();
     }
 }

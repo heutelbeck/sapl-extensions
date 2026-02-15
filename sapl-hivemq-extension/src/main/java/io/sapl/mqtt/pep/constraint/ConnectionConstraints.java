@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,7 +20,10 @@ package io.sapl.mqtt.pep.constraint;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.sapl.api.model.NumberValue;
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.TextValue;
+import io.sapl.api.model.Value;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -34,46 +37,51 @@ import lombok.extern.slf4j.Slf4j;
 public class ConnectionConstraints {
 
     @FunctionalInterface
-    private interface ConnectionConstraintHandlingFunction<C, J> {
-        boolean fulfill(C constraintDetails, J constraint);
+    private interface ConnectionConstraintHandlingFunction<C, V> {
+        boolean fulfill(C constraintDetails, V constraint);
     }
 
-    private static final Map<String, ConnectionConstraintHandlingFunction<ConstraintDetails, JsonNode>> CONNECTION_CONSTRAINTS = new HashMap<>();
+    private static final Map<String, ConnectionConstraintHandlingFunction<ConstraintDetails, ObjectValue>> CONNECTION_CONSTRAINTS = new HashMap<>();
 
     static {
         CONNECTION_CONSTRAINTS.put(Constraints.ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION,
                 ConnectionConstraints::setTimeLimit);
     }
 
-    static boolean enforceConnectionConstraintEntries(ConstraintDetails constraintDetails, JsonNode constraint) {
-        ConnectionConstraintHandlingFunction<ConstraintDetails, JsonNode> connectionConstraintHandlingFunction = null;
-        if (constraint.has(Constraints.ENVIRONMENT_CONSTRAINT_TYPE)
-                && constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).isTextual()) {
-            String constraintType = constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).asText();
+    static boolean enforceConnectionConstraintEntries(ConstraintDetails constraintDetails, Value constraint) {
+        if (!(constraint instanceof ObjectValue obj)) {
+            log.warn("No valid constraint handler found for client '{}' and constraint '{}'. "
+                    + "Please check your policy specification.", constraintDetails.getClientId(), constraint);
+            return false;
+        }
+
+        ConnectionConstraintHandlingFunction<ConstraintDetails, ObjectValue> connectionConstraintHandlingFunction = null;
+        if (obj.containsKey(Constraints.ENVIRONMENT_CONSTRAINT_TYPE)
+                && obj.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE) instanceof TextValue(var constraintType)) {
             connectionConstraintHandlingFunction = CONNECTION_CONSTRAINTS.get(constraintType);
         }
 
-        if (connectionConstraintHandlingFunction == null) { // returns false if the constraint entry couldn't be handled
+        if (connectionConstraintHandlingFunction == null) {
             log.warn("No valid constraint handler found for client '{}' and constraint '{}'. "
                     + "Please check your policy specification.", constraintDetails.getClientId(), constraint);
             return false;
         } else {
-            return connectionConstraintHandlingFunction.fulfill(constraintDetails, constraint);
+            return connectionConstraintHandlingFunction.fulfill(constraintDetails, obj);
         }
     }
 
-    private static boolean setTimeLimit(ConstraintDetails constraintDetails, JsonNode constraint) {
-        JsonNode timeLimitJson = constraint.get(Constraints.ENVIRONMENT_TIME_LIMIT);
-        if (timeLimitJson != null) {
-            if (!timeLimitJson.canConvertToExactIntegral() || timeLimitJson.asLong() < 1) {
+    private static boolean setTimeLimit(ConstraintDetails constraintDetails, ObjectValue constraint) {
+        var timeLimitValue = constraint.get(Constraints.ENVIRONMENT_TIME_LIMIT);
+        if (timeLimitValue instanceof NumberValue(var timeLimitNum)) {
+            var timeLimitLong = timeLimitNum.longValue();
+            if (timeLimitLong < 1) {
                 log.warn("Illegal time limit for connection of client '{}' specified: {}",
                         constraintDetails.getClientId(), constraint);
                 return false;
             }
-            var timeLimitSec = timeLimitJson.asLong();
-            constraintDetails.setTimeLimitSec(timeLimitSec);
+            constraintDetails.setTimeLimitSec(timeLimitLong);
             log.info("Limit the connection time for client '{}' to '{}' seconds.", constraintDetails.getClientId(),
-                    timeLimitSec);
+                    timeLimitLong);
             return true;
         } else {
             log.warn("No time limit specified for mqtt connection constraint of type '{}' for client '{}'.",

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -36,9 +36,9 @@ import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.axon.annotation.PreHandleEnforce;
@@ -85,7 +85,7 @@ public class AuthorizationSubscriptionBuilderService {
     private static final JsonNodeFactory  JSON        = JsonNodeFactory.instance;
     private static final ExpressionParser SPEL_PARSER = new SpelExpressionParser();
 
-    private final ObjectMapper mapper;
+    private final JsonMapper mapper;
 
     /**
      * Executed to get the AuthorizationSubscription for a CommandMessage.
@@ -191,11 +191,11 @@ public class AuthorizationSubscriptionBuilderService {
     private JsonNode messageToJson(Message<?> message) {
         var json = JSON.objectNode();
         if (message instanceof QueryMessage) {
-            json.set(ACTION_TYPE, JSON.textNode(QUERY));
-            json.set(QUERY_NAME, JSON.textNode(((QueryMessage<?, ?>) message).getQueryName()));
+            json.set(ACTION_TYPE, JSON.stringNode(QUERY));
+            json.set(QUERY_NAME, JSON.stringNode(((QueryMessage<?, ?>) message).getQueryName()));
         } else if (message instanceof CommandMessage) {
-            json.set(ACTION_TYPE, JSON.textNode(COMMAND));
-            json.set(COMMAND_NAME, JSON.textNode(((CommandMessage<?>) message).getCommandName()));
+            json.set(ACTION_TYPE, JSON.stringNode(COMMAND));
+            json.set(COMMAND_NAME, JSON.stringNode(((CommandMessage<?>) message).getCommandName()));
         }
 
         json.set(PAYLOAD, mapper.valueToTree(message.getPayload()));

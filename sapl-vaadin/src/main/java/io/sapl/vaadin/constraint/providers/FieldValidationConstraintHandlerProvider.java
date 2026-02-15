@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -31,19 +31,22 @@ import java.util.function.Consumer;
 
 import org.springframework.security.access.AccessDeniedException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.SpecVersionDetector;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
+
+import com.networknt.schema.Schema;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.SpecificationVersion;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
 
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.TextValue;
+import io.sapl.api.model.Value;
 import io.sapl.spring.constraints.api.ConsumerConstraintHandlerProvider;
 import lombok.SneakyThrows;
 
@@ -81,25 +84,25 @@ import lombok.SneakyThrows;
  * validator error message.
  */
 public class FieldValidationConstraintHandlerProvider implements ConsumerConstraintHandlerProvider<UI> {
-    private final Binder<?>                      binder;
-    private final Object                         objectWithMemberFields;
-    private static final JsonNodeFactory         JSON                              = JsonNodeFactory.instance;
-    final ObjectMapper                           objectMapper;
-    private final Map<String, JsonSchema>        jsonValidationSchemaFromFieldName = new HashMap<>();
-    private final Map<String, String>            validationMessageFromFieldName    = new HashMap<>();
-    private final Map<String, Boolean>           isBoundFromFieldName              = new HashMap<>();
-    private static final SpecVersion.VersionFlag DEFAULT_JSON_SCHEMA_VERSION       = SpecVersion.VersionFlag.V202012;
+    private final Binder<?>                   binder;
+    private final Object                      objectWithMemberFields;
+    private static final JsonNodeFactory      JSON                              = JsonNodeFactory.instance;
+    final JsonMapper                          objectMapper;
+    private final Map<String, Schema>         jsonValidationSchemaFromFieldName = new HashMap<>();
+    private final Map<String, String>         validationMessageFromFieldName    = new HashMap<>();
+    private final Map<String, Boolean>        isBoundFromFieldName              = new HashMap<>();
+    private static final SpecificationVersion DEFAULT_JSON_SCHEMA_VERSION       = SpecificationVersion.DRAFT_2020_12;
 
     public FieldValidationConstraintHandlerProvider(Binder<?> binder, Object objectWithMemberFields) {
         this.binder                 = binder;
         this.objectWithMemberFields = objectWithMemberFields;
-        this.objectMapper           = new ObjectMapper();
-        objectMapper.findAndRegisterModules();
+        this.objectMapper           = JsonMapper.builder().addModule(new io.sapl.api.model.jackson.SaplJacksonModule())
+                .build();
     }
 
     public FieldValidationConstraintHandlerProvider(Binder<?> binder,
             Object objectWithMemberFields,
-            ObjectMapper objectMapper) {
+            JsonMapper objectMapper) {
         this.binder                 = binder;
         this.objectWithMemberFields = objectWithMemberFields;
         this.objectMapper           = objectMapper;
@@ -115,22 +118,22 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
      * @return Constraint handler instance
      */
     @Override
-    public Consumer<UI> getHandler(JsonNode constraint) {
+    public Consumer<UI> getHandler(Value constraint) {
         if (constraint == null) {
             return null;
         } else {
-            updateValidationSchemes(constraint);
+            updateValidationSchemes((ObjectValue) constraint);
             return ui -> ui.access(binder::validate);
         }
     }
 
     @Override
-    public boolean isResponsible(JsonNode constraint) {
-        if (constraint == null) {
+    public boolean isResponsible(Value constraint) {
+        if (!(constraint instanceof ObjectValue obj)) {
             return false;
         }
-        return constraint.has("type") && "saplVaadin".equals(constraint.get("type").asText()) && constraint.has("id")
-                && "validation".equals(constraint.get("id").asText());
+        return obj.containsKey("type") && obj.get("type") instanceof TextValue(var type) && "saplVaadin".equals(type)
+                && obj.containsKey("id") && obj.get("id") instanceof TextValue(var id) && "validation".equals(id);
     }
 
     @Override
@@ -145,24 +148,27 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
      *
      * @param constraint from the actual decision
      */
-    private void updateValidationSchemes(JsonNode constraint) {
-        if (constraint.has("fields")) {
-            constraint.get("fields").properties().forEach(fieldPolicy -> {
-                String fieldName = fieldPolicy.getKey();
-                if (isBoundFromFieldName.containsKey(fieldName)) {
-                    var validationJson = JSON.objectNode();
-                    validationJson.set("properties", JSON.objectNode().set(fieldName, fieldPolicy.getValue()));
+    private void updateValidationSchemes(ObjectValue constraint) {
+        if (constraint.containsKey("fields") && constraint.get("fields") instanceof ObjectValue fields) {
+            fields.forEach((fieldName, fieldValue) -> {
+                if (isBoundFromFieldName.containsKey(fieldName) && fieldValue instanceof ObjectValue fieldPolicy) {
+                    var fieldPolicyJson = objectMapper.convertValue(fieldPolicy, JsonNode.class);
+                    var validationJson  = JSON.objectNode();
+                    validationJson.set("properties", JSON.objectNode().set(fieldName, fieldPolicyJson));
 
-                    var jsonSchemaFactory = fieldPolicy.getValue().has("$schema")
-                            ? JsonSchemaFactory.getInstance(SpecVersionDetector.detect(fieldPolicy.getValue()))
-                            : JsonSchemaFactory.getInstance(DEFAULT_JSON_SCHEMA_VERSION);
+                    var schemaVersion  = fieldPolicy.containsKey("$schema")
+                            && fieldPolicy.get("$schema") instanceof TextValue(var schemaId)
+                                    ? SpecificationVersion.fromDialectId(schemaId).orElse(DEFAULT_JSON_SCHEMA_VERSION)
+                                    : DEFAULT_JSON_SCHEMA_VERSION;
+                    var schemaRegistry = SchemaRegistry.withDefaultDialect(schemaVersion);
 
-                    jsonValidationSchemaFromFieldName.put(fieldName, jsonSchemaFactory.getSchema(validationJson));
+                    jsonValidationSchemaFromFieldName.put(fieldName, schemaRegistry.getSchema(validationJson));
 
-                    if (fieldPolicy.getValue().has("message")) {
-                        validationMessageFromFieldName.put(fieldName, fieldPolicy.getValue().get("message").asText());
+                    if (fieldPolicy.containsKey("message")
+                            && fieldPolicy.get("message") instanceof TextValue(var message)) {
+                        validationMessageFromFieldName.put(fieldName, message);
                     }
-                } else {
+                } else if (!isBoundFromFieldName.containsKey(fieldName)) {
                     throw new AccessDeniedException(
                             "Failed to validate field \"" + fieldName + "\". It has not been bound");
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,15 +21,13 @@ import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP
 import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP_CLIENT_SECRET;
 
 import java.io.File;
-import java.util.List;
+import java.nio.file.Path;
 import java.util.Objects;
 
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.extensions.mqtt.MqttFunctionLibrary;
-import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
-import io.sapl.pdp.EmbeddedPolicyDecisionPoint;
-import io.sapl.pdp.PolicyDecisionPointFactory;
+import io.sapl.pdp.PolicyDecisionPointBuilder;
 import io.sapl.pdp.remote.RemoteHttpPolicyDecisionPoint;
 import io.sapl.pdp.remote.RemotePolicyDecisionPoint;
 import lombok.experimental.UtilityClass;
@@ -71,13 +69,13 @@ public class PdpInitUtility {
         }
     }
 
-    private static EmbeddedPolicyDecisionPoint buildEmbeddedPdp(SaplMqttExtensionConfig saplMqttExtensionConfig,
+    private static PolicyDecisionPoint buildEmbeddedPdp(SaplMqttExtensionConfig saplMqttExtensionConfig,
             File extensionHomeFolder, String policiesPath) {
         try {
             var path = getPoliciesPath(saplMqttExtensionConfig, extensionHomeFolder, policiesPath);
-            return PolicyDecisionPointFactory.filesystemPolicyDecisionPoint(path, List::of, List::of, List::of,
-                    () -> List.of(MqttFunctionLibrary.class));
-        } catch (InitializationException e) {
+            return PolicyDecisionPointBuilder.withDefaults().withFunctionLibrary(MqttFunctionLibrary.class)
+                    .withDirectorySource(Path.of(path)).build().pdp();
+        } catch (Exception e) {
             log.error("Failed to build embedded pdp on extension startup with following reason: {}", e.getMessage());
             return null;
         }

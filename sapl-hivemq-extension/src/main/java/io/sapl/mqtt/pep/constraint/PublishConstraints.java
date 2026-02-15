@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -25,9 +25,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.sapl.api.model.NumberValue;
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.TextValue;
+import io.sapl.api.model.Value;
+
 import com.hivemq.extension.sdk.api.packets.general.Qos;
 import com.hivemq.extension.sdk.api.packets.publish.ModifiablePublishPacket;
 import com.hivemq.extension.sdk.api.packets.publish.PayloadFormatIndicator;
@@ -65,11 +69,11 @@ public class PublishConstraints {
     private static final String ILLEGAL_PARAMETER_REPLACEMENT    = "Illegal parameter for replacement. Expecting a string.";
 
     @FunctionalInterface
-    private interface PublishConstraintHandlingFunction<S, M, J> {
-        boolean fulfill(S clientId, M publishPacket, J constraint) throws CharacterCodingException;
+    private interface PublishConstraintHandlingFunction<S, M, V> {
+        boolean fulfill(S clientId, M publishPacket, V constraint) throws CharacterCodingException;
     }
 
-    private static final Map<String, PublishConstraintHandlingFunction<String, ModifiablePublishPacket, JsonNode>> PUBLISH_CONSTRAINTS = new HashMap<>();
+    private static final Map<String, PublishConstraintHandlingFunction<String, ModifiablePublishPacket, ObjectValue>> PUBLISH_CONSTRAINTS = new HashMap<>();
 
     static {
         PUBLISH_CONSTRAINTS.put(ENVIRONMENT_QOS_CONSTRAINT, PublishConstraints::setQos);
@@ -81,42 +85,47 @@ public class PublishConstraints {
                 PublishConstraints::setMessageExpiryInterval);
     }
 
-    static boolean enforcePublishConstraintEntries(ConstraintDetails constraintDetails, JsonNode constraint) {
-        ModifiablePublishPacket                                                      publishPacket                     = constraintDetails
+    static boolean enforcePublishConstraintEntries(ConstraintDetails constraintDetails, Value constraint) {
+        if (!(constraint instanceof ObjectValue obj)) {
+            log.warn("No valid constraint handler found for client '{}' and constraint '{}'. "
+                    + "Please check your policy specification.", constraintDetails.getClientId(), constraint);
+            return false;
+        }
+
+        ModifiablePublishPacket                                                         publishPacket                     = constraintDetails
                 .getPublishInboundOutput().getPublishPacket();
-        String                                                                       clientId                          = constraintDetails
+        String                                                                          clientId                          = constraintDetails
                 .getClientId();
-        PublishConstraintHandlingFunction<String, ModifiablePublishPacket, JsonNode> publishConstraintHandlingFunction = null;
-        if (constraint.has(Constraints.ENVIRONMENT_CONSTRAINT_TYPE)
-                && constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).isTextual()) {
-            String constraintType = constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).asText();
+        PublishConstraintHandlingFunction<String, ModifiablePublishPacket, ObjectValue> publishConstraintHandlingFunction = null;
+        if (obj.containsKey(Constraints.ENVIRONMENT_CONSTRAINT_TYPE)
+                && obj.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE) instanceof TextValue(var constraintType)) {
             publishConstraintHandlingFunction = PUBLISH_CONSTRAINTS.get(constraintType);
         }
 
-        if (publishConstraintHandlingFunction == null) { // returns false if the constraint entry couldn't be handled
+        if (publishConstraintHandlingFunction == null) {
             log.warn("No valid constraint handler found for client '{}' and constraint '{}'. "
                     + "Please check your policy specification.", clientId, constraint);
             return false;
         } else {
             try {
-                return publishConstraintHandlingFunction.fulfill(clientId, publishPacket, constraint);
+                return publishConstraintHandlingFunction.fulfill(clientId, publishPacket, obj);
             } catch (IllegalArgumentException | CharacterCodingException exception) {
-                log.warn("Failed to handle constraint '{}': {}",
-                        constraint.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE).asText(), exception.getMessage());
+                log.warn("Failed to handle constraint '{}': {}", obj.get(Constraints.ENVIRONMENT_CONSTRAINT_TYPE),
+                        exception.getMessage());
                 return false;
             }
         }
     }
 
-    private static boolean setQos(String clientId, ModifiablePublishPacket publishPacket, JsonNode constraint) {
-        JsonNode qosLevelJson = constraint.get(ENVIRONMENT_QOS_LEVEL);
-        if (qosLevelJson != null) {
-            if (!qosLevelJson.canConvertToExactIntegral() || qosLevelJson.asInt() > 2 || qosLevelJson.asInt() < 0) {
+    private static boolean setQos(String clientId, ModifiablePublishPacket publishPacket, ObjectValue constraint) {
+        var qosLevelValue = constraint.get(ENVIRONMENT_QOS_LEVEL);
+        if (qosLevelValue instanceof NumberValue(var qosNum) && qosNum.stripTrailingZeros().scale() <= 0) {
+            var qos = qosNum.intValue();
+            if (qos > 2 || qos < 0) {
                 log.warn("Specified illegal quality of service level for message of topic '{}' of client '{}': {}",
-                        publishPacket.getTopic(), clientId, qosLevelJson);
+                        publishPacket.getTopic(), clientId, qosLevelValue);
                 return false;
             }
-            var qos = qosLevelJson.asInt();
             publishPacket.setQos(Qos.valueOf(qos));
             log.info("Changed qos of message '{}' of client '{}' to: {}", publishPacket.getTopic(), clientId, qos);
             return true;
@@ -127,10 +136,10 @@ public class PublishConstraints {
         }
     }
 
-    private static boolean setRetainFlag(String clientId, ModifiablePublishPacket publishPacket, JsonNode constraint) {
-        JsonNode statusJson = constraint.get(Constraints.ENVIRONMENT_STATUS);
-        if (statusJson != null && statusJson.isTextual()) {
-            String status = statusJson.asText();
+    private static boolean setRetainFlag(String clientId, ModifiablePublishPacket publishPacket,
+            ObjectValue constraint) {
+        var statusValue = constraint.get(Constraints.ENVIRONMENT_STATUS);
+        if (statusValue instanceof TextValue(var status)) {
             if (Constraints.ENVIRONMENT_ENABLED.equals(status)) {
                 publishPacket.setRetain(true);
                 log.info("Changed retain flag of message '{}' of client '{}' to 'true'.", publishPacket.getTopic(),
@@ -144,7 +153,7 @@ public class PublishConstraints {
                 return true;
             }
             log.warn("Specified illegal value for the retain flag for message of topic '{}' of client '{}': {}",
-                    publishPacket.getTopic(), clientId, statusJson);
+                    publishPacket.getTopic(), clientId, statusValue);
         } else {
             log.warn("No textual status for the retain message constraint for topic '{}' of client '{}' was specified",
                     publishPacket.getTopic(), clientId);
@@ -153,10 +162,10 @@ public class PublishConstraints {
     }
 
     private static boolean setMessageExpiryInterval(String clientId, ModifiablePublishPacket publishPacket,
-            JsonNode constraint) {
-        JsonNode timeIntervalJson = constraint.get(ENVIRONMENT_TIME_INTERVAL);
-        if (timeIntervalJson != null && timeIntervalJson.canConvertToExactIntegral()) {
-            var expiryInterval = timeIntervalJson.asLong();
+            ObjectValue constraint) {
+        var timeIntervalValue = constraint.get(ENVIRONMENT_TIME_INTERVAL);
+        if (timeIntervalValue instanceof NumberValue(var timeNum)) {
+            var expiryInterval = timeNum.longValue();
             publishPacket.setMessageExpiryInterval(expiryInterval);
             log.info("Changed expiry interval of message '{}' of client '{}' to '{}' seconds.",
                     publishPacket.getTopic(), clientId, expiryInterval);
@@ -168,11 +177,10 @@ public class PublishConstraints {
         }
     }
 
-    private static boolean setContentType(String clientId, ModifiablePublishPacket publishPacket, JsonNode constraint) {
-        JsonNode replacementJson = constraint.get(ENVIRONMENT_REPLACEMENT);
-        if (replacementJson != null && replacementJson.isTextual()) {
-            String replacement = replacementJson.asText();
-            // the content type must be a UTF-8 encoded String
+    private static boolean setContentType(String clientId, ModifiablePublishPacket publishPacket,
+            ObjectValue constraint) {
+        var replacementValue = constraint.get(ENVIRONMENT_REPLACEMENT);
+        if (replacementValue instanceof TextValue(var replacement)) {
             publishPacket.setContentType(replacement);
             log.info("Changed content type of message '{}' of client '{}' to: {}", publishPacket.getTopic(), clientId,
                     replacement);
@@ -184,14 +192,12 @@ public class PublishConstraints {
         }
     }
 
-    private static boolean setPayloadText(String clientId, ModifiablePublishPacket publishPacket, JsonNode constraint) {
-        JsonNode replacementJson = constraint.get(ENVIRONMENT_REPLACEMENT);
-        if (replacementJson != null && replacementJson.isTextual()) {
-            String replacement = replacementJson.asText();
-            // the payload must be a UTF-8 encoded String
+    private static boolean setPayloadText(String clientId, ModifiablePublishPacket publishPacket,
+            ObjectValue constraint) {
+        var replacementValue = constraint.get(ENVIRONMENT_REPLACEMENT);
+        if (replacementValue instanceof TextValue(var replacement)) {
             byte[] payload = replacement.getBytes(StandardCharsets.UTF_8);
             publishPacket.setPayload(ByteBuffer.wrap(payload));
-            // if payload is textual the payload format indicator must be set
             publishPacket.setPayloadFormatIndicator(PayloadFormatIndicator.UTF_8);
             log.info("Changed payload of message '{}' of client '{}' to: {}", publishPacket.getTopic(), clientId,
                     StandardCharsets.UTF_8.decode(ByteBuffer.wrap(payload)));
@@ -204,18 +210,18 @@ public class PublishConstraints {
     }
 
     private static boolean blackenPayloadText(String clientId, ModifiablePublishPacket publishPacket,
-            JsonNode constraint) throws CharacterCodingException {
+            ObjectValue constraint) throws CharacterCodingException {
         var    payloadFormatIndicator = publishPacket.getPayloadFormatIndicator()
                 .orElse(PayloadFormatIndicator.UNSPECIFIED);
         String contentType            = publishPacket.getContentType().orElse(null);
 
         if (payloadFormatIndicator == PayloadFormatIndicator.UTF_8 || MIME_TYPE_PLAIN_TEXT.equals(contentType)) {
             String payloadUtf8 = getUtf8PayloadOfPublishPacket(publishPacket);
-            if (payloadUtf8 != null) { // if payload was specified in UTF-8
+            if (payloadUtf8 != null) {
                 setBlackenedPayloadInPublishPacket(publishPacket, payloadUtf8, constraint);
             }
             return true;
-        } else { // not a UTF-8 payload
+        } else {
             log.warn("Blacken constraint could not be fulfilled because in the message of topic '{}' of client '{}' "
                     + "the payload is not indicated as UTF-8.", publishPacket.getTopic(), clientId);
             return false;
@@ -237,7 +243,7 @@ public class PublishConstraints {
     }
 
     private static void setBlackenedPayloadInPublishPacket(ModifiablePublishPacket publishPacket, String payload,
-            JsonNode constraint) {
+            ObjectValue constraint) {
         int    discloseLeft     = extractNumberOfCharactersToDiscloseOnTheLeftSideFromParametersOrUseDefault(
                 constraint);
         int    discloseRight    = extractNumberOfCharactersToDiscloseOnTheRightSideFromParametersOrUseDefault(
@@ -266,41 +272,44 @@ public class PublishConstraints {
         }
     }
 
-    private static int extractNumberOfCharactersToDiscloseOnTheLeftSideFromParametersOrUseDefault(JsonNode constraint) {
+    private static int extractNumberOfCharactersToDiscloseOnTheLeftSideFromParametersOrUseDefault(
+            ObjectValue constraint) {
         return extractNumberOfCharactersToDiscloseOneSiteFromParametersOrUseDefault(
                 DEFAULT_NUMBER_OF_CHARACTERS_TO_SHOW_LEFT, constraint, ENVIRONMENT_DISCLOSE_LEFT,
                 ILLEGAL_PARAMETER_DISCLOSE_LEFT);
     }
 
     private static int extractNumberOfCharactersToDiscloseOnTheRightSideFromParametersOrUseDefault(
-            JsonNode constraint) {
+            ObjectValue constraint) {
         return extractNumberOfCharactersToDiscloseOneSiteFromParametersOrUseDefault(
                 DEFAULT_NUMBER_OF_CHARACTERS_TO_SHOW_RIGHT, constraint, ENVIRONMENT_DISCLOSE_RIGHT,
                 ILLEGAL_PARAMETER_DISCLOSE_RIGHT);
     }
 
     private static int extractNumberOfCharactersToDiscloseOneSiteFromParametersOrUseDefault(
-            int defaultNumberOfCharactersToShowOnSite, JsonNode constraint, String siteToDisclose,
+            int defaultNumberOfCharactersToShowOnSite, ObjectValue constraint, String siteToDisclose,
             String illegalDiscloseParameterExceptionMessage) {
-        int      discloseOnSite     = defaultNumberOfCharactersToShowOnSite;
-        JsonNode discloseOnSiteJson = constraint.get(siteToDisclose);
-        if (discloseOnSiteJson != null) {
-            if (!discloseOnSiteJson.isNumber() || discloseOnSiteJson.asInt() < 0) {
+        int discloseOnSite      = defaultNumberOfCharactersToShowOnSite;
+        var discloseOnSiteValue = constraint.get(siteToDisclose);
+        if (discloseOnSiteValue instanceof NumberValue(var num)) {
+            var intValue = num.intValue();
+            if (intValue < 0) {
                 throw new IllegalArgumentException(illegalDiscloseParameterExceptionMessage);
             }
-            discloseOnSite = discloseOnSiteJson.asInt();
+            discloseOnSite = intValue;
+        } else if (discloseOnSiteValue != null) {
+            throw new IllegalArgumentException(illegalDiscloseParameterExceptionMessage);
         }
         return discloseOnSite;
     }
 
-    private static String extractReplacementStringFromParametersOrUseDefault(JsonNode constraint) {
-        var      replacementString     = DEFAULT_REPLACEMENT;
-        JsonNode replacementStringJson = constraint.get(ENVIRONMENT_REPLACEMENT);
-        if (replacementStringJson != null) {
-            if (!replacementStringJson.isTextual()) {
-                throw new IllegalArgumentException(ILLEGAL_PARAMETER_REPLACEMENT);
-            }
-            replacementString = replacementStringJson.asText();
+    private static String extractReplacementStringFromParametersOrUseDefault(ObjectValue constraint) {
+        var replacementString      = DEFAULT_REPLACEMENT;
+        var replacementStringValue = constraint.get(ENVIRONMENT_REPLACEMENT);
+        if (replacementStringValue instanceof TextValue(var text)) {
+            replacementString = text;
+        } else if (replacementStringValue != null) {
+            throw new IllegalArgumentException(ILLEGAL_PARAMETER_REPLACEMENT);
         }
         return replacementString;
     }

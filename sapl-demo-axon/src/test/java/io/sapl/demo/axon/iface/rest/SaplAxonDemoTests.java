@@ -30,7 +30,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import io.sapl.axon.authentication.AuthnUtil;
 import io.sapl.axon.authentication.reactive.ReactiveAuthenticationSupplier;
@@ -67,7 +67,7 @@ class SaplAxonDemoTests {
     static class TestConfiguration {
         @Bean
         @Primary
-        AuthenticationSupplier authenticationSupplier(ObjectMapper mapper) {
+        AuthenticationSupplier authenticationSupplier(JsonMapper mapper) {
             return new TestAuthenticationSupplier(mapper);
         }
 
@@ -82,11 +82,11 @@ class SaplAxonDemoTests {
     }
 
     private static class TestAuthenticationSupplier extends ServletAuthenticationSupplier {
-        private ObjectMapper   mapper;
+        private JsonMapper   mapper;
         @Setter
         private Authentication testAuthentication = null;
 
-        public TestAuthenticationSupplier(ObjectMapper mapper) {
+        public TestAuthenticationSupplier(JsonMapper mapper) {
             super(mapper);
             this.mapper = mapper;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,7 @@ import java.util.function.BiConsumer;
 
 import org.axonframework.messaging.Message;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import io.sapl.api.model.Value;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
@@ -42,5 +41,5 @@ public interface OnDecisionConstraintHandlerProvider extends Responsible, HasPri
      * @param constraint The constraint.
      * @return The handler.
      */
-    BiConsumer<AuthorizationDecision, Message<?>> getHandler(JsonNode constraint);
+    BiConsumer<AuthorizationDecision, Message<?>> getHandler(Value constraint);
 }

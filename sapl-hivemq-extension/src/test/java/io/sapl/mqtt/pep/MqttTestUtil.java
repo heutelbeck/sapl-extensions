@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -40,7 +40,6 @@ import com.hivemq.extension.sdk.api.ExtensionMain;
 import com.hivemq.migration.meta.PersistenceType;
 
 import io.sapl.api.pdp.PolicyDecisionPoint;
-import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.cache.MqttClientState;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
@@ -132,12 +131,11 @@ public class MqttTestUtil {
                 .withExtensionMain(hiveMqPepExtensionMain).build();
     }
 
-    public static Mqtt5BlockingClient buildAndStartMqttClient(String mqttClientId) throws InitializationException {
+    public static Mqtt5BlockingClient buildAndStartMqttClient(String mqttClientId) {
         return buildAndStartMqttClient(mqttClientId, BROKER_PORT);
     }
 
-    public static Mqtt5BlockingClient buildAndStartMqttClient(String mqttClientId, int mqttServerPort)
-            throws InitializationException {
+    public static Mqtt5BlockingClient buildAndStartMqttClient(String mqttClientId, int mqttServerPort) {
         Mqtt5BlockingClient blockingMqttClient = buildMqttClient(mqttClientId, mqttServerPort);
         startMqttClient(blockingMqttClient);
         return blockingMqttClient;
@@ -149,10 +147,10 @@ public class MqttTestUtil {
                 .buildBlocking();
     }
 
-    private static void startMqttClient(Mqtt5BlockingClient blockingMqttClient) throws InitializationException {
+    private static void startMqttClient(Mqtt5BlockingClient blockingMqttClient) {
         Mqtt5ConnAck connAckMessage = blockingMqttClient.connect();
         if (connAckMessage.getReasonCode() != Mqtt5ConnAckReasonCode.SUCCESS) {
-            throw new InitializationException("Connection to the mqtt broker couldn't be established"
+            throw new IllegalStateException("Connection to the mqtt broker couldn't be established"
                     + "with reason code: " + connAckMessage.getReasonCode());
         }
     }

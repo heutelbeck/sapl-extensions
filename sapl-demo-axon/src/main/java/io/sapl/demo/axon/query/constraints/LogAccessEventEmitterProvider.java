@@ -6,8 +6,8 @@ import org.axonframework.extensions.reactor.eventhandling.gateway.ReactorEventGa
 import org.axonframework.messaging.Message;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import io.sapl.api.model.TextValue;
+import io.sapl.api.model.Value;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.axon.constrainthandling.api.OnDecisionConstraintHandlerProvider;
@@ -25,12 +25,13 @@ public class LogAccessEventEmitterProvider implements OnDecisionConstraintHandle
 	private final ReactorEventGateway eventGateway;
 
 	@Override
-	public boolean isResponsible(JsonNode constraint) {
-		return constraint.isTextual() && "dispatch access attempt event".equals(constraint.textValue());
+	public boolean isResponsible(Value constraint) {
+		return constraint instanceof TextValue(String text)
+				&& "dispatch access attempt event".equals(text);
 	}
 
 	@Override
-	public BiConsumer<AuthorizationDecision, Message<?>> getHandler(JsonNode constraint) {
+	public BiConsumer<AuthorizationDecision, Message<?>> getHandler(Value constraint) {
 		return (decision, cause) -> {
 			var message = "Access to a protected resource was attempted/continued by ";
 			var subject = cause.getMetaData().get("subject");
@@ -41,7 +42,7 @@ public class LogAccessEventEmitterProvider implements OnDecisionConstraintHandle
 
 			message += ". Access was ";
 
-			if (decision.getDecision() == Decision.PERMIT)
+			if (decision.decision() == Decision.PERMIT)
 				message += " GRANTED. ";
 			else
 				message += " DENIED. ";

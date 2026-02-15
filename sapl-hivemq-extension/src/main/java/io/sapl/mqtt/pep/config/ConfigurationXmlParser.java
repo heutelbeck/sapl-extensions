@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,9 +20,9 @@ package io.sapl.mqtt.pep.config;
 import java.io.File;
 import java.io.IOException;
 
-import javax.xml.bind.DataBindingException;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.DataBindingException;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 
 import com.hivemq.extension.sdk.api.annotations.ThreadSafe;
 

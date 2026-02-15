@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -19,9 +19,9 @@ package io.sapl.axon.authentication;
 
 import org.springframework.security.core.Authentication;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
@@ -37,11 +37,11 @@ public class AuthnUtil {
 
     /**
      * @param authentication the Authentication
-     * @param mapper the ObjectMapper
+     * @param mapper the JsonMapper
      * @return the Authentication as a JSON String
      */
     @SneakyThrows
-    public static String authenticationToJsonString(Authentication authentication, ObjectMapper mapper) {
+    public static String authenticationToJsonString(Authentication authentication, JsonMapper mapper) {
         if (authentication == null)
             return "\"anonymous\"";
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -22,9 +22,11 @@ import java.util.function.Function;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.flow.component.UI;
 
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.TextValue;
+import io.sapl.api.model.Value;
 import io.sapl.vaadin.constraint.VaadinFunctionConstraintHandlerProvider;
 import reactor.core.publisher.Mono;
 
@@ -42,24 +44,25 @@ import reactor.core.publisher.Mono;
 public class VaadinConfirmationDialogConstraintHandlerProvider implements VaadinFunctionConstraintHandlerProvider {
 
     @Override
-    public boolean isResponsible(JsonNode constraint) {
-        if (constraint == null) {
+    public boolean isResponsible(Value constraint) {
+        if (!(constraint instanceof ObjectValue obj)) {
             return false;
         }
-        return constraint.has("type") && "saplVaadin".equals(constraint.get("type").asText()) && constraint.has("id")
-                && "requestConfirmation".equals(constraint.get("id").asText());
+        return obj.containsKey("type") && obj.get("type") instanceof TextValue(var type) && "saplVaadin".equals(type)
+                && obj.containsKey("id") && obj.get("id") instanceof TextValue(var id)
+                && "requestConfirmation".equals(id);
     }
 
     @Override
-    public Function<UI, Mono<Boolean>> getHandler(JsonNode constraint) {
-        if (constraint == null) {
+    public Function<UI, Mono<Boolean>> getHandler(Value constraint) {
+        if (!(constraint instanceof ObjectValue obj)) {
             return null;
         }
-        String header      = constraint.has("header") ? constraint.get("header").textValue() : "Confirm";
-        String text        = constraint.has("text") ? constraint.get("text").textValue()
+        String header      = obj.get("header") instanceof TextValue(var h) ? h : "Confirm";
+        String text        = obj.get("text") instanceof TextValue(var t) ? t
                 : "Confirmation has been requested. " + "Are you sure you want to execute this action?";
-        String confirmText = constraint.has("confirmText") ? constraint.get("confirmText").textValue() : "Confirm";
-        String cancelText  = constraint.has("cancelText") ? constraint.get("cancelText").textValue() : "Cancel";
+        String confirmText = obj.get("confirmText") instanceof TextValue(var ct) ? ct : "Confirm";
+        String cancelText  = obj.get("cancelText") instanceof TextValue(var ct) ? ct : "Cancel";
         return (UI ui) -> Mono.create(monoSink -> ui.access(() -> this.openConfirmDialog(header, text, confirmText,
                 () -> monoSink.success(Boolean.TRUE), cancelText, () -> monoSink.success(Boolean.FALSE))));
     }

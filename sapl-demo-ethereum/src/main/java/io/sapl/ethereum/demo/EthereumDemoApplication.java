@@ -22,11 +22,12 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
 
 @SpringBootApplication
-@Theme(value = "sapldemoethereum", variant = Lumo.DARK)
+@Theme("sapldemoethereum")
+@ColorScheme(ColorScheme.Value.DARK)
 public class EthereumDemoApplication implements AppShellConfigurator {
 
     private static final long serialVersionUID = -6789027976268546698L;

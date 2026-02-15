@@ -1,13 +1,12 @@
 import filter.replace
 set "next_validate_transactions"
-deny-overrides
+priority deny or abstain errors propagate
 
 /* Limits the number of pizzas via JSON-Schema.
  * See: https://json-schema.org/
  */
 policy "deny_huge_transactions"
-permit action == "display"
-where
+permit
     action == "display";
     resource == "pizzaForm";
 obligation
@@ -43,8 +42,7 @@ obligation
 
 /* Beer consumption is only allowed at a certain time. (number type validation AND maximum validation)*/
 policy "allow_beer_consumption"
-permit action == "display"
-where
+permit
     action == "display";
     resource == "pizzaForm";
     time.secondOf(<time.now>) <= 30;
@@ -63,8 +61,7 @@ obligation
 
 /* Beer consumption is only allowed at a certain time. (only number type validation, no maximum validation)*/
 policy "deny_beer_consumption"
-permit action == "display"
-where
+permit
     action == "display";
     resource == "pizzaForm";
     time.secondOf(<time.now>) > 30;
@@ -83,8 +80,7 @@ obligation
  * The number of pizzas depends on the time.
  */
 policy "minimum_order"
-permit action == "display"
-where
+permit
     action == "display";
     resource == "pizzaForm";
 obligation
@@ -96,8 +92,8 @@ obligation
 
 /* Shows a dialog and logs a message when the site is visited outside of opening hours. */
 policy "opening_hours_dialog"
-permit action == "opening_hours_dialog"
-where
+permit
+    action == "opening_hours_dialog";
     !(<time.localTimeIsBetween(resource.startTime, resource.endTime)>);
 obligation
 	{

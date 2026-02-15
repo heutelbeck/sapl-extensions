@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+    Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
 
     SPDX-License-Identifier: Apache-2.0
 
@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.sapl</groupId>
 		<artifactId>sapl-policy-engine</artifactId>
-		<version>3.1.0-SNAPSHOT</version>
+		<version>4.0.0-SNAPSHOT</version>
 		<relativePath />
 	</parent>
 
@@ -36,8 +36,8 @@
 	<description>SAPL Axon Policy Enforcement Points</description>
 
 	<properties>
-		<version.axon>4.10.3</version.axon>
-		<version.testcontainers>1.19.3</version.testcontainers>
+		<version.axon>4.13.0</version.axon>
+		<version.testcontainers>2.0.3</version.testcontainers>
 	</properties>
 
 	<dependencyManagement>
@@ -75,7 +75,7 @@
 		<dependency>
 			<groupId>org.axonframework.extensions.reactor</groupId>
 			<artifactId>axon-reactor</artifactId>
-			<version>4.9.0</version>
+			<version>4.12.0</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -93,7 +93,7 @@
 		<!-- SAPL -->
 		<dependency>
 			<groupId>io.sapl</groupId>
-			<artifactId>sapl-spring-security</artifactId>
+			<artifactId>sapl-spring-boot-starter</artifactId>
 		</dependency>
 
 		<!-- Utility -->
@@ -133,7 +133,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>junit-jupiter</artifactId>
+			<artifactId>testcontainers-junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -142,28 +142,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.spotify</groupId>
-			<artifactId>hamcrest-jackson</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.spotify</groupId>
-			<artifactId>hamcrest-pojo</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.spotify</groupId>
-			<artifactId>hamcrest-optional</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-configuration-processor</artifactId>
 			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.reload4j</groupId>
-			<artifactId>reload4j</artifactId>
 		</dependency>
 	</dependencies>
 

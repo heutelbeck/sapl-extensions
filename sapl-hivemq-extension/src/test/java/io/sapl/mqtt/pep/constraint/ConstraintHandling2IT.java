@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -48,7 +48,6 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 import com.hivemq.embedded.EmbeddedHiveMQ;
 import com.nimbusds.jose.util.StandardCharset;
 
-import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.MqttTestUtil;
 
 class ConstraintHandling2IT {
@@ -65,7 +64,7 @@ class ConstraintHandling2IT {
     Mqtt5BlockingClient subscribeClient;
 
     @BeforeEach
-    void beforeEach() throws InitializationException {
+    void beforeEach() {
         mqttBroker      = buildAndStartBroker(dataFolder, configFolder, extensionFolder);
         publishClient   = buildAndStartMqttClient("CONSTRAINT_MQTT_CLIENT_PUBLISH");
         subscribeClient = buildAndStartMqttClient("CONSTRAINT_MQTT_CLIENT_SUBSCRIBE");
@@ -234,7 +233,7 @@ class ConstraintHandling2IT {
 
     @Test
     @Timeout(10)
-    void when_timeLimitForConnectionIsSet_then_limitConnectionTime() throws InitializationException {
+    void when_timeLimitForConnectionIsSet_then_limitConnectionTime() {
         // GIVEN
         Mqtt5BlockingClient mqttClientConnection = buildAndStartMqttClient("CONSTRAINT_MQTT_CLIENT_CONNECT");
 

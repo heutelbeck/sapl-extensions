@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -27,8 +27,7 @@ import org.axonframework.queryhandling.GenericSubscriptionQueryMessage;
 import org.axonframework.queryhandling.QueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryMessage;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import io.sapl.api.model.Value;
 import io.sapl.spring.constraints.api.HasPriority;
 import io.sapl.spring.constraints.api.Responsible;
 
@@ -53,7 +52,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
      * changing the message.
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    default Function<QueryMessage<?, ?>, QueryMessage<?, ?>> getHandler(JsonNode constraint) {
+    default Function<QueryMessage<?, ?>, QueryMessage<?, ?>> getHandler(Value constraint) {
         return query -> {
             accept(query, constraint);
             var newPayload      = mapPayload(query.getPayload(), query.getPayloadType(), constraint);
@@ -80,7 +79,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
      * @param message The message.
      * @param constraint The constraint.
      */
-    default void accept(QueryMessage<?, ?> message, JsonNode constraint) {
+    default void accept(QueryMessage<?, ?> message, Value constraint) {
         // NOOP
     }
 
@@ -91,7 +90,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
      * @param constraint The constraint.
      * @return A potentially updated response type.
      */
-    default ResponseType<?> mapResponseType(ResponseType<?> responseType, JsonNode constraint) {
+    default ResponseType<?> mapResponseType(ResponseType<?> responseType, Value constraint) {
         return responseType;
     }
 
@@ -102,7 +101,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
      * @param constraint The constraint.
      * @return A potentially updated updateResponseType type.
      */
-    default ResponseType<?> mapUpdateResponseType(ResponseType<?> updateResponseType, JsonNode constraint) {
+    default ResponseType<?> mapUpdateResponseType(ResponseType<?> updateResponseType, Value constraint) {
         return updateResponseType;
     }
 
@@ -113,7 +112,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
      * @param constraint The constraint.
      * @return A potentially updated payload type.
      */
-    default Class<?> mapPayloadType(Class<?> payloadType, JsonNode constraint) {
+    default Class<?> mapPayloadType(Class<?> payloadType, Value constraint) {
         return payloadType;
     }
 
@@ -125,7 +124,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
      * @param constraint The constraint.
      * @return A potentially updated payload.
      */
-    default Object mapPayload(Object payload, Class<?> clazz, JsonNode constraint) {
+    default Object mapPayload(Object payload, Class<?> clazz, Value constraint) {
         return payload;
     }
 
@@ -136,7 +135,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
      * @param constraint The constraint.
      * @return A potentially updated queryName.
      */
-    default String mapQueryName(String queryName, JsonNode constraint) {
+    default String mapQueryName(String queryName, Value constraint) {
         return queryName;
     }
 
@@ -147,7 +146,7 @@ public interface QueryConstraintHandlerProvider extends Responsible, HasPriority
      * @param constraint The constraint.
      * @return Potentially updated metadata.
      */
-    default MetaData mapMetadata(MetaData originalMetadata, JsonNode constraint) {
+    default MetaData mapMetadata(MetaData originalMetadata, Value constraint) {
         return originalMetadata;
     }
 

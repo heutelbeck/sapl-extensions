@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -42,9 +42,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
+import io.sapl.api.model.Value;
+import io.sapl.api.model.ValueJsonMarshaller;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.axon.constrainthandling.ConstraintHandlerService;
@@ -83,19 +84,19 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
     }
 
     private static ConstraintHandlerService defaultConstraintHandlerService;
-    private static JsonNode                 defaultResource;
+    private static Value                    defaultResource;
 
     @BeforeAll
     @SuppressWarnings("unchecked")
     static void beforeAll() {
-        var mapper = new ObjectMapper();
+        var mapper = JsonMapper.builder().build();
         defaultConstraintHandlerService = mock(ConstraintHandlerService.class);
         setField(defaultConstraintHandlerService, MAPPER_FILED_NAME, mapper);
         when(defaultConstraintHandlerService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class),
                 any(ResponseType.class), any(Optional.class))).thenCallRealMethod();
-        when(defaultConstraintHandlerService.deserializeResource(any(JsonNode.class), any(ResponseType.class)))
+        when(defaultConstraintHandlerService.deserializeResource(any(Value.class), any(ResponseType.class)))
                 .thenCallRealMethod();
-        defaultResource = mapper.valueToTree(new TestUpdateResponseType());
+        defaultResource = ValueJsonMarshaller.fromJsonNode(mapper.valueToTree(new TestUpdateResponseType()));
     }
 
     @Test
@@ -187,7 +188,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
                 updateResponseType);
 
         Flux<AuthorizationDecision>                                  decisions           = Flux
-                .just(new AuthorizationDecision(Decision.PERMIT));
+                .just(AuthorizationDecision.PERMIT);
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .error(new TestAccessDeniedException());
 
@@ -203,7 +204,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.DENY));
+        var decisions          = Flux.just(AuthorizationDecision.DENY);
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux.just();
 
@@ -219,7 +220,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.INDETERMINATE));
+        var decisions          = Flux.just(AuthorizationDecision.INDETERMINATE);
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux.just();
 
@@ -235,7 +236,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.NOT_APPLICABLE));
+        var decisions          = Flux.just(AuthorizationDecision.NOT_APPLICABLE);
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux.just();
 
@@ -251,7 +252,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.PERMIT));
+        var decisions          = Flux.just(AuthorizationDecision.PERMIT);
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux.just();
 
@@ -282,7 +283,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.DENY));
+        var decisions          = Flux.just(AuthorizationDecision.DENY);
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
@@ -299,7 +300,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.INDETERMINATE));
+        var decisions          = Flux.just(AuthorizationDecision.INDETERMINATE);
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
@@ -316,7 +317,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.NOT_APPLICABLE));
+        var decisions          = Flux.just(AuthorizationDecision.NOT_APPLICABLE);
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
@@ -333,7 +334,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.PERMIT));
+        var decisions          = Flux.just(AuthorizationDecision.PERMIT);
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
@@ -351,8 +352,8 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.DENY, Optional.of(defaultResource),
-                Optional.empty(), Optional.empty()));
+        var decisions          = Flux
+                .just(new AuthorizationDecision(Decision.DENY, Value.EMPTY_ARRAY, Value.EMPTY_ARRAY, defaultResource));
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
@@ -370,8 +371,8 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.INDETERMINATE,
-                Optional.of(defaultResource), Optional.empty(), Optional.empty()));
+        var decisions          = Flux.just(new AuthorizationDecision(Decision.INDETERMINATE, Value.EMPTY_ARRAY,
+                Value.EMPTY_ARRAY, defaultResource));
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
@@ -389,8 +390,8 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.NOT_APPLICABLE,
-                Optional.of(defaultResource), Optional.empty(), Optional.empty()));
+        var decisions          = Flux.just(new AuthorizationDecision(Decision.NOT_APPLICABLE, Value.EMPTY_ARRAY,
+                Value.EMPTY_ARRAY, defaultResource));
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
@@ -408,8 +409,8 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.PERMIT, Optional.of(defaultResource),
-                Optional.empty(), Optional.empty()));
+        var decisions          = Flux.just(
+                new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, Value.EMPTY_ARRAY, defaultResource));
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
@@ -427,8 +428,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.PERMIT),
-                new AuthorizationDecision(Decision.DENY));
+        var decisions          = Flux.just(AuthorizationDecision.PERMIT, AuthorizationDecision.DENY);
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
@@ -445,8 +445,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var updateResponseType = ResponseTypes.instanceOf(TestUpdateResponseType.class);
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
-        var decisions          = Flux.just(new AuthorizationDecision(Decision.DENY),
-                new AuthorizationDecision(Decision.PERMIT));
+        var decisions          = Flux.just(AuthorizationDecision.DENY, AuthorizationDecision.PERMIT);
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
@@ -464,8 +463,8 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
         var decisions          = Flux.concat(
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(new AuthorizationDecision(Decision.PERMIT)),
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(1)).thenReturn(new AuthorizationDecision(Decision.PERMIT)));
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(AuthorizationDecision.PERMIT),
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(1)).thenReturn(AuthorizationDecision.PERMIT));
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux.concat(
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(DEFAULT_UPDATE_MESSAGE),
@@ -487,8 +486,8 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var                                                          query               = new GenericSubscriptionQueryMessage<>(
                 new TestQueryPayload(), resultResponseType, updateResponseType);
         var                                                          decisions           = Flux.concat(
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(new AuthorizationDecision(Decision.PERMIT)),
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(1)).thenReturn(new AuthorizationDecision(Decision.DENY)));
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(AuthorizationDecision.PERMIT),
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(1)).thenReturn(AuthorizationDecision.DENY));
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux.concat(
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(DEFAULT_UPDATE_MESSAGE),
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE));
@@ -509,8 +508,8 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var                                                          query               = new GenericSubscriptionQueryMessage<>(
                 new TestQueryPayload(), resultResponseType, updateResponseType);
         var                                                          decisions           = Flux.concat(
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(new AuthorizationDecision(Decision.DENY)),
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(1)).thenReturn(new AuthorizationDecision(Decision.PERMIT)));
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(AuthorizationDecision.DENY),
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(1)).thenReturn(AuthorizationDecision.PERMIT));
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux.concat(
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(DEFAULT_UPDATE_MESSAGE),
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE));
@@ -531,9 +530,9 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var                                                          query               = new GenericSubscriptionQueryMessage<>(
                 new TestQueryPayload(), resultResponseType, updateResponseType);
         var                                                          decisions           = Flux.concat(
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(new AuthorizationDecision(Decision.PERMIT)),
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(1)).thenReturn(new AuthorizationDecision(Decision.DENY)),
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(new AuthorizationDecision(Decision.PERMIT)));
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(AuthorizationDecision.PERMIT),
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(1)).thenReturn(AuthorizationDecision.DENY),
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(AuthorizationDecision.PERMIT));
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux.concat(
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(DEFAULT_UPDATE_MESSAGE),
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(2)).thenReturn(DEFAULT_UPDATE_MESSAGE),
@@ -557,7 +556,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var                                                          query               = new GenericSubscriptionQueryMessage<>(
                 new TestQueryPayload(), resultResponseType, updateResponseType);
         var                                                          decisions           = Flux
-                .just(new AuthorizationDecision(Decision.PERMIT));
+                .just(AuthorizationDecision.PERMIT);
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
@@ -581,7 +580,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var                                                          query               = new GenericSubscriptionQueryMessage<>(
                 new TestQueryPayload(), resultResponseType, updateResponseType);
         var                                                          decisions           = Flux
-                .just(new AuthorizationDecision(Decision.PERMIT));
+                .just(AuthorizationDecision.PERMIT);
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
@@ -610,16 +609,15 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
                 .instanceOf(TestUpdateResponseType.class);
         var                                                          query               = new GenericSubscriptionQueryMessage<>(
                 new TestQueryPayload(), resultResponseType, updateResponseType);
-        var                                                          decisions           = Flux
-                .just(new AuthorizationDecision(Decision.PERMIT, Optional.of(defaultResource), Optional.empty(),
-                        Optional.empty()));
+        var                                                          decisions           = Flux.just(
+                new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, Value.EMPTY_ARRAY, defaultResource));
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
         var constraintHandlerService = mock(ConstraintHandlerService.class);
         when(constraintHandlerService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class),
                 any(ResponseType.class), any(Optional.class))).thenCallRealMethod();
-        when(constraintHandlerService.deserializeResource(any(JsonNode.class), any(ResponseType.class)))
+        when(constraintHandlerService.deserializeResource(any(Value.class), any(ResponseType.class)))
                 .thenThrow(AccessDeniedException.class);
 
         var enforcedUpdateMessageFlux = of(query, decisions, resourceAccessPoint, constraintHandlerService,
@@ -638,7 +636,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var                                                          query               = new GenericSubscriptionQueryMessage<>(
                 new TestQueryPayload(), resultResponseType, updateResponseType);
         var                                                          decisions           = Flux
-                .just(new AuthorizationDecision(Decision.PERMIT));
+                .just(AuthorizationDecision.PERMIT);
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .just(DEFAULT_UPDATE_MESSAGE);
 
@@ -666,7 +664,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var                                                          query               = new GenericSubscriptionQueryMessage<>(
                 new TestQueryPayload(), resultResponseType, updateResponseType);
         Flux<AuthorizationDecision>                                  decisions           = Flux
-                .just(new AuthorizationDecision(Decision.PERMIT));
+                .just(AuthorizationDecision.PERMIT);
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux
                 .error(new TestAccessDeniedException());
 
@@ -691,11 +689,11 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
         var query              = new GenericSubscriptionQueryMessage<>(new TestQueryPayload(), resultResponseType,
                 updateResponseType);
         var decisions          = Flux.concat(
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(new AuthorizationDecision(Decision.PERMIT)),
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(AuthorizationDecision.PERMIT),
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(4))
-                        .thenReturn(new AuthorizationDecision(Decision.PERMIT, Optional.of(defaultResource),
-                                Optional.empty(), Optional.empty())),
-                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(8)).thenReturn(new AuthorizationDecision(Decision.PERMIT)));
+                        .thenReturn(new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, Value.EMPTY_ARRAY,
+                                defaultResource)),
+                Mono.delay(DEFAULT_TIMESTEP.multipliedBy(8)).thenReturn(AuthorizationDecision.PERMIT));
 
         Flux<SubscriptionQueryUpdateMessage<TestUpdateResponseType>> resourceAccessPoint = Flux.concat(
                 Mono.delay(DEFAULT_TIMESTEP.multipliedBy(0)).thenReturn(DEFAULT_UPDATE_MESSAGE),

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentMap;
 import com.hivemq.extension.sdk.api.services.subscription.TopicSubscription;
 
 import io.sapl.api.pdp.AuthorizationSubscription;
-import io.sapl.api.pdp.AuthorizationSubscriptionElements;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 import io.sapl.api.pdp.MultiAuthorizationSubscription;
 import io.sapl.mqtt.pep.constraint.ConstraintDetails;
@@ -48,7 +47,7 @@ public final class MqttClientState {
     @Getter
     private String       userName;
 
-    private final MultiAuthorizationSubscription                     multiAuthzSubscription = new MultiAuthorizationSubscription();
+    private MultiAuthorizationSubscription                           multiAuthzSubscription = new MultiAuthorizationSubscription();
     private final HashMap<String, IdentifiableAuthorizationDecision> identAuthzDecisionMap  = new HashMap<>();
     private final HashMap<String, ConstraintDetails>                 constraintDetailsMap   = new HashMap<>();
 
@@ -351,12 +350,9 @@ public final class MqttClientState {
      */
     public MultiAuthorizationSubscription getMultiAuthzSubscription() {
         var multiAuthzSubscriptionCopy = new MultiAuthorizationSubscription();
-        multiAuthzSubscriptionCopy
-                .setAuthorizationSubscriptions(multiAuthzSubscription.getAuthorizationSubscriptions());
-        multiAuthzSubscriptionCopy.setSubjects(multiAuthzSubscription.getSubjects());
-        multiAuthzSubscriptionCopy.setActions(multiAuthzSubscription.getActions());
-        multiAuthzSubscriptionCopy.setResources(multiAuthzSubscription.getResources());
-        multiAuthzSubscriptionCopy.setEnvironments(multiAuthzSubscription.getEnvironments());
+        for (var entry : multiAuthzSubscription) {
+            multiAuthzSubscriptionCopy.addSubscription(entry.subscriptionId(), entry.subscription());
+        }
         return multiAuthzSubscriptionCopy;
     }
 
@@ -369,7 +365,7 @@ public final class MqttClientState {
      * @param authzSubscription the {@link AuthorizationSubscription} to add
      */
     public void addSaplAuthzSubscriptionToMultiSubscription(String id, AuthorizationSubscription authzSubscription) {
-        multiAuthzSubscription.addAuthorizationSubscription(id, authzSubscription);
+        multiAuthzSubscription.addSubscription(id, authzSubscription);
     }
 
     /**
@@ -379,16 +375,13 @@ public final class MqttClientState {
      * @param id the reference of the {@link AuthorizationSubscription} to remove
      */
     public void removeSaplAuthzSubscriptionFromMultiSubscription(String id) {
-        Map<String, AuthorizationSubscriptionElements> authzSubscriptionElementsMap = multiAuthzSubscription
-                .getAuthorizationSubscriptions();
-
-        AuthorizationSubscriptionElements authzSubscriptionElementsToRemove = authzSubscriptionElementsMap.remove(id);
-        if (authzSubscriptionElementsToRemove != null) {
-            multiAuthzSubscription.getSubjects().remove((int) authzSubscriptionElementsToRemove.getSubjectId());
-            multiAuthzSubscription.getActions().remove((int) authzSubscriptionElementsToRemove.getActionId());
-            multiAuthzSubscription.getResources().remove((int) authzSubscriptionElementsToRemove.getResourceId());
-            multiAuthzSubscription.getEnvironments().remove((int) authzSubscriptionElementsToRemove.getEnvironmentId());
+        var replacement = new MultiAuthorizationSubscription();
+        for (var entry : multiAuthzSubscription) {
+            if (!entry.subscriptionId().equals(id)) {
+                replacement.addSubscription(entry.subscriptionId(), entry.subscription());
+            }
         }
+        multiAuthzSubscription = replacement;
     }
 
     /**
@@ -400,7 +393,7 @@ public final class MqttClientState {
      * {@link MultiAuthorizationSubscription}
      */
     public AuthorizationSubscription getSaplAuthzSubscriptionFromMultiSubscription(String id) {
-        return multiAuthzSubscription.getAuthorizationSubscriptionWithId(id);
+        return multiAuthzSubscription.getSubscription(id);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,47 +17,49 @@
  */
 package io.sapl.vaadin.constraint;
 
-import java.util.Iterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.flow.component.UI;
 
+import io.sapl.api.model.ObjectValue;
+import io.sapl.api.model.Value;
 import reactor.core.publisher.Mono;
 
 public interface VaadinFunctionConstraintHandlerProvider {
-    boolean isResponsible(JsonNode constraint);
+    boolean isResponsible(Value constraint);
 
-    Function<UI, Mono<Boolean>> getHandler(JsonNode constraint);
+    Function<UI, Mono<Boolean>> getHandler(Value constraint);
 
-    static VaadinFunctionConstraintHandlerProvider of(Predicate<JsonNode> isResponsible,
+    static VaadinFunctionConstraintHandlerProvider of(Predicate<Value> isResponsible,
             Function<UI, Mono<Boolean>> handler) {
         return new VaadinFunctionConstraintHandlerProvider() {
 
             @Override
-            public boolean isResponsible(JsonNode constraint) {
+            public boolean isResponsible(Value constraint) {
                 return isResponsible.test(constraint);
             }
 
             @Override
-            public Function<UI, Mono<Boolean>> getHandler(JsonNode constraint) {
+            public Function<UI, Mono<Boolean>> getHandler(Value constraint) {
                 return handler;
             }
         };
     }
 
-    static VaadinFunctionConstraintHandlerProvider of(JsonNode constraintFilter, Consumer<JsonNode> handler) {
+    static VaadinFunctionConstraintHandlerProvider of(ObjectValue constraintFilter, Consumer<Value> handler) {
         return new VaadinFunctionConstraintHandlerProvider() {
 
             @Override
-            public boolean isResponsible(JsonNode constraint) {
+            public boolean isResponsible(Value constraint) {
+                if (!(constraint instanceof ObjectValue objectConstraint)) {
+                    return false;
+                }
                 boolean isResponsible = true;
-                for (Iterator<String> it = constraintFilter.fieldNames(); it.hasNext();) {
-                    String filterField = it.next();
-                    if (!constraint.has(filterField)
-                            || !constraint.get(filterField).equals(constraintFilter.get(filterField))) {
+                for (String filterField : constraintFilter.keySet()) {
+                    if (!objectConstraint.containsKey(filterField)
+                            || !objectConstraint.get(filterField).equals(constraintFilter.get(filterField))) {
                         isResponsible = false;
                     }
                 }
@@ -65,7 +67,7 @@ public interface VaadinFunctionConstraintHandlerProvider {
             }
 
             @Override
-            public Function<UI, Mono<Boolean>> getHandler(JsonNode constraint) {
+            public Function<UI, Mono<Boolean>> getHandler(Value constraint) {
                 return ui -> {
                     handler.accept(constraint);
                     return Mono.just(Boolean.TRUE);
@@ -74,16 +76,18 @@ public interface VaadinFunctionConstraintHandlerProvider {
         };
     }
 
-    static VaadinFunctionConstraintHandlerProvider of(JsonNode constraintFilter,
-            Function<JsonNode, Mono<Boolean>> handler) {
+    static VaadinFunctionConstraintHandlerProvider of(ObjectValue constraintFilter,
+            Function<Value, Mono<Boolean>> handler) {
         return new VaadinFunctionConstraintHandlerProvider() {
             @Override
-            public boolean isResponsible(JsonNode constraint) {
+            public boolean isResponsible(Value constraint) {
+                if (!(constraint instanceof ObjectValue objectConstraint)) {
+                    return false;
+                }
                 boolean isResponsible = true;
-                for (Iterator<String> it = constraintFilter.fieldNames(); it.hasNext();) {
-                    String filterField = it.next();
-                    if (!constraint.has(filterField)
-                            || !constraint.get(filterField).equals(constraintFilter.get(filterField))) {
+                for (String filterField : constraintFilter.keySet()) {
+                    if (!objectConstraint.containsKey(filterField)
+                            || !objectConstraint.get(filterField).equals(constraintFilter.get(filterField))) {
                         isResponsible = false;
                     }
                 }
@@ -91,7 +95,7 @@ public interface VaadinFunctionConstraintHandlerProvider {
             }
 
             @Override
-            public Function<UI, Mono<Boolean>> getHandler(JsonNode constraint) {
+            public Function<UI, Mono<Boolean>> getHandler(Value constraint) {
                 return ui -> handler.apply(constraint);
             }
         };

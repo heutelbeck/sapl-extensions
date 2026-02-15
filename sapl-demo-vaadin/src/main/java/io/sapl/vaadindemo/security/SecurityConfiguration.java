@@ -2,7 +2,6 @@ package io.sapl.vaadindemo.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -15,8 +14,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
+import tools.jackson.databind.json.JsonMapper;
 import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import io.sapl.spring.config.EnableSaplMethodSecurity;
@@ -47,7 +45,6 @@ import lombok.val;
 @Configuration
 @EnableWebSecurity
 @EnableSaplMethodSecurity
-@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public class SecurityConfiguration {
 
     /**
@@ -132,7 +129,7 @@ public class SecurityConfiguration {
      */
     @Bean
     VaadinAuthorizationSubscriptionBuilderService vaadinAuthorizationSubscriptionBuilderService(
-            ObjectMapper mapper) {
+            JsonMapper mapper) {
         val expressionHandler = new DefaultMethodSecurityExpressionHandler();
         return new VaadinAuthorizationSubscriptionBuilderService(expressionHandler, mapper);
     }

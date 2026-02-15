@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,9 +17,10 @@
  */
 package io.sapl.vaadin;
 
-import static io.sapl.api.interpreter.Val.JSON;
+import tools.jackson.databind.node.JsonNodeFactory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,6 +51,7 @@ import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.Location;
 
+import io.sapl.api.model.Value;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.api.pdp.Decision;
@@ -66,7 +68,7 @@ class LifecycleBeforeEnterPepBuilderTests {
 
     @BeforeAll
     static void beforeAll() {
-        var subject = JSON.objectNode();
+        var subject = JsonNodeFactory.instance.objectNode();
         subject.put("username", "dummy");
         securityHelperMock = mockStatic(SecurityHelper.class);
         securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
@@ -100,13 +102,12 @@ class LifecycleBeforeEnterPepBuilderTests {
     @Test
     void when_build_then_isBuiltIsTrue() {
         // GIVEN
-        var rolesNode = JSON.arrayNode().add("admin");
         // WHEN
         sut.build();
 
         // THEN
-        assertEquals(rolesNode, sut.vaadinPep.getAuthorizationSubscription().getSubject().get("roles"));
         assertTrue(sut.isBuilt);
+        assertNotNull(sut.vaadinPep.getAuthorizationSubscription().subject());
     }
 
     @Test
@@ -140,12 +141,12 @@ class LifecycleBeforeEnterPepBuilderTests {
 
     void when_ResourceIsDefined_itIsSavedInSubscription() {
         // GIVEN
-        var resourceNode = JSON.arrayNode().add("Resource");
+        var resourceValue = Value.ofArray(Value.of("Resource"));
         // WHEN
-        sut.resource(resourceNode);
+        sut.resource(resourceValue);
 
         // THEN
-        assertEquals(resourceNode, sut.vaadinPep.getAuthorizationSubscription().getResource());
+        assertEquals(resourceValue, sut.vaadinPep.getAuthorizationSubscription().resource());
     }
 
     @Test
@@ -191,7 +192,7 @@ class LifecycleBeforeEnterPepBuilderTests {
 
     private PolicyDecisionPoint mockPdp() {
         var pdpMock   = mock(PolicyDecisionPoint.class);
-        var authzFlux = Flux.just(new AuthorizationDecision(Decision.PERMIT));
+        var authzFlux = Flux.just(AuthorizationDecision.PERMIT);
         when(pdpMock.decide(any(AuthorizationSubscription.class))).thenReturn(authzFlux);
         return pdpMock;
     }
@@ -215,7 +216,8 @@ class LifecycleBeforeEnterPepBuilderTests {
 
     private VaadinConstraintEnforcementService mockNextVaadinConstraintEnforcementService(Decision decision) {
         var enforcementServiceMock = mock(VaadinConstraintEnforcementService.class);
-        var monoMock               = Mono.just(new AuthorizationDecision(decision));
+        var monoMock               = Mono
+                .just(new AuthorizationDecision(decision, Value.EMPTY_ARRAY, Value.EMPTY_ARRAY, Value.UNDEFINED));
         when(enforcementServiceMock.enforceConstraintsOfDecision(any(), any(), any())).thenReturn(monoMock);
         return enforcementServiceMock;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -180,8 +180,7 @@ public class MultiBuilder {
         for (int i = 0; i < vaadinPepArrayList.size(); i++) {
             var pep = vaadinPepArrayList.get(i);
             pep.subject(subject);
-            multiAuthorizationSubscription.addAuthorizationSubscription(String.valueOf(i),
-                    pep.getAuthorizationSubscription());
+            multiAuthorizationSubscription.addSubscription(String.valueOf(i), pep.getAuthorizationSubscription());
         }
         return multiAuthorizationSubscription;
     }
@@ -191,12 +190,16 @@ public class MultiBuilder {
      */
     private void startMultiSubscription() {
         disposable = pdp.decide(getMultiSubscription()).subscribe(identifiableDecision -> {
-            var id = identifiableDecision.getAuthorizationSubscriptionId();
-            if (id != null) {
-                AuthorizationDecision authzDecision = identifiableDecision.getAuthorizationDecision();
-                VaadinPep             vaadinPep     = vaadinPepArrayList.get(Integer.parseInt(id));
-                vaadinConstraintEnforcementService.enforceConstraintsOfDecision(authzDecision, ui, vaadinPep)
-                        .subscribe(vaadinPep::handleDecision);
+            try {
+                var index = Integer.parseInt(identifiableDecision.subscriptionId());
+                if (index >= 0 && index < vaadinPepArrayList.size()) {
+                    var authzDecision = identifiableDecision.decision();
+                    var vaadinPep     = vaadinPepArrayList.get(index);
+                    vaadinConstraintEnforcementService.enforceConstraintsOfDecision(authzDecision, ui, vaadinPep)
+                            .subscribe(vaadinPep::handleDecision);
+                }
+            } catch (NumberFormatException e) {
+                // subscription ID is not a valid index
             }
         });
     }

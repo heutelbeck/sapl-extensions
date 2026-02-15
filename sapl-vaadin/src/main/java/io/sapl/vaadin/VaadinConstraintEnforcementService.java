@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -26,9 +26,9 @@ import java.util.stream.Stream;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.flow.component.UI;
 
+import io.sapl.api.model.Value;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.spring.constraints.api.ConsumerConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.RunnableConstraintHandlerProvider;
@@ -118,17 +118,13 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
             VaadinPep vaadinPep) {
         VaadinConstraintHandlerBundle vaadinConstraintHandlerBundle = new VaadinConstraintHandlerBundle();
 
-        authorizationDecision.getObligations().ifPresent(obligations -> {
-            for (JsonNode obligation : obligations) {
-                addConstraintHandlerToHandlerBundle(obligation, vaadinConstraintHandlerBundle, true, vaadinPep);
-            }
-        });
+        for (Value obligation : authorizationDecision.obligations()) {
+            addConstraintHandlerToHandlerBundle(obligation, vaadinConstraintHandlerBundle, true, vaadinPep);
+        }
 
-        authorizationDecision.getAdvice().ifPresent(advices -> {
-            for (JsonNode advice : advices) {
-                addConstraintHandlerToHandlerBundle(advice, vaadinConstraintHandlerBundle, false, vaadinPep);
-            }
-        });
+        for (Value advice : authorizationDecision.advice()) {
+            addConstraintHandlerToHandlerBundle(advice, vaadinConstraintHandlerBundle, false, vaadinPep);
+        }
 
         return vaadinConstraintHandlerBundle;
     }
@@ -143,13 +139,13 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * false if param obligation is advice.
      * @param vaadinPep vaadinPep containing additional local constraint handler
      */
-    private void addConstraintHandlerToHandlerBundle(JsonNode obligation, VaadinConstraintHandlerBundle handlerBundle,
+    private void addConstraintHandlerToHandlerBundle(Value obligation, VaadinConstraintHandlerBundle handlerBundle,
             boolean isObligation, VaadinPep vaadinPep) {
         var runnableHandler       = constructRunnableHandlersForConstraint(obligation, isObligation, vaadinPep);
         var consumerHandler       = constructConsumerHandlersForConstraint(obligation, isObligation, vaadinPep);
         var vaadinFunctionHandler = constructVaadinFunctionHandlersForConstraint(obligation, isObligation, vaadinPep);
         if (runnableHandler.size() + consumerHandler.size() + vaadinFunctionHandler.size() == 0) {
-            throw new AccessDeniedException(String.format("No handler found for obligation: %s", obligation.asText()));
+            throw new AccessDeniedException(String.format("No handler found for obligation: %s", obligation));
         }
         handlerBundle.runnableHandlerList.addAll(runnableHandler);
         handlerBundle.consumerHandlerList.addAll(consumerHandler);
@@ -164,7 +160,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * false if param obligation is advice.
      * @param vaadinPep vaadinPep containing additional local constraint handler
      */
-    private List<Function<UI, Mono<Boolean>>> constructVaadinFunctionHandlersForConstraint(JsonNode constraint,
+    private List<Function<UI, Mono<Boolean>>> constructVaadinFunctionHandlersForConstraint(Value constraint,
             boolean isObligation, VaadinPep vaadinPep) {
         return Stream.concat(globalVaadinFunctionProvider.stream(), vaadinPep.getLocalVaadinFunctionProvider().stream())
                 .filter(provider -> provider.isResponsible(constraint)).map(provider -> provider.getHandler(constraint))
@@ -179,7 +175,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * false if param obligation is advice.
      * @param vaadinPep vaadinPep containing additional local constraint handler
      */
-    private List<Consumer<UI>> constructConsumerHandlersForConstraint(JsonNode constraint, boolean isObligation,
+    private List<Consumer<UI>> constructConsumerHandlersForConstraint(Value constraint, boolean isObligation,
             VaadinPep vaadinPep) {
         return Stream.concat(globalConsumerProviders.stream(), vaadinPep.getLocalConsumerProviders().stream())
                 .filter(provider -> provider.isResponsible(constraint)).map(provider -> provider.getHandler(constraint))
@@ -194,7 +190,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      * false if param obligation is advice.
      * @param vaadinPep vaadinPep containing additional local constraint handler
      */
-    private List<Runnable> constructRunnableHandlersForConstraint(JsonNode constraint, boolean isObligation,
+    private List<Runnable> constructRunnableHandlersForConstraint(Value constraint, boolean isObligation,
             VaadinPep vaadinPep) {
         return Stream.concat(globalRunnableProviders.stream(), vaadinPep.getLocalRunnableProviders().stream())
                 .filter(provider -> provider.isResponsible(constraint)).map(provider -> provider.getHandler(constraint))

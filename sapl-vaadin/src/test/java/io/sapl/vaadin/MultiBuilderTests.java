@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,7 +17,7 @@
  */
 package io.sapl.vaadin;
 
-import static io.sapl.api.interpreter.Val.JSON;
+import tools.jackson.databind.node.JsonNodeFactory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -74,7 +74,7 @@ class MultiBuilderTests {
 
     @BeforeAll
     static void beforeAll() {
-        var subject = JSON.objectNode();
+        var subject = JsonNodeFactory.instance.objectNode();
         subject.put("username", "dummy");
         securityHelperMock = mockStatic(SecurityHelper.class);
         securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
@@ -342,9 +342,7 @@ class MultiBuilderTests {
         var fluxMock   = getFluxMock();
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(fluxMock);
 
-        var iadMock = mock(IdentifiableAuthorizationDecision.class);
-        when(iadMock.getAuthorizationSubscriptionId()).thenReturn("0"); // 0 = id of button
-        when(iadMock.getAuthorizationDecision()).thenReturn(AuthorizationDecision.PERMIT);
+        var iad = new IdentifiableAuthorizationDecision("0", AuthorizationDecision.PERMIT); // 0 = id of button
 
         @SuppressWarnings("unchecked")
         var monoMock = (Mono<AuthorizationDecision>) mock(Mono.class);
@@ -355,7 +353,7 @@ class MultiBuilderTests {
         sut.subject("subject").with(buttonMock).onDenyDo(x -> {}).build();
 
         // WHEN
-        subscribeConsumer.accept(iadMock);
+        subscribeConsumer.accept(iad);
 
         // THEN
         ArgumentCaptor<AuthorizationDecision> authorizationDecisionArgument = ArgumentCaptor
@@ -365,7 +363,7 @@ class MultiBuilderTests {
         verify(vaadinConstraintEnforcementService).enforceConstraintsOfDecision(authorizationDecisionArgument.capture(),
                 uiArgument.capture(), any(VaadinPep.class));
         assertEquals(buttonMock.getUI().get(), uiArgument.getValue());
-        assertEquals(Decision.PERMIT, authorizationDecisionArgument.getValue().getDecision());
+        assertEquals(Decision.PERMIT, authorizationDecisionArgument.getValue().decision());
     }
 
     @Test
@@ -375,9 +373,7 @@ class MultiBuilderTests {
         var fluxMock   = getFluxMock();
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(fluxMock);
 
-        IdentifiableAuthorizationDecision iadMock = mock(IdentifiableAuthorizationDecision.class);
-        when(iadMock.getAuthorizationSubscriptionId()).thenReturn(null);
-        when(iadMock.getAuthorizationDecision()).thenReturn(AuthorizationDecision.PERMIT);
+        var iad = new IdentifiableAuthorizationDecision("non-matching-id", AuthorizationDecision.PERMIT);
 
         @SuppressWarnings("unchecked")
         var monoMock = (Mono<AuthorizationDecision>) mock(Mono.class);
@@ -388,7 +384,7 @@ class MultiBuilderTests {
         sut.with(buttonMock).onDenyDo(x -> {}).build();
 
         // WHEN
-        subscribeConsumer.accept(iadMock);
+        subscribeConsumer.accept(iad);
 
         // THEN
         assertTrue(buttonMock.getUI().isPresent());

@@ -38,9 +38,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
@@ -86,7 +86,7 @@ class EthereumDemoApplicationIT {
     EthConnect ethConnect;
 
     @Autowired
-    ObjectMapper mapper;
+    JsonMapper mapper;
 
     @Autowired
     PolicyDecisionPoint pdp;
@@ -107,7 +107,7 @@ class EthereumDemoApplicationIT {
     }
 
     private AuthorizationSubscription buildSubscription(Object user, String action, String resource) {
-        return new AuthorizationSubscription(mapper.convertValue(user, JsonNode.class), JSON.textNode(action),
-                JSON.textNode(resource), null);
+        return AuthorizationSubscription.of(mapper.convertValue(user, JsonNode.class), JSON.stringNode(action),
+                JSON.stringNode(resource), null);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,7 +17,7 @@
  */
 package io.sapl.vaadin;
 
-import static io.sapl.api.interpreter.Val.JSON;
+import tools.jackson.databind.node.JsonNodeFactory;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
@@ -52,7 +52,7 @@ class VaadinPepTests {
 
     @BeforeAll
     static void beforeAll() {
-        var subject = JSON.objectNode();
+        var subject = JsonNodeFactory.instance.objectNode();
         subject.put("username", "dummy");
         securityHelperMock = mockStatic(SecurityHelper.class);
         securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
@@ -81,7 +81,7 @@ class VaadinPepTests {
         BiConsumer<AuthorizationDecision, Component>  biConsumer       = (BiConsumer<AuthorizationDecision, Component>) mock(
                 BiConsumer.class);
         vaadinPepBuilder.onDecisionDo(biConsumer);
-        AuthorizationDecision ad = mock(AuthorizationDecision.class);
+        AuthorizationDecision ad = AuthorizationDecision.PERMIT;
 
         // WHEN
         vaadinPepBuilder.vaadinPep.handleDecision(ad);

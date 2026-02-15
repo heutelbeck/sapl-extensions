@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -88,7 +88,6 @@ import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 import io.sapl.api.pdp.MultiAuthorizationSubscription;
 import io.sapl.api.pdp.PolicyDecisionPoint;
-import io.sapl.interpreter.InitializationException;
 import io.sapl.mqtt.pep.cache.MqttClientState;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 import io.sapl.mqtt.pep.util.SaplSubscriptionUtility;
@@ -110,7 +109,7 @@ class MqttActionUnitIT {
     private static final String TOPIC                                = "testTopic";
 
     @Test
-    void when_connectionPermitted_then_establishConnection() throws InitializationException {
+    void when_connectionPermitted_then_establishConnection() {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -176,7 +175,7 @@ class MqttActionUnitIT {
 
     @Test
     void when_publishAndSubscribeOnTwoClientsForTopicPermitted_then_shareDecisionFluxPerClient()
-            throws InitializationException, InterruptedException {
+            throws InterruptedException {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -288,7 +287,7 @@ class MqttActionUnitIT {
     }
 
     @Test
-    void when_decisionIsIndeterminateLaterOn_then_cancelConnection() throws InitializationException {
+    void when_decisionIsIndeterminateLaterOn_then_cancelConnection() {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -323,7 +322,7 @@ class MqttActionUnitIT {
     }
 
     @Test
-    void when_subscriptionToTopicGetsDeniedLaterOn_then_cancelSubscription() throws InitializationException {
+    void when_subscriptionToTopicGetsDeniedLaterOn_then_cancelSubscription() {
         // GIVEN
         String subscriptionClientConnectionSaplSubscriptionId       = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -385,7 +384,7 @@ class MqttActionUnitIT {
 
     @Test
     void when_multipleClientsSubscribingSameTopicAndOneSubscriptionGetsDeniedLaterOn_then_doNotCancelOtherSubscription()
-            throws InitializationException, InterruptedException {
+            throws InterruptedException {
         // GIVEN
         String secondMqttClientId = "SECOND_MQTT_CLIENT_SUBSCRIBE";
 
@@ -535,7 +534,7 @@ class MqttActionUnitIT {
     }
 
     @Test
-    void when_decisionIsNotApplicableLaterOn_then_cancelConnection() throws InitializationException {
+    void when_decisionIsNotApplicableLaterOn_then_cancelConnection() {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -636,7 +635,7 @@ class MqttActionUnitIT {
     @ParameterizedTest
     @ValueSource(ints = { 1, 2 })
     void when_clientWasDisconnectedWhileStartingMqttSubscriptionEnforcementBeforeEstablishedDecisionFlux_then_stopEnforcement(
-            int mqttClientCacheCallThreshold) throws InitializationException {
+            int mqttClientCacheCallThreshold) {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -698,7 +697,7 @@ class MqttActionUnitIT {
     @ParameterizedTest
     @ValueSource(ints = { 1, 2 })
     void when_clientWasDisconnectedWhileStartingMqttPublishEnforcementBeforeEstablishedDecisionFlux_then_stopEnforcement(
-            int mqttClientCacheCallThreshold) throws InitializationException {
+            int mqttClientCacheCallThreshold) {
         // GIVEN
         String publishClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
                 .buildSubscriptionId(PUBLISH_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -846,8 +845,7 @@ class MqttActionUnitIT {
     }
 
     @Test
-    void when_clientWasDisconnectedWhileStartingMqttPublishEnforcementWithEstablishedDecisionFlux_then_stopEnforcement()
-            throws InitializationException {
+    void when_clientWasDisconnectedWhileStartingMqttPublishEnforcementWithEstablishedDecisionFlux_then_stopEnforcement() {
         // GIVEN
         String publishClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
                 .buildSubscriptionId(PUBLISH_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -899,7 +897,7 @@ class MqttActionUnitIT {
     @ParameterizedTest
     @ValueSource(ints = { 0, 4 })
     void when_clientWasDisconnectedWhileStartingMqttSubscriptionEnforcementWithEstablishedDecisionFlux_then_stopEnforcement(
-            int mqttClientCacheCallThreshold) throws InitializationException {
+            int mqttClientCacheCallThreshold) {
         // GIVEN
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
                 .buildSubscriptionId(SUBSCRIPTION_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -956,8 +954,7 @@ class MqttActionUnitIT {
     }
 
     @Test
-    void when_clientDisconnectsWhileEnforcingIndeterminateDecisionWhenSubscriptionExists_then_stopEnforcement()
-            throws InitializationException {
+    void when_clientDisconnectsWhileEnforcingIndeterminateDecisionWhenSubscriptionExists_then_stopEnforcement() {
         // GIVEN
         String publishClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility
                 .buildSubscriptionId(PUBLISH_CLIENT_ID, MqttPep.CONNECT_AUTHZ_ACTION);
@@ -1099,8 +1096,7 @@ class MqttActionUnitIT {
     }
 
     @Test
-    void when_permitDecisionFollowingPermitDecisionOnResubscribedFluxForMqttSubscriptionEnforcement_then_staySubscribed()
-            throws InitializationException {
+    void when_permitDecisionFollowingPermitDecisionOnResubscribedFluxForMqttSubscriptionEnforcement_then_staySubscribed() {
         // GIVEN
         String secondTopic                                          = "secondTopic";
         String subscriptionClientMqttConnectionSaplSubscriptionId   = SaplSubscriptionUtility

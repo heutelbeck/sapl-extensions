@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2025 Dominic Heutelbeck (dominic@heutelbeck.com)
+ * Copyright (C) 2017-2026 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,7 +17,6 @@
  */
 package io.sapl.vaadin;
 
-import static io.sapl.api.interpreter.Val.JSON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -46,8 +45,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
@@ -55,6 +54,7 @@ import com.vaadin.flow.router.BeforeLeaveListener;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.VaadinServletRequest;
 
+import io.sapl.api.model.Value;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.AuthorizationSubscription;
 import io.sapl.api.pdp.Decision;
@@ -74,7 +74,7 @@ class LifecycleBeforeLeavePepBuilderTests {
 
     @BeforeAll
     static void beforeAll() {
-        var subject = JSON.objectNode();
+        var subject = JsonNodeFactory.instance.objectNode();
         subject.put("username", "dummy");
         securityHelperMock = mockStatic(SecurityHelper.class);
         securityHelperMock.when(SecurityHelper::getSubject).thenReturn(subject);
@@ -261,7 +261,7 @@ class LifecycleBeforeLeavePepBuilderTests {
         sut.subject("Test subject");
 
         // THEN
-        assertEquals("Test subject", sut.vaadinPep.getAuthorizationSubscription().getSubject().asText());
+        assertEquals(Value.of("Test subject"), sut.vaadinPep.getAuthorizationSubscription().subject());
     }
 
     @Test
@@ -275,7 +275,7 @@ class LifecycleBeforeLeavePepBuilderTests {
         sut.environment("Test environment");
 
         // THEN
-        assertEquals("Test environment", sut.vaadinPep.getAuthorizationSubscription().getEnvironment().asText());
+        assertEquals(Value.of("Test environment"), sut.vaadinPep.getAuthorizationSubscription().environment());
     }
 
     @Test
@@ -435,7 +435,8 @@ class LifecycleBeforeLeavePepBuilderTests {
 
     private VaadinConstraintEnforcementService mockNextVaadinConstraintEnforcementService(Decision decision) {
         var enforcementServiceMock = mock(VaadinConstraintEnforcementService.class);
-        var monoMock               = Mono.just(new AuthorizationDecision(decision));
+        var monoMock               = Mono
+                .just(new AuthorizationDecision(decision, Value.EMPTY_ARRAY, Value.EMPTY_ARRAY, Value.UNDEFINED));
         when(enforcementServiceMock.enforceConstraintsOfDecision(any(), any(), any())).thenReturn(monoMock);
         return enforcementServiceMock;
     }
@@ -453,7 +454,7 @@ class LifecycleBeforeLeavePepBuilderTests {
 
     private PolicyDecisionPoint mockPdp() {
         PolicyDecisionPoint         pdpMock   = mock(PolicyDecisionPoint.class);
-        Flux<AuthorizationDecision> authzFlux = Flux.just(new AuthorizationDecision(Decision.PERMIT));
+        Flux<AuthorizationDecision> authzFlux = Flux.just(AuthorizationDecision.PERMIT);
         when(pdpMock.decide(any(AuthorizationSubscription.class))).thenReturn(authzFlux);
         return pdpMock;
     }
