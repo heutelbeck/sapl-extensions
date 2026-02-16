@@ -118,7 +118,7 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
       run: >
-        mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar
+        mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
         -Dsonar.organization=heutelbeck
         -Dsonar.host.url=https://sonarcloud.io
         -Dsonar.projectKey=heutelbeck_sapl-extensions
