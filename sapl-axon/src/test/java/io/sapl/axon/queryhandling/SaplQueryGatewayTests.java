@@ -70,7 +70,7 @@ class SaplQueryGatewayTests {
                 accessDeniedHandler);
         verify(gateway, times(1)).subscriptionQuery(eq(String.class.getName()), any(SubscriptionQueryMessage.class),
                 eq(DEFAULT_RESPONSE_TYPE), eq(ResponseTypes.instanceOf(RecoverableResponse.class)), any(int.class));
-        assertThat(accessDeniedCounter.get()).isEqualTo(0);
+        assertThat(accessDeniedCounter.get()).isZero();
     }
 
     @Test
@@ -78,7 +78,7 @@ class SaplQueryGatewayTests {
         gateway.recoverableSubscriptionQuery(DEFAULT_QUERY_MESSAGE, String.class, String.class, accessDeniedHandler);
         verify(gateway, times(1)).subscriptionQuery(eq(String.class.getName()), any(SubscriptionQueryMessage.class),
                 eq(DEFAULT_RESPONSE_TYPE), eq(ResponseTypes.instanceOf(RecoverableResponse.class)), any(int.class));
-        assertThat(accessDeniedCounter.get()).isEqualTo(0);
+        assertThat(accessDeniedCounter.get()).isZero();
     }
 
     @Test

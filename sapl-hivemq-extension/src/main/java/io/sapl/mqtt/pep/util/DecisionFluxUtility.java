@@ -151,11 +151,8 @@ public class DecisionFluxUtility {
      */
     public static IdentifiableAuthorizationDecision getIdentAuthzDecision(String subscriptionId,
             Map<String, IdentifiableAuthorizationDecision> identAuthzDecisionMap) {
-        if (identAuthzDecisionMap.containsKey("")) {
-            return identAuthzDecisionMap.get("");
-        } else {
-            return identAuthzDecisionMap.get(subscriptionId);
-        }
+        var result = identAuthzDecisionMap.get("");
+        return result != null ? result : identAuthzDecisionMap.get(subscriptionId);
     }
 
     /**

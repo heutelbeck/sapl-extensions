@@ -335,7 +335,7 @@ class SaplQueryUpdateEmitterTests {
                 ResponseTypes.multipleInstancesOf(Object.class));
 
         var updateHandlerRegistration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
-        assertThat(UpdateHandlerRegistration.class.isAssignableFrom(updateHandlerRegistration.getClass())).isTrue();
+        assertThat(updateHandlerRegistration).isInstanceOf(UpdateHandlerRegistration.class);
     }
 
     @Test
@@ -1148,17 +1148,14 @@ class SaplQueryUpdateEmitterTests {
     void when_dispatchInterceptorRegistered_then_contains() {
         MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>> interceptor = list -> (integer,
                 updateMessage) -> GenericSubscriptionQueryUpdateMessage.asUpdateMessage(5);
-        assertThat(
-                ((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FIELD_NAME)).contains(interceptor))
-                .isFalse();
+        assertThat((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FIELD_NAME))
+                .doesNotContain(interceptor);
         var registration = emitter.registerDispatchInterceptor(interceptor);
-        assertThat(
-                ((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FIELD_NAME)).contains(interceptor))
-                .isTrue();
+        assertThat((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FIELD_NAME))
+                .contains(interceptor);
         registration.cancel();
-        assertThat(
-                ((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FIELD_NAME)).contains(interceptor))
-                .isFalse();
+        assertThat((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FIELD_NAME))
+                .doesNotContain(interceptor);
     }
 
     @Test
@@ -1170,20 +1167,20 @@ class SaplQueryUpdateEmitterTests {
                 .startAndGet(subscriptionQueryMessage);
 
         var unitOfWorkTasks = uow.resources();
-        assertThat(unitOfWorkTasks.size()).isEqualTo(0);
+        assertThat(unitOfWorkTasks).isEmpty();
         emitter.complete(q -> true);
-        assertThat(unitOfWorkTasks.size()).isEqualTo(1);
+        assertThat(unitOfWorkTasks).hasSize(1);
         uow.commit();// Cleanup to not interfere with other tests
 
     }
 
     @Test
     void when_updateHandlerRegistered_then_contains() {
-        assertThat(emitter.activeSubscriptions().contains(defaultSubscriptionQueryMessage)).isFalse();
+        assertThat(emitter.activeSubscriptions()).doesNotContain(defaultSubscriptionQueryMessage);
         var registration = emitter.registerUpdateHandler(defaultSubscriptionQueryMessage, 1024);
-        assertThat(emitter.activeSubscriptions().contains(defaultSubscriptionQueryMessage)).isTrue();
+        assertThat(emitter.activeSubscriptions()).contains(defaultSubscriptionQueryMessage);
         registration.getRegistration().cancel();
-        assertThat(emitter.activeSubscriptions().contains(defaultSubscriptionQueryMessage)).isFalse();
+        assertThat(emitter.activeSubscriptions()).doesNotContain(defaultSubscriptionQueryMessage);
     }
 
     @Test

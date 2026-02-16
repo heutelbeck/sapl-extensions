@@ -447,7 +447,7 @@ class EthereumIntegrationTests {
     void ethHashrateShouldReturnTheCorrectValue() {
         BigInteger pipResult = ValueJsonMarshaller.toJsonNode(ethPip.ethHashrate(null, EMPTY_CTX).blockFirst())
                 .bigIntegerValue();
-        assertThat(pipResult.intValue() > 0).withFailMessage("The ethHashrate should be greater than 0.").isTrue();
+        assertThat(pipResult.intValue()).withFailMessage("The ethHashrate should be greater than 0.").isGreaterThan(0);
     }
 
     @Test

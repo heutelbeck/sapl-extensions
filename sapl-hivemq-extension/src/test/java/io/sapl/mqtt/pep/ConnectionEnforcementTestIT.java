@@ -104,7 +104,7 @@ class ConnectionEnforcementTestIT {
                 .satisfies(e -> assertThat(((Mqtt5ConnAckException) e).getMqttMessage().getReasonCode())
                         .isEqualTo(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED));
         await().atMost(2, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertThat(MQTT_CLIENT_CACHE.containsKey(PUBLISH_CLIENT_ID)).isFalse());
+                .untilAsserted(() -> assertThat(MQTT_CLIENT_CACHE).doesNotContainKey(PUBLISH_CLIENT_ID));
     }
 
     @Test
@@ -121,7 +121,7 @@ class ConnectionEnforcementTestIT {
         // THEN
         await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
             assertThat(blockingMqttClient.getState().isConnected()).isFalse();
-            assertThat(MQTT_CLIENT_CACHE.containsKey(PUBLISH_CLIENT_ID)).isFalse();
+            assertThat(MQTT_CLIENT_CACHE).doesNotContainKey(PUBLISH_CLIENT_ID);
         });
     }
 
@@ -149,8 +149,8 @@ class ConnectionEnforcementTestIT {
             assertThat(blockingMqttClient.getState().isConnected()).isFalse();
             assertThat(secondBlockingMqttClient.getState().isConnected()).isTrue();
 
-            assertThat(MQTT_CLIENT_CACHE.containsKey(PUBLISH_CLIENT_ID)).isFalse();
-            assertThat(MQTT_CLIENT_CACHE.containsKey(secondClientId)).isTrue();
+            assertThat(MQTT_CLIENT_CACHE).doesNotContainKey(PUBLISH_CLIENT_ID);
+            assertThat(MQTT_CLIENT_CACHE).containsKey(secondClientId);
         });
 
         // FINALLY

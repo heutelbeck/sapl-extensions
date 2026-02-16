@@ -335,7 +335,7 @@ public class ConstraintHandlerService {
         };
     }
 
-    private <T> Function<Object, Object> constructResultMessageMappingHandlers(ArrayValue constraints,
+    private <T> UnaryOperator<Object> constructResultMessageMappingHandlers(ArrayValue constraints,
             Consumer<Value> onHandlerFound, ResponseType<T> responseType) {
         var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<Object, Object>>>(constraints.size());
 
@@ -444,7 +444,7 @@ public class ConstraintHandlerService {
         };
     }
 
-    private Function<Throwable, Throwable> constructErrorMappingHandlers(ArrayValue constraints,
+    private UnaryOperator<Throwable> constructErrorMappingHandlers(ArrayValue constraints,
             Consumer<Value> onHandlerFound) {
         var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<Throwable, Throwable>>>(
                 constraints.size());
@@ -485,8 +485,8 @@ public class ConstraintHandlerService {
         };
     }
 
-    private Function<CommandMessage<?>, CommandMessage<?>> constructCommandMessageMappingHandlers(
-            ArrayValue constraints, Consumer<Value> onHandlerFound) {
+    private UnaryOperator<CommandMessage<?>> constructCommandMessageMappingHandlers(ArrayValue constraints,
+            Consumer<Value> onHandlerFound) {
         var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<CommandMessage<?>, CommandMessage<?>>>>(
                 constraints.size());
 
@@ -526,8 +526,8 @@ public class ConstraintHandlerService {
         };
     }
 
-    private Function<QueryMessage<?, ?>, QueryMessage<?, ?>> constructQueryMessageMappingHandlers(
-            ArrayValue constraints, Consumer<Value> onHandlerFound) {
+    private UnaryOperator<QueryMessage<?, ?>> constructQueryMessageMappingHandlers(ArrayValue constraints,
+            Consumer<Value> onHandlerFound) {
         var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<QueryMessage<?, ?>, QueryMessage<?, ?>>>>(
                 constraints.size());
 
@@ -569,7 +569,7 @@ public class ConstraintHandlerService {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Function<T, T> constructResultMappingHandlers(ArrayValue constraints, Consumer<Value> onHandlerFound,
+    private <T> UnaryOperator<T> constructResultMappingHandlers(ArrayValue constraints, Consumer<Value> onHandlerFound,
             Class<?> responseType) {
         var handlersWithPriority = new ArrayList<HandlerWithPriority<Function<T, T>>>(constraints.size());
 
@@ -768,9 +768,10 @@ public class ConstraintHandlerService {
         };
     }
 
-    private static <V> Function<V, V> mapAll(Collection<HandlerWithPriority<Function<V, V>>> handlers) {
-        return handlers.stream().map(HandlerWithPriority::getHandler).reduce(Function.identity(),
+    private static <V> UnaryOperator<V> mapAll(Collection<HandlerWithPriority<Function<V, V>>> handlers) {
+        var combined = handlers.stream().map(HandlerWithPriority::getHandler).reduce(Function.identity(),
                 (merged, newFunction) -> x -> newFunction.apply(merged.apply(x)));
+        return combined::apply;
     }
 
     private <T> Predicate<T> andAll(List<Predicate<T>> predicates) {

@@ -306,7 +306,7 @@ class MultiBuilderTests {
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(fluxMock);
 
         // Methods on SUT
-        sut.with(buttonMock).onDenyDo(any -> {}).build();
+        sut.with(buttonMock).onDenyDo(x -> {}).build();
 
         // WHEN
         sut.unregisterPep(0);
@@ -358,7 +358,7 @@ class MultiBuilderTests {
         ArgumentCaptor<AuthorizationDecision> authorizationDecisionArgument = ArgumentCaptor
                 .forClass(AuthorizationDecision.class);
         ArgumentCaptor<UI>                    uiArgument                    = ArgumentCaptor.forClass(UI.class);
-        assertThat(buttonMock.getUI().isPresent()).isTrue();
+        assertThat(buttonMock.getUI()).isPresent();
         verify(vaadinConstraintEnforcementService).enforceConstraintsOfDecision(authorizationDecisionArgument.capture(),
                 uiArgument.capture(), any(VaadinPep.class));
         assertThat(uiArgument.getValue()).isEqualTo(buttonMock.getUI().get());
@@ -386,7 +386,7 @@ class MultiBuilderTests {
         subscribeConsumer.accept(iad);
 
         // THEN
-        assertThat(buttonMock.getUI().isPresent()).isTrue();
+        assertThat(buttonMock.getUI()).isPresent();
         verify(vaadinConstraintEnforcementService, times(0)).enforceConstraintsOfDecision(any(), any(),
                 any(VaadinPep.class));
     }

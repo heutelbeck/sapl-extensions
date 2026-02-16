@@ -140,8 +140,8 @@ class ConstraintHandling2IT {
         assertThat(new String(receivedMessage.getPayloadAsBytes(), StandardCharset.UTF_8))
                 .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
         assertThat(receivedMessage.getContentType()).isPresent();
-        assertThat(StandardCharsets.UTF_8.decode(receivedMessage.getContentType().get().toByteBuffer()).toString())
-                .isEqualTo("content");
+        assertThat((Object) StandardCharsets.UTF_8.decode(receivedMessage.getContentType().get().toByteBuffer()))
+                .hasToString("content");
 
         // FINALLY
         subscribeClient.unsubscribeWith().topicFilter("contentTopic").send();
@@ -162,8 +162,8 @@ class ConstraintHandling2IT {
 
         // THEN
         assertThat(receivedMessage.getPayload()).isPresent();
-        assertThat(StandardCharsets.UTF_8.decode(receivedMessage.getPayload().get()).toString())
-                .isEqualTo("changedPayload");
+        assertThat((Object) StandardCharsets.UTF_8.decode(receivedMessage.getPayload().get()))
+                .hasToString("changedPayload");
 
         // FINALLY
         subscribeClient.unsubscribeWith().topicFilter("payloadTopic").send();
@@ -186,7 +186,7 @@ class ConstraintHandling2IT {
 
         // THEN
         assertThat(receivedMessage.getPayload()).isPresent();
-        assertThat(StandardCharsets.UTF_8.decode(receivedMessage.getPayload().get()).toString()).isEqualTo("*****ge");
+        assertThat((Object) StandardCharsets.UTF_8.decode(receivedMessage.getPayload().get())).hasToString("*****ge");
 
         // FINALLY
         subscribeClient.unsubscribeWith().topicFilter("blackenTopic").send();

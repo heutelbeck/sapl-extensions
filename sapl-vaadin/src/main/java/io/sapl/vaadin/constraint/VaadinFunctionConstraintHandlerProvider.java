@@ -56,14 +56,13 @@ public interface VaadinFunctionConstraintHandlerProvider {
                 if (!(constraint instanceof ObjectValue objectConstraint)) {
                     return false;
                 }
-                boolean isResponsible = true;
-                for (String filterField : constraintFilter.keySet()) {
-                    if (!objectConstraint.containsKey(filterField)
-                            || !objectConstraint.get(filterField).equals(constraintFilter.get(filterField))) {
-                        isResponsible = false;
+                for (var entry : constraintFilter.entrySet()) {
+                    var actual = objectConstraint.get(entry.getKey());
+                    if (!entry.getValue().equals(actual)) {
+                        return false;
                     }
                 }
-                return isResponsible;
+                return true;
             }
 
             @Override
@@ -84,14 +83,13 @@ public interface VaadinFunctionConstraintHandlerProvider {
                 if (!(constraint instanceof ObjectValue objectConstraint)) {
                     return false;
                 }
-                boolean isResponsible = true;
-                for (String filterField : constraintFilter.keySet()) {
-                    if (!objectConstraint.containsKey(filterField)
-                            || !objectConstraint.get(filterField).equals(constraintFilter.get(filterField))) {
-                        isResponsible = false;
+                for (var entry : constraintFilter.entrySet()) {
+                    var actual = objectConstraint.get(entry.getKey());
+                    if (!entry.getValue().equals(actual)) {
+                        return false;
                     }
                 }
-                return isResponsible;
+                return true;
             }
 
             @Override

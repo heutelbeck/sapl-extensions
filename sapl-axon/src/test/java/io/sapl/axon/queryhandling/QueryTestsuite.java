@@ -173,7 +173,7 @@ abstract class QueryTestsuite {
 
         verify(pdp, times(1)).decide(any(AuthorizationSubscription.class));
         var subscription = captureAuthzSubscription();
-        assertThat(((ObjectValue) subscription.subject()).get("username")).isEqualTo(Value.of("user1"));
+        assertThat((ObjectValue) subscription.subject()).containsEntry("username", Value.of("user1"));
         assertThat(subscription.action()).isEqualTo(Value.of(PRE_HANDLE_QUERY));
         assertThat(subscription.resource()).isEqualTo(Value.of(RESOURCE));
         assertThat(subscription.environment()).isInstanceOf(UndefinedValue.class);

@@ -150,30 +150,34 @@ public class FieldValidationConstraintHandlerProvider implements ConsumerConstra
      */
     private void updateValidationSchemes(ObjectValue constraint) {
         if (constraint.containsKey("fields") && constraint.get("fields") instanceof ObjectValue fields) {
-            fields.forEach((fieldName, fieldValue) -> {
-                if (isBoundFromFieldName.containsKey(fieldName) && fieldValue instanceof ObjectValue fieldPolicy) {
-                    var fieldPolicyJson = objectMapper.convertValue(fieldPolicy, JsonNode.class);
-                    var validationJson  = JSON.objectNode();
-                    validationJson.set("properties", JSON.objectNode().set(fieldName, fieldPolicyJson));
-
-                    var schemaVersion  = fieldPolicy.containsKey("$schema")
-                            && fieldPolicy.get("$schema") instanceof TextValue(var schemaId)
-                                    ? SpecificationVersion.fromDialectId(schemaId).orElse(DEFAULT_JSON_SCHEMA_VERSION)
-                                    : DEFAULT_JSON_SCHEMA_VERSION;
-                    var schemaRegistry = SchemaRegistry.withDefaultDialect(schemaVersion);
-
-                    jsonValidationSchemaFromFieldName.put(fieldName, schemaRegistry.getSchema(validationJson));
-
-                    if (fieldPolicy.containsKey("message")
-                            && fieldPolicy.get("message") instanceof TextValue(var message)) {
-                        validationMessageFromFieldName.put(fieldName, message);
-                    }
-                } else if (!isBoundFromFieldName.containsKey(fieldName)) {
-                    throw new AccessDeniedException(
-                            "Failed to validate field \"" + fieldName + "\". It has not been bound");
-                }
-            });
+            fields.forEach(this::updateFieldValidation);
         }
+    }
+
+    private void updateFieldValidation(String fieldName, Value fieldValue) {
+        if (isBoundFromFieldName.containsKey(fieldName) && fieldValue instanceof ObjectValue fieldPolicy) {
+            var fieldPolicyJson = objectMapper.convertValue(fieldPolicy, JsonNode.class);
+            var validationJson  = JSON.objectNode();
+            validationJson.set("properties", JSON.objectNode().set(fieldName, fieldPolicyJson));
+
+            var schemaVersion  = extractSchemaVersion(fieldPolicy);
+            var schemaRegistry = SchemaRegistry.withDefaultDialect(schemaVersion);
+
+            jsonValidationSchemaFromFieldName.put(fieldName, schemaRegistry.getSchema(validationJson));
+
+            if (fieldPolicy.containsKey("message") && fieldPolicy.get("message") instanceof TextValue(var message)) {
+                validationMessageFromFieldName.put(fieldName, message);
+            }
+        } else if (!isBoundFromFieldName.containsKey(fieldName)) {
+            throw new AccessDeniedException("Failed to validate field \"" + fieldName + "\". It has not been bound");
+        }
+    }
+
+    private static SpecificationVersion extractSchemaVersion(ObjectValue fieldPolicy) {
+        if (fieldPolicy.containsKey("$schema") && fieldPolicy.get("$schema") instanceof TextValue(var schemaId)) {
+            return SpecificationVersion.fromDialectId(schemaId).orElse(DEFAULT_JSON_SCHEMA_VERSION);
+        }
+        return DEFAULT_JSON_SCHEMA_VERSION;
     }
 
     /**

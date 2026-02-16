@@ -64,7 +64,6 @@ import tools.jackson.databind.node.ObjectNode;
 import io.reactivex.Flowable;
 import io.sapl.api.attributes.AttributeAccessContext;
 import io.sapl.api.model.ArrayValue;
-import io.sapl.api.model.ObjectValue;
 import io.sapl.api.model.TextValue;
 import io.sapl.api.model.Value;
 import io.sapl.api.model.ValueJsonMarshaller;
@@ -651,7 +650,7 @@ class EthereumModuleTests {
                 .toString();
 
         assertThat(pipResult).withFailMessage("The ethGetBlockByHash method did not return the correct value.")
-                .isEqualTo(MAPPER.convertValue(testBlock, JsonNode.class).toString());
+                .hasToString(MAPPER.convertValue(testBlock, JsonNode.class).toString());
     }
 
     @Test
@@ -667,9 +666,8 @@ class EthereumModuleTests {
         JsonNode pipResult = ValueJsonMarshaller.toJsonNode(
                 ethPip.ethGetBlockByNumber(ValueJsonMarshaller.fromJsonNode(saplObject), EMPTY_CTX).blockFirst());
 
-        assertThat(pipResult.toString())
-                .withFailMessage("The ethGetBlockByNumber method did not return the correct value.")
-                .isEqualTo(MAPPER.convertValue(testBlock, JsonNode.class).toString());
+        assertThat(pipResult).withFailMessage("The ethGetBlockByNumber method did not return the correct value.")
+                .hasToString(MAPPER.convertValue(testBlock, JsonNode.class).toString());
     }
 
     @Test
@@ -681,9 +679,8 @@ class EthereumModuleTests {
         JsonNode pipResult  = ValueJsonMarshaller.toJsonNode(
                 ethPip.ethGetTransactionByHash(ValueJsonMarshaller.fromJsonNode(saplObject), EMPTY_CTX).blockFirst());
 
-        assertThat(pipResult.toString())
-                .withFailMessage("The ethGetTransactionByHash method did not return the correct value.")
-                .isEqualTo(MAPPER.convertValue(testTransaction, JsonNode.class).toString());
+        assertThat(pipResult).withFailMessage("The ethGetTransactionByHash method did not return the correct value.")
+                .hasToString(MAPPER.convertValue(testTransaction, JsonNode.class).toString());
     }
 
     @Test
@@ -701,9 +698,9 @@ class EthereumModuleTests {
                 ethPip.ethGetTransactionByBlockHashAndIndex(ValueJsonMarshaller.fromJsonNode(saplObject), EMPTY_CTX)
                         .blockFirst());
 
-        assertThat(pipResult.toString())
+        assertThat(pipResult)
                 .withFailMessage("The ethGetTransactionByBlockHashAndIndex method did not return the correct value.")
-                .isEqualTo(MAPPER.convertValue(testTransaction, JsonNode.class).toString());
+                .hasToString(MAPPER.convertValue(testTransaction, JsonNode.class).toString());
     }
 
     @Test
@@ -725,10 +722,10 @@ class EthereumModuleTests {
                     ethPip.ethGetTransactionByBlockNumberAndIndex(ValueJsonMarshaller.fromJsonNode(saplObject), null)
                             .blockFirst());
 
-            assertThat(pipResult.toString())
+            assertThat(pipResult)
                     .withFailMessage(
                             "The ethGetTransactionByBlockNumberAndIndex method did not return the correct value.")
-                    .isEqualTo(MAPPER.convertValue(testTransaction, JsonNode.class).toString());
+                    .hasToString(MAPPER.convertValue(testTransaction, JsonNode.class).toString());
         }
     }
 
@@ -741,9 +738,8 @@ class EthereumModuleTests {
         JsonNode pipResult  = ValueJsonMarshaller.toJsonNode(
                 ethPip.ethGetTransactionReceipt(ValueJsonMarshaller.fromJsonNode(saplObject), EMPTY_CTX).blockFirst());
 
-        assertThat(pipResult.toString())
-                .withFailMessage("The ethGetTransactionReceipt method did not return the correct value.")
-                .isEqualTo(MAPPER.convertValue(receipt, JsonNode.class).toString());
+        assertThat(pipResult).withFailMessage("The ethGetTransactionReceipt method did not return the correct value.")
+                .hasToString(MAPPER.convertValue(receipt, JsonNode.class).toString());
     }
 
     @Test
@@ -771,9 +767,9 @@ class EthereumModuleTests {
         JsonNode pipResult = ValueJsonMarshaller.toJsonNode(ethPip
                 .ethGetUncleByBlockHashAndIndex(ValueJsonMarshaller.fromJsonNode(saplObject), EMPTY_CTX).blockFirst());
 
-        assertThat(pipResult.toString())
+        assertThat(pipResult)
                 .withFailMessage("The ethGetUncleByBlockHashAndIndex method did not return the correct value.")
-                .isEqualTo(MAPPER.convertValue(testBlock, JsonNode.class).toString());
+                .hasToString(MAPPER.convertValue(testBlock, JsonNode.class).toString());
     }
 
     @Test
@@ -794,9 +790,9 @@ class EthereumModuleTests {
                     ethPip.ethGetUncleByBlockNumberAndIndex(ValueJsonMarshaller.fromJsonNode(saplObject), EMPTY_CTX)
                             .blockFirst());
 
-            assertThat(pipResult.toString())
+            assertThat(pipResult)
                     .withFailMessage("The ethGetUncleByBlockNumberAndIndex method did not return the correct value.")
-                    .isEqualTo(MAPPER.convertValue(testBlock, JsonNode.class).toString());
+                    .hasToString(MAPPER.convertValue(testBlock, JsonNode.class).toString());
         }
     }
 
