@@ -17,7 +17,7 @@
  */
 package io.sapl.mqtt.pep.util;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.hivemq.extension.sdk.api.services.Services;
@@ -34,6 +35,7 @@ import com.hivemq.extension.sdk.api.services.subscription.TopicSubscription;
 
 import io.sapl.mqtt.pep.details.MqttSaplId;
 
+@DisplayName("HiveMQ utility")
 class HiveMqUtilityTests {
 
     @Test
@@ -51,7 +53,7 @@ class HiveMqUtilityTests {
             var isMqttSubscriptionExisting = HiveMqUtility.isMqttSubscriptionExisting(mqttSaplId);
 
             // THEN
-            assertFalse(isMqttSubscriptionExisting);
+            assertThat(isMqttSubscriptionExisting).isFalse();
         }
     }
 }

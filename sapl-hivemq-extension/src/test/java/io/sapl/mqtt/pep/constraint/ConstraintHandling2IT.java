@@ -24,9 +24,7 @@ import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttPublishMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttSubscribeMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -91,8 +89,9 @@ class ConstraintHandling2IT {
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 
         // THEN
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(), StandardCharset.UTF_8));
-        assertEquals(2, receivedMessage.getQos().getCode());
+        assertThat(new String(receivedMessage.getPayloadAsBytes(), StandardCharset.UTF_8))
+                .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
+        assertThat(receivedMessage.getQos().getCode()).isEqualTo(2);
 
         // FINALLY
         subscribeClient.unsubscribeWith().topicFilter("topic").send();
@@ -110,13 +109,14 @@ class ConstraintHandling2IT {
         subscribeClient.subscribe(subscribeMessage);
         publishClient.publish(publishMessage);
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(), StandardCharset.UTF_8));
+        assertThat(new String(receivedMessage.getPayloadAsBytes(), StandardCharset.UTF_8))
+                .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
 
         // THEN
         await().atMost(2500, TimeUnit.MILLISECONDS).untilAsserted(() -> {
             Optional<Mqtt5Publish> receivedMessageAfterExpiry = subscribeClient.publishes(MqttGlobalPublishFilter.ALL)
                     .receive(1000, TimeUnit.MILLISECONDS);
-            assertTrue(receivedMessageAfterExpiry.isEmpty());
+            assertThat(receivedMessageAfterExpiry).isEmpty();
         });
 
         // FINALLY
@@ -137,10 +137,11 @@ class ConstraintHandling2IT {
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 
         // THEN
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(), StandardCharset.UTF_8));
-        assertTrue(receivedMessage.getContentType().isPresent());
-        assertEquals("content",
-                StandardCharsets.UTF_8.decode(receivedMessage.getContentType().get().toByteBuffer()).toString());
+        assertThat(new String(receivedMessage.getPayloadAsBytes(), StandardCharset.UTF_8))
+                .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
+        assertThat(receivedMessage.getContentType()).isPresent();
+        assertThat(StandardCharsets.UTF_8.decode(receivedMessage.getContentType().get().toByteBuffer()).toString())
+                .isEqualTo("content");
 
         // FINALLY
         subscribeClient.unsubscribeWith().topicFilter("contentTopic").send();
@@ -160,8 +161,9 @@ class ConstraintHandling2IT {
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 
         // THEN
-        assertTrue(receivedMessage.getPayload().isPresent());
-        assertEquals("changedPayload", StandardCharsets.UTF_8.decode(receivedMessage.getPayload().get()).toString());
+        assertThat(receivedMessage.getPayload()).isPresent();
+        assertThat(StandardCharsets.UTF_8.decode(receivedMessage.getPayload().get()).toString())
+                .isEqualTo("changedPayload");
 
         // FINALLY
         subscribeClient.unsubscribeWith().topicFilter("payloadTopic").send();
@@ -183,8 +185,8 @@ class ConstraintHandling2IT {
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 
         // THEN
-        assertTrue(receivedMessage.getPayload().isPresent());
-        assertEquals("*****ge", StandardCharsets.UTF_8.decode(receivedMessage.getPayload().get()).toString());
+        assertThat(receivedMessage.getPayload()).isPresent();
+        assertThat(StandardCharsets.UTF_8.decode(receivedMessage.getPayload().get()).toString()).isEqualTo("*****ge");
 
         // FINALLY
         subscribeClient.unsubscribeWith().topicFilter("blackenTopic").send();
@@ -205,7 +207,7 @@ class ConstraintHandling2IT {
             publishClient.publish(publishMessage);
             Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(500,
                     TimeUnit.MILLISECONDS);
-            assertTrue(receivedMessage.isEmpty());
+            assertThat(receivedMessage).isEmpty();
         });
     }
 
@@ -223,7 +225,7 @@ class ConstraintHandling2IT {
         // THEN
         Optional<Mqtt5Publish> receivedMessageAfterExpiry = subscribeClient.publishes(MqttGlobalPublishFilter.ALL)
                 .receive(1000, TimeUnit.MILLISECONDS);
-        assertTrue(receivedMessageAfterExpiry.isEmpty());
+        assertThat(receivedMessageAfterExpiry).isEmpty();
 
         // FINALLY
         subscribeClient.unsubscribeWith().topicFilter("illegalObligation").send();
@@ -239,7 +241,7 @@ class ConstraintHandling2IT {
 
         // THEN
         await().atMost(2, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertFalse(mqttClientConnection.getState().isConnected()));
+                .untilAsserted(() -> assertThat(mqttClientConnection.getState().isConnected()).isFalse());
     }
 
     @Test
@@ -255,7 +257,8 @@ class ConstraintHandling2IT {
 
         // THEN
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(), StandardCharset.UTF_8));
+        assertThat(new String(receivedMessage.getPayloadAsBytes(), StandardCharset.UTF_8))
+                .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
 
         // FINALLY
         subscribeClient.unsubscribeWith().topicFilter("illegalAdvice").send();
@@ -275,7 +278,7 @@ class ConstraintHandling2IT {
         // THEN
         Optional<Mqtt5Publish> receivedMessageAfterExpiry = subscribeClient.publishes(MqttGlobalPublishFilter.ALL)
                 .receive(1000, TimeUnit.MILLISECONDS);
-        assertTrue(receivedMessageAfterExpiry.isEmpty());
+        assertThat(receivedMessageAfterExpiry).isEmpty();
 
         // FINALLY
         subscribeClient.unsubscribeWith().topicFilter("resourceTransformation").send();

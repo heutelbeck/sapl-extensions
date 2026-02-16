@@ -87,15 +87,15 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class ConstraintHandlerService {
-    private static final String FAILED_TO_EXECUTE_ADVICE_HANDLERS = "Failed to execute advice handlers. {}";
+    private static final String ERROR_ACCESS_DENIED = "Access Denied";
 
-    private static final String FAILED_TO_EXECUTE_OBLIGATION_HANDLERS = "Failed to execute obligation handlers. {}";
+    private static final String ERROR_COULD_NOT_FIND_HANDLERS_FOR_ALL_OBLIGATIONS_MISSING_HANDLERS_FOR = "Could not find handlers for all obligations. Missing handlers for: {}";
 
-    private static final String COULD_NOT_FIND_HANDLERS_FOR_ALL_OBLIGATIONS_MISSING_HANDLERS_FOR = "Could not find handlers for all obligations. Missing handlers for: {}";
+    private static final String ERROR_FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION = "Failed to deserialize resource object from decision: {}";
 
-    private static final String FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION = "Failed to deserialize resource object from decision: {}";
+    private static final String ERROR_FAILED_TO_EXECUTE_ADVICE_HANDLERS = "Failed to execute advice handlers. {}";
 
-    private static final String ACCESS_DENIED = "Access Denied";
+    private static final String ERROR_FAILED_TO_EXECUTE_OBLIGATION_HANDLERS = "Failed to execute obligation handlers. {}";
 
     private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
@@ -188,29 +188,29 @@ public class ConstraintHandlerService {
             try {
                 return mapper.treeToValue(resourceJson, (Class<T>) type.getExpectedResponseType());
             } catch (JacksonException | IllegalArgumentException e) {
-                log.error(FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION, e.getLocalizedMessage());
-                throw new AccessDeniedException(ACCESS_DENIED, e);
+                log.error(ERROR_FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION, e.getLocalizedMessage());
+                throw new AccessDeniedException(ERROR_ACCESS_DENIED, e);
             }
         } else if (MultipleInstancesResponseType.class.isAssignableFrom(type.getClass())) {
 
             if (!(resource instanceof ArrayValue)) {
                 log.error("resource is no array, however a MultipleInstancesResponseType was expected!");
-                throw new AccessDeniedException(ACCESS_DENIED);
+                throw new AccessDeniedException(ERROR_ACCESS_DENIED);
             }
 
             var deserialized = List.of();
             try {
                 deserialized = mapper.treeToValue(resourceJson, List.class);
             } catch (JacksonException | IllegalArgumentException e) {
-                log.error(FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION, e.getLocalizedMessage());
-                throw new AccessDeniedException(ACCESS_DENIED, e);
+                log.error(ERROR_FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION, e.getLocalizedMessage());
+                throw new AccessDeniedException(ERROR_ACCESS_DENIED, e);
             }
 
             if (!deserialized.isEmpty()
                     && (!type.getExpectedResponseType().isAssignableFrom(deserialized.get(0).getClass()))) {
                 log.error("Unsupported entry in resource: " + deserialized.get(0).getClass() + ", expected: "
                         + type.getExpectedResponseType());
-                throw new AccessDeniedException(ACCESS_DENIED);
+                throw new AccessDeniedException(ERROR_ACCESS_DENIED);
             }
 
             return deserialized;
@@ -218,12 +218,12 @@ public class ConstraintHandlerService {
             try {
                 return Optional.ofNullable(mapper.treeToValue(resourceJson, (Class<T>) type.getExpectedResponseType()));
             } catch (JacksonException | IllegalArgumentException e) {
-                log.error(FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION, e.getLocalizedMessage());
-                throw new AccessDeniedException(ACCESS_DENIED, e);
+                log.error(ERROR_FAILED_TO_DESERIALIZE_RESOURCE_OBJECT_FROM_DECISION, e.getLocalizedMessage());
+                throw new AccessDeniedException(ERROR_ACCESS_DENIED, e);
             }
         } else {
             log.error("Unsupported ResponseType: {}", type.getClass());
-            throw new AccessDeniedException(ACCESS_DENIED);
+            throw new AccessDeniedException(ERROR_ACCESS_DENIED);
         }
     }
 
@@ -243,7 +243,7 @@ public class ConstraintHandlerService {
 
         if (!(decision.resource() instanceof UndefinedValue)) {
             log.warn("PDP decision contained resource object for command handler. Access Denied. {}", decision);
-            throw new AccessDeniedException(ACCESS_DENIED);
+            throw new AccessDeniedException(ERROR_ACCESS_DENIED);
         }
 
         var obligationsWithoutHandler = new HashSet<Value>();
@@ -262,8 +262,9 @@ public class ConstraintHandlerService {
                 obligationsWithoutHandler);
 
         if (!obligationsWithoutHandler.isEmpty()) {
-            log.error(COULD_NOT_FIND_HANDLERS_FOR_ALL_OBLIGATIONS_MISSING_HANDLERS_FOR, obligationsWithoutHandler);
-            throw new AccessDeniedException(ACCESS_DENIED);
+            log.error(ERROR_COULD_NOT_FIND_HANDLERS_FOR_ALL_OBLIGATIONS_MISSING_HANDLERS_FOR,
+                    obligationsWithoutHandler);
+            throw new AccessDeniedException(ERROR_ACCESS_DENIED);
         }
         return new CommandConstraintHandlerBundle<>(onDecisionHandlers, errorMappingHandlers, commandMappingHandlers,
                 resultMappingHandlers, handlersOnObject);
@@ -302,8 +303,9 @@ public class ConstraintHandlerService {
         }
 
         if (!obligationsWithoutHandler.isEmpty()) {
-            log.error(COULD_NOT_FIND_HANDLERS_FOR_ALL_OBLIGATIONS_MISSING_HANDLERS_FOR, obligationsWithoutHandler);
-            throw new AccessDeniedException(ACCESS_DENIED);
+            log.error(ERROR_COULD_NOT_FIND_HANDLERS_FOR_ALL_OBLIGATIONS_MISSING_HANDLERS_FOR,
+                    obligationsWithoutHandler);
+            throw new AccessDeniedException(ERROR_ACCESS_DENIED);
         }
 
         return new QueryConstraintHandlerBundle(onDecisionHandlers, queryMappingHandlers, errorMappingHandlers,
@@ -321,13 +323,13 @@ public class ConstraintHandlerService {
             try {
                 newResult = obligationFun.apply(result);
             } catch (Exception e) {
-                log.error(FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
-                throw new AccessDeniedException(ACCESS_DENIED, e);
+                log.error(ERROR_FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
+                throw new AccessDeniedException(ERROR_ACCESS_DENIED, e);
             }
             try {
                 newResult = adviceFun.apply(newResult);
             } catch (Exception e) {
-                log.error(FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
+                log.error(ERROR_FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
             }
             return newResult;
         };
@@ -411,8 +413,9 @@ public class ConstraintHandlerService {
                 responseType);
 
         if (!obligationsWithoutHandler.isEmpty()) {
-            log.error(COULD_NOT_FIND_HANDLERS_FOR_ALL_OBLIGATIONS_MISSING_HANDLERS_FOR, obligationsWithoutHandler);
-            throw new AccessDeniedException(ACCESS_DENIED);
+            log.error(ERROR_COULD_NOT_FIND_HANDLERS_FOR_ALL_OBLIGATIONS_MISSING_HANDLERS_FOR,
+                    obligationsWithoutHandler);
+            throw new AccessDeniedException(ERROR_ACCESS_DENIED);
         }
 
         return new QueryConstraintHandlerBundle(onDecisionHandlers, Functions.identity(), errorMappingHandlers,
@@ -429,13 +432,13 @@ public class ConstraintHandlerService {
             try {
                 newError = obligationFun.apply(newError);
             } catch (Exception e) {
-                log.error(FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
-                throw new AccessDeniedException(ACCESS_DENIED);
+                log.error(ERROR_FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
+                throw new AccessDeniedException(ERROR_ACCESS_DENIED);
             }
             try {
                 newError = adviceFun.apply(newError);
             } catch (Exception e) {
-                log.error(FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
+                log.error(ERROR_FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
             }
             return newError;
         };
@@ -470,13 +473,13 @@ public class ConstraintHandlerService {
             try {
                 newCommand = obligationFun.apply(newCommand);
             } catch (Exception e) {
-                log.error(FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
-                throw new AccessDeniedException(ACCESS_DENIED);
+                log.error(ERROR_FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
+                throw new AccessDeniedException(ERROR_ACCESS_DENIED);
             }
             try {
                 newCommand = adviceFun.apply(newCommand);
             } catch (Exception e) {
-                log.error(FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
+                log.error(ERROR_FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
             }
             return newCommand;
         };
@@ -511,13 +514,13 @@ public class ConstraintHandlerService {
             try {
                 newQuery = obligationFun.apply(newQuery);
             } catch (Exception e) {
-                log.error(FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
-                throw new AccessDeniedException(ACCESS_DENIED);
+                log.error(ERROR_FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
+                throw new AccessDeniedException(ERROR_ACCESS_DENIED);
             }
             try {
                 newQuery = adviceFun.apply(newQuery);
             } catch (Exception e) {
-                log.error(FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
+                log.error(ERROR_FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
             }
             return newQuery;
         };
@@ -553,13 +556,13 @@ public class ConstraintHandlerService {
             try {
                 newResult = (T) obligationFun.apply(result);
             } catch (Exception e) {
-                log.error(FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
-                throw new AccessDeniedException(ACCESS_DENIED);
+                log.error(ERROR_FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, e.getLocalizedMessage());
+                throw new AccessDeniedException(ERROR_ACCESS_DENIED);
             }
             try {
                 newResult = (T) adviceFun.apply(newResult);
             } catch (Exception e) {
-                log.error(FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
+                log.error(ERROR_FAILED_TO_EXECUTE_ADVICE_HANDLERS, e.getLocalizedMessage());
             }
             return newResult;
         };
@@ -749,8 +752,8 @@ public class ConstraintHandlerService {
             try {
                 handler.run();
             } catch (Throwable t) {
-                log.error(FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, t.getLocalizedMessage());
-                throw new AccessDeniedException(ACCESS_DENIED);
+                log.error(ERROR_FAILED_TO_EXECUTE_OBLIGATION_HANDLERS, t.getLocalizedMessage());
+                throw new AccessDeniedException(ERROR_ACCESS_DENIED);
             }
         };
     }
@@ -760,7 +763,7 @@ public class ConstraintHandlerService {
             try {
                 handler.run();
             } catch (Throwable t) {
-                log.error(FAILED_TO_EXECUTE_ADVICE_HANDLERS, t.getLocalizedMessage());
+                log.error(ERROR_FAILED_TO_EXECUTE_ADVICE_HANDLERS, t.getLocalizedMessage());
             }
         };
     }

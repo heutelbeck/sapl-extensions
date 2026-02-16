@@ -38,6 +38,7 @@ import org.axonframework.queryhandling.GenericSubscriptionQueryMessage;
 import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -56,10 +57,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+@DisplayName("Recoverable if denied policy enforcement")
 class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
 
-    private static final String                                                 MAPPER_FILED_NAME        = "mapper";
-    private static final String                                                 ERROR_MAPPERS_FILED_NAME = "errorMappers";
+    private static final String                                                 MAPPER_FIELD_NAME        = "mapper";
+    private static final String                                                 ERROR_MAPPERS_FIELD_NAME = "errorMappers";
     private static final Duration                                               DEFAULT_TIMEOUT          = Duration
             .ofMillis(250);
     private static final Duration                                               DEFAULT_TIMESTEP         = Duration
@@ -91,7 +93,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
     static void beforeAll() {
         var mapper = JsonMapper.builder().build();
         defaultConstraintHandlerService = mock(ConstraintHandlerService.class);
-        setField(defaultConstraintHandlerService, MAPPER_FILED_NAME, mapper);
+        setField(defaultConstraintHandlerService, MAPPER_FIELD_NAME, mapper);
         when(defaultConstraintHandlerService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class),
                 any(ResponseType.class), any(Optional.class))).thenCallRealMethod();
         when(defaultConstraintHandlerService.deserializeResource(any(Value.class), any(ResponseType.class)))
@@ -585,7 +587,7 @@ class EnforceRecoverableIfDeniedPolicyEnforcementPointTests {
                 .just(DEFAULT_UPDATE_MESSAGE);
 
         var queryConstraintHandlerBundle = mock(QueryConstraintHandlerBundle.class);
-        setField(queryConstraintHandlerBundle, ERROR_MAPPERS_FILED_NAME, Function.<Throwable>identity());
+        setField(queryConstraintHandlerBundle, ERROR_MAPPERS_FIELD_NAME, Function.<Throwable>identity());
         doThrow(AccessDeniedException.class).when(queryConstraintHandlerBundle)
                 .executeOnDecisionHandlers(any(AuthorizationDecision.class), any(Message.class));
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class))).thenCallRealMethod();

@@ -19,18 +19,20 @@ package io.sapl.mqtt.pep.constraint;
 
 import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_LIMIT_MQTT_ACTION_DURATION;
 import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_TIME_LIMIT;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import io.sapl.api.model.ObjectValue;
 import io.sapl.api.model.Value;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 
+@DisplayName("Connection constraints")
 class ConnectionConstraintsTests {
 
     @Test
@@ -44,7 +46,7 @@ class ConnectionConstraintsTests {
                 constraint);
 
         // THEN
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -62,7 +64,7 @@ class ConnectionConstraintsTests {
 
         // THEN
         verify(constraintDetailsSpy, never()).setTimeLimitSec(anyLong());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -80,7 +82,7 @@ class ConnectionConstraintsTests {
 
         // THEN
         verify(constraintDetailsSpy, never()).setTimeLimitSec(anyLong());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -97,6 +99,6 @@ class ConnectionConstraintsTests {
 
         // THEN
         verify(constraintDetailsSpy, never()).setTimeLimitSec(anyLong());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 }

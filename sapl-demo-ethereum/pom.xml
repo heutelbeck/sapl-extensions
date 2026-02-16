@@ -135,6 +135,11 @@
 
 		<!-- Development Tools -->
 		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-dev</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<optional>true</optional>
@@ -262,19 +267,6 @@
 		<profile>
 			<!-- Production mode is activated using -Pproduction -->
 			<id>production</id>
-			<dependencies>
-				<!-- Exclude development dependencies from production -->
-				<dependency>
-					<groupId>com.vaadin</groupId>
-					<artifactId>vaadin-core</artifactId>
-					<exclusions>
-						<exclusion>
-							<groupId>com.vaadin</groupId>
-							<artifactId>vaadin-dev</artifactId>
-						</exclusion>
-					</exclusions>
-				</dependency>
-			</dependencies>
 			<build>
 				<plugins>
 					<plugin>

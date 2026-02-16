@@ -23,11 +23,8 @@ import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttPublishMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttSubscribeMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -111,16 +108,16 @@ class SaplAuthzSubscriptionTimeoutIT {
         Mqtt5BlockingClient publishClient = buildAndStartMqttClient(PUBLISH_CLIENT_ID);
 
         // WHEN
-        Mqtt5Publish         publishMessage  = buildMqttPublishMessage(TOPIC, 1, false);
-        Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-                () -> publishClient.publish(publishMessage));
-        assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
+        Mqtt5Publish publishMessage = buildMqttPublishMessage(TOPIC, 1, false);
+        assertThatThrownBy(() -> publishClient.publish(publishMessage)).isExactlyInstanceOf(Mqtt5PubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5PubAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5PubAckReasonCode.NOT_AUTHORIZED));
 
         // THEN
         await().atMost(3, TimeUnit.SECONDS)
                 .untilAsserted(() -> verify(pdpMock, times(3)).decide(any(MultiAuthorizationSubscription.class)));
-        assertTrue(isCanceledPublishClientMqttPublishDecisionFlux.get());
-        assertTrue(isCanceledPublishClientConnectionDecisionFlux.get());
+        assertThat(isCanceledPublishClientMqttPublishDecisionFlux.get()).isTrue();
+        assertThat(isCanceledPublishClientConnectionDecisionFlux.get()).isTrue();
         assertMqttClientStateWasCleanedUp(mqttClientCache, PUBLISH_CLIENT_ID,
                 publishClientMqttPublishSaplSubscriptionId);
 
@@ -171,8 +168,8 @@ class SaplAuthzSubscriptionTimeoutIT {
         // THEN
         await().atMost(3, TimeUnit.SECONDS)
                 .untilAsserted(() -> verify(pdpMock, times(3)).decide(any(MultiAuthorizationSubscription.class)));
-        assertTrue(isCanceledPublishClientConnectionDecisionFlux.get());
-        assertTrue(isCanceledPublishClientMqttPublishDecisionFlux.get());
+        assertThat(isCanceledPublishClientConnectionDecisionFlux.get()).isTrue();
+        assertThat(isCanceledPublishClientMqttPublishDecisionFlux.get()).isTrue();
         assertMqttClientStateWasCleanedUp(mqttClientCache, PUBLISH_CLIENT_ID,
                 publishClientMqttPublishSaplSubscriptionId);
 
@@ -213,15 +210,15 @@ class SaplAuthzSubscriptionTimeoutIT {
         Mqtt5BlockingClient publishClient = buildAndStartMqttClient(PUBLISH_CLIENT_ID);
 
         // WHEN
-        Mqtt5Publish         publishMessage  = buildMqttPublishMessage(TOPIC, 1, false);
-        Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-                () -> publishClient.publish(publishMessage));
-        assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
+        Mqtt5Publish publishMessage = buildMqttPublishMessage(TOPIC, 1, false);
+        assertThatThrownBy(() -> publishClient.publish(publishMessage)).isExactlyInstanceOf(Mqtt5PubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5PubAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5PubAckReasonCode.NOT_AUTHORIZED));
 
         // THEN
         await().atMost(3, TimeUnit.SECONDS)
                 .untilAsserted(() -> verify(pdpMock, times(3)).decide(any(MultiAuthorizationSubscription.class)));
-        assertTrue(isCanceledPublishClientMqttPublishDecisionFlux.get());
+        assertThat(isCanceledPublishClientMqttPublishDecisionFlux.get()).isTrue();
         assertMqttClientStateWasCleanedUp(mqttClientCache, PUBLISH_CLIENT_ID,
                 publishClientMqttPublishSaplSubscriptionId);
 
@@ -267,16 +264,17 @@ class SaplAuthzSubscriptionTimeoutIT {
         Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(SUBSCRIPTION_CLIENT_ID);
 
         // WHEN
-        Mqtt5Subscribe       subscribeMessage = buildMqttSubscribeMessage(TOPIC);
-        Mqtt5SubAckException subAckException  = assertThrowsExactly(Mqtt5SubAckException.class,
-                () -> subscribeClient.subscribe(subscribeMessage));
-        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
+        Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(TOPIC);
+        assertThatThrownBy(() -> subscribeClient.subscribe(subscribeMessage))
+                .isExactlyInstanceOf(Mqtt5SubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5SubAckException) e).getMqttMessage().getReasonCodes().get(0))
+                        .isEqualTo(Mqtt5SubAckReasonCode.NOT_AUTHORIZED));
 
         // THEN
         await().atMost(3, TimeUnit.SECONDS)
                 .untilAsserted(() -> verify(pdpMock, times(3)).decide(any(MultiAuthorizationSubscription.class)));
-        assertTrue(isCanceledSubscriptionClientConnectionDecisionFlux.get());
-        assertTrue(isCanceledSubscriptionClientMqttSubscriptionDecisionFlux.get());
+        assertThat(isCanceledSubscriptionClientConnectionDecisionFlux.get()).isTrue();
+        assertThat(isCanceledSubscriptionClientMqttSubscriptionDecisionFlux.get()).isTrue();
         assertMqttClientStateWasCleanedUp(mqttClientCache, SUBSCRIPTION_CLIENT_ID,
                 subscriptionClientMqttSubscriptionSaplSubscriptionId);
 
@@ -324,16 +322,17 @@ class SaplAuthzSubscriptionTimeoutIT {
         Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(SUBSCRIPTION_CLIENT_ID);
 
         // WHEN
-        Mqtt5Subscribe       subscribeMessage = buildMqttSubscribeMessage(TOPIC);
-        Mqtt5SubAckException subAckException  = assertThrowsExactly(Mqtt5SubAckException.class,
-                () -> subscribeClient.subscribe(subscribeMessage));
-        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
+        Mqtt5Subscribe subscribeMessage = buildMqttSubscribeMessage(TOPIC);
+        assertThatThrownBy(() -> subscribeClient.subscribe(subscribeMessage))
+                .isExactlyInstanceOf(Mqtt5SubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5SubAckException) e).getMqttMessage().getReasonCodes().get(0))
+                        .isEqualTo(Mqtt5SubAckReasonCode.NOT_AUTHORIZED));
 
         // THEN
         await().atMost(3, TimeUnit.SECONDS)
                 .untilAsserted(() -> verify(pdpMock, times(3)).decide(any(MultiAuthorizationSubscription.class)));
-        assertTrue(isCanceledSubscriptionClientConnectionDecisionFlux.get());
-        assertTrue(isCanceledSubscriptionClientMqttSubscriptionDecisionFlux.get());
+        assertThat(isCanceledSubscriptionClientConnectionDecisionFlux.get()).isTrue();
+        assertThat(isCanceledSubscriptionClientMqttSubscriptionDecisionFlux.get()).isTrue();
         assertMqttClientStateWasCleanedUp(mqttClientCache, SUBSCRIPTION_CLIENT_ID,
                 subscriptionClientMqttSubscriptionSaplSubscriptionId);
 
@@ -385,7 +384,7 @@ class SaplAuthzSubscriptionTimeoutIT {
         // THEN
         await().atMost(5, TimeUnit.SECONDS)
                 .untilAsserted(() -> verify(pdpMock, times(3)).decide(any(MultiAuthorizationSubscription.class)));
-        assertTrue(isCanceledSubscriptionClientMqttSubscriptionDecisionFlux.get());
+        assertThat(isCanceledSubscriptionClientMqttSubscriptionDecisionFlux.get()).isTrue();
         assertMqttClientStateWasCleanedUp(mqttClientCache, SUBSCRIPTION_CLIENT_ID,
                 subscriptionClientMqttSubscriptionSaplSubscriptionId);
 
@@ -437,7 +436,7 @@ class SaplAuthzSubscriptionTimeoutIT {
         // THEN
         await().atMost(3, TimeUnit.SECONDS)
                 .untilAsserted(() -> verify(pdpMock, times(3)).decide(any(MultiAuthorizationSubscription.class)));
-        assertTrue(isCanceledSubscriptionClientMqttSubscriptionDecisionFlux.get());
+        assertThat(isCanceledSubscriptionClientMqttSubscriptionDecisionFlux.get()).isTrue();
         assertMqttClientStateWasCleanedUp(mqttClientCache, SUBSCRIPTION_CLIENT_ID,
                 subscriptionClientMqttSubscriptionSaplSubscriptionId);
 
@@ -448,15 +447,15 @@ class SaplAuthzSubscriptionTimeoutIT {
     private void assertMqttClientStateWasCleanedUp(Map<String, MqttClientState> mqttClientCache, String clientId,
             String saplSubscriptionId) {
         MqttClientState mqttClientState = mqttClientCache.get(clientId);
-        assertNull(mqttClientState.getSaplAuthzSubscriptionFromMultiSubscription(saplSubscriptionId));
-        assertFalse(mqttClientState.getIdentAuthzDecisionMap().containsKey(saplSubscriptionId));
-        assertNull(mqttClientState.getConstraintDetailsFromMap(saplSubscriptionId));
-        assertNull(mqttClientState.getMqttActionDecisionFluxFromMap(saplSubscriptionId));
-        assertNull(mqttClientState.getMqttActionDecisionFluxDisposableFromMap(saplSubscriptionId));
-        assertNull(mqttClientState.getMqttActionStartTimeFromMap(saplSubscriptionId));
-        assertNull(mqttClientState.getMqttActionStartTimeFromMap(saplSubscriptionId));
-        assertNull(mqttClientState.getLastSignalTimeFromMap(saplSubscriptionId));
-        assertNull(mqttClientState.getTopicSubscriptionFromMap(saplSubscriptionId));
-        assertTrue(mqttClientState.isUnsubscribeMessageTopicsMapEmpty());
+        assertThat(mqttClientState.getSaplAuthzSubscriptionFromMultiSubscription(saplSubscriptionId)).isNull();
+        assertThat(mqttClientState.getIdentAuthzDecisionMap().containsKey(saplSubscriptionId)).isFalse();
+        assertThat(mqttClientState.getConstraintDetailsFromMap(saplSubscriptionId)).isNull();
+        assertThat(mqttClientState.getMqttActionDecisionFluxFromMap(saplSubscriptionId)).isNull();
+        assertThat(mqttClientState.getMqttActionDecisionFluxDisposableFromMap(saplSubscriptionId)).isNull();
+        assertThat(mqttClientState.getMqttActionStartTimeFromMap(saplSubscriptionId)).isNull();
+        assertThat(mqttClientState.getMqttActionStartTimeFromMap(saplSubscriptionId)).isNull();
+        assertThat(mqttClientState.getLastSignalTimeFromMap(saplSubscriptionId)).isNull();
+        assertThat(mqttClientState.getTopicSubscriptionFromMap(saplSubscriptionId)).isNull();
+        assertThat(mqttClientState.isUnsubscribeMessageTopicsMapEmpty()).isTrue();
     }
 }

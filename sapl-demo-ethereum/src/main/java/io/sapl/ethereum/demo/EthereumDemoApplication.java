@@ -23,10 +23,8 @@ import org.web3j.protocol.http.HttpService;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.ColorScheme;
-import com.vaadin.flow.theme.Theme;
 
 @SpringBootApplication
-@Theme("sapldemoethereum")
 @ColorScheme(ColorScheme.Value.DARK)
 public class EthereumDemoApplication implements AppShellConfigurator {
 
@@ -38,7 +36,7 @@ public class EthereumDemoApplication implements AppShellConfigurator {
 
 	@Bean
 	Web3j web3j() {
-		return Web3j.build(new HttpService("http://localhost:8545")); //7545
+		return Web3j.build(new HttpService("http://localhost:8545"));
 	}
 
 }

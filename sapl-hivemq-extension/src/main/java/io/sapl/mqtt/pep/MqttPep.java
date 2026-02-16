@@ -142,8 +142,8 @@ public class MqttPep {
     /**
      * This message is used to describe a denial further.
      */
-    public static final String   NOT_AUTHORIZED_NOTICE                            = "Not authorized by SAPL-MQTT-PEP";
-    private static final String  TIMEOUT_NOTICE                                   = "Authorization via SAPL-MQTT-PEP timed out";
+    public static final String   ERROR_NOT_AUTHORIZED_NOTICE                      = "Not authorized by SAPL-MQTT-PEP";
+    private static final String  ERROR_TIMEOUT_NOTICE                             = "Authorization via SAPL-MQTT-PEP timed out";
     private static final boolean DEFAULT_IS_RESUBSCRIBE_MQTT_SUBSCRIPTION_ENABLED = false;
 
     private final PolicyDecisionPoint                    pdp;
@@ -296,7 +296,7 @@ public class MqttPep {
             // Makes the output object async
             Async<SimpleAuthOutput> asyncOutput = authnOutput.async(
                     Duration.ofMillis(saplMqttExtensionConfig.getConnectionEnforcementTimeoutMillis()),
-                    TimeoutFallback.FAILURE, ConnackReasonCode.NOT_AUTHORIZED, TIMEOUT_NOTICE);
+                    TimeoutFallback.FAILURE, ConnackReasonCode.NOT_AUTHORIZED, ERROR_TIMEOUT_NOTICE);
 
             // Submit task to extension executor service
             Services.extensionExecutorService().submit(() -> enforceMqttConnection(clientId, asyncOutput, authnInput));
@@ -320,7 +320,7 @@ public class MqttPep {
         // Makes the output object async
         Async<PublishInboundOutput> asyncOutput = publishInboundOutput.async(
                 Duration.ofMillis(saplMqttExtensionConfig.getPublishEnforcementTimeoutMillis()),
-                TimeoutFallback.FAILURE, AckReasonCode.NOT_AUTHORIZED, TIMEOUT_NOTICE);
+                TimeoutFallback.FAILURE, AckReasonCode.NOT_AUTHORIZED, ERROR_TIMEOUT_NOTICE);
 
         // Submit task to extension executor service
         Services.extensionExecutorService().submit(() -> enforceMqttPublish(asyncOutput, publishInboundInput));
@@ -526,9 +526,9 @@ public class MqttPep {
     private void handleMqttConnectionTimeout(MqttClientState mqttClientState) {
         String clientId = mqttClientState.getClientId();
         log.info("The connection of client '{}' timed out.", clientId);
-        Services.clientService().disconnectClient(clientId, false, NOT_AUTHORIZED, NOT_AUTHORIZED_NOTICE); // does
-                                                                                                           // notify
-                                                                                                           // client
+        Services.clientService().disconnectClient(clientId, false, NOT_AUTHORIZED, ERROR_NOT_AUTHORIZED_NOTICE); // does
+        // notify
+        // client
         String subscriptionId = buildSubscriptionId(clientId, CONNECT_AUTHZ_ACTION);
         removeIdentAuthzDecisionFromCache(mqttClientState, subscriptionId);
         log.info("Disconnected client '{}'.", clientId);
@@ -885,9 +885,9 @@ public class MqttPep {
         var     decision                          = identAuthzDecision.decision().decision();
         boolean hasHandledObligationsSuccessfully = hasHandledObligationsSuccessfully(mqttClientState, subscriptionId);
         if (decision != PERMIT || !hasHandledObligationsSuccessfully) { // in case access is denied
-            Services.clientService().disconnectClient(clientId, false, NOT_AUTHORIZED, NOT_AUTHORIZED_NOTICE); // does
-                                                                                                               // notify
-                                                                                                               // client
+            Services.clientService().disconnectClient(clientId, false, NOT_AUTHORIZED, ERROR_NOT_AUTHORIZED_NOTICE); // does
+            // notify
+            // client
             removeIdentAuthzDecisionFromCache(mqttClientState, subscriptionId);
             log.info("Disconnected client '{}'.", clientId);
         }
@@ -1013,7 +1013,7 @@ public class MqttPep {
 
     private void disconnectMqttClient(String clientId, Decision decision) {
         Services.clientService().disconnectClient(clientId, false, NOT_AUTHORIZED,
-                String.format("%s. '%s' decision.", NOT_AUTHORIZED_NOTICE, decision));
+                String.format("%s. '%s' decision.", ERROR_NOT_AUTHORIZED_NOTICE, decision));
         var mqttClientState = mqttClientCache.get(clientId);
         if (mqttClientState != null) {
             String subscriptionId = buildSubscriptionId(clientId, CONNECT_AUTHZ_ACTION);

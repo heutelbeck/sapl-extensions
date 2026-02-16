@@ -17,12 +17,14 @@
  */
 package io.sapl.mqtt.pep.extension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+@DisplayName("Config init utility")
 class ConfigInitUtilityTests {
 
     @Test
@@ -34,6 +36,6 @@ class ConfigInitUtilityTests {
         var extensionConfig = ConfigInitUtility.getSaplMqttExtensionConfig(extensionHomeFolder, null);
 
         // THEN
-        assertEquals(6000, extensionConfig.getConnectionEnforcementTimeoutMillis());
+        assertThat(extensionConfig.getConnectionEnforcementTimeoutMillis()).isEqualTo(6000);
     }
 }

@@ -17,7 +17,7 @@
  */
 package io.sapl.axon.queryhandling;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Subscription;
 
@@ -37,6 +38,7 @@ import reactor.core.publisher.SignalType;
 import reactor.test.StepVerifier;
 
 @SuppressWarnings("unchecked")
+@DisplayName("Flux one and many tap")
 class FluxOneAndManyTapTests {
 
     Consumer<Subscription>      onSubscribe;
@@ -58,13 +60,13 @@ class FluxOneAndManyTapTests {
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(50L));
 
         tap.one();
-        assertThrows(IllegalStateException.class, tap::one);
+        assertThatThrownBy(tap::one).isInstanceOf(IllegalStateException.class);
         verify(onSubscribe, times(0)).accept(any());
         verify(doFinally, times(0)).accept(any());
     }
 
     @Test
-    void when_oneDecisionIsSunbscribedToTwice_then_throw() {
+    void when_oneDecisionIsSubscribedToTwice_then_throw() {
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(50L));
 
         var one = tap.one();
@@ -77,13 +79,13 @@ class FluxOneAndManyTapTests {
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(50L));
 
         tap.many();
-        assertThrows(IllegalStateException.class, tap::many);
+        assertThatThrownBy(tap::many).isInstanceOf(IllegalStateException.class);
         verify(onSubscribe, times(0)).accept(any());
         verify(doFinally, times(0)).accept(any());
     }
 
     @Test
-    void when_manyDecisionIsSunbscribedToTwice_then_throw() {
+    void when_manyDecisionIsSubscribedToTwice_then_throw() {
         var tap = new FluxOneAndManyTap<AuthorizationDecision>(defaultSource, Duration.ofMillis(50L));
 
         var many = tap.many();

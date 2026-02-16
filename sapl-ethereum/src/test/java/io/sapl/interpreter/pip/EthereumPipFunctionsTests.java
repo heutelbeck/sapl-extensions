@@ -19,14 +19,14 @@ package io.sapl.interpreter.pip;
 
 import static io.sapl.interpreter.pip.EthereumPipFunctions.createEncodedFunction;
 import static io.sapl.interpreter.pip.EthereumPipFunctions.getEthFilterFrom;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
@@ -143,7 +143,8 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
-public class EthereumPipFunctionsTest {
+@DisplayName("Ethereum PIP functions")
+class EthereumPipFunctionsTests {
 
     private static final String          TEST_TO_BLOCK      = "0x1abcdef";
     private static final String          TEST_FROM_BLOCK    = "0x12356";
@@ -165,804 +166,881 @@ public class EthereumPipFunctionsTest {
     private static final JsonNode        TEST_OUTPUT_PARAM  = JSON.arrayNode().add(BOOL);
     private static final JsonMapper      MAPPER             = JsonMapper.builder().build();
 
-    // convertToType
-
     @Test
-    public void createFunctionShouldUseBoolFalseIfTypeIsNotPresent() throws ClassNotFoundException {
+    void createFunctionShouldUseBoolFalseIfTypeIsNotPresent() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(VALUE, 25);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(false));
-        assertEquals(encodedTestFunction, encodedFunction,
-                "ConvertToType didn't return null when type field was not present in input.");
+        assertThat(encodedFunction)
+                .withFailMessage("ConvertToType didn't return null when type field was not present in input.")
+                .isEqualTo(encodedTestFunction);
 
     }
 
     @Test
-    public void createFunctionShouldUseBoolFalseIfValueIsNotPresent() throws ClassNotFoundException {
+    void createFunctionShouldUseBoolFalseIfValueIsNotPresent() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "aString");
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(false));
-        assertEquals(encodedTestFunction, encodedFunction,
-                "ConvertToType didn't return null when field value was not present in input.");
+        assertThat(encodedFunction)
+                .withFailMessage("ConvertToType didn't return null when field value was not present in input.")
+                .isEqualTo(encodedTestFunction);
 
     }
 
     @Test
-    public void createFunctionShouldWorkWithAddressTypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithAddressTypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, ADDRESS);
         inputParam.put(VALUE, TEST_ADDRESS);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Address(TEST_ADDRESS));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Address correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Address correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBoolTypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBoolTypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, BOOL);
         inputParam.put(VALUE, true);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(true));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bool correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bool correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithStringTypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithStringTypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, STRING);
         inputParam.put(VALUE, SOME_STRING);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Utf8String(SOME_STRING));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the String correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the String correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytesTypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytesTypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "bytes");
         inputParam.put(VALUE, BYTE_ARRAY);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new DynamicBytes(BYTE_ARRAY));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the DynamicBytes correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the DynamicBytes correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithByteTypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithByteTypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         byte       testByte   = 125;
         inputParam.put(TYPE, "byte");
         inputParam.put(VALUE, testByte);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new org.web3j.abi.datatypes.primitive.Byte(testByte));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Byte correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Byte correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithCharTypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithCharTypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "char");
         inputParam.put(VALUE, "a");
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Char('a'));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Char correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Char correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void creatFunctionShouldUseBoolFalseWhenEmptyCharProvided() throws ClassNotFoundException {
+    void createFunctionShouldUseBoolFalseWhenEmptyCharProvided() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "char");
         inputParam.put(VALUE, "");
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(false));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Char correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Char correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldUseBoolFalseWhenDoubleProvided() throws ClassNotFoundException {
+    void createFunctionShouldUseBoolFalseWhenDoubleProvided() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "double");
         inputParam.put(VALUE, Double.valueOf(1.789));
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(false));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Double correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Double correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldUseBoolFalseWhenFloatProvided() throws ClassNotFoundException {
+    void createFunctionShouldUseBoolFalseWhenFloatProvided() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "float");
         inputParam.put(VALUE, Float.valueOf("7.654321"));
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(false));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Float correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Float correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUintTypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUintTypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint");
         inputParam.put(VALUE, TEST_BIG_INT);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint(TEST_BIG_INT));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithIntTypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithIntTypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int");
         inputParam.put(VALUE, TEST_BIG_INT);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int(TEST_BIG_INT));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithLongTypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithLongTypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "long");
         inputParam.put(VALUE, Long.valueOf(9786135));
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new org.web3j.abi.datatypes.primitive.Long(9786135L));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Long correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Long correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithShortTypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithShortTypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "short");
         inputParam.put(VALUE, Short.valueOf("111"));
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(
                 new org.web3j.abi.datatypes.primitive.Short(Short.parseShort("111")));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Short correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Short correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint8TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint8TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint8");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint8(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint8 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint8 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt8TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt8TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int8");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int8(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int8 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int8 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint16TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint16TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint16");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint16(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint16 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint16 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt16TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt16TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int16");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int16(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int16 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int16 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint24TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint24TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint24");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint24(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint24 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint24 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt24TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt24TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int24");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int24(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int24 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int24 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint32TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint32TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint32");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint32(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint32 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint32 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt32TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt32TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int32");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int32(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int32 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int32 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint40TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint40TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint40");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint40(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint40 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint40 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt40TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt40TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int40");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int40(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int40 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int40 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint48TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint48TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint48");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint48(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint48 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint48 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt48TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt48TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int48");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int48(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int48 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int48 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint56TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint56TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint56");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint56(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint56 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint56 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt56TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt56TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int56");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int56(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int56 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int56 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint64TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint64TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint64");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint64(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint64 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint64 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt64TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt64TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int64");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int64(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int64 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int64 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint72TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint72TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint72");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint72(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint72 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint72 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt72TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt72TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int72");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int72(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int72 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int72 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint80TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint80TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint80");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint80(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint80 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint80 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt80TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt80TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int80");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int80(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int80 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int80 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint88TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint88TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint88");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint88(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint88 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint88 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt88TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt88TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int88");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int88(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int88 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int88 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint96TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint96TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint96");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint96(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint96 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint96 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt96TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt96TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int96");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int96(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int96 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int96 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint104TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint104TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint104");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint104(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint104 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint104 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt104TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt104TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int104");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int104(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int104 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int104 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint112TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint112TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint112");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint112(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint112 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint112 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt112TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt112TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int112");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int112(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int112 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int112 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint120TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint120TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint120");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint120(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint120 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint120 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt120TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt120TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int120");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int120(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int120 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int120 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint128TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint128TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint128");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint128(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint128 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint128 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt128TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt128TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int128");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int128(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int128 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int128 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint136TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint136TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint136");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint136(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint136 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint136 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt136TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt136TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int136");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int136(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int136 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int136 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint144TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint144TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint144");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint144(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint144 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint144 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt144TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt144TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int144");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int144(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int144 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int144 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint152TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint152TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint152");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint152(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint152 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint152 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt152TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt152TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int152");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int152(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int152 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int152 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint160TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint160TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint160");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint160(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint160 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint160 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt160TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt160TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int160");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int160(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int160 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int160 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint168TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint168TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint168");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint168(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint168 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint168 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt168TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt168TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int168");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int168(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int168 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int168 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint176TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint176TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint176");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint176(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint176 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint176 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt176TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt176TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int176");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int176(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int176 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int176 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint184TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint184TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint184");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint184(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint184 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint184 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt184TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt184TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int184");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int184(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int184 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int184 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint192TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint192TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint192");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint192(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint192 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint192 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt192TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt192TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int192");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int192(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int192 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int192 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint200TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint200TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint200");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint200(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint200 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint200 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt200TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt200TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int200");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int200(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int200 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int200 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint208TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint208TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint208");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint208(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint208 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint208 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt208TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt208TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int208");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int208(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int208 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int208 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint216TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint216TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint216");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint216(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint216 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint216 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt216TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt216TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int216");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int216(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int216 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int216 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint224TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint224TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint224");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint224(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint224 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint224 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt224TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt224TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int224");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int224(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int224 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int224 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint232TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint232TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint232");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint232(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint232 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint232 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt232TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt232TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int232");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int232(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int232 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int232 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint240TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint240TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint240");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint240(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint240 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint240 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt240TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt240TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int240");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int240(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int240 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int240 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint248TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint248TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint248");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint248(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint248 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint248 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt248TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt248TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int248");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int248(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int248 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int248 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithUint256TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithUint256TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "uint256");
         inputParam.put(VALUE, UINT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Uint256(UINT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Uint256 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Uint256 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithInt256TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithInt256TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "int256");
         inputParam.put(VALUE, INT_TEST_VALUE);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Int256(INT_TEST_VALUE));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Int256 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Int256 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes1TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes1TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[1];
         bytesArray[0] = 25;
@@ -970,11 +1048,12 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes1(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes1 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes1 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes2TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes2TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[2];
         bytesArray[1] = 33;
@@ -982,353 +1061,384 @@ public class EthereumPipFunctionsTest {
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes2(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes2 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes2 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes3TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes3TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[3];
         inputParam.put(TYPE, "bytes3");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes3(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes3 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes3 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes4TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes4TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[4];
         inputParam.put(TYPE, "bytes4");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes4(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes4 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes4 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes5TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes5TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[5];
         inputParam.put(TYPE, "bytes5");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes5(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes5 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes5 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes6TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes6TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[6];
         inputParam.put(TYPE, "bytes6");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes6(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes6 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes6 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes7TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes7TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[7];
         inputParam.put(TYPE, "bytes7");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes7(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes7 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes7 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes8TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes8TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[8];
         inputParam.put(TYPE, "bytes8");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes8(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes8 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes8 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes9TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes9TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[9];
         inputParam.put(TYPE, "bytes9");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes9(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes9 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes9 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes10TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes10TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[10];
         inputParam.put(TYPE, "bytes10");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes10(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes10 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes10 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithByte11TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithByte11TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[11];
         inputParam.put(TYPE, "bytes11");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes11(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes11 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes11 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes12TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes12TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[12];
         inputParam.put(TYPE, "bytes12");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes12(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes12 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes12 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes13TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes13TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[13];
         inputParam.put(TYPE, "bytes13");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes13(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes13 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes13 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes14TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes14TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[14];
         inputParam.put(TYPE, "bytes14");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes14(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes14 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes14 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes15TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes15TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[15];
         inputParam.put(TYPE, "bytes15");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes15(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes15 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes15 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes16TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes16TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[16];
         inputParam.put(TYPE, "bytes16");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes16(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes16 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes16 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes17TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes17TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[17];
         inputParam.put(TYPE, "bytes17");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes17(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes17 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes17 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes18TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes18TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[18];
         inputParam.put(TYPE, "bytes18");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes18(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes18 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes18 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes19TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes19TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[19];
         inputParam.put(TYPE, "bytes19");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes19(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes19 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes19 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes20TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes20TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[20];
         inputParam.put(TYPE, "bytes20");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes20(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes20 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes20 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes21TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes21TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[21];
         inputParam.put(TYPE, "bytes21");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes21(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes21 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes21 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithByte22TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithByte22TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[22];
         inputParam.put(TYPE, "bytes22");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes22(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes22 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes22 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes23TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes23TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[23];
         inputParam.put(TYPE, "bytes23");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes23(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes23 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes23 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes24TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes24TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[24];
         inputParam.put(TYPE, "bytes24");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes24(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes24 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes24 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes25TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes25TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[25];
         inputParam.put(TYPE, "bytes25");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes25(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes25 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes25 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes26TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes26TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[26];
         inputParam.put(TYPE, "bytes26");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes26(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes26 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes26 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes27TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes27TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[27];
         inputParam.put(TYPE, "bytes27");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes27(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes27 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes27 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes28TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes28TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[28];
         inputParam.put(TYPE, "bytes28");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes28(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes28 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes28 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes29TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes29TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[29];
         inputParam.put(TYPE, "bytes29");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes29(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes29 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes29 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes30TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes30TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[30];
         inputParam.put(TYPE, "bytes30");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes30(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes30 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes30 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes31TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes31TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[31];
         inputParam.put(TYPE, "bytes31");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes31(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes31 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes31 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionShouldWorkWithBytes32TypeCorrectly() throws ClassNotFoundException {
+    void createFunctionShouldWorkWithBytes32TypeCorrectly() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         var        bytesArray = new byte[32];
         inputParam.put(TYPE, "bytes32");
         inputParam.put(VALUE, bytesArray);
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bytes32(bytesArray));
-        assertEquals(encodedTestFunction, encodedFunction, "ConvertToType didn't return the Bytes32 correctly.");
+        assertThat(encodedFunction).withFailMessage("ConvertToType didn't return the Bytes32 correctly.")
+                .isEqualTo(encodedTestFunction);
     }
 
     @Test
-    public void createFunctionWithFalseSolidityTypeShouldWorkAsWithBoolFalse() throws ClassNotFoundException {
+    void createFunctionWithFalseSolidityTypeShouldWorkAsWithBoolFalse() throws ClassNotFoundException {
         ObjectNode inputParam = JSON.objectNode();
         inputParam.put(TYPE, "wrongType");
         inputParam.put(VALUE, "anyValue");
         String encodedFunction     = createFunctionFromApi(inputParam);
         String encodedTestFunction = createEncodedTestFunction(new Bool(false));
-        assertEquals(encodedTestFunction, encodedFunction,
-                "ConvertToType didn't return null when non-existing solidity type was provided.");
+        assertThat(encodedFunction)
+                .withFailMessage("ConvertToType didn't return null when non-existing solidity type was provided.")
+                .isEqualTo(encodedTestFunction);
     }
 
-    // getEthFilterFrom
     @Test
-    public void getEthFilterFromShouldReturnCorrectFilter() {
+    void getEthFilterFromShouldReturnCorrectFilter() {
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(FROM_BLOCK, TEST_FROM_BLOCK);
         saplObject.put(TO_BLOCK, TEST_TO_BLOCK);
@@ -1336,51 +1446,51 @@ public class EthereumPipFunctionsTest {
         EthFilter filter     = getEthFilterFrom(saplObject);
         EthFilter testFilter = getTestEthFilter(TEST_FROM_BLOCK, TEST_TO_BLOCK,
                 Collections.singletonList(TEST_ADDRESS));
-        assertTrue(filtersAreEqual(testFilter, filter),
-                "The getEthFilterFrom method didn't return the correct filter.");
+        assertThat(filtersAreEqual(testFilter, filter))
+                .withFailMessage("The getEthFilterFrom method didn't return the correct filter.").isTrue();
     }
 
     @Test
-    public void getEthFilterFromCanBeUsedWithMappedFilter() {
+    void getEthFilterFromCanBeUsedWithMappedFilter() {
         EthFilter testFilter = getTestEthFilter(TEST_FROM_BLOCK, TEST_TO_BLOCK,
                 Collections.singletonList(TEST_ADDRESS));
         JsonNode  saplObject = MAPPER.convertValue(testFilter, JsonNode.class);
         EthFilter filter     = getEthFilterFrom(saplObject);
-        assertTrue(filtersAreEqual(testFilter, filter),
-                "The getEthFilterFrom method didn't return the correct filter.");
+        assertThat(filtersAreEqual(testFilter, filter))
+                .withFailMessage("The getEthFilterFrom method didn't return the correct filter.").isTrue();
     }
 
     @Test
-    public void getEthFilterFromShouldReturnEmptyFilterWithNoFromBlock() {
+    void getEthFilterFromShouldReturnEmptyFilterWithNoFromBlock() {
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(TO_BLOCK, TEST_TO_BLOCK);
         saplObject.set(ADDRESS, JSON.arrayNode().add(TEST_ADDRESS));
         EthFilter filter     = getEthFilterFrom(saplObject);
         EthFilter testFilter = new EthFilter();
-        assertTrue(filtersAreEqual(testFilter, filter),
-                "The getEthFilterFrom method didn't return the correct filter.");
+        assertThat(filtersAreEqual(testFilter, filter))
+                .withFailMessage("The getEthFilterFrom method didn't return the correct filter.").isTrue();
     }
 
     @Test
-    public void getEthFilterFromShouldReturnEmptyFilterWithNoToBlock() {
+    void getEthFilterFromShouldReturnEmptyFilterWithNoToBlock() {
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(FROM_BLOCK, TEST_FROM_BLOCK);
         saplObject.set(ADDRESS, JSON.arrayNode().add(TEST_ADDRESS));
         EthFilter filter     = getEthFilterFrom(saplObject);
         EthFilter testFilter = new EthFilter();
-        assertTrue(filtersAreEqual(testFilter, filter),
-                "The getEthFilterFrom method didn't return the correct filter.");
+        assertThat(filtersAreEqual(testFilter, filter))
+                .withFailMessage("The getEthFilterFrom method didn't return the correct filter.").isTrue();
     }
 
     @Test
-    public void getEthFilterFromShouldReturnEmptyFilterWithNoAddress() {
+    void getEthFilterFromShouldReturnEmptyFilterWithNoAddress() {
         ObjectNode saplObject = JSON.objectNode();
         saplObject.put(FROM_BLOCK, TEST_FROM_BLOCK);
         saplObject.put(TO_BLOCK, TEST_TO_BLOCK);
         EthFilter filter     = getEthFilterFrom(saplObject);
         EthFilter testFilter = new EthFilter();
-        assertTrue(filtersAreEqual(testFilter, filter),
-                "The getEthFilterFrom method didn't return the correct filter.");
+        assertThat(filtersAreEqual(testFilter, filter))
+                .withFailMessage("The getEthFilterFrom method didn't return the correct filter.").isTrue();
     }
 
     private static byte[] hexStringToByteArray(String s) {

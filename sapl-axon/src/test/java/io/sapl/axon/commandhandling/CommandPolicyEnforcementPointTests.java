@@ -17,10 +17,9 @@
  */
 package io.sapl.axon.commandhandling;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -46,6 +45,7 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -64,6 +64,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import reactor.core.publisher.Flux;
 
+@DisplayName("Command policy enforcement point")
 class CommandPolicyEnforcementPointTests {
 
     private static final String            MAPPER_FILED_NAME            = "mapper";
@@ -164,10 +165,12 @@ class CommandPolicyEnforcementPointTests {
         commandPEP = spy(new CommandPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService,
                 subscriptionBuilder));
 
-        var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-        assertNull(result);
-        assertDoesNotThrow(() -> verify((WrappedMessageHandlingMember<HandlingObject>) commandPEP, times(1))
-                .handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+        assertThatCode(() -> {
+            var result = commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject);
+            assertThat(result).isNull();
+        }).doesNotThrowAnyException();
+        assertThatCode(() -> verify((WrappedMessageHandlingMember<HandlingObject>) commandPEP, times(1))
+                .handle(DEFAULT_COMMAND_MESSAGE, handlingObject)).doesNotThrowAnyException();
     }
 
     @Test
@@ -178,15 +181,18 @@ class CommandPolicyEnforcementPointTests {
         commandPEP = spy(new CommandPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService,
                 subscriptionBuilder));
 
-        var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-        assertNull(result);
-        assertDoesNotThrow(() -> verify((WrappedMessageHandlingMember<HandlingObject>) commandPEP, times(1))
-                .handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+        assertThatCode(() -> {
+            var result = commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject);
+            assertThat(result).isNull();
+        }).doesNotThrowAnyException();
+        assertThatCode(() -> verify((WrappedMessageHandlingMember<HandlingObject>) commandPEP, times(1))
+                .handle(DEFAULT_COMMAND_MESSAGE, handlingObject)).doesNotThrowAnyException();
     }
 
     @Test
     void when_pdpNoDecision_then_accessDenied() {
-        assertThrows(AccessDeniedException.class, () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
+        assertThatThrownBy(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -195,18 +201,18 @@ class CommandPolicyEnforcementPointTests {
         doThrow(new RuntimeException("some error message")).when(commandConstraintHandlerBundle)
                 .executeOnDecisionHandlers(any(AuthorizationDecision.class), eq(DEFAULT_COMMAND_MESSAGE));
 
-        var exception = assertThrows(RuntimeException.class,
-                () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-        assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
+        assertThatThrownBy(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject))
+                .isInstanceOf(RuntimeException.class).satisfies(e -> assertThat(e.getLocalizedMessage())
+                        .isEqualTo(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage()));
     }
 
     @Test
     void when_deny_then_handledException() {
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
 
-        var exception = assertThrows(RuntimeException.class,
-                () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-        assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
+        assertThatThrownBy(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject))
+                .isInstanceOf(RuntimeException.class).satisfies(e -> assertThat(e.getLocalizedMessage())
+                        .isEqualTo(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage()));
     }
 
     @Test
@@ -215,9 +221,9 @@ class CommandPolicyEnforcementPointTests {
         doThrow(new RuntimeException("some error message")).when(commandConstraintHandlerBundle)
                 .executeAggregateConstraintHandlerMethods();
 
-        var exception = assertThrows(RuntimeException.class,
-                () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-        assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
+        assertThatThrownBy(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject))
+                .isInstanceOf(RuntimeException.class).satisfies(e -> assertThat(e.getLocalizedMessage())
+                        .isEqualTo(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage()));
     }
 
     @Test
@@ -226,17 +232,19 @@ class CommandPolicyEnforcementPointTests {
         when(commandConstraintHandlerBundle.executeCommandMappingHandlers(DEFAULT_COMMAND_MESSAGE))
                 .thenThrow(new RuntimeException("some error message"));
 
-        var exception = assertThrows(RuntimeException.class,
-                () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-        assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
+        assertThatThrownBy(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject))
+                .isInstanceOf(RuntimeException.class).satisfies(e -> assertThat(e.getLocalizedMessage())
+                        .isEqualTo(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage()));
     }
 
     @Test
     void when_permit_then_mapCommands() {
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-        var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-        assertEquals("defaultResult", result);
+        assertThatCode(() -> {
+            var result = commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject);
+            assertThat(result).isEqualTo("defaultResult");
+        }).doesNotThrowAnyException();
         verify(commandConstraintHandlerBundle, times(1)).executeCommandMappingHandlers(DEFAULT_COMMAND_MESSAGE);
     }
 
@@ -252,9 +260,9 @@ class CommandPolicyEnforcementPointTests {
         when(commandConstraintHandlerBundle.executeOnErrorHandlers(any(RuntimeException.class)))
                 .thenReturn(DEFAULT_HANDLED_EXCEPTION);
 
-        var exception = assertThrows(RuntimeException.class,
-                () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-        assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
+        assertThatThrownBy(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject))
+                .isInstanceOf(RuntimeException.class).satisfies(e -> assertThat(e.getLocalizedMessage())
+                        .isEqualTo(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage()));
     }
 
     @Test
@@ -263,17 +271,19 @@ class CommandPolicyEnforcementPointTests {
         when(commandConstraintHandlerBundle.executePostHandlingHandlers("defaultResult"))
                 .thenThrow(new RuntimeException("some error message"));
 
-        var exception = assertThrows(RuntimeException.class,
-                () -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-        assertEquals(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage(), exception.getLocalizedMessage());
+        assertThatThrownBy(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject))
+                .isInstanceOf(RuntimeException.class).satisfies(e -> assertThat(e.getLocalizedMessage())
+                        .isEqualTo(DEFAULT_HANDLED_EXCEPTION.getLocalizedMessage()));
     }
 
     @Test
     void when_permit_then_mapResult() {
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-        var result = assertDoesNotThrow(() -> commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject));
-        assertEquals("defaultResult", result);
+        assertThatCode(() -> {
+            var result = commandPEP.handle(DEFAULT_COMMAND_MESSAGE, handlingObject);
+            assertThat(result).isEqualTo("defaultResult");
+        }).doesNotThrowAnyException();
         verify(commandConstraintHandlerBundle, times(1)).executePostHandlingHandlers("defaultResult");
     }
 }

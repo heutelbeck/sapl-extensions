@@ -24,9 +24,8 @@ import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttPublishMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttSubscribeMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -91,9 +90,9 @@ class WildcardSubscriptionEnforcementIT {
             publishClient.publish(publishMessage);
             Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
                     TimeUnit.SECONDS);
-            assertTrue(receivedMessage.isPresent());
-            assertEquals(PUBLISH_MESSAGE_PAYLOAD,
-                    new String(receivedMessage.get().getPayloadAsBytes(), StandardCharset.UTF_8));
+            assertThat(receivedMessage).isPresent();
+            assertThat(new String(receivedMessage.get().getPayloadAsBytes(), StandardCharset.UTF_8))
+                    .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
         });
 
         // FINALLY
@@ -116,9 +115,9 @@ class WildcardSubscriptionEnforcementIT {
             publishClient.publish(publishMessage);
             Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
                     TimeUnit.SECONDS);
-            assertTrue(receivedMessage.isPresent());
-            assertEquals(PUBLISH_MESSAGE_PAYLOAD,
-                    new String(receivedMessage.get().getPayloadAsBytes(), StandardCharset.UTF_8));
+            assertThat(receivedMessage).isPresent();
+            assertThat(new String(receivedMessage.get().getPayloadAsBytes(), StandardCharset.UTF_8))
+                    .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
         });
 
         // FINALLY
@@ -138,19 +137,23 @@ class WildcardSubscriptionEnforcementIT {
         Mqtt5Publish publishMessage = buildMqttPublishMessage("first/second", false);
 
         // WHEN
-        Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-                () -> subscribeClient.subscribe(subscribeMessageMultipleTopics));
-        assertEquals(Mqtt5SubAckReasonCode.GRANTED_QOS_2, subAckException.getMqttMessage().getReasonCodes().get(0));
-        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(1));
+        assertThatThrownBy(() -> subscribeClient.subscribe(subscribeMessageMultipleTopics))
+                .isExactlyInstanceOf(Mqtt5SubAckException.class).satisfies(e -> {
+                    var subAckException = (Mqtt5SubAckException) e;
+                    assertThat(subAckException.getMqttMessage().getReasonCodes().get(0))
+                            .isEqualTo(Mqtt5SubAckReasonCode.GRANTED_QOS_2);
+                    assertThat(subAckException.getMqttMessage().getReasonCodes().get(1))
+                            .isEqualTo(Mqtt5SubAckReasonCode.NOT_AUTHORIZED);
+                });
 
         // THEN
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
             publishClient.publish(publishMessage);
             Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
                     TimeUnit.SECONDS);
-            assertTrue(receivedMessage.isPresent());
-            assertEquals(PUBLISH_MESSAGE_PAYLOAD,
-                    new String(receivedMessage.get().getPayloadAsBytes(), StandardCharset.UTF_8));
+            assertThat(receivedMessage).isPresent();
+            assertThat(new String(receivedMessage.get().getPayloadAsBytes(), StandardCharset.UTF_8))
+                    .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
         });
 
         // FINALLY
@@ -171,19 +174,23 @@ class WildcardSubscriptionEnforcementIT {
         Mqtt5Publish publishMessage = buildMqttPublishMessage("first/second/third", false);
 
         // WHEN
-        Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-                () -> subscribeClient.subscribe(subscribeMessageMultipleTopics));
-        assertEquals(Mqtt5SubAckReasonCode.GRANTED_QOS_2, subAckException.getMqttMessage().getReasonCodes().get(0));
-        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(1));
+        assertThatThrownBy(() -> subscribeClient.subscribe(subscribeMessageMultipleTopics))
+                .isExactlyInstanceOf(Mqtt5SubAckException.class).satisfies(e -> {
+                    var subAckException = (Mqtt5SubAckException) e;
+                    assertThat(subAckException.getMqttMessage().getReasonCodes().get(0))
+                            .isEqualTo(Mqtt5SubAckReasonCode.GRANTED_QOS_2);
+                    assertThat(subAckException.getMqttMessage().getReasonCodes().get(1))
+                            .isEqualTo(Mqtt5SubAckReasonCode.NOT_AUTHORIZED);
+                });
 
         // THEN
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
             publishClient.publish(publishMessage);
             Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
                     TimeUnit.SECONDS);
-            assertTrue(receivedMessage.isPresent());
-            assertEquals(PUBLISH_MESSAGE_PAYLOAD,
-                    new String(receivedMessage.get().getPayloadAsBytes(), StandardCharset.UTF_8));
+            assertThat(receivedMessage).isPresent();
+            assertThat(new String(receivedMessage.get().getPayloadAsBytes(), StandardCharset.UTF_8))
+                    .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
         });
 
         // FINALLY

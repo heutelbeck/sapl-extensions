@@ -17,8 +17,7 @@
  */
 package io.sapl.mqtt.pep.util;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -31,6 +30,7 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import io.sapl.api.pdp.AuthorizationDecision;
@@ -43,6 +43,7 @@ import reactor.core.Disposables;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
+@DisplayName("Decision flux utility")
 class DecisionFluxUtilityTests {
 
     @Test
@@ -58,7 +59,7 @@ class DecisionFluxUtilityTests {
         var identAuthzDecision = DecisionFluxUtility.getIdentAuthzDecision(subscriptionId, identAuthzDecisionMap);
 
         // THEN
-        assertEquals(Decision.INDETERMINATE, identAuthzDecision.decision().decision());
+        assertThat(identAuthzDecision.decision().decision()).isEqualTo(Decision.INDETERMINATE);
     }
 
     @Test
@@ -77,7 +78,7 @@ class DecisionFluxUtilityTests {
         DecisionFluxUtility.disposeMqttActionDecisionFluxes(mqttClientState);
 
         // THEN
-        assertTrue(mqttClientState.areMqttActionDecisionFluxesDisposed());
+        assertThat(mqttClientState.areMqttActionDecisionFluxesDisposed()).isTrue();
     }
 
     @Test
@@ -92,7 +93,7 @@ class DecisionFluxUtilityTests {
         DecisionFluxUtility.disposeSharedClientDecisionFlux(mqttClientState);
 
         // THEN
-        assertTrue(mqttClientState.isSharedClientDecisionFluxDisposed());
+        assertThat(mqttClientState.isSharedClientDecisionFluxDisposed()).isTrue();
     }
 
     @Test
@@ -106,7 +107,7 @@ class DecisionFluxUtilityTests {
         var remainingTimeLimit = DecisionFluxUtility.getRemainingTimeLimitMillis(timeLimit, startTime);
 
         // THEN
-        assertEquals(0, remainingTimeLimit);
+        assertThat(remainingTimeLimit).isZero();
     }
 
     @Test
@@ -119,7 +120,7 @@ class DecisionFluxUtilityTests {
         var remainingTimeLimit = DecisionFluxUtility.getRemainingTimeLimitMillis(timeLimit, startTime);
 
         // THEN
-        assertEquals(timeLimit * 1_000L, remainingTimeLimit);
+        assertThat(remainingTimeLimit).isEqualTo(timeLimit * 1_000L);
     }
 
     @Test
@@ -139,7 +140,7 @@ class DecisionFluxUtilityTests {
                 mqttClientState, subscriptionId);
 
         // THEN
-        assertEquals(0, timeoutDuration.getNano());
+        assertThat(timeoutDuration.getNano()).isZero();
     }
 
     @Test

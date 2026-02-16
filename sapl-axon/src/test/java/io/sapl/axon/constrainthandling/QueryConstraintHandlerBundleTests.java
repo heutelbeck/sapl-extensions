@@ -17,9 +17,8 @@
  */
 package io.sapl.axon.constrainthandling;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,10 +33,12 @@ import org.axonframework.messaging.ResultMessage;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.GenericQueryMessage;
 import org.axonframework.queryhandling.QueryMessage;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 
+@DisplayName("Query constraint handler bundle")
 class QueryConstraintHandlerBundleTests {
 
     @Test
@@ -50,17 +51,17 @@ class QueryConstraintHandlerBundleTests {
         var filterBehaviour   = new AtomicBoolean();
 
         BiConsumer<AuthorizationDecision, Message<?>>    onDecision           = (decisionInternal, messageInternal) -> {
-                                                                                  assertEquals(decision,
-                                                                                          decisionInternal);
-                                                                                  assertEquals(message,
-                                                                                          messageInternal);
+                                                                                  assertThat(decisionInternal)
+                                                                                          .isEqualTo(decision);
+                                                                                  assertThat(messageInternal)
+                                                                                          .isEqualTo(message);
                                                                                   onDecisionCounter.getAndIncrement();
                                                                               };
         Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers         = x -> new GenericQueryMessage<>(
                 "special payload", ResponseTypes.instanceOf(String.class));
         Function<Throwable, Throwable>                   errorMapper          = x -> new Exception(
-                "some spectial message");
-        Function<String, String>                         initialResultMappers = x -> "spectial initial result";
+                "some special message");
+        Function<String, String>                         initialResultMappers = x -> "special initial result";
         Function<ResultMessage<?>, ResultMessage<?>>     updateMappers        = x -> new GenericResultMessage<>(
                 "special update result");
         Predicate<ResultMessage<?>>                      filterPredicates     = x -> filterBehaviour.get();
@@ -68,40 +69,40 @@ class QueryConstraintHandlerBundleTests {
                 onDecision, queryMappers, errorMapper, initialResultMappers, updateMappers, filterPredicates);
 
         bundle.executeOnDecisionHandlers(decision, message);
-        assertEquals(1, onDecisionCounter.get());
+        assertThat(onDecisionCounter.get()).isEqualTo(1);
 
         var mappedException = bundle.executeOnErrorHandlers(exception);
-        assertEquals(Exception.class, mappedException.getClass());
-        assertEquals("some spectial message", mappedException.getLocalizedMessage());
+        assertThat(mappedException.getClass()).isEqualTo(Exception.class);
+        assertThat(mappedException.getLocalizedMessage()).isEqualTo("some special message");
 
         var mappedQueryMessage = bundle.executePreHandlingHandlers(message);
-        assertEquals(GenericQueryMessage.class, mappedQueryMessage.getClass());
-        assertEquals(String.class, mappedQueryMessage.getPayloadType());
-        assertEquals("special payload", mappedQueryMessage.getPayload());
-        assertEquals(ResponseTypes.instanceOf(String.class), mappedQueryMessage.getResponseType());
+        assertThat(mappedQueryMessage.getClass()).isEqualTo(GenericQueryMessage.class);
+        assertThat(mappedQueryMessage.getPayloadType()).isEqualTo(String.class);
+        assertThat(mappedQueryMessage.getPayload()).isEqualTo("special payload");
+        assertThat(mappedQueryMessage.getResponseType()).isEqualTo(ResponseTypes.instanceOf(String.class));
 
         var mappedResult = bundle.executePostHandlingHandlers(result);
-        assertEquals("spectial initial result", mappedResult);
+        assertThat(mappedResult).isEqualTo("special initial result");
 
         filterBehaviour.set(true);
         var presentMappedResult = bundle.executeOnNextHandlers(new GenericResultMessage<>(result));
-        assertTrue(presentMappedResult.isPresent());
-        assertEquals(GenericResultMessage.class, presentMappedResult.get().getClass());
-        assertEquals(String.class, presentMappedResult.get().getPayloadType());
-        assertEquals("special update result", presentMappedResult.get().getPayload());
+        assertThat(presentMappedResult).isPresent();
+        assertThat(presentMappedResult.get().getClass()).isEqualTo(GenericResultMessage.class);
+        assertThat(presentMappedResult.get().getPayloadType()).isEqualTo(String.class);
+        assertThat(presentMappedResult.get().getPayload()).isEqualTo("special update result");
 
         filterBehaviour.set(false);
         var emptyMappedResult = bundle.executeOnNextHandlers(new GenericResultMessage<>(result));
-        assertTrue(emptyMappedResult.isEmpty());
+        assertThat(emptyMappedResult).isEmpty();
     }
 
     @Test
-    void whenresultIsCompletableFurute_then_returnMappedCompletableFuture() {
+    void whenResultIsCompletableFuture_then_returnMappedCompletableFuture() {
         BiConsumer<AuthorizationDecision, Message<?>>    onDecision           = (decisionInternal,
                 messageInternal) -> {};
         Function<QueryMessage<?, ?>, QueryMessage<?, ?>> queryMappers         = x -> null;
         Function<Throwable, Throwable>                   errorMapper          = x -> null;
-        Function<String, String>                         initialResultMappers = x -> "spectial initial result";
+        Function<String, String>                         initialResultMappers = x -> "special initial result";
         Function<ResultMessage<?>, ResultMessage<?>>     updateMappers        = x -> null;
         Predicate<ResultMessage<?>>                      filterPredicates     = x -> false;
         var                                              bundle               = new QueryConstraintHandlerBundle<>(
@@ -110,9 +111,12 @@ class QueryConstraintHandlerBundleTests {
         var result = new CompletableFuture<String>();
         result.complete("some result");
         var futureMappedResult = bundle.executePostHandlingHandlers(result);
-        assertEquals(CompletableFuture.class, futureMappedResult.getClass());
+        assertThat(futureMappedResult.getClass()).isEqualTo(CompletableFuture.class);
         @SuppressWarnings("unchecked")
-        var mappedResult = assertDoesNotThrow(() -> ((CompletableFuture<String>) futureMappedResult).get());
-        assertEquals("spectial initial result", mappedResult);
+        var castFuture = (CompletableFuture<String>) futureMappedResult;
+        assertThatCode(() -> {
+            var mappedResult = castFuture.get();
+            assertThat(mappedResult).isEqualTo("special initial result");
+        }).doesNotThrowAnyException();
     }
 }

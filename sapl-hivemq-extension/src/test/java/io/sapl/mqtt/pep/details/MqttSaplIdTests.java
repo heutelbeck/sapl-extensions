@@ -17,24 +17,27 @@
  */
 package io.sapl.mqtt.pep.details;
 
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+@DisplayName("MQTT SAPL ID")
 class MqttSaplIdTests {
 
     @Test
     void when_mqttSaplIdConstructorIsCalledWithMqttClientIdEqualsNull_then_throwNullPointerException() {
-        assertThrowsExactly(NullPointerException.class, () -> new MqttSaplId(null, "subscriptionId"));
+        assertThatThrownBy(() -> new MqttSaplId(null, "subscriptionId"))
+                .isExactlyInstanceOf(NullPointerException.class);
     }
 
     @Test
     void when_mqttSaplIdConstructorIsCalledWithSubscriptionIdEqualsNull_then_throwNullPointerException() {
-        assertThrowsExactly(NullPointerException.class, () -> new MqttSaplId("clientId", null));
+        assertThatThrownBy(() -> new MqttSaplId("clientId", null)).isExactlyInstanceOf(NullPointerException.class);
     }
 
     @Test
     void when_mqttSaplIdConstructorIsCalledWithSubscriptionIdAndClientIdEqualsNull_then_throwNullPointerException() {
-        assertThrowsExactly(NullPointerException.class, () -> new MqttSaplId(null, null));
+        assertThatThrownBy(() -> new MqttSaplId(null, null)).isExactlyInstanceOf(NullPointerException.class);
     }
 }

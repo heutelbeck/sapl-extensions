@@ -83,7 +83,7 @@ public class VaadinPep {
     private Object                                                     resource;
     private Object                                                     environment;
 
-    private static final String BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE = "Builder has already been build. The builder can only be used once.";
+    private static final String ERROR_BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE = "Builder has already been build. The builder can only be used once.";
 
     /**
      * This function shall execute all decision listener consumers
@@ -174,8 +174,6 @@ public class VaadinPep {
     protected List<RunnableConstraintHandlerProvider> getLocalRunnableProviders() {
         return localRunnableProviders;
     }
-
-    // **** Interfaces ****
 
     /**
      * This interface provides basic functions which all components support.
@@ -458,8 +456,6 @@ public class VaadinPep {
         }
     }
 
-    // **** Builder ****
-
     /**
      * This class is the basic builder class used for the specific component
      * builders.
@@ -626,8 +622,6 @@ public class VaadinPep {
         }
     }
 
-    // **** Single / Multi builder ****
-
     /**
      * This class is the basic single builder class for the specific component
      * single builders.
@@ -664,7 +658,7 @@ public class VaadinPep {
          */
         public C build() {
             if (isBuilt) {
-                throw new AccessDeniedException(BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE);
+                throw new AccessDeniedException(ERROR_BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE);
             }
             // ensure that at least one handler is present for DENY decisions
             if (!denyRuleIsPresent) {
@@ -723,7 +717,7 @@ public class VaadinPep {
          */
         public MultiBuilder and() {
             if (isBuilt) {
-                throw new AccessDeniedException(BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE);
+                throw new AccessDeniedException(ERROR_BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE);
             }
             // ensure that at least one handler is present for DENY decisions
             if (!denyRuleIsPresent) {
@@ -741,8 +735,6 @@ public class VaadinPep {
         public void build() {
             and().build(component);
         }
-
-        // **** Component specific methods ****
 
         /**
          * This function shall register the previous configured component and start
@@ -800,8 +792,6 @@ public class VaadinPep {
         }
     }
 
-    // **** Component builder ****
-
     /**
      * This class is a builder class for single subscriptions with Vaadin components
      */
@@ -828,8 +818,6 @@ public class VaadinPep {
             super(pdp, enforceConstraintsOfDecision, multiBuilder, component);
         }
     }
-
-    // **** Button builder ****
 
     /**
      * This class is a builder class for single subscriptions with Vaadin buttons
@@ -858,8 +846,6 @@ public class VaadinPep {
             super(pdp, enforceConstraintsOfDecision, multiBuilder, button);
         }
     }
-
-    // **** TextField builder ****
 
     /**
      * This class is a builder class for single subscriptions with Vaadin text
@@ -891,8 +877,6 @@ public class VaadinPep {
         }
     }
 
-    // **** Checkbox builder ****
-
     /**
      * This class is a builder class for single subscriptions with Vaadin checkboxes
      */
@@ -919,8 +903,6 @@ public class VaadinPep {
             super(pdp, enforceConstraintsOfDecision, multiBuilder, checkbox);
         }
     }
-
-    // **** Span builder ****
 
     /**
      * This class is a builder class for single subscriptions with Vaadin spans
@@ -949,7 +931,6 @@ public class VaadinPep {
         }
     }
 
-    // **** Lifecycle builder ****
     /**
      * The builder class for the pep which handles events of the navigation
      * lifecycle. It is the parent class for {@link LifecycleBeforeEnterPepBuilder}
@@ -1015,7 +996,7 @@ public class VaadinPep {
         /**
          * Setter for the action of the subscription.
          *
-         * @param action subject of the subscription
+         * @param action action of the subscription
          * @return Returns an instance of {@link LifecycleBeforeEnterPepBuilder} or
          * {@link LifecycleBeforeLeavePepBuilder}
          */
@@ -1039,7 +1020,7 @@ public class VaadinPep {
         /**
          * Setter for the environment of the subscription.
          *
-         * @param environment subject of the subscription
+         * @param environment environment of the subscription
          * @return Returns an instance of {@link LifecycleBeforeEnterPepBuilder} or
          * {@link LifecycleBeforeLeavePepBuilder}
          */
@@ -1219,7 +1200,7 @@ public class VaadinPep {
                 isBuilt = true;
                 return this::beforeEnter;
             } else {
-                throw new AccessDeniedException(BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE);
+                throw new AccessDeniedException(ERROR_BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE);
             }
         }
     }
@@ -1268,7 +1249,7 @@ public class VaadinPep {
          */
         public BeforeLeaveListener build() {
             if (isBuilt) {
-                throw new AccessDeniedException(BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE);
+                throw new AccessDeniedException(ERROR_BUILDER_HAS_ALREADY_BEEN_BUILD_THE_BUILDER_CAN_ONLY_BE_USED_ONCE);
             }
             isBuilt = true;
             return this::beforeLeave;

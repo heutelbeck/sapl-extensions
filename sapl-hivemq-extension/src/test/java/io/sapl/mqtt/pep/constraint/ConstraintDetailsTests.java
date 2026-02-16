@@ -17,14 +17,16 @@
  */
 package io.sapl.mqtt.pep.constraint;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 import io.sapl.mqtt.pep.cache.MqttClientState;
 
+@DisplayName("Constraint details")
 class ConstraintDetailsTests {
 
     @Test
@@ -38,6 +40,6 @@ class ConstraintDetailsTests {
         var subscriptionId = constraintDetails.getSubscriptionId();
 
         // THEN
-        assertEquals("subscriptionId", subscriptionId);
+        assertThat(subscriptionId).isEqualTo("subscriptionId");
     }
 }

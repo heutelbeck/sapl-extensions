@@ -20,17 +20,17 @@ public class MonitoringDeviceAdapter {
 
 	private final MonitorFactory monitorFactory;
 
-	Map<String, Disposable> activeMonitors = new ConcurrentHashMap<>();
+	private Map<String, Disposable> activeMonitors = new ConcurrentHashMap<>();
 
 	@EventHandler
 	void on(MonitorConnectedToPatient evt) {
-		log.trace("Start {} monitor ({}))", evt.monitorType(), evt.id());
+		log.trace("Start {} monitor ({})", evt.monitorType(), evt.id());
 		activeMonitors.put(evt.id(), monitorFactory.createMonitor(evt.monitorDeviceId(), evt.monitorType()).subscribe());
 	}
 
 	@EventHandler
 	void on(MonitorDisconnectedFromPatient evt) {
-		log.trace("Stop monitor ({}))", evt.id());
+		log.trace("Stop monitor ({})", evt.id());
 		Optional.of(activeMonitors.remove(evt.id())).ifPresent(Disposable::dispose);
 	}
 

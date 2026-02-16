@@ -1,11 +1,6 @@
 package io.sapl.demo.axon.iface.rest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static reactor.test.StepVerifier.create;
 
 import java.time.Duration;
@@ -16,6 +11,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +48,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @SpringJUnitConfig
+@DisplayName("SAPL Axon demo")
 @SpringBootTest(classes = SaplDemoAxonApplication.class)
 @Import(io.sapl.demo.axon.iface.rest.SaplAxonDemoTests.TestConfiguration.class)
 class SaplAxonDemoTests {
@@ -178,9 +175,9 @@ class SaplAxonDemoTests {
         var textBlackend = patient.latestDiagnosisText().endsWith("█");
         if (staff.getPosition() == Position.DOCTOR || ((staff.getPosition() == Position.NURSE || !justNurses)
                 && staff.getAssignedWard() == patient.ward()))
-            assertFalse(codeBlackend || textBlackend); // both must be false
+            assertThat(codeBlackend || textBlackend).isFalse(); // both must be false
         else
-            assertTrue(codeBlackend && textBlackend); // both must be true
+            assertThat(codeBlackend && textBlackend).isTrue(); // both must be true
     }
 
     @Autowired
@@ -264,12 +261,12 @@ class SaplAxonDemoTests {
         var response = pricipal.thenMany(patientsController.streamPatient(unapiaw.patientId()))
                 .map(ServerSentEvent::data).map(cast(PatientDocument.class));
         create(response.timeout(DEFAULT_TIMEOUT))
-                .assertNext(patient -> assertTrue(patient.ward() == unapiaw.ward() || patient.ward() == Ward.NONE
-                        || patient.ward() == Ward.GENERAL))
+                .assertNext(patient -> assertThat(patient.ward() == unapiaw.ward() || patient.ward() == Ward.NONE
+                        || patient.ward() == Ward.GENERAL).isTrue())
                 .then(() -> patientsController.hospitalizePatient(unapiaw.patientId(), unapiaw.ward()).subscribe())
-                .assertNext(patient -> assertSame(unapiaw.ward(), patient.ward()))
+                .assertNext(patient -> assertThat(patient.ward()).isSameAs(unapiaw.ward()))
                 .then(() -> patientsController.hospitalizePatient(unapiaw.patientId()).subscribe())
-                .assertNext(patient -> assertSame(Ward.NONE, patient.ward())).verifyTimeout(DEFAULT_TIMEOUT);
+                .assertNext(patient -> assertThat(patient.ward()).isSameAs(Ward.NONE)).verifyTimeout(DEFAULT_TIMEOUT);
     }
 
     @ParameterizedTest
@@ -279,16 +276,16 @@ class SaplAxonDemoTests {
         var response = pricipal.then(vitalsController.fetchVitals(unapiamt.patientId(), unapiamt.monitorType()))
                 .filter(ResponseEntity::hasBody).map(ResponseEntity::getBody).map(cast(VitalSignMeasurement.class));
         create(response.timeout(DEFAULT_TIMEOUT)).assertNext(measurement -> {
-            assertFalse(measurement.monitorDeviceId().isBlank(), "expected id");
-            assertFalse(measurement.monitorDeviceId().contains("█"), "expected non blackend id");
-            assertNotNull(measurement.timestamp(), "expected timestamp");
-            assertNotNull(measurement.type(), "expected monitor type");
-            assertFalse(measurement.unit().isBlank(), "expected unit");
-            assertFalse(measurement.unit().contains("█"), "expected non blackend unit");
-            assertNotEquals("Body Temperature Category", measurement.unit(), "expected no body temperature category");
-            assertFalse(measurement.value().isBlank(), "expected value");
-            assertFalse(measurement.value().contains("█"), "expected non blackend value");
-            assertNotEquals("Normal", measurement.value(), "expected normal");
+            assertThat(measurement.monitorDeviceId()).withFailMessage("expected id").isNotBlank()
+                    .withFailMessage("expected non blackend id").doesNotContain("█");
+            assertThat(measurement.timestamp()).withFailMessage("expected timestamp").isNotNull();
+            assertThat(measurement.type()).withFailMessage("expected monitor type").isNotNull();
+            assertThat(measurement.unit()).withFailMessage("expected unit").isNotBlank()
+                    .withFailMessage("expected non blackend unit").doesNotContain("█")
+                    .withFailMessage("expected no body temperature category").isNotEqualTo("Body Temperature Category");
+            assertThat(measurement.value()).withFailMessage("expected value").isNotBlank()
+                    .withFailMessage("expected non blackend value").doesNotContain("█")
+                    .withFailMessage("expected normal").isNotEqualTo("Normal");
         }).verifyComplete();
     }
 
@@ -301,12 +298,12 @@ class SaplAxonDemoTests {
         var response = pricipal.then(vitalsController.fetchVitals(unapi.patientId(), MonitorType.BODY_TEMPERATURE))
                 .filter(ResponseEntity::hasBody).map(ResponseEntity::getBody).map(cast(VitalSignMeasurement.class));
         create(response.timeout(DEFAULT_TIMEOUT)).assertNext(measurement -> {
-            assertFalse(measurement.monitorDeviceId().isBlank(), "expected id");
-            assertFalse(measurement.monitorDeviceId().contains("█"), "expected non blackend id");
-            assertNotNull(measurement.timestamp(), "expected timestamp");
-            assertEquals(MonitorType.BODY_TEMPERATURE, measurement.type(), "expected body temerature");
-            assertEquals("Body Temperature Category", measurement.unit(), "expected body temperature category");
-            assertEquals("Normal", measurement.value(), "expected normal");
+            assertThat(measurement.monitorDeviceId()).withFailMessage("expected id").isNotBlank()
+                    .withFailMessage("expected non blackend id").doesNotContain("█");
+            assertThat(measurement.timestamp()).withFailMessage("expected timestamp").isNotNull();
+            assertThat(measurement.type()).withFailMessage("expected body temerature").isEqualTo(MonitorType.BODY_TEMPERATURE);
+            assertThat(measurement.unit()).withFailMessage("expected body temperature category").isEqualTo("Body Temperature Category");
+            assertThat(measurement.value()).withFailMessage("expected normal").isEqualTo("Normal");
         }).verifyComplete();
     }
 
@@ -317,16 +314,16 @@ class SaplAxonDemoTests {
         var response = pricipal.then(vitalsController.fetchVitals(unapiamt.patientId(), unapiamt.monitorType()))
                 .filter(ResponseEntity::hasBody).map(ResponseEntity::getBody).map(cast(VitalSignMeasurement.class));
         create(response.timeout(DEFAULT_TIMEOUT)).assertNext(measurement -> {
-            assertFalse(measurement.monitorDeviceId().isBlank(), "expected id");
-            assertFalse(measurement.monitorDeviceId().contains("█"), "expected non blackend id");
-            assertNotNull(measurement.timestamp(), "expected timestamp");
-            assertNotNull(measurement.type(), "expected monitor type");
-            assertFalse(measurement.unit().isBlank(), "expected unit");
-            assertFalse(measurement.unit().contains("█"), "expected non blackend unit");
-            assertNotEquals("Body Temperature Category", measurement.unit(), "expected no body temperature category");
-            assertFalse(measurement.value().isBlank(), "expected value");
-            assertFalse(measurement.value().contains("█"), "expected non blackend value");
-            assertNotEquals("Normal", measurement.value(), "expected normal");
+            assertThat(measurement.monitorDeviceId()).withFailMessage("expected id").isNotBlank()
+                    .withFailMessage("expected non blackend id").doesNotContain("█");
+            assertThat(measurement.timestamp()).withFailMessage("expected timestamp").isNotNull();
+            assertThat(measurement.type()).withFailMessage("expected monitor type").isNotNull();
+            assertThat(measurement.unit()).withFailMessage("expected unit").isNotBlank()
+                    .withFailMessage("expected non blackend unit").doesNotContain("█")
+                    .withFailMessage("expected no body temperature category").isNotEqualTo("Body Temperature Category");
+            assertThat(measurement.value()).withFailMessage("expected value").isNotBlank()
+                    .withFailMessage("expected non blackend value").doesNotContain("█")
+                    .withFailMessage("expected normal").isNotEqualTo("Normal");
         }).verifyComplete();
     }
 

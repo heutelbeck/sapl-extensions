@@ -19,11 +19,8 @@ package io.sapl.axon.commandhandling;
 
 import static io.sapl.axon.TestUtilities.isAccessDenied;
 import static io.sapl.axon.TestUtilities.isCausedBy;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,6 +35,7 @@ import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.messaging.Message;
 import org.axonframework.messaging.MetaData;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -71,7 +69,8 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @SpringBootTest
 @Import(ScenarioConfiguration.class)
-public abstract class CommandTestsuite {
+@DisplayName("Command handling test suite")
+abstract class CommandTestsuite {
 
     private static final String MODIFY_ERROR     = "modify error";
     private static final String MODIFY_RESULT    = "modify result";
@@ -112,15 +111,15 @@ public abstract class CommandTestsuite {
     void when_securedCommandHandler_and_Permit_then_accessGranted() {
         waitForCommandHandlerRegistration();
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-        assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is("OK (foo)"));
+        assertThat((Object) commandGateway.sendAndWait(new CommandOne("foo"))).isEqualTo("OK (foo)");
     }
 
     @Test
     void when_securedCommandHandler_and_Deny_then_accessDenied() {
         waitForCommandHandlerRegistration();
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
-        var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
-        assertTrue(isAccessDenied().test(thrown));
+        assertThatThrownBy(() -> commandGateway.sendAndWait(new CommandOne("foo")))
+                .satisfies(thrown -> assertThat(isAccessDenied().test(thrown)).isTrue());
     }
 
     @Test
@@ -130,8 +129,8 @@ public abstract class CommandTestsuite {
         when(pdp.decide(any(AuthorizationSubscription.class)))
                 .thenReturn(Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
                         io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED)));
-        var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
-        assertTrue(isAccessDenied().test(thrown));
+        assertThatThrownBy(() -> commandGateway.sendAndWait(new CommandOne("foo")))
+                .satisfies(thrown -> assertThat(isAccessDenied().test(thrown)).isTrue());
     }
 
     @Test
@@ -142,7 +141,7 @@ public abstract class CommandTestsuite {
         when(pdp.decide(any(AuthorizationSubscription.class)))
                 .thenReturn(Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
                         io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED)));
-        assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is(MODIFIED_RESULT));
+        assertThat((Object) commandGateway.sendAndWait(new CommandOne("foo"))).isEqualTo(MODIFIED_RESULT);
         verify(resultMappingProvider, times(1)).map(any());
         verify(onDecisionProvider, times(1)).accept(any(), any());
         verify(querMappingProvider, times(1)).mapPayload(any(), any(), any());
@@ -156,8 +155,8 @@ public abstract class CommandTestsuite {
                 .thenReturn(Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
                         io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED)));
 
-        var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandTwo("foo")));
-        assertTrue(isCausedBy(IllegalArgumentException.class).test(thrown));
+        assertThatThrownBy(() -> commandGateway.sendAndWait(new CommandTwo("foo")))
+                .satisfies(thrown -> assertThat(isCausedBy(IllegalArgumentException.class).test(thrown)).isTrue());
         verify(errorMappingProvider, times(1)).map(any());
     }
 
@@ -165,15 +164,15 @@ public abstract class CommandTestsuite {
     void when_securedAggregateCreationCommand_and_Permit_then_accessGranted() {
         waitForCommandHandlerRegistration();
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-        assertThat(commandGateway.sendAndWait(new CreateAggregate("id2")), is("id2"));
+        assertThat((Object) commandGateway.sendAndWait(new CreateAggregate("id2"))).isEqualTo("id2");
     }
 
     @Test
     void when_securedAggregateCreationAndFollowUpCommand_and_Permit_then_accessGranted() {
         waitForCommandHandlerRegistration();
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
-        assertThat(commandGateway.sendAndWait(new CreateAggregate("id1")), is("id1"));
-        assertThat(commandGateway.sendAndWait(new ModifyAggregate("id1")), is(nullValue()));
+        assertThat((Object) commandGateway.sendAndWait(new CreateAggregate("id1"))).isEqualTo("id1");
+        assertThat((Object) commandGateway.sendAndWait(new ModifyAggregate("id1"))).isNull();
     }
 
     @SuppressWarnings("unchecked")
@@ -185,8 +184,8 @@ public abstract class CommandTestsuite {
         var decisionsForModify = Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
                 io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForModify);
-        assertThat(commandGateway.sendAndWait(new CreateAggregate("id4")), is("id4"));
-        assertThat(commandGateway.sendAndWait(new ModifyAggregate("id4")), is(nullValue()));
+        assertThat((Object) commandGateway.sendAndWait(new CreateAggregate("id4"))).isEqualTo("id4");
+        assertThat((Object) commandGateway.sendAndWait(new ModifyAggregate("id4"))).isNull();
     }
 
     @Test
@@ -196,7 +195,7 @@ public abstract class CommandTestsuite {
         var decisions   = Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
                 io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
-        assertThat(commandGateway.sendAndWait(new CommandOne("foo")), is("OK (foo)"));
+        assertThat((Object) commandGateway.sendAndWait(new CommandOne("foo"))).isEqualTo("OK (foo)");
     }
 
     @Test
@@ -206,16 +205,16 @@ public abstract class CommandTestsuite {
         var decisions   = Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
                 io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisions);
-        var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CommandOne("foo")));
-        assertTrue(isAccessDenied().test(thrown));
+        assertThatThrownBy(() -> commandGateway.sendAndWait(new CommandOne("foo")))
+                .satisfies(thrown -> assertThat(isAccessDenied().test(thrown)).isTrue());
     }
 
     @Test
     void when_securedAggregateCreationCommand_and_Deny_then_accessDenies() {
         waitForCommandHandlerRegistration();
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.DENY));
-        var thrown = assertThrows(Exception.class, () -> commandGateway.sendAndWait(new CreateAggregate("id3")));
-        assertTrue(isAccessDenied().test(thrown));
+        assertThatThrownBy(() -> commandGateway.sendAndWait(new CreateAggregate("id3")))
+                .satisfies(thrown -> assertThat(isAccessDenied().test(thrown)).isTrue());
     }
 
     @SuppressWarnings("unchecked")
@@ -228,9 +227,9 @@ public abstract class CommandTestsuite {
         var decisionsForMemberAccess = Flux.just(new AuthorizationDecision(Decision.PERMIT, obligations,
                 io.sapl.api.model.Value.EMPTY_ARRAY, io.sapl.api.model.Value.UNDEFINED));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(decisionsForCreate, decisionsForMemberAccess);
-        assertThat(commandGateway.sendAndWait(new CreateAggregate("id7")), is("id7"));
-        assertThat(commandGateway.sendAndWait(new UpdateMember("id7", "A")), is(nullValue()));
-        assertThat(commandGateway.sendAndWait(new UpdateMember("id7", "B")), is(nullValue()));
+        assertThat((Object) commandGateway.sendAndWait(new CreateAggregate("id7"))).isEqualTo("id7");
+        assertThat((Object) commandGateway.sendAndWait(new UpdateMember("id7", "A"))).isNull();
+        assertThat((Object) commandGateway.sendAndWait(new UpdateMember("id7", "B"))).isNull();
     }
 
     static void waitForCommandHandlerRegistration() {

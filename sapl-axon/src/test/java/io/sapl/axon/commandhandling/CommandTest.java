@@ -19,6 +19,7 @@ package io.sapl.axon.commandhandling;
 
 import org.axonframework.eventsourcing.eventstore.EventStorageEngine;
 import org.axonframework.eventsourcing.eventstore.inmemory.InMemoryEventStorageEngine;
+import org.junit.jupiter.api.DisplayName;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -26,7 +27,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
-public class CommandTest extends CommandTestsuite {
+@DisplayName("Command handling policy enforcement")
+class CommandTest extends CommandTestsuite {
 
     @SpringBootApplication(scanBasePackages = { "io.sapl.axon.commandhandling.*" })
     public static class TestApplication {

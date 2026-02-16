@@ -88,9 +88,9 @@ public class MonitorFactory {
 		return p;
 	}
 
-	Flux<Double> randomSequence(Duration updateIntervall, double startMin, double startMax, double deltaMax, double min,
+	Flux<Double> randomSequence(Duration updateInterval, double startMin, double startMax, double deltaMax, double min,
 			double max) {
-		return Flux.interval(updateIntervall).scan(startValue(startMin, startMax), next(deltaMax, min, max));
+		return Flux.interval(updateInterval).scan(startValue(startMin, startMax), next(deltaMax, min, max));
 	}
 
 	double startValue(double startMin, double startMax) {

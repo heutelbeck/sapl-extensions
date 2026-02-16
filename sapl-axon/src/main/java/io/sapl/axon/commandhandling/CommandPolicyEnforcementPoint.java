@@ -45,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember<T> {
 
-    private static final String                           ACCESS_DENIED = "Access Denied";
+    private static final String                           ERROR_ACCESS_DENIED = "Access Denied";
     private final PolicyDecisionPoint                     pdp;
     private final MessageHandlingMember<T>                delegate;
     private final AuthorizationSubscriptionBuilderService subscriptionBuilder;
@@ -77,7 +77,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
     public Object handle(@NonNull Message<?> message, T aggregate) throws Exception {
         var preEnforceAnnotation = findPreEnforceAnnotation();
         if (preEnforceAnnotation.isPresent()) {
-            return preEnforcePolices((CommandMessage<?>) message, aggregate, preEnforceAnnotation.get());
+            return preEnforcePolicies((CommandMessage<?>) message, aggregate, preEnforceAnnotation.get());
         } else {
             return delegate.handle(message, aggregate);
         }
@@ -88,7 +88,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
                 .flatMap(executable -> Optional.ofNullable(executable.getAnnotation(PreHandleEnforce.class)));
     }
 
-    private Object preEnforcePolices(CommandMessage<?> command, T aggregate, PreHandleEnforce preHandleEnforce)
+    private Object preEnforcePolicies(CommandMessage<?> command, T aggregate, PreHandleEnforce preHandleEnforce)
             throws Exception {
 
         var authzSubscription = subscriptionBuilder.constructAuthorizationSubscriptionForCommand(command, aggregate,
@@ -101,7 +101,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
 
         if (decision == null) {
             log.error("PDP returned null.");
-            throw new AccessDeniedException(ACCESS_DENIED);
+            throw new AccessDeniedException(ERROR_ACCESS_DENIED);
         }
 
         var executable = delegate.unwrap(Executable.class);
@@ -111,18 +111,18 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
             bundle.executeOnDecisionHandlers(decision, command);
         } catch (Exception t) {
             log.error("command on decision constraint handlers failed: {}", t.getMessage(), t);
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED, t));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ERROR_ACCESS_DENIED, t));
         }
 
         if (decision.decision() != Decision.PERMIT) {
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ERROR_ACCESS_DENIED));
         }
 
         try {
             bundle.executeAggregateConstraintHandlerMethods();
         } catch (Exception t) {
             log.error("command aggregate constraint handlers failed: {}", t.getMessage(), t);
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED, t));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ERROR_ACCESS_DENIED, t));
         }
 
         CommandMessage<?> mappedCommand;
@@ -130,7 +130,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
             mappedCommand = bundle.executeCommandMappingHandlers(command);
         } catch (Exception t) {
             log.error("command mapping constraint handlers failed: {}", t.getMessage(), t);
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED, t));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ERROR_ACCESS_DENIED, t));
         }
 
         Object result;
@@ -145,7 +145,7 @@ public class CommandPolicyEnforcementPoint<T> extends WrappedMessageHandlingMemb
             mappedResult = bundle.executePostHandlingHandlers(result);
         } catch (Exception t) {
             log.error("command result mapping failed: {}", t.getMessage(), t);
-            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ACCESS_DENIED, t));
+            throw bundle.executeOnErrorHandlers(new AccessDeniedException(ERROR_ACCESS_DENIED, t));
         }
 
         return mappedResult;

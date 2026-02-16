@@ -17,9 +17,7 @@
  */
 package io.sapl.vaadin.constraint;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -28,6 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -36,6 +35,7 @@ import io.sapl.api.model.ObjectValue;
 import io.sapl.api.model.Value;
 import reactor.core.publisher.Mono;
 
+@DisplayName("Vaadin function constraint handler provider")
 class VaadinFunctionConstraintHandlerProviderTests {
 
     @Test
@@ -68,7 +68,7 @@ class VaadinFunctionConstraintHandlerProviderTests {
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(predicate, function);
         // WHEN+THEN
-        assertEquals(function, vaadinFunctionConstraintHandlerProvider.getHandler(Value.of("test")));
+        assertThat(vaadinFunctionConstraintHandlerProvider.getHandler(Value.of("test"))).isEqualTo(function);
     }
 
     @Test
@@ -82,7 +82,7 @@ class VaadinFunctionConstraintHandlerProviderTests {
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, consumer);
         // WHEN + THEN
-        assertTrue(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint));
+        assertThat(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint)).isTrue();
     }
 
     @Test
@@ -96,7 +96,7 @@ class VaadinFunctionConstraintHandlerProviderTests {
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, consumer);
         // WHEN + THEN
-        assertTrue(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint));
+        assertThat(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint)).isTrue();
     }
 
     @Test
@@ -110,7 +110,7 @@ class VaadinFunctionConstraintHandlerProviderTests {
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, consumer);
         // WHEN + THEN
-        assertFalse(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint));
+        assertThat(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint)).isFalse();
     }
 
     @Test
@@ -124,7 +124,7 @@ class VaadinFunctionConstraintHandlerProviderTests {
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, consumer);
         // WHEN + THEN
-        assertFalse(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint));
+        assertThat(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint)).isFalse();
     }
 
     @Test
@@ -139,7 +139,7 @@ class VaadinFunctionConstraintHandlerProviderTests {
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, consumer);
         // WHEN + THEN
-        assertFalse(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint));
+        assertThat(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint)).isFalse();
     }
 
     @Test
@@ -153,7 +153,7 @@ class VaadinFunctionConstraintHandlerProviderTests {
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, consumer);
         // WHEN + THEN
-        assertFalse(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint));
+        assertThat(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint)).isFalse();
     }
 
     @Test
@@ -185,7 +185,7 @@ class VaadinFunctionConstraintHandlerProviderTests {
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, function);
         // WHEN + THEN
-        assertTrue(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint));
+        assertThat(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint)).isTrue();
     }
 
     @Test
@@ -200,7 +200,7 @@ class VaadinFunctionConstraintHandlerProviderTests {
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, function);
         // WHEN + THEN
-        assertFalse(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint));
+        assertThat(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint)).isFalse();
     }
 
     @Test
@@ -215,7 +215,7 @@ class VaadinFunctionConstraintHandlerProviderTests {
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, function);
         // WHEN + THEN
-        assertFalse(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint));
+        assertThat(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint)).isFalse();
     }
 
     @Test
@@ -231,7 +231,7 @@ class VaadinFunctionConstraintHandlerProviderTests {
         VaadinFunctionConstraintHandlerProvider vaadinFunctionConstraintHandlerProvider = VaadinFunctionConstraintHandlerProvider
                 .of(constraintFilter, function);
         // WHEN + THEN
-        assertFalse(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint));
+        assertThat(vaadinFunctionConstraintHandlerProvider.isResponsible(constraint)).isFalse();
     }
 
     @Test

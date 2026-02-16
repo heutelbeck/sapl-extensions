@@ -24,9 +24,8 @@ import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttPublishMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttSubscribeMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -95,7 +94,8 @@ class PublishSubscribeEnforcementIT {
         // THEN
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(), StandardCharsets.UTF_8));
+        assertThat(new String(receivedMessage.getPayloadAsBytes(), StandardCharsets.UTF_8))
+                .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
     }
 
     @Test
@@ -115,15 +115,17 @@ class PublishSubscribeEnforcementIT {
         // THEN
         Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(1000,
                 TimeUnit.MILLISECONDS);
-        assertTrue(receivedMessage.isEmpty());
+        assertThat(receivedMessage).isEmpty();
 
-        Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-                () -> publishClient.publish(publishMessageQos1));
-        assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
+        assertThatThrownBy(() -> publishClient.publish(publishMessageQos1))
+                .isExactlyInstanceOf(Mqtt5PubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5PubAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5PubAckReasonCode.NOT_AUTHORIZED));
 
-        Mqtt5PubRecException pubRecException = assertThrowsExactly(Mqtt5PubRecException.class,
-                () -> publishClient.publish(publishMessageQos2));
-        assertEquals(Mqtt5PubRecReasonCode.NOT_AUTHORIZED, pubRecException.getMqttMessage().getReasonCode());
+        assertThatThrownBy(() -> publishClient.publish(publishMessageQos2))
+                .isExactlyInstanceOf(Mqtt5PubRecException.class)
+                .satisfies(e -> assertThat(((Mqtt5PubRecException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5PubRecReasonCode.NOT_AUTHORIZED));
     }
 
     @Test
@@ -135,17 +137,20 @@ class PublishSubscribeEnforcementIT {
         Mqtt5Subscribe subscribeMessageQos2 = buildMqttSubscribeMessage("denied_subscription", 2);
 
         // THEN
-        Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-                () -> subscribeClient.subscribe(subscribeMessageQos0));
-        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
+        assertThatThrownBy(() -> subscribeClient.subscribe(subscribeMessageQos0))
+                .isExactlyInstanceOf(Mqtt5SubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5SubAckException) e).getMqttMessage().getReasonCodes().get(0))
+                        .isEqualTo(Mqtt5SubAckReasonCode.NOT_AUTHORIZED));
 
-        subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-                () -> subscribeClient.subscribe(subscribeMessageQos1));
-        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
+        assertThatThrownBy(() -> subscribeClient.subscribe(subscribeMessageQos1))
+                .isExactlyInstanceOf(Mqtt5SubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5SubAckException) e).getMqttMessage().getReasonCodes().get(0))
+                        .isEqualTo(Mqtt5SubAckReasonCode.NOT_AUTHORIZED));
 
-        subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-                () -> subscribeClient.subscribe(subscribeMessageQos2));
-        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
+        assertThatThrownBy(() -> subscribeClient.subscribe(subscribeMessageQos2))
+                .isExactlyInstanceOf(Mqtt5SubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5SubAckException) e).getMqttMessage().getReasonCodes().get(0))
+                        .isEqualTo(Mqtt5SubAckReasonCode.NOT_AUTHORIZED));
     }
 
     @Test
@@ -170,18 +175,18 @@ class PublishSubscribeEnforcementIT {
             publishClient.publish(firstPublishMessage);
             Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
                     TimeUnit.SECONDS);
-            assertTrue(receivedMessage.isPresent());
-            assertEquals(PUBLISH_MESSAGE_PAYLOAD,
-                    new String(receivedMessage.get().getPayloadAsBytes(), StandardCharsets.UTF_8));
+            assertThat(receivedMessage).isPresent();
+            assertThat(new String(receivedMessage.get().getPayloadAsBytes(), StandardCharsets.UTF_8))
+                    .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
         });
 
         await().atMost(6, TimeUnit.SECONDS).untilAsserted(() -> {
             publishClient.publish(secondPublishMessage);
             Optional<Mqtt5Publish> receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive(2,
                     TimeUnit.SECONDS);
-            assertTrue(receivedMessage.isPresent());
-            assertEquals(PUBLISH_MESSAGE_PAYLOAD,
-                    new String(receivedMessage.get().getPayloadAsBytes(), StandardCharsets.UTF_8));
+            assertThat(receivedMessage).isPresent();
+            assertThat(new String(receivedMessage.get().getPayloadAsBytes(), StandardCharsets.UTF_8))
+                    .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
         });
     }
 
@@ -200,19 +205,24 @@ class PublishSubscribeEnforcementIT {
         Mqtt5Publish secondPublishMessage = buildMqttPublishMessage("denied_subscription", false);
 
         // WHEN
-        Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-                () -> subscribeClient.subscribe(subscribeMessageMultipleTopics));
-        assertEquals(Mqtt5SubAckReasonCode.GRANTED_QOS_2, subAckException.getMqttMessage().getReasonCodes().get(0));
-        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(1));
+        assertThatThrownBy(() -> subscribeClient.subscribe(subscribeMessageMultipleTopics))
+                .isExactlyInstanceOf(Mqtt5SubAckException.class).satisfies(e -> {
+                    var subAckException = (Mqtt5SubAckException) e;
+                    assertThat(subAckException.getMqttMessage().getReasonCodes().get(0))
+                            .isEqualTo(Mqtt5SubAckReasonCode.GRANTED_QOS_2);
+                    assertThat(subAckException.getMqttMessage().getReasonCodes().get(1))
+                            .isEqualTo(Mqtt5SubAckReasonCode.NOT_AUTHORIZED);
+                });
 
         // THEN
         publishClient.publish(firstPublishMessage);
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(), StandardCharsets.UTF_8));
+        assertThat(new String(receivedMessage.getPayloadAsBytes(), StandardCharsets.UTF_8))
+                .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
 
         publishClient.publish(secondPublishMessage);
         Optional<Mqtt5Publish> receivedMessageSecond = subscribeClient.publishes(MqttGlobalPublishFilter.ALL)
                 .receive(1000, TimeUnit.MILLISECONDS);
-        assertTrue(receivedMessageSecond.isEmpty());
+        assertThat(receivedMessageSecond).isEmpty();
     }
 }

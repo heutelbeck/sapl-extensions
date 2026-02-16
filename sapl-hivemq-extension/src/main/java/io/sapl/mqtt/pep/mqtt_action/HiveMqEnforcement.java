@@ -18,7 +18,7 @@
 package io.sapl.mqtt.pep.mqtt_action;
 
 import static io.sapl.api.pdp.Decision.PERMIT;
-import static io.sapl.mqtt.pep.MqttPep.NOT_AUTHORIZED_NOTICE;
+import static io.sapl.mqtt.pep.MqttPep.ERROR_NOT_AUTHORIZED_NOTICE;
 
 import com.hivemq.extension.sdk.api.auth.parameter.SimpleAuthOutput;
 import com.hivemq.extension.sdk.api.auth.parameter.SubscriptionAuthorizerOutput;
@@ -66,7 +66,7 @@ public class HiveMqEnforcement {
                 log.info("Permit connection of client '{}'", mqttSaplId.getMqttClientId());
                 return true;
             } else {
-                authnOutput.failAuthentication(ConnackReasonCode.NOT_AUTHORIZED, NOT_AUTHORIZED_NOTICE);
+                authnOutput.failAuthentication(ConnackReasonCode.NOT_AUTHORIZED, ERROR_NOT_AUTHORIZED_NOTICE);
                 log.info("Denied connection of client '{}'", mqttSaplId.getMqttClientId());
                 return false;
             }
@@ -99,7 +99,8 @@ public class HiveMqEnforcement {
                 log.info("Permit subscription of topic '{}' for client '{}'", mqttSaplId.getTopic(),
                         mqttSaplId.getMqttClientId());
             } else {
-                subscriptionAuthorizerOutput.failAuthorization(SubackReasonCode.NOT_AUTHORIZED, NOT_AUTHORIZED_NOTICE);
+                subscriptionAuthorizerOutput.failAuthorization(SubackReasonCode.NOT_AUTHORIZED,
+                        ERROR_NOT_AUTHORIZED_NOTICE);
                 log.info("Denied subscription of topic '{}' for client '{}'", mqttSaplId.getTopic(),
                         mqttSaplId.getMqttClientId());
             }
@@ -130,7 +131,7 @@ public class HiveMqEnforcement {
                         mqttSaplId.getMqttClientId());
             } else {
                 // Prevent delivery with reason code success for client notification
-                publishInboundOutput.preventPublishDelivery(AckReasonCode.NOT_AUTHORIZED, NOT_AUTHORIZED_NOTICE);
+                publishInboundOutput.preventPublishDelivery(AckReasonCode.NOT_AUTHORIZED, ERROR_NOT_AUTHORIZED_NOTICE);
                 log.info("Denied publish of topic '{}' for client '{}'", mqttSaplId.getTopic(),
                         mqttSaplId.getMqttClientId());
             }

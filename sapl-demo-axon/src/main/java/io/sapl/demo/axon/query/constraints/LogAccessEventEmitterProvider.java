@@ -38,7 +38,7 @@ public class LogAccessEventEmitterProvider implements OnDecisionConstraintHandle
 			if (subject != null)
 				message += subject;
 			else
-				message += "an unknwon actor";
+				message += "an unknown actor";
 
 			message += ". Access was ";
 

@@ -28,7 +28,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
- * The AuthenticationCommandDispatchInterceptor adds the authentication metadata
+ * The AuthenticationQueryDispatchInterceptor adds the authentication metadata
  * supplied by the AuthenticationSupplier to all dispatched Queries. This
  * identifies the subject for authorization.
  *

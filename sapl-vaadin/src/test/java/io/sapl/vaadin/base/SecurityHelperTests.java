@@ -17,8 +17,7 @@
  */
 package io.sapl.vaadin.base;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -30,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.springframework.security.core.Authentication;
@@ -39,6 +39,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import tools.jackson.databind.node.ArrayNode;
 
+@DisplayName("Security helper")
 class SecurityHelperTests {
 
     @Test
@@ -56,7 +57,7 @@ class SecurityHelperTests {
         String username = SecurityHelper.getSubject().get("username").asString();
 
         // THEN
-        assertEquals("user", username);
+        assertThat(username).isEqualTo("user");
 
         contextHolderMock.close();
     }
@@ -90,7 +91,7 @@ class SecurityHelperTests {
         ArrayNode roles = (ArrayNode) SecurityHelper.getSubject().get("roles");
 
         // THEN
-        assertEquals("userRole", roles.get(0).asString());
+        assertThat(roles.get(0).asString()).isEqualTo("userRole");
 
         contextHolderMock.close();
     }
@@ -110,7 +111,7 @@ class SecurityHelperTests {
         String username = SecurityHelper.getUsername();
 
         // THEN
-        assertNull(username);
+        assertThat(username).isNull();
 
         contextHolderMock.close();
     }
@@ -128,7 +129,7 @@ class SecurityHelperTests {
         List<String> userRoles = SecurityHelper.getUserRoles();
 
         // THEN
-        assertEquals(0, userRoles.size());
+        assertThat(userRoles).isEmpty();
 
         contextHolderMock.close();
     }

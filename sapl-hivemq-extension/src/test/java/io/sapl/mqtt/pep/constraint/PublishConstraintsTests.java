@@ -31,8 +31,7 @@ import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_REPLACE
 import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_REPLACE_PAYLOAD;
 import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_RETAIN_MESSAGE_CONSTRAINT;
 import static io.sapl.mqtt.pep.constraint.PublishConstraints.ENVIRONMENT_TIME_INTERVAL;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -48,6 +47,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -60,6 +60,7 @@ import io.sapl.api.model.ObjectValue;
 import io.sapl.api.model.Value;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 
+@DisplayName("Publish constraints")
 class PublishConstraintsTests {
 
     @Test
@@ -76,7 +77,7 @@ class PublishConstraintsTests {
         var wasSuccessfullyHandled = PublishConstraints.enforcePublishConstraintEntries(constraintDetails, constraint);
 
         // THEN
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -95,7 +96,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setQos(any());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -115,7 +116,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setQos(any());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @ParameterizedTest
@@ -136,7 +137,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setQos(any());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -156,7 +157,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, times(1)).setRetain(true);
-        assertTrue(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isTrue();
     }
 
     @Test
@@ -175,7 +176,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setRetain(anyBoolean());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -195,7 +196,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setRetain(anyBoolean());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -215,7 +216,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setRetain(anyBoolean());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -235,7 +236,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, times(1)).setRetain(false);
-        assertTrue(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isTrue();
     }
 
     @Test
@@ -255,7 +256,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setMessageExpiryInterval(anyLong());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -275,7 +276,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setMessageExpiryInterval(anyLong());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -296,7 +297,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, times(1)).setMessageExpiryInterval(anyLong());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -315,7 +316,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setContentType(anyString());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -335,7 +336,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setContentType(anyString());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -356,7 +357,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, times(1)).setContentType(anyString());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -375,7 +376,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setPayload(any(ByteBuffer.class));
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -395,7 +396,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setPayload(any(ByteBuffer.class));
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -415,7 +416,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setPayload(any(ByteBuffer.class));
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -437,7 +438,7 @@ class PublishConstraintsTests {
 
         // THEN
         verify(modifiablePublishPacketMock, never()).setPayload(any(ByteBuffer.class));
-        assertTrue(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isTrue();
     }
 
     @Test
@@ -462,7 +463,7 @@ class PublishConstraintsTests {
         // THEN
         verify(modifiablePublishPacketMock, times(1))
                 .setPayload(ByteBuffer.wrap("t**********".getBytes(StandardCharsets.UTF_8)));
-        assertTrue(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isTrue();
     }
 
     @Test
@@ -488,7 +489,7 @@ class PublishConstraintsTests {
         // THEN
         verify(modifiablePublishPacketMock, never())
                 .setPayload(ByteBuffer.wrap("t**********".getBytes(StandardCharsets.UTF_8)));
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -514,7 +515,7 @@ class PublishConstraintsTests {
         // THEN
         verify(modifiablePublishPacketMock, never())
                 .setPayload(ByteBuffer.wrap("t**********".getBytes(StandardCharsets.UTF_8)));
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -539,7 +540,7 @@ class PublishConstraintsTests {
         // THEN
         verify(modifiablePublishPacketMock, times(1))
                 .setPayload(ByteBuffer.wrap("tXXXXXXXXXd".getBytes(StandardCharsets.UTF_8)));
-        assertTrue(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isTrue();
     }
 
     @Test
@@ -565,7 +566,7 @@ class PublishConstraintsTests {
         // THEN
         verify(modifiablePublishPacketMock, never())
                 .setPayload(ByteBuffer.wrap("tXXXXXXXXXd".getBytes(StandardCharsets.UTF_8)));
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -591,6 +592,6 @@ class PublishConstraintsTests {
         // THEN
         verify(modifiablePublishPacketMock, times(1))
                 .setPayload(ByteBuffer.wrap("testPayload".getBytes(StandardCharsets.UTF_8)));
-        assertTrue(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isTrue();
     }
 }

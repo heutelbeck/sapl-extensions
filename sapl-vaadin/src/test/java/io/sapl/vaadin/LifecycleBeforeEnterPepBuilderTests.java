@@ -18,11 +18,8 @@
 package io.sapl.vaadin;
 
 import tools.jackson.databind.node.JsonNodeFactory;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -38,9 +35,13 @@ import java.util.function.BiConsumer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -61,10 +62,18 @@ import io.sapl.vaadin.base.SecurityHelper;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
+@DisplayName("Lifecycle before enter PEP builder")
 class LifecycleBeforeEnterPepBuilderTests {
 
     private static MockedStatic<SecurityHelper> securityHelperMock;
-    LifecycleBeforeEnterPepBuilder              sut;
+
+    @Mock
+    private PolicyDecisionPoint                pdpMock;
+    @Mock
+    private VaadinConstraintEnforcementService enforcementServiceMock;
+
+    LifecycleBeforeEnterPepBuilder sut;
 
     @BeforeAll
     static void beforeAll() {
@@ -85,8 +94,6 @@ class LifecycleBeforeEnterPepBuilderTests {
 
     @BeforeEach
     void setup() {
-        var pdpMock                = mock(PolicyDecisionPoint.class);
-        var enforcementServiceMock = mock(VaadinConstraintEnforcementService.class);
         sut = new LifecycleBeforeEnterPepBuilder(pdpMock, enforcementServiceMock);
     }
 
@@ -96,7 +103,7 @@ class LifecycleBeforeEnterPepBuilderTests {
 
         // WHEN
         // THEN
-        assertFalse(sut.isBuilt);
+        assertThat(sut.isBuilt).isFalse();
     }
 
     @Test
@@ -106,8 +113,8 @@ class LifecycleBeforeEnterPepBuilderTests {
         sut.build();
 
         // THEN
-        assertTrue(sut.isBuilt);
-        assertNotNull(sut.vaadinPep.getAuthorizationSubscription().subject());
+        assertThat(sut.isBuilt).isTrue();
+        assertThat(sut.vaadinPep.getAuthorizationSubscription().subject()).isNotNull();
     }
 
     @Test
@@ -115,10 +122,10 @@ class LifecycleBeforeEnterPepBuilderTests {
         // GIVEN
         // WHEN
         sut.build();
-        Exception exception = assertThrows(AccessDeniedException.class, sut::build);
 
         // THEN
-        assertEquals("Builder has already been build. The builder can only be used once.", exception.getMessage());
+        assertThatThrownBy(sut::build).isInstanceOf(AccessDeniedException.class)
+                .hasMessage("Builder has already been build. The builder can only be used once.");
     }
 
     @Test
@@ -146,7 +153,7 @@ class LifecycleBeforeEnterPepBuilderTests {
         sut.resource(resourceValue);
 
         // THEN
-        assertEquals(resourceValue, sut.vaadinPep.getAuthorizationSubscription().resource());
+        assertThat(sut.vaadinPep.getAuthorizationSubscription().resource()).isEqualTo(resourceValue);
     }
 
     @Test

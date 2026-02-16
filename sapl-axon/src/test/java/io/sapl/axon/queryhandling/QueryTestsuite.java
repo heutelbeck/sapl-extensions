@@ -45,6 +45,7 @@ import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryHandler;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +92,8 @@ import reactor.test.StepVerifier;
 
 @SpringBootTest
 @Import(TestScenarioConfiguration.class)
-public abstract class QueryTestsuite {
+@DisplayName("Query handling test suite")
+abstract class QueryTestsuite {
     private static final String REMOVE_YOUNGER_THAN18            = "removeYoungerThan18";
     private static final String LIST_RESPONSE_QUERY              = "ListResponseQuery";
     private static final String ONLY_EVEN_NUMBERS                = "only even numbers in string";
@@ -151,7 +153,7 @@ public abstract class QueryTestsuite {
     ResponseMessagePayloadFilterProvider responseMessagePayloadFilterProvider;
 
     @MockitoSpyBean
-    FilterPredicateExampleProvider rilterPredicateExampleProvider;
+    FilterPredicateExampleProvider filterPredicateExampleProvider;
 
     @Test
     void when_unsecuredQuery_then_resultReturnsAndPdpNotCalled() {
@@ -495,8 +497,6 @@ public abstract class QueryTestsuite {
         result.close();
     }
 
-    // CONSTRAINTS
-
     @Test
     void when_preHandlerSecuredQueryAndPermitWithUnknownAdvice_then_accessGranted() {
         var advice = Value.ofArray(Value.of("unknown constraint"));
@@ -661,10 +661,6 @@ public abstract class QueryTestsuite {
                 .subscribe();
     }
 
-    // SUBSCRIPTION QUERIES WITH CONSTRAINTS
-
-    // TILL DENIED
-
     @Test
     void when_preHandlerSecuredSubscriptionQueryAndPermitWithConstraints_then_initialReturnAndUpdatesAreEmitted() {
         var emitIntervallMs = 50L;
@@ -695,8 +691,6 @@ public abstract class QueryTestsuite {
         verify(resultMessageMappingProvider, times(21)).mapPayload(any(), any(), any());
         result.close();
     }
-
-    // DROP
 
     @Test
     void when_dropHandlerSubscriptionQueryAndPermitWithConstraints_then_initialReturnAndUpdatesAreEmitted() {

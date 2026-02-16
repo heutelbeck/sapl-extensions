@@ -17,11 +17,7 @@
  */
 package io.sapl.vaadin.constraint.providers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -34,6 +30,7 @@ import static org.mockito.Mockito.verify;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -43,6 +40,7 @@ import io.sapl.api.model.Value;
 import io.sapl.vaadin.UIMock;
 import reactor.core.publisher.Mono;
 
+@DisplayName("Vaadin confirmation dialog constraint handler provider")
 class VaadinConfirmationDialogConstraintHandlerProviderTests {
 
     private VaadinConfirmationDialogConstraintHandlerProvider vaadinConfirmationDialogConstraintHandlerProvider;
@@ -60,7 +58,7 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
         boolean isResponsibleResult = this.vaadinConfirmationDialogConstraintHandlerProvider.isResponsible(null);
 
         // THEN
-        assertFalse(isResponsibleResult);
+        assertThat(isResponsibleResult).isFalse();
     }
 
     @Test
@@ -73,7 +71,7 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
         boolean isResponsibleResult = this.vaadinConfirmationDialogConstraintHandlerProvider.isResponsible(node);
 
         // THEN
-        assertTrue(isResponsibleResult);
+        assertThat(isResponsibleResult).isTrue();
     }
 
     @Test
@@ -85,7 +83,7 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
         boolean isResponsibleResult = this.vaadinConfirmationDialogConstraintHandlerProvider.isResponsible(node);
 
         // THEN
-        assertFalse(isResponsibleResult);
+        assertThat(isResponsibleResult).isFalse();
     }
 
     @Test
@@ -97,7 +95,7 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
         boolean isResponsibleResult = this.vaadinConfirmationDialogConstraintHandlerProvider.isResponsible(node);
 
         // THEN
-        assertFalse(isResponsibleResult);
+        assertThat(isResponsibleResult).isFalse();
     }
 
     @Test
@@ -110,7 +108,7 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
         boolean isResponsibleResult = this.vaadinConfirmationDialogConstraintHandlerProvider.isResponsible(node);
 
         // THEN
-        assertFalse(isResponsibleResult);
+        assertThat(isResponsibleResult).isFalse();
     }
 
     @Test
@@ -122,7 +120,7 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
         boolean isResponsibleResult = this.vaadinConfirmationDialogConstraintHandlerProvider.isResponsible(node);
 
         // THEN
-        assertFalse(isResponsibleResult);
+        assertThat(isResponsibleResult).isFalse();
     }
 
     @Test
@@ -132,7 +130,7 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
         Function<UI, Mono<Boolean>> handler = this.vaadinConfirmationDialogConstraintHandlerProvider.getHandler(null);
 
         // THEN
-        assertNull(handler);
+        assertThat(handler).isNull();
     }
 
     @Test
@@ -152,7 +150,7 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
         var getHandler = this.vaadinConfirmationDialogConstraintHandlerProvider.getHandler(node);
 
         // THEN
-        assertEquals(Boolean.TRUE, getHandler.apply(mockedUI).block());
+        assertThat(getHandler.apply(mockedUI).block()).isEqualTo(Boolean.TRUE);
     }
 
     @Test
@@ -174,7 +172,7 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
         var getHandler = this.vaadinConfirmationDialogConstraintHandlerProvider.getHandler(node);
 
         // THEN
-        assertEquals(Boolean.TRUE, getHandler.apply(mockedUI).block());
+        assertThat(getHandler.apply(mockedUI).block()).isEqualTo(Boolean.TRUE);
     }
 
     @Test
@@ -194,7 +192,7 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
         var getHandler = this.vaadinConfirmationDialogConstraintHandlerProvider.getHandler(node);
 
         // THEN
-        assertEquals(Boolean.FALSE, getHandler.apply(mockedUI).block());
+        assertThat(getHandler.apply(mockedUI).block()).isEqualTo(Boolean.FALSE);
     }
 
     @Test
@@ -208,7 +206,7 @@ class VaadinConfirmationDialogConstraintHandlerProviderTests {
             aVaadinConfirmationDialogConstraintHandlerProvider.openConfirmDialog("header", "text", "confirm", () -> {},
                     "cancel", () -> {});
             // THEN
-            assertNotNull(mockedConstructor.constructed().get(0));
+            assertThat(mockedConstructor.constructed().get(0)).isNotNull();
             verify(mockedConstructor.constructed().get(0), times(1)).open();
         }
     }

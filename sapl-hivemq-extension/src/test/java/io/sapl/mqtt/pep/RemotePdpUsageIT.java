@@ -23,8 +23,7 @@ import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttPublishMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttSubscribeMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -130,7 +129,8 @@ class RemotePdpUsageIT {
         // THEN
         Mqtt5Publish receivedMessage = subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receive();
 
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(), StandardCharsets.UTF_8));
+        assertThat(new String(receivedMessage.getPayloadAsBytes(), StandardCharsets.UTF_8))
+                .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
 
         // FINALLY
         subscribeClient.unsubscribeWith().topicFilter("topic").send();
@@ -152,9 +152,9 @@ class RemotePdpUsageIT {
 
         // THEN
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-            assertFalse(SAPL_SERVER_LT.isRunning());
-            assertFalse(subscribeClient.getState().isConnected());
-            assertFalse(publishClient.getState().isConnected());
+            assertThat(SAPL_SERVER_LT.isRunning()).isFalse();
+            assertThat(subscribeClient.getState().isConnected()).isFalse();
+            assertThat(publishClient.getState().isConnected()).isFalse();
         });
     }
 

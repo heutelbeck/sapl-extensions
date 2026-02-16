@@ -1,8 +1,8 @@
 package io.sapl.vaadindemo.security;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
 
 import io.sapl.api.model.ObjectValue;
 import io.sapl.api.model.TextValue;
@@ -22,10 +22,9 @@ import io.sapl.spring.constraints.api.RunnableConstraintHandlerProvider;
  * ...
  *
  */
+@Slf4j
 @Service
 public class LoggingConstraintHandlerProvider implements RunnableConstraintHandlerProvider {
-
-    Logger logger = LoggerFactory.getLogger(LoggingConstraintHandlerProvider.class);
 
     @Override
     public boolean isResponsible(Value constraint) {
@@ -47,7 +46,7 @@ public class LoggingConstraintHandlerProvider implements RunnableConstraintHandl
         return () -> {
             if (constraint instanceof ObjectValue obj
                     && obj.get("message") instanceof TextValue(String message)) {
-                this.logger.info(message);
+                log.info(message);
             }
         };
     }

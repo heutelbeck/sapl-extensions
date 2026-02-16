@@ -24,8 +24,8 @@ import static io.sapl.mqtt.pep.MqttTestUtil.buildAndStartMqttClient;
 import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttPublishMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttSubscribeMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -79,9 +79,9 @@ class MqttActionEnforcementTimeoutIT {
                 "src/test/resources/config/timeout/connection");
 
         // THEN
-        Mqtt5ConnAckException connAckException = assertThrowsExactly(Mqtt5ConnAckException.class,
-                blockingMqttClient::connect);
-        assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
+        assertThatThrownBy(blockingMqttClient::connect).isExactlyInstanceOf(Mqtt5ConnAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5ConnAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED));
 
         // FINALLY
         stopBroker(mqttBroker);
@@ -110,11 +110,10 @@ class MqttActionEnforcementTimeoutIT {
                 "src/test/resources/config/timeout/subscription");
         Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(subscriptionClientId);
 
-        Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-                () -> subscribeClient.subscribe(subscribeMessage));
-
-        // THEN
-        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
+        assertThatThrownBy(() -> subscribeClient.subscribe(subscribeMessage))
+                .isExactlyInstanceOf(Mqtt5SubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5SubAckException) e).getMqttMessage().getReasonCodes().get(0))
+                        .isEqualTo(Mqtt5SubAckReasonCode.NOT_AUTHORIZED));
 
         // FINALLY
         stopBroker(mqttBroker);
@@ -143,11 +142,9 @@ class MqttActionEnforcementTimeoutIT {
                 "src/test/resources/config/timeout/publish");
         Mqtt5BlockingClient publishClient = buildAndStartMqttClient(publishClientId);
 
-        Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-                () -> publishClient.publish(publishMessage));
-
-        // THEN
-        assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
+        assertThatThrownBy(() -> publishClient.publish(publishMessage)).isExactlyInstanceOf(Mqtt5PubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5PubAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5PubAckReasonCode.NOT_AUTHORIZED));
 
         // FINALLY
         stopBroker(mqttBroker);

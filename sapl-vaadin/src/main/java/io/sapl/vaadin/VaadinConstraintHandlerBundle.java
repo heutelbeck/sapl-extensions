@@ -32,7 +32,19 @@ import reactor.core.publisher.Mono;
  * handlers: UI and current decision is passed
  */
 public class VaadinConstraintHandlerBundle {
-    public final List<Function<UI, Mono<Boolean>>> vaadinFunctionHandlerList = new LinkedList<>();
-    public final List<Consumer<UI>>                consumerHandlerList       = new LinkedList<>();
-    public final List<Runnable>                    runnableHandlerList       = new LinkedList<>();
+    private final List<Function<UI, Mono<Boolean>>> vaadinFunctionHandlerList = new LinkedList<>();
+    private final List<Consumer<UI>>                consumerHandlerList       = new LinkedList<>();
+    private final List<Runnable>                    runnableHandlerList       = new LinkedList<>();
+
+    List<Function<UI, Mono<Boolean>>> getVaadinFunctionHandlerList() {
+        return vaadinFunctionHandlerList;
+    }
+
+    List<Consumer<UI>> getConsumerHandlerList() {
+        return consumerHandlerList;
+    }
+
+    List<Runnable> getRunnableHandlerList() {
+        return runnableHandlerList;
+    }
 }

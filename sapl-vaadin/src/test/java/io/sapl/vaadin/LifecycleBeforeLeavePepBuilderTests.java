@@ -17,10 +17,8 @@
  */
 package io.sapl.vaadin;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -36,9 +34,13 @@ import java.util.function.BiConsumer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -62,15 +64,22 @@ import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.vaadin.VaadinPep.LifecycleBeforeLeavePepBuilder;
 import io.sapl.vaadin.base.SecurityHelper;
 import jakarta.servlet.http.HttpServletRequest;
-import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
+@DisplayName("Lifecycle before leave PEP builder")
 class LifecycleBeforeLeavePepBuilderTests {
 
     private static MockedStatic<SecurityHelper> securityHelperMock;
     private static MockedStatic<Notification>   notificationMockedStatic;
-    LifecycleBeforeLeavePepBuilder              sut;
+
+    @Mock
+    private PolicyDecisionPoint                pdpMock;
+    @Mock
+    private VaadinConstraintEnforcementService enforcementServiceMock;
+
+    LifecycleBeforeLeavePepBuilder sut;
 
     @BeforeAll
     static void beforeAll() {
@@ -90,8 +99,6 @@ class LifecycleBeforeLeavePepBuilderTests {
 
     @BeforeEach
     void setupTest() {
-        var pdpMock                = mock(PolicyDecisionPoint.class);
-        var enforcementServiceMock = mock(VaadinConstraintEnforcementService.class);
         sut = new LifecycleBeforeLeavePepBuilder(pdpMock, enforcementServiceMock);
     }
 
@@ -100,7 +107,7 @@ class LifecycleBeforeLeavePepBuilderTests {
         // GIVEN
         // WHEN
         // THEN
-        assertFalse(sut.isBuilt);
+        assertThat(sut.isBuilt).isFalse();
     }
 
     @Test
@@ -110,7 +117,7 @@ class LifecycleBeforeLeavePepBuilderTests {
         sut.build();
 
         // THEN
-        assertTrue(sut.isBuilt);
+        assertThat(sut.isBuilt).isTrue();
     }
 
     @Test
@@ -118,9 +125,9 @@ class LifecycleBeforeLeavePepBuilderTests {
         // GIVEN
         // WHEN
         sut.build();
-        Exception exception = assertThrows(AccessDeniedException.class, () -> sut.build());
         // THEN
-        assertEquals("Builder has already been build. The builder can only be used once.", exception.getMessage());
+        assertThatThrownBy(() -> sut.build()).isInstanceOf(AccessDeniedException.class)
+                .hasMessage("Builder has already been build. The builder can only be used once.");
     }
 
     @Test
@@ -133,7 +140,7 @@ class LifecycleBeforeLeavePepBuilderTests {
         // WHEN
 
         // THEN
-        assertFalse(sut.isBuilt);
+        assertThat(sut.isBuilt).isFalse();
     }
 
     @Test
@@ -261,7 +268,7 @@ class LifecycleBeforeLeavePepBuilderTests {
         sut.subject("Test subject");
 
         // THEN
-        assertEquals(Value.of("Test subject"), sut.vaadinPep.getAuthorizationSubscription().subject());
+        assertThat(sut.vaadinPep.getAuthorizationSubscription().subject()).isEqualTo(Value.of("Test subject"));
     }
 
     @Test
@@ -275,7 +282,7 @@ class LifecycleBeforeLeavePepBuilderTests {
         sut.environment("Test environment");
 
         // THEN
-        assertEquals(Value.of("Test environment"), sut.vaadinPep.getAuthorizationSubscription().environment());
+        assertThat(sut.vaadinPep.getAuthorizationSubscription().environment()).isEqualTo(Value.of("Test environment"));
     }
 
     @Test
@@ -469,14 +476,4 @@ class LifecycleBeforeLeavePepBuilderTests {
         when(request.getHttpServletRequest()).thenReturn(httpServletRequest);
     }
 
-    Flux<AuthorizationDecision> mockFlux() {
-        Disposable                  disposable = mock(Disposable.class);
-        @SuppressWarnings("unchecked") // suppress mock
-        Flux<AuthorizationDecision> f          = mock(Flux.class, invocation -> {
-                                                   if (Disposable.class.equals(invocation.getMethod().getReturnType()))
-                                                       return disposable;
-                                                   return invocation.getMock();
-                                               });
-        return f;
-    }
 }

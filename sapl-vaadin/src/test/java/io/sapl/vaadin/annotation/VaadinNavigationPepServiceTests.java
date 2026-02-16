@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.security.core.Authentication;
@@ -41,6 +42,7 @@ import io.sapl.vaadin.VaadinPep;
 import io.sapl.vaadin.annotation.annotations.OnDenyNavigate;
 import io.sapl.vaadin.base.VaadinAuthorizationSubscriptionBuilderService;
 
+@DisplayName("Vaadin navigation PEP service")
 @SuppressWarnings({ "unchecked", "rawtypes" })
 class VaadinNavigationPepServiceTests {
     static Authentication authentication;

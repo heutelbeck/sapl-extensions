@@ -47,7 +47,7 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 public class VaadinConstraintEnforcementService implements EnforceConstraintsOfDecision {
-    private static final String                                 FAILED_TO_EXECUTE_VAADIN_CONSTRAINT_HANDLER = "Failed to execute VaadinConstraintHandler";
+    private static final String                                 ERROR_FAILED_TO_EXECUTE_VAADIN_CONSTRAINT_HANDLER = "Failed to execute VaadinConstraintHandler";
     private final List<VaadinFunctionConstraintHandlerProvider> globalVaadinFunctionProvider;
     private final List<ConsumerConstraintHandlerProvider<UI>>   globalConsumerProviders;
     private final List<RunnableConstraintHandlerProvider>       globalRunnableProviders;
@@ -147,9 +147,9 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
         if (runnableHandler.size() + consumerHandler.size() + vaadinFunctionHandler.size() == 0) {
             throw new AccessDeniedException(String.format("No handler found for obligation: %s", obligation));
         }
-        handlerBundle.runnableHandlerList.addAll(runnableHandler);
-        handlerBundle.consumerHandlerList.addAll(consumerHandler);
-        handlerBundle.vaadinFunctionHandlerList.addAll(vaadinFunctionHandler);
+        handlerBundle.getRunnableHandlerList().addAll(runnableHandler);
+        handlerBundle.getConsumerHandlerList().addAll(consumerHandler);
+        handlerBundle.getVaadinFunctionHandlerList().addAll(vaadinFunctionHandler);
     }
 
     /**
@@ -217,7 +217,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
             } catch (Throwable e) {
                 Exceptions.throwIfFatal(e);
                 if (isObligation) {
-                    throw new AccessDeniedException(FAILED_TO_EXECUTE_VAADIN_CONSTRAINT_HANDLER, e);
+                    throw new AccessDeniedException(ERROR_FAILED_TO_EXECUTE_VAADIN_CONSTRAINT_HANDLER, e);
                 }
                 return Mono.just(Boolean.FALSE);
             }
@@ -241,7 +241,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
             } catch (Throwable e) {
                 Exceptions.throwIfFatal(e);
                 if (isObligation) {
-                    throw new AccessDeniedException(FAILED_TO_EXECUTE_VAADIN_CONSTRAINT_HANDLER, e);
+                    throw new AccessDeniedException(ERROR_FAILED_TO_EXECUTE_VAADIN_CONSTRAINT_HANDLER, e);
                 }
             }
         };
@@ -264,7 +264,7 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
             } catch (Throwable e) {
                 Exceptions.throwIfFatal(e);
                 if (isObligation) {
-                    throw new AccessDeniedException(FAILED_TO_EXECUTE_VAADIN_CONSTRAINT_HANDLER, e);
+                    throw new AccessDeniedException(ERROR_FAILED_TO_EXECUTE_VAADIN_CONSTRAINT_HANDLER, e);
                 }
             }
         };
@@ -282,10 +282,10 @@ public class VaadinConstraintEnforcementService implements EnforceConstraintsOfD
      */
     private Mono<AuthorizationDecision> executeConstraintHandlersAndDeriveFinalDecision(
             VaadinConstraintHandlerBundle handlerBundle, AuthorizationDecision authorizationDecision, UI ui) {
-        executeHandler(handlerBundle.runnableHandlerList);
-        executeHandler(handlerBundle.consumerHandlerList, ui);
-        return handlerBundle.vaadinFunctionHandlerList.isEmpty() ? Mono.just(authorizationDecision)
-                : executeHandler(handlerBundle.vaadinFunctionHandlerList, authorizationDecision, ui);
+        executeHandler(handlerBundle.getRunnableHandlerList());
+        executeHandler(handlerBundle.getConsumerHandlerList(), ui);
+        return handlerBundle.getVaadinFunctionHandlerList().isEmpty() ? Mono.just(authorizationDecision)
+                : executeHandler(handlerBundle.getVaadinFunctionHandlerList(), authorizationDecision, ui);
     }
 
     /**

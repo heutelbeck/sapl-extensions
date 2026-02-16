@@ -26,10 +26,8 @@ import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttPublishMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.buildMqttSubscribeMessage;
 import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -130,9 +128,9 @@ class MqttActionUnitIT {
         Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(SUBSCRIPTION_CLIENT_ID);
 
         // THEN
-        assertTrue(subscribeClient.getState().isConnected());
+        assertThat(subscribeClient.getState().isConnected()).isTrue();
         verify(pdpMock, times(1)).decide(any(MultiAuthorizationSubscription.class));
-        assertFalse(isCanceled.get());
+        assertThat(isCanceled.get()).isFalse();
 
         // FINALLY
         stopBroker(mqttBroker);
@@ -162,10 +160,10 @@ class MqttActionUnitIT {
                 .serverHost(BROKER_HOST).serverPort(BROKER_PORT).buildBlocking();
 
         // THEN
-        Mqtt5ConnAckException connAckException = assertThrowsExactly(Mqtt5ConnAckException.class,
-                blockingMqttClient::connect);
-        assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
-        await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isCanceled.get()));
+        assertThatThrownBy(blockingMqttClient::connect).isExactlyInstanceOf(Mqtt5ConnAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5ConnAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED));
+        await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> assertThat(isCanceled.get()).isTrue());
 
         verify(pdpMock, times(1)).decide(any(MultiAuthorizationSubscription.class));
 
@@ -241,15 +239,15 @@ class MqttActionUnitIT {
         publishClient.publish(publishMessage);
 
         // THEN
-        assertTrue(subscribeClient.publishes(MqttGlobalPublishFilter.SUBSCRIBED).receive(2000, TimeUnit.MILLISECONDS)
-                .isPresent());
+        assertThat(subscribeClient.publishes(MqttGlobalPublishFilter.SUBSCRIBED).receive(2000, TimeUnit.MILLISECONDS))
+                .isPresent();
 
         verify(pdpMock, times(4)).decide(any(MultiAuthorizationSubscription.class));
 
-        assertTrue(isCanceledSubscriptionClientMqttConnectionFlux.get());
-        assertTrue(isCanceledPublishClientMqttConnectionFlux.get());
-        assertFalse(isCanceledSubscriptionClientMqttSubscription.get());
-        assertFalse(isCanceledPublishClientMqttPublish.get());
+        assertThat(isCanceledSubscriptionClientMqttConnectionFlux.get()).isTrue();
+        assertThat(isCanceledPublishClientMqttConnectionFlux.get()).isTrue();
+        assertThat(isCanceledSubscriptionClientMqttSubscription.get()).isFalse();
+        assertThat(isCanceledPublishClientMqttPublish.get()).isFalse();
 
         // FINALLY
         stopBroker(mqttBroker);
@@ -275,12 +273,12 @@ class MqttActionUnitIT {
                 .serverHost(BROKER_HOST).serverPort(BROKER_PORT).buildBlocking();
 
         // THEN
-        Mqtt5ConnAckException connAckException = assertThrowsExactly(Mqtt5ConnAckException.class,
-                blockingMqttClient::connect);
-        assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
+        assertThatThrownBy(blockingMqttClient::connect).isExactlyInstanceOf(Mqtt5ConnAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5ConnAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED));
 
         verify(pdpMock, times(1)).decide(any(MultiAuthorizationSubscription.class));
-        await().atMost(3, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isCanceled.get()));
+        await().atMost(3, TimeUnit.SECONDS).untilAsserted(() -> assertThat(isCanceled.get()).isTrue());
 
         // FINALLY
         stopBroker(mqttBroker);
@@ -309,13 +307,14 @@ class MqttActionUnitIT {
         // WHEN
         EmbeddedHiveMQ      mqttBroker      = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
         Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(SUBSCRIPTION_CLIENT_ID);
-        assertTrue(subscribeClient.getState().isConnected());
+        assertThat(subscribeClient.getState().isConnected()).isTrue();
         emitterIdentAuthzDecision.tryEmitNext(IdentifiableAuthorizationDecision.INDETERMINATE);
 
         // THEN
-        await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> assertFalse(subscribeClient.getState().isConnected()));
+        await().atMost(2, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertThat(subscribeClient.getState().isConnected()).isFalse());
         verify(pdpMock, times(1)).decide(any(MultiAuthorizationSubscription.class));
-        assertTrue(isCanceled.get());
+        assertThat(isCanceled.get()).isTrue();
 
         // FINALLY
         stopBroker(mqttBroker);
@@ -365,8 +364,8 @@ class MqttActionUnitIT {
         EmbeddedHiveMQ      mqttBroker      = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
         Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(SUBSCRIPTION_CLIENT_ID);
         Mqtt5BlockingClient publishClient   = buildAndStartMqttClient(PUBLISH_CLIENT_ID);
-        assertTrue(subscribeClient.getState().isConnected());
-        assertTrue(publishClient.getState().isConnected());
+        assertThat(subscribeClient.getState().isConnected()).isTrue();
+        assertThat(publishClient.getState().isConnected()).isTrue();
 
         subscribeClient.subscribe(subscribeMessage);
         emitterIdentAuthzDecision.tryEmitNext(new IdentifiableAuthorizationDecision(
@@ -374,7 +373,7 @@ class MqttActionUnitIT {
         // THEN
         await().atMost(3, TimeUnit.SECONDS).untilAsserted(() -> {
             publishClient.publish(publishMessage);
-            assertFalse(subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receiveNow().isPresent());
+            assertThat(subscribeClient.publishes(MqttGlobalPublishFilter.ALL).receiveNow()).isNotPresent();
         });
         verify(pdpMock, times(4)).decide(any(MultiAuthorizationSubscription.class));
 
@@ -454,12 +453,13 @@ class MqttActionUnitIT {
             publishClient.publish(publishMessage);
             Optional<Mqtt5Publish> receivedMessageSecond = subscribeClient.publishes(MqttGlobalPublishFilter.SUBSCRIBED)
                     .receive(1000, TimeUnit.MILLISECONDS);
-            assertTrue(receivedMessageSecond.isEmpty());
+            assertThat(receivedMessageSecond).isEmpty();
         });
 
         publishClient.publish(publishMessage);
         var receivedMessage = secondMqttClientSubscribe.publishes(MqttGlobalPublishFilter.SUBSCRIBED).receive();
-        assertEquals(PUBLISH_MESSAGE_PAYLOAD, new String(receivedMessage.getPayloadAsBytes(), StandardCharsets.UTF_8));
+        assertThat(new String(receivedMessage.getPayloadAsBytes(), StandardCharsets.UTF_8))
+                .isEqualTo(PUBLISH_MESSAGE_PAYLOAD);
 
         verify(pdpMock, times(6)).decide(any(MultiAuthorizationSubscription.class));
 
@@ -491,12 +491,12 @@ class MqttActionUnitIT {
                 .serverHost(BROKER_HOST).serverPort(BROKER_PORT).buildBlocking();
 
         // THEN
-        Mqtt5ConnAckException connAckException = assertThrowsExactly(Mqtt5ConnAckException.class,
-                blockingMqttClient::connect);
-        assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
+        assertThatThrownBy(blockingMqttClient::connect).isExactlyInstanceOf(Mqtt5ConnAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5ConnAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED));
 
         verify(pdpMock, times(1)).decide(any(MultiAuthorizationSubscription.class));
-        await().atMost(3, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isCanceled.get()));
+        await().atMost(3, TimeUnit.SECONDS).untilAsserted(() -> assertThat(isCanceled.get()).isTrue());
 
         // FINALLY
         stopBroker(mqttBroker);
@@ -522,12 +522,12 @@ class MqttActionUnitIT {
                 .serverHost(BROKER_HOST).serverPort(BROKER_PORT).buildBlocking();
 
         // THEN
-        Mqtt5ConnAckException connAckException = assertThrowsExactly(Mqtt5ConnAckException.class,
-                blockingMqttClient::connect);
-        assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
+        assertThatThrownBy(blockingMqttClient::connect).isExactlyInstanceOf(Mqtt5ConnAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5ConnAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED));
 
         verify(pdpMock, times(1)).decide(any(MultiAuthorizationSubscription.class));
-        await().atMost(3, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isCanceled.get()));
+        await().atMost(3, TimeUnit.SECONDS).untilAsserted(() -> assertThat(isCanceled.get()).isTrue());
 
         // FINALLY
         stopBroker(mqttBroker);
@@ -556,14 +556,15 @@ class MqttActionUnitIT {
         // WHEN
         EmbeddedHiveMQ      mqttBroker      = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock);
         Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(SUBSCRIPTION_CLIENT_ID);
-        assertTrue(subscribeClient.getState().isConnected());
+        assertThat(subscribeClient.getState().isConnected()).isTrue();
         emitterIdentAuthzDecision.tryEmitNext(new IdentifiableAuthorizationDecision(
                 subscriptionClientMqttConnectionSaplSubscriptionId, AuthorizationDecision.NOT_APPLICABLE));
 
         // THEN
-        await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> assertFalse(subscribeClient.getState().isConnected()));
+        await().atMost(2, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertThat(subscribeClient.getState().isConnected()).isFalse());
         verify(pdpMock, times(1)).decide(any(MultiAuthorizationSubscription.class));
-        assertTrue(isCanceled.get());
+        assertThat(isCanceled.get()).isTrue();
 
         // FINALLY
         stopBroker(mqttBroker);
@@ -682,12 +683,11 @@ class MqttActionUnitIT {
         Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(SUBSCRIPTION_CLIENT_ID);
 
         isStopCallRealMqttClientCache.set(true); // simulate client disconnect
-        Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-                () -> subscribeClient.subscribe(mqttSubscribeMessage));
-
-        // THEN
-        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
-        assertFalse(isSubscribed.get());
+        assertThatThrownBy(() -> subscribeClient.subscribe(mqttSubscribeMessage))
+                .isExactlyInstanceOf(Mqtt5SubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5SubAckException) e).getMqttMessage().getReasonCodes().get(0))
+                        .isEqualTo(Mqtt5SubAckReasonCode.NOT_AUTHORIZED));
+        assertThat(isSubscribed.get()).isFalse();
         verify(pdpMock, times(1)).decide(any(MultiAuthorizationSubscription.class));
 
         // FINALLY
@@ -744,12 +744,11 @@ class MqttActionUnitIT {
         Mqtt5BlockingClient publishClient = buildAndStartMqttClient(PUBLISH_CLIENT_ID);
 
         isStopCallRealMqttClientCache.set(true); // simulate client disconnect
-        Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-                () -> publishClient.publish(publishMessageQos1));
-
-        // THEN
-        assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
-        assertFalse(isSubscribed.get());
+        assertThatThrownBy(() -> publishClient.publish(publishMessageQos1))
+                .isExactlyInstanceOf(Mqtt5PubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5PubAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5PubAckReasonCode.NOT_AUTHORIZED));
+        assertThat(isSubscribed.get()).isFalse();
         verify(pdpMock, times(1)).decide(any(MultiAuthorizationSubscription.class));
 
         // FINALLY
@@ -788,13 +787,11 @@ class MqttActionUnitIT {
                 .serverHost(BROKER_HOST).serverPort(BROKER_PORT).buildBlocking();
 
         // WHEN
-        EmbeddedHiveMQ        mqttBroker       = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
+        EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
                 EXTENSIONS_CONFIG_PATH_SHORT_TIMEOUT, mqttClientCacheSpy);
-        Mqtt5ConnAckException connAckException = assertThrowsExactly(Mqtt5ConnAckException.class,
-                blockingMqttClient::connect);
-
-        // THEN
-        assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
+        assertThatThrownBy(blockingMqttClient::connect).isExactlyInstanceOf(Mqtt5ConnAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5ConnAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED));
         verify(pdpMock, never()).decide(any(MultiAuthorizationSubscription.class));
 
         // FINALLY
@@ -831,13 +828,11 @@ class MqttActionUnitIT {
                 .serverHost(BROKER_HOST).serverPort(BROKER_PORT).buildBlocking();
 
         // WHEN
-        EmbeddedHiveMQ        mqttBroker       = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
+        EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
                 EXTENSIONS_CONFIG_PATH_SHORT_TIMEOUT, mqttClientCacheSpy);
-        Mqtt5ConnAckException connAckException = assertThrowsExactly(Mqtt5ConnAckException.class,
-                blockingMqttClient::connect);
-
-        // THEN
-        assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
+        assertThatThrownBy(blockingMqttClient::connect).isExactlyInstanceOf(Mqtt5ConnAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5ConnAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED));
         verify(pdpMock, times(1)).decide(any(MultiAuthorizationSubscription.class));
 
         // FINALLY
@@ -883,11 +878,10 @@ class MqttActionUnitIT {
                 EXTENSIONS_CONFIG_PATH_SHORT_TIMEOUT, mqttClientCacheSpy);
         Mqtt5BlockingClient publishClient = buildAndStartMqttClient(PUBLISH_CLIENT_ID);
 
-        Mqtt5PubAckException pubAckException = assertThrowsExactly(Mqtt5PubAckException.class,
-                () -> publishClient.publish(publishMessageQos1));
-
-        // THEN
-        assertEquals(Mqtt5PubAckReasonCode.NOT_AUTHORIZED, pubAckException.getMqttMessage().getReasonCode());
+        assertThatThrownBy(() -> publishClient.publish(publishMessageQos1))
+                .isExactlyInstanceOf(Mqtt5PubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5PubAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5PubAckReasonCode.NOT_AUTHORIZED));
         verify(pdpMock, times(2)).decide(any(MultiAuthorizationSubscription.class));
 
         // FINALLY
@@ -942,11 +936,10 @@ class MqttActionUnitIT {
                 EXTENSIONS_CONFIG_PATH_SHORT_TIMEOUT, mqttClientCacheSpy);
         Mqtt5BlockingClient subscribeClient = buildAndStartMqttClient(SUBSCRIPTION_CLIENT_ID);
 
-        Mqtt5SubAckException subAckException = assertThrowsExactly(Mqtt5SubAckException.class,
-                () -> subscribeClient.subscribe(mqttSubscribeMessage));
-
-        // THEN
-        assertEquals(Mqtt5SubAckReasonCode.NOT_AUTHORIZED, subAckException.getMqttMessage().getReasonCodes().get(0));
+        assertThatThrownBy(() -> subscribeClient.subscribe(mqttSubscribeMessage))
+                .isExactlyInstanceOf(Mqtt5SubAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5SubAckException) e).getMqttMessage().getReasonCodes().get(0))
+                        .isEqualTo(Mqtt5SubAckReasonCode.NOT_AUTHORIZED));
         verify(pdpMock, times(2)).decide(any(MultiAuthorizationSubscription.class));
 
         // FINALLY
@@ -1002,7 +995,8 @@ class MqttActionUnitIT {
         publishClient.publish(mqttPublishMessage);
 
         // THEN
-        await().atMost(3, TimeUnit.SECONDS).untilAsserted(() -> assertFalse(publishClient.getState().isConnected()));
+        await().atMost(3, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertThat(publishClient.getState().isConnected()).isFalse());
         verify(pdpMock, times(3)).decide(any(MultiAuthorizationSubscription.class));
 
         // FINALLY
@@ -1042,13 +1036,11 @@ class MqttActionUnitIT {
                 .serverHost(BROKER_HOST).serverPort(BROKER_PORT).buildBlocking();
 
         // WHEN
-        EmbeddedHiveMQ        mqttBroker       = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
+        EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
                 EXTENSIONS_CONFIG_PATH_SHORT_TIMEOUT, mqttClientCacheSpy);
-        Mqtt5ConnAckException connAckException = assertThrowsExactly(Mqtt5ConnAckException.class,
-                blockingMqttClient::connect);
-
-        // THEN
-        assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
+        assertThatThrownBy(blockingMqttClient::connect).isExactlyInstanceOf(Mqtt5ConnAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5ConnAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED));
         verify(pdpMock, times(1)).decide(any(MultiAuthorizationSubscription.class));
 
         // FINALLY
@@ -1082,13 +1074,11 @@ class MqttActionUnitIT {
                 .serverHost(BROKER_HOST).serverPort(BROKER_PORT).buildBlocking();
 
         // WHEN
-        EmbeddedHiveMQ        mqttBroker       = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
+        EmbeddedHiveMQ mqttBroker = buildAndStartBroker(dataFolder, configFolder, extensionFolder, pdpMock,
                 EXTENSIONS_CONFIG_PATH_SHORT_TIMEOUT, mqttClientCacheSpy);
-        Mqtt5ConnAckException connAckException = assertThrowsExactly(Mqtt5ConnAckException.class,
-                blockingMqttClient::connect);
-
-        // THEN
-        assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
+        assertThatThrownBy(blockingMqttClient::connect).isExactlyInstanceOf(Mqtt5ConnAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5ConnAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED));
         verify(pdpMock, times(1)).decide(any(MultiAuthorizationSubscription.class));
 
         // FINALLY
@@ -1144,7 +1134,7 @@ class MqttActionUnitIT {
 
         // THEN
         verify(pdpMock, times(3)).decide(any(MultiAuthorizationSubscription.class));
-        assertTrue(subscribeClient.getState().isConnected());
+        assertThat(subscribeClient.getState().isConnected()).isTrue();
 
         // FINALLY
         stopBroker(mqttBroker);

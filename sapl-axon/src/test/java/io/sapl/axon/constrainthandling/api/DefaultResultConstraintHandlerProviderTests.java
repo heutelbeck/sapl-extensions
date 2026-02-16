@@ -18,9 +18,8 @@
 package io.sapl.axon.constrainthandling.api;
 
 import static io.sapl.axon.TestUtilities.matches;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -36,10 +35,12 @@ import org.axonframework.messaging.ResultMessage;
 import org.axonframework.queryhandling.GenericQueryResponseMessage;
 import org.axonframework.queryhandling.GenericSubscriptionQueryUpdateMessage;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import io.sapl.api.model.Value;
 
+@DisplayName("Default result constraint handler provider")
 class DefaultResultConstraintHandlerProviderTests {
 
     private static final Value            DEFAULT_CONSTRAINT          = Value.of("default test constraint");
@@ -68,7 +69,7 @@ class DefaultResultConstraintHandlerProviderTests {
         var handler       = defaultProvider.getHandler(DEFAULT_CONSTRAINT);
         var handledResult = handler.apply(DEFAULT_RESULT_MESSAGE);
 
-        assertTrue(matches(DEFAULT_RESULT_MESSAGE, handledResult));
+        assertThat(matches(DEFAULT_RESULT_MESSAGE, handledResult)).isTrue();
         verify(defaultProvider, times(1)).accept(DEFAULT_RESULT_MESSAGE, DEFAULT_CONSTRAINT);
     }
 
@@ -80,12 +81,14 @@ class DefaultResultConstraintHandlerProviderTests {
         var handler       = defaultProvider.getHandler(DEFAULT_CONSTRAINT);
         var handledResult = handler.apply(DEFAULT_RESULT_MESSAGE);
 
-        var resultMessage = assertDoesNotThrow(() -> (ResultMessage<?>) handledResult);
-        assertEquals(DEFAULT_RESULT_MESSAGE.getIdentifier(), resultMessage.getIdentifier());
-        assertEquals(DEFAULT_RESULT_MESSAGE.getPayloadType(), resultMessage.getPayloadType());
-        assertEquals(DEFAULT_RESULT_MESSAGE.isExceptional(), resultMessage.isExceptional());
-        assertEquals(DEFAULT_RESULT_MESSAGE.getPayload(), resultMessage.getPayload());
-        assertEquals(metaData, resultMessage.getMetaData());
+        assertThatCode(() -> {
+            var resultMessage = (ResultMessage<?>) handledResult;
+            assertThat(resultMessage.getIdentifier()).isEqualTo(DEFAULT_RESULT_MESSAGE.getIdentifier());
+            assertThat(resultMessage.getPayloadType()).isEqualTo(DEFAULT_RESULT_MESSAGE.getPayloadType());
+            assertThat(resultMessage.isExceptional()).isEqualTo(DEFAULT_RESULT_MESSAGE.isExceptional());
+            assertThat(resultMessage.getPayload()).isEqualTo(DEFAULT_RESULT_MESSAGE.getPayload());
+            assertThat(resultMessage.getMetaData()).isEqualTo(metaData);
+        }).doesNotThrowAnyException();
         verify(defaultProvider, times(1)).accept(DEFAULT_RESULT_MESSAGE, DEFAULT_CONSTRAINT);
     }
 
@@ -94,7 +97,7 @@ class DefaultResultConstraintHandlerProviderTests {
         var handler       = defaultProvider.getHandler(DEFAULT_CONSTRAINT);
         var handledResult = handler.apply(DEFAULT_EXCEPTIONAL_MESSAGE);
 
-        assertTrue(matches(DEFAULT_EXCEPTIONAL_MESSAGE, handledResult));
+        assertThat(matches(DEFAULT_EXCEPTIONAL_MESSAGE, handledResult)).isTrue();
         verify(defaultProvider, times(1)).accept(DEFAULT_EXCEPTIONAL_MESSAGE, DEFAULT_CONSTRAINT);
     }
 
@@ -106,12 +109,15 @@ class DefaultResultConstraintHandlerProviderTests {
         var handler       = defaultProvider.getHandler(DEFAULT_CONSTRAINT);
         var handledResult = handler.apply(DEFAULT_EXCEPTIONAL_MESSAGE);
 
-        var resultMessage = assertDoesNotThrow(() -> (ResultMessage<?>) handledResult);
-        assertEquals(DEFAULT_EXCEPTIONAL_MESSAGE.getIdentifier(), resultMessage.getIdentifier());
-        assertEquals(DEFAULT_EXCEPTIONAL_MESSAGE.getPayloadType(), resultMessage.getPayloadType());
-        assertEquals(DEFAULT_EXCEPTIONAL_MESSAGE.isExceptional(), resultMessage.isExceptional());
-        assertEquals(throwable.getClass(), resultMessage.exceptionResult().getClass());
-        assertEquals(throwable.getLocalizedMessage(), resultMessage.exceptionResult().getLocalizedMessage());
+        assertThatCode(() -> {
+            var resultMessage = (ResultMessage<?>) handledResult;
+            assertThat(resultMessage.getIdentifier()).isEqualTo(DEFAULT_EXCEPTIONAL_MESSAGE.getIdentifier());
+            assertThat(resultMessage.getPayloadType()).isEqualTo(DEFAULT_EXCEPTIONAL_MESSAGE.getPayloadType());
+            assertThat(resultMessage.isExceptional()).isEqualTo(DEFAULT_EXCEPTIONAL_MESSAGE.isExceptional());
+            assertThat(resultMessage.exceptionResult().getClass()).isEqualTo(throwable.getClass());
+            assertThat(resultMessage.exceptionResult().getLocalizedMessage())
+                    .isEqualTo(throwable.getLocalizedMessage());
+        }).doesNotThrowAnyException();
         verify(defaultProvider, times(1)).accept(DEFAULT_EXCEPTIONAL_MESSAGE, DEFAULT_CONSTRAINT);
     }
 
@@ -122,7 +128,7 @@ class DefaultResultConstraintHandlerProviderTests {
         var handler       = defaultProvider.getHandler(DEFAULT_CONSTRAINT);
         var handledResult = handler.apply(result);
 
-        assertTrue(matches(result, handledResult));
+        assertThat(matches(result, handledResult)).isTrue();
         verify(defaultProvider, times(1)).accept(result, DEFAULT_CONSTRAINT);
     }
 
@@ -133,7 +139,7 @@ class DefaultResultConstraintHandlerProviderTests {
         var handler       = defaultProvider.getHandler(DEFAULT_CONSTRAINT);
         var handledResult = handler.apply(result);
 
-        assertTrue(matches(result, handledResult));
+        assertThat(matches(result, handledResult)).isTrue();
         verify(defaultProvider, times(1)).accept(result, DEFAULT_CONSTRAINT);
     }
 
@@ -144,7 +150,7 @@ class DefaultResultConstraintHandlerProviderTests {
         var handler       = defaultProvider.getHandler(DEFAULT_CONSTRAINT);
         var handledResult = handler.apply(result);
 
-        assertTrue(matches(result, handledResult));
+        assertThat(matches(result, handledResult)).isTrue();
         verify(defaultProvider, times(1)).accept(result, DEFAULT_CONSTRAINT);
     }
 
@@ -153,7 +159,7 @@ class DefaultResultConstraintHandlerProviderTests {
         var handler       = defaultProvider.getHandler(DEFAULT_CONSTRAINT);
         var handledResult = handler.apply("not a response message!");
 
-        assertEquals("not a response message!", handledResult);
+        assertThat(handledResult).isEqualTo("not a response message!");
         verify(defaultProvider, times(1)).mapPayload("not a response message!", Object.class, DEFAULT_CONSTRAINT);
     }
 }

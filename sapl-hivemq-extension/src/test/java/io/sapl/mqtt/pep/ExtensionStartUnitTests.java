@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import java.util.HashSet;
 
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.hivemq.extension.sdk.api.client.parameter.ClientInformation;
@@ -62,6 +63,7 @@ import io.sapl.mqtt.pep.util.DecisionFluxUtility;
 import io.sapl.mqtt.pep.util.HiveMqUtility;
 import reactor.core.publisher.Flux;
 
+@DisplayName("Extension start unit")
 class ExtensionStartUnitTests {
 
     @Test

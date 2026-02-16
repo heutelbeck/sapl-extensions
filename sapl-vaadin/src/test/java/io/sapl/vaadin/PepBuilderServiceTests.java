@@ -18,17 +18,19 @@
 package io.sapl.vaadin;
 
 import tools.jackson.databind.node.JsonNodeFactory;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,9 +44,13 @@ import com.vaadin.flow.component.textfield.TextField;
 import io.sapl.api.pdp.PolicyDecisionPoint;
 import io.sapl.vaadin.base.SecurityHelper;
 
+@DisplayName("PEP builder service")
+@MockitoSettings(strictness = Strictness.LENIENT)
 class PepBuilderServiceTests {
 
+    @Mock
     private PolicyDecisionPoint                 pdp;
+    @Mock
     private VaadinConstraintEnforcementService  vaadinConstraintEnforcementService;
     private static MockedStatic<SecurityHelper> securityHelperMock;
 
@@ -61,22 +67,13 @@ class PepBuilderServiceTests {
         securityHelperMock.close();
     }
 
-    @BeforeEach
-    void setupTest() {
-        pdp                                = mock(PolicyDecisionPoint.class);
-        vaadinConstraintEnforcementService = mock(VaadinConstraintEnforcementService.class);
-    }
-
-    // *************************************************
-    // *************** Integration tests ***************
-    // *************************************************
     @Test
     void when_withComponentIsCalled_then_ComponentIsSetInComponentBuilder() {
         // GIVEN
         PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
         Component         component         = mock(Component.class);
         // WHEN + THEN
-        assertEquals(component, pepBuilderService.with(component).component);
+        assertThat(pepBuilderService.with(component).component).isEqualTo(component);
     }
 
     @Test
@@ -85,7 +82,7 @@ class PepBuilderServiceTests {
         PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
         Button            button            = mock(Button.class);
         // WHEN + THEN
-        assertEquals(button, pepBuilderService.with(button).component);
+        assertThat(pepBuilderService.with(button).component).isEqualTo(button);
     }
 
     @Test
@@ -94,7 +91,7 @@ class PepBuilderServiceTests {
         PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
         TextField         textField         = mock(TextField.class);
         // WHEN + THEN
-        assertEquals(textField, pepBuilderService.with(textField).component);
+        assertThat(pepBuilderService.with(textField).component).isEqualTo(textField);
     }
 
     @Test
@@ -103,7 +100,7 @@ class PepBuilderServiceTests {
         PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
         Checkbox          checkbox          = mock(Checkbox.class);
         // WHEN + THEN
-        assertEquals(checkbox, pepBuilderService.with(checkbox).component);
+        assertThat(pepBuilderService.with(checkbox).component).isEqualTo(checkbox);
     }
 
     @Test
@@ -112,7 +109,7 @@ class PepBuilderServiceTests {
         PepBuilderService pepBuilderService = new PepBuilderService(pdp, vaadinConstraintEnforcementService);
         Span              span              = mock(Span.class);
         // WHEN + THEN
-        assertEquals(span, pepBuilderService.with(span).component);
+        assertThat(pepBuilderService.with(span).component).isEqualTo(span);
     }
 
     @Test
@@ -122,7 +119,7 @@ class PepBuilderServiceTests {
         // WHEN
         MultiBuilder multiBuilder = pepBuilderService.getMultiBuilder();
         // THEN
-        assertEquals(MultiBuilder.class, multiBuilder.getClass());
+        assertThat(multiBuilder.getClass()).isEqualTo(MultiBuilder.class);
     }
 
     @Test
@@ -134,7 +131,7 @@ class PepBuilderServiceTests {
         VaadinPep.LifecycleBeforeEnterPepBuilder lifecycleBeforeEnterPepBuilder = pepBuilderService
                 .getLifecycleBeforeEnterPepBuilder();
         // THEN
-        assertEquals(VaadinPep.LifecycleBeforeEnterPepBuilder.class, lifecycleBeforeEnterPepBuilder.getClass());
+        assertThat(lifecycleBeforeEnterPepBuilder.getClass()).isEqualTo(VaadinPep.LifecycleBeforeEnterPepBuilder.class);
     }
 
     @Test
@@ -147,7 +144,7 @@ class PepBuilderServiceTests {
                 .getLifecycleBeforeEnterPepBuilder();
         lifecycleBeforeEnterPepBuilder.build();
         // THEN
-        assertTrue(lifecycleBeforeEnterPepBuilder.isBuilt);
+        assertThat(lifecycleBeforeEnterPepBuilder.isBuilt).isTrue();
     }
 
     @Test
@@ -160,7 +157,7 @@ class PepBuilderServiceTests {
                 .getLifecycleBeforeLeavePepBuilder();
         lifecycleBeforeLeavePepBuilder.build();
         // THEN
-        assertTrue(lifecycleBeforeLeavePepBuilder.isBuilt);
+        assertThat(lifecycleBeforeLeavePepBuilder.isBuilt).isTrue();
     }
 
     private void mockSpringContextHolderAuthentication() {

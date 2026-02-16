@@ -17,10 +17,8 @@
  */
 package io.sapl.vaadin.constraint.providers;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -35,6 +33,7 @@ import java.time.LocalTime;
 import java.util.Locale;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -51,6 +50,7 @@ import io.sapl.api.model.Value;
 import lombok.Data;
 import lombok.Getter;
 
+@DisplayName("Field validation constraint handler provider")
 class FieldValidationConstraintHandlerProviderTests {
 
     private Binder<TestData> binder;
@@ -89,7 +89,7 @@ class FieldValidationConstraintHandlerProviderTests {
         // GIVEN
         var sut = new FieldValidationConstraintHandlerProvider(binder, form);
         // WHEN + THEN
-        assertThrows(Exception.class, () -> sut.bindField(null));
+        assertThatThrownBy(() -> sut.bindField(null)).isInstanceOf(Exception.class);
     }
 
     @Test
@@ -99,7 +99,7 @@ class FieldValidationConstraintHandlerProviderTests {
         var constraint = ObjectValue.builder().put("type", Value.of("saplVaadin")).put("id", Value.of("validation"))
                 .build();
         // WHEN+THEN
-        assertTrue(sut.isResponsible(constraint));
+        assertThat(sut.isResponsible(constraint)).isTrue();
     }
 
     @Test
@@ -109,7 +109,7 @@ class FieldValidationConstraintHandlerProviderTests {
         var constraint = ObjectValue.builder().put("type", Value.of("saplVaadin"))
                 .put("id", Value.of("showNotification")).build();
         // WHEN+THEN
-        assertFalse(sut.isResponsible(constraint));
+        assertThat(sut.isResponsible(constraint)).isFalse();
     }
 
     @Test
@@ -118,7 +118,7 @@ class FieldValidationConstraintHandlerProviderTests {
         var sut        = new FieldValidationConstraintHandlerProvider(binder, form, JsonMapper.builder().build());
         var constraint = ObjectValue.builder().put("id", Value.of("validation")).build();
         // WHEN+THEN
-        assertFalse(sut.isResponsible(constraint));
+        assertThat(sut.isResponsible(constraint)).isFalse();
     }
 
     @Test
@@ -127,7 +127,7 @@ class FieldValidationConstraintHandlerProviderTests {
         var sut        = new FieldValidationConstraintHandlerProvider(binder, form, JsonMapper.builder().build());
         var constraint = ObjectValue.builder().put("type", Value.of("saplVaadin")).build();
         // WHEN+THEN
-        assertFalse(sut.isResponsible(constraint));
+        assertThat(sut.isResponsible(constraint)).isFalse();
     }
 
     @Test
@@ -136,8 +136,8 @@ class FieldValidationConstraintHandlerProviderTests {
         var sut        = new FieldValidationConstraintHandlerProvider(binder, form, JsonMapper.builder().build());
         var constraint = Value.EMPTY_OBJECT;
         // WHEN+THEN
-        assertFalse(sut.isResponsible(constraint));
-        assertFalse(sut.isResponsible(null));
+        assertThat(sut.isResponsible(constraint)).isFalse();
+        assertThat(sut.isResponsible(null)).isFalse();
     }
 
     @Test
@@ -145,7 +145,7 @@ class FieldValidationConstraintHandlerProviderTests {
         // GIVEN
         var sut = new FieldValidationConstraintHandlerProvider(binder, form, JsonMapper.builder().build());
         // WHEN+THEN
-        assertNull(sut.getSupportedType());
+        assertThat(sut.getSupportedType()).isNull();
     }
 
     @Test
@@ -168,7 +168,7 @@ class FieldValidationConstraintHandlerProviderTests {
         form.integerField.setValue(10);
 
         // THEN
-        assertFalse(form.integerField.isInvalid());
+        assertThat(form.integerField.isInvalid()).isFalse();
     }
 
     @Test
@@ -209,7 +209,7 @@ class FieldValidationConstraintHandlerProviderTests {
         form.integerField.setValue(21);
 
         // THEN
-        assertTrue(form.integerField.isInvalid());
+        assertThat(form.integerField.isInvalid()).isTrue();
     }
 
     @Test
@@ -233,7 +233,7 @@ class FieldValidationConstraintHandlerProviderTests {
         form.integerField.setValue(21);
 
         // THEN
-        assertTrue(form.integerField.isInvalid());
+        assertThat(form.integerField.isInvalid()).isTrue();
     }
 
     @Test
@@ -251,7 +251,7 @@ class FieldValidationConstraintHandlerProviderTests {
         var constraint    = ObjectValue.builder().put("type", Value.of("saplVaadin")).put("id", Value.of("validation"))
                 .put("fields", fields).build();
         // WHEN+THEN
-        assertThrows(AccessDeniedException.class, () -> sut.getHandler(constraint));
+        assertThatThrownBy(() -> sut.getHandler(constraint)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -262,7 +262,7 @@ class FieldValidationConstraintHandlerProviderTests {
         binder.bindInstanceFields(form);
 
         // WHEN+THEN
-        assertNull(sut.getHandler(null));
+        assertThat(sut.getHandler(null)).isNull();
     }
 
     @Test
@@ -283,7 +283,7 @@ class FieldValidationConstraintHandlerProviderTests {
         sut.getHandler(constraint).accept(defaultUi);
         // check valid value
         form.dateTimeField.setValue(LocalDateTime.parse("2022-04-01T10:00:00"));
-        assertFalse(form.dateTimeField.isInvalid());
+        assertThat(form.dateTimeField.isInvalid()).isFalse();
     }
 
     @Test
@@ -304,7 +304,7 @@ class FieldValidationConstraintHandlerProviderTests {
         sut.getHandler(constraint).accept(defaultUi);
         // check valid value
         form.timeField.setValue(LocalTime.parse("10:00:00"));
-        assertFalse(form.dateTimeField.isInvalid());
+        assertThat(form.dateTimeField.isInvalid()).isFalse();
     }
 
     @Test
@@ -316,7 +316,7 @@ class FieldValidationConstraintHandlerProviderTests {
         // WHEN
         var isFieldBound = sut.isFieldBound(mockedField, null, null);
         // THEN
-        assertFalse(isFieldBound);
+        assertThat(isFieldBound).isFalse();
     }
 
     @Test
@@ -333,7 +333,7 @@ class FieldValidationConstraintHandlerProviderTests {
         sut.getHandler(constraint).accept(defaultUi);
         // THEN
         form.integerField.setValue(21);
-        assertFalse(form.integerField.isInvalid());
+        assertThat(form.integerField.isInvalid()).isFalse();
     }
 
     @Getter
@@ -346,7 +346,7 @@ class FieldValidationConstraintHandlerProviderTests {
 
     @Data
     static class TestData {
-        private final Integer integerField = 0;
+        private Integer       integerField = 0;
         private LocalDateTime dateTimeField;
         private LocalTime     timeField;
     }

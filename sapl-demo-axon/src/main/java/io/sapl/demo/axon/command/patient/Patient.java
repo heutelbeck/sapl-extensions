@@ -36,9 +36,9 @@ import lombok.extern.slf4j.Slf4j;
 public class Patient {
 
 	@AggregateIdentifier
-	public String      id;
-	public Set<String> connectedMonitors = new HashSet<>();
-	public Ward        ward;
+	private String      id;
+	private Set<String> connectedMonitors = new HashSet<>();
+	private Ward        ward;
 
 	@CommandHandler
 	@PreHandleEnforce(action = "{'command':'RegisterPatient'}", resource = "{ 'type':'Patient', 'id':#command.id(), 'ward':'NONE' }")

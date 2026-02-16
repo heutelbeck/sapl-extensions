@@ -17,7 +17,7 @@
  */
 package io.sapl.axon.constrainthandling;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -26,10 +26,12 @@ import java.util.function.Function;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.GenericCommandMessage;
 import org.axonframework.messaging.Message;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import io.sapl.api.pdp.AuthorizationDecision;
 
+@DisplayName("Command constraint handler bundle")
 class CommandConstraintHandlerBundleTests {
 
     @Test
@@ -42,11 +44,13 @@ class CommandConstraintHandlerBundleTests {
         var result                 = "some result";
 
         BiConsumer<AuthorizationDecision, Message<?>>  onDecision       = (decisionInternal, messageInternal) -> {
-                                                                            assertEquals(decision, decisionInternal);
-                                                                            assertEquals(message, messageInternal);
+                                                                            assertThat(decisionInternal)
+                                                                                    .isEqualTo(decision);
+                                                                            assertThat(messageInternal)
+                                                                                    .isEqualTo(message);
                                                                             onDecisionCounter.getAndIncrement();
                                                                         };
-        Function<Throwable, Throwable>                 errorMapper      = t -> new Exception("some spectial message");
+        Function<Throwable, Throwable>                 errorMapper      = t -> new Exception("some special message");
         Function<CommandMessage<?>, CommandMessage<?>> commandMapper    = c -> new GenericCommandMessage<>(
                 "special payload");
         Function<String, String>                       resultMapper     = r -> "special result";
@@ -55,28 +59,28 @@ class CommandConstraintHandlerBundleTests {
                 onDecision, errorMapper, commandMapper, resultMapper, handlersOnObject);
 
         bundle.executeOnDecisionHandlers(decision, message);
-        assertEquals(1, onDecisionCounter.get());
+        assertThat(onDecisionCounter.get()).isEqualTo(1);
 
         var mappedException = bundle.executeOnErrorHandlers(exception);
-        assertEquals(Exception.class, mappedException.getClass());
-        assertEquals("some spectial message", mappedException.getLocalizedMessage());
+        assertThat(mappedException.getClass()).isEqualTo(Exception.class);
+        assertThat(mappedException.getLocalizedMessage()).isEqualTo("some special message");
 
         bundle.executeAggregateConstraintHandlerMethods();
-        assertEquals(1, handlerOnObjectCounter.get());
+        assertThat(handlerOnObjectCounter.get()).isEqualTo(1);
 
         var mappedCommandMessage = bundle.executeCommandMappingHandlers(message);
-        assertEquals(GenericCommandMessage.class, mappedCommandMessage.getClass());
-        assertEquals(String.class, mappedCommandMessage.getPayloadType());
-        assertEquals("special payload", mappedCommandMessage.getPayload());
+        assertThat(mappedCommandMessage.getClass()).isEqualTo(GenericCommandMessage.class);
+        assertThat(mappedCommandMessage.getPayloadType()).isEqualTo(String.class);
+        assertThat(mappedCommandMessage.getPayload()).isEqualTo("special payload");
 
         var mappedResult = bundle.executePostHandlingHandlers(result);
-        assertEquals("special result", mappedResult);
+        assertThat(mappedResult).isEqualTo("special result");
     }
 
     @Test
     void when_mappedErrorIsThrowable_convertToRuntimeException() {
         BiConsumer<AuthorizationDecision, Message<?>>  onDecision       = (decision, message) -> {};
-        Function<Throwable, Throwable>                 errorMapper      = t -> new Throwable("some spectial message");
+        Function<Throwable, Throwable>                 errorMapper      = t -> new Throwable("some special message");
         Function<CommandMessage<?>, CommandMessage<?>> commandMapper    = c -> null;
         Function<String, String>                       resultMapper     = r -> null;
         Runnable                                       handlersOnObject = () -> {};
@@ -85,9 +89,9 @@ class CommandConstraintHandlerBundleTests {
 
         var exception       = new Exception("another exception message");
         var mappedException = bundle.executeOnErrorHandlers(exception);
-        assertEquals(RuntimeException.class, mappedException.getClass());
-        assertEquals("Error: another exception message", mappedException.getLocalizedMessage());
-        assertEquals(Exception.class, mappedException.getCause().getClass());
-        assertEquals("another exception message", mappedException.getCause().getLocalizedMessage());
+        assertThat(mappedException.getClass()).isEqualTo(RuntimeException.class);
+        assertThat(mappedException.getLocalizedMessage()).isEqualTo("Error: another exception message");
+        assertThat(mappedException.getCause().getClass()).isEqualTo(Exception.class);
+        assertThat(mappedException.getCause().getLocalizedMessage()).isEqualTo("another exception message");
     }
 }

@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EthereumBasicFunctions {
 
-    private static final String INPUT_WARNING = "The input JsonNode for the policy didn't contain a field of type {}, although this was expected. Ignore this message if the field was optional.";
+    private static final String WARN_INPUT = "The input JsonNode for the policy didn't contain a field of type {}, although this was expected. Ignore this message if the field was optional.";
 
     private static final JsonMapper mapper = JsonMapper.builder().build();
 
@@ -50,7 +50,7 @@ public class EthereumBasicFunctions {
         if (saplObject.has(bigIntegerName)) {
             return saplObject.get(bigIntegerName).bigIntegerValue();
         }
-        log.warn(INPUT_WARNING, bigIntegerName);
+        log.warn(WARN_INPUT, bigIntegerName);
         return null;
     }
 
@@ -58,7 +58,7 @@ public class EthereumBasicFunctions {
         if (saplObject.has(booleanName)) {
             return saplObject.get(booleanName).asBoolean();
         }
-        log.warn(INPUT_WARNING, booleanName);
+        log.warn(WARN_INPUT, booleanName);
         return false;
     }
 
@@ -66,7 +66,7 @@ public class EthereumBasicFunctions {
         if (saplObject.has(jsonName)) {
             return saplObject.get(jsonName);
         }
-        log.warn(INPUT_WARNING, jsonName);
+        log.warn(WARN_INPUT, jsonName);
         return JSON.nullNode();
     }
 
@@ -92,7 +92,7 @@ public class EthereumBasicFunctions {
             }
             return returnList;
         }
-        log.warn(INPUT_WARNING, listName);
+        log.warn(WARN_INPUT, listName);
         return Collections.emptyList();
     }
 
@@ -100,7 +100,7 @@ public class EthereumBasicFunctions {
         if (saplObject.has(stringName)) {
             return saplObject.get(stringName).stringValue();
         }
-        log.warn(INPUT_WARNING, stringName);
+        log.warn(WARN_INPUT, stringName);
         return null;
     }
 

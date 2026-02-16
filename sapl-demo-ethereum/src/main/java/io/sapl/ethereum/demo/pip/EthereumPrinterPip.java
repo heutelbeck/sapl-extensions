@@ -15,8 +15,6 @@
  */
 package io.sapl.ethereum.demo.pip;
 
-import java.util.Map;
-
 import org.springframework.stereotype.Component;
 import org.web3j.protocol.Web3j;
 
@@ -26,6 +24,7 @@ import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
 import io.sapl.api.attributes.Attribute;
+import io.sapl.api.attributes.AttributeAccessContext;
 import io.sapl.api.attributes.PolicyInformationPoint;
 import io.sapl.api.model.Value;
 import io.sapl.api.model.ValueJsonMarshaller;
@@ -58,10 +57,10 @@ public class EthereumPrinterPip extends EthereumPolicyInformationPoint {
     }
 
     @Attribute(name = "certified", docs = "Checks, if the given address has a valid printer certificate.")
-    public Flux<Value> certified(Value saplObject, Map<String, Value> variables) {
+    public Flux<Value> certified(Value saplObject, AttributeAccessContext ctx) {
         String address         = ValueJsonMarshaller.toJsonNode(saplObject).get(ADDRESS).stringValue();
         String printer         = ValueJsonMarshaller.toJsonNode(saplObject).get("printer").stringValue();
-        String contractAddress = getContractAddress(printer, variables);
+        String contractAddress = getContractAddress(printer, ctx);
 
         ObjectNode requestNode = JSON.objectNode();
         requestNode.put("contractAddress", contractAddress);
@@ -75,26 +74,26 @@ public class EthereumPrinterPip extends EthereumPolicyInformationPoint {
         ArrayNode outputParams = JSON.arrayNode();
         outputParams.add(BOOL);
         requestNode.set(OUTPUT_PARAMS, outputParams);
-        return loadContractInformation(ValueJsonMarshaller.fromJsonNode(requestNode), variables)
+        return loadContractInformation(ValueJsonMarshaller.fromJsonNode(requestNode), ctx)
                 .map(j -> ValueJsonMarshaller.toJsonNode(j).get(0).get("value"))
                 .map(ValueJsonMarshaller::fromJsonNode);
     }
 
-    private String getContractAddress(String printer, Map<String, Value> variables) {
+    private String getContractAddress(String printer, AttributeAccessContext ctx) {
         if (MainView.ULTIMAKER.equals(printer)) {
-            return getUltimakerAddress(variables);
+            return getUltimakerAddress(ctx);
         }
         if (MainView.GRAFTEN.equals(printer)) {
-            return getGraftenAddress(variables);
+            return getGraftenAddress(ctx);
         }
         if (MainView.ZMORPH.equals(printer)) {
-            return getZmorphAddress(variables);
+            return getZmorphAddress(ctx);
         }
         return "";
     }
 
-    private String getZmorphAddress(Map<String, Value> variables) {
-        Value ethPipConfig = variables.get(ETH_PIP_CONFIG);
+    private String getZmorphAddress(AttributeAccessContext ctx) {
+        Value ethPipConfig = ctx.variables().get(ETH_PIP_CONFIG);
         if (ethPipConfig != null) {
             JsonNode address = ValueJsonMarshaller.toJsonNode(ethPipConfig).get(MainView.ZMORPH);
             if (address != null)
@@ -103,8 +102,8 @@ public class EthereumPrinterPip extends EthereumPolicyInformationPoint {
         return addressProvider.getZmorphAddress();
     }
 
-    private String getGraftenAddress(Map<String, Value> variables) {
-        Value ethPipConfig = variables.get(ETH_PIP_CONFIG);
+    private String getGraftenAddress(AttributeAccessContext ctx) {
+        Value ethPipConfig = ctx.variables().get(ETH_PIP_CONFIG);
         if (ethPipConfig != null) {
             JsonNode address = ValueJsonMarshaller.toJsonNode(ethPipConfig).get(MainView.GRAFTEN);
             if (address != null)
@@ -113,8 +112,8 @@ public class EthereumPrinterPip extends EthereumPolicyInformationPoint {
         return addressProvider.getGraftenAddress();
     }
 
-    private String getUltimakerAddress(Map<String, Value> variables) {
-        Value ethPipConfig = variables.get(ETH_PIP_CONFIG);
+    private String getUltimakerAddress(AttributeAccessContext ctx) {
+        Value ethPipConfig = ctx.variables().get(ETH_PIP_CONFIG);
         if (ethPipConfig != null) {
             JsonNode address = ValueJsonMarshaller.toJsonNode(ethPipConfig).get(MainView.ULTIMAKER);
             if (address != null)

@@ -17,13 +17,11 @@
  */
 package io.sapl.axon.constrainthandling;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,8 +43,11 @@ import org.axonframework.messaging.responsetypes.InstanceResponseType;
 import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.security.access.AccessDeniedException;
 
 import tools.jackson.databind.json.JsonMapper;
@@ -64,6 +65,8 @@ import io.sapl.axon.constrainthandling.api.UpdateFilterConstraintHandlerProvider
 import io.sapl.spring.constraints.api.ErrorMappingConstraintHandlerProvider;
 import io.sapl.spring.constraints.api.MappingConstraintHandlerProvider;
 
+@DisplayName("Constraint handler service")
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ConstraintHandlerServiceTests {
 
     private static final Optional<Executable> EMPTY = Optional.empty();
@@ -171,55 +174,42 @@ class ConstraintHandlerServiceTests {
         parameterResolverFactory = new DefaultParameterResolverFactory();
     }
 
+    @Mock
     private OnDecisionConstraintHandlerProvider firstOnDecisionConstraintHandlerProvider;
+    @Mock
     private OnDecisionConstraintHandlerProvider secondOnDecisionConstraintHandlerProvider;
 
+    @Mock
     private CommandConstraintHandlerProvider firstCommandConstraintHandlerProvider;
+    @Mock
     private CommandConstraintHandlerProvider secondCommandConstraintHandlerProvider;
 
+    @Mock
     private QueryConstraintHandlerProvider firstQueryConstraintHandlerProvider;
+    @Mock
     private QueryConstraintHandlerProvider secondQueryConstraintHandlerProvider;
 
+    @Mock
     private ErrorMappingConstraintHandlerProvider firstErrorMappingConstraintHandlerProvider;
+    @Mock
     private ErrorMappingConstraintHandlerProvider secondErrorMappingConstraintHandlerProvider;
 
+    @SuppressWarnings("unchecked")
+    @Mock
     private MappingConstraintHandlerProvider<Object> firstMappingConstraintHandlerProvider;
+    @SuppressWarnings("unchecked")
+    @Mock
     private MappingConstraintHandlerProvider<Object> secondMappingConstraintHandlerProvider;
 
+    @Mock
     private UpdateFilterConstraintHandlerProvider firstUpdateFilterConstraintHandlerProvider;
+    @Mock
     private UpdateFilterConstraintHandlerProvider secondUpdateFilterConstraintHandlerProvider;
 
+    @Mock
     private ResultConstraintHandlerProvider firstResultConstraintHandlerProvider;
+    @Mock
     private ResultConstraintHandlerProvider secondResultConstraintHandlerProvider;
-
-    @BeforeEach
-    @SuppressWarnings("unchecked")
-    void beforeEach() {
-        firstOnDecisionConstraintHandlerProvider  = mock(OnDecisionConstraintHandlerProvider.class);
-        secondOnDecisionConstraintHandlerProvider = mock(OnDecisionConstraintHandlerProvider.class);
-
-        firstCommandConstraintHandlerProvider  = mock(CommandConstraintHandlerProvider.class);
-        secondCommandConstraintHandlerProvider = mock(CommandConstraintHandlerProvider.class);
-
-        firstQueryConstraintHandlerProvider  = mock(QueryConstraintHandlerProvider.class);
-        secondQueryConstraintHandlerProvider = mock(QueryConstraintHandlerProvider.class);
-
-        firstErrorMappingConstraintHandlerProvider  = mock(ErrorMappingConstraintHandlerProvider.class);
-        secondErrorMappingConstraintHandlerProvider = mock(ErrorMappingConstraintHandlerProvider.class);
-
-        firstMappingConstraintHandlerProvider  = mock(MappingConstraintHandlerProvider.class);
-        secondMappingConstraintHandlerProvider = mock(MappingConstraintHandlerProvider.class);
-
-        firstUpdateFilterConstraintHandlerProvider  = mock(UpdateFilterConstraintHandlerProvider.class);
-        secondUpdateFilterConstraintHandlerProvider = mock(UpdateFilterConstraintHandlerProvider.class);
-
-        firstResultConstraintHandlerProvider  = mock(ResultConstraintHandlerProvider.class);
-        secondResultConstraintHandlerProvider = mock(ResultConstraintHandlerProvider.class);
-    }
-
-//================================================================
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//================================================================
 
     @Test
     void when_deserializeResource_with_stringRessource_then_returnString() {
@@ -230,7 +220,7 @@ class ConstraintHandlerServiceTests {
 
         var deserialized = service.deserializeResource(resource, type);
 
-        assertEquals("resourceString", deserialized);
+        assertThat(deserialized).isEqualTo("resourceString");
     }
 
     @Test
@@ -240,7 +230,7 @@ class ConstraintHandlerServiceTests {
         var resource = Value.of("resourceString");
         var type     = ResponseTypes.instanceOf(Integer.class);
 
-        assertThrows(AccessDeniedException.class, () -> service.deserializeResource(resource, type));
+        assertThatThrownBy(() -> service.deserializeResource(resource, type)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -252,7 +242,7 @@ class ConstraintHandlerServiceTests {
 
         var deserialized = service.deserializeResource(resource, type);
 
-        assertEquals(deserialized, Optional.of("resourceString"));
+        assertThat(deserialized).isEqualTo(Optional.of("resourceString"));
     }
 
     @Test
@@ -264,7 +254,7 @@ class ConstraintHandlerServiceTests {
 
         var deserialized = service.deserializeResource(resource, type);
 
-        assertEquals(deserialized, Optional.empty());
+        assertThat(deserialized).isEqualTo(Optional.empty());
     }
 
     @Test
@@ -274,7 +264,7 @@ class ConstraintHandlerServiceTests {
         var resource = Value.of("resourceString");
         var type     = ResponseTypes.optionalInstanceOf(Integer.class);
 
-        assertThrows(AccessDeniedException.class, () -> service.deserializeResource(resource, type));
+        assertThatThrownBy(() -> service.deserializeResource(resource, type)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -287,7 +277,7 @@ class ConstraintHandlerServiceTests {
 
         var deserialized = service.deserializeResource(resource, type);
 
-        assertEquals(deserialized, listOfStrings);
+        assertThat(deserialized).isEqualTo(listOfStrings);
     }
 
     @Test
@@ -300,7 +290,7 @@ class ConstraintHandlerServiceTests {
 
         var deserialized = service.deserializeResource(resource, type);
 
-        assertEquals(deserialized, listOfStrings);
+        assertThat(deserialized).isEqualTo(listOfStrings);
     }
 
     @Test
@@ -313,7 +303,7 @@ class ConstraintHandlerServiceTests {
 
         var deserialized = service.deserializeResource(resource, type);
 
-        assertEquals(deserialized, listOfStrings);
+        assertThat(deserialized).isEqualTo(listOfStrings);
     }
 
     @Test
@@ -323,7 +313,7 @@ class ConstraintHandlerServiceTests {
         var resource = Value.ofArray(Value.of("resourceString"), Value.of("otherResourceString"));
         var type     = ResponseTypes.multipleInstancesOf(Integer.class);
 
-        assertThrows(AccessDeniedException.class, () -> service.deserializeResource(resource, type));
+        assertThatThrownBy(() -> service.deserializeResource(resource, type)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -333,7 +323,7 @@ class ConstraintHandlerServiceTests {
         var resource = Value.of("resourceString");
         var type     = ResponseTypes.multipleInstancesOf(String.class);
 
-        assertThrows(AccessDeniedException.class, () -> service.deserializeResource(resource, type));
+        assertThatThrownBy(() -> service.deserializeResource(resource, type)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -343,12 +333,8 @@ class ConstraintHandlerServiceTests {
         var resource = Value.of("resourceString");
         var type     = new UnknownResponseType<>(String.class);
 
-        assertThrows(AccessDeniedException.class, () -> service.deserializeResource(resource, type));
+        assertThatThrownBy(() -> service.deserializeResource(resource, type)).isInstanceOf(AccessDeniedException.class);
     }
-
-//================================================================
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//================================================================
 
     @Test
     void when_buildPreEnforceCommandConstraintHandlerBundle_with_resourceInDecision_then_accessDenied() {
@@ -357,11 +343,9 @@ class ConstraintHandlerServiceTests {
         var resource = ObjectValue.builder().build();
         var decision = new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, Value.EMPTY_ARRAY, resource);
 
-        assertThrows(AccessDeniedException.class,
-                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, null, null));
+        assertThatThrownBy(() -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, null, null))
+                .isInstanceOf(AccessDeniedException.class);
     }
-
-//================================================================
 
     @Test
     void when_buildPreEnforceCommandConstraintHandlerBundle_with_noGlobalRunnableProviders_then_noOnDecisionHandlers() {
@@ -402,8 +386,8 @@ class ConstraintHandlerServiceTests {
         var obligations = Value.ofArray(Value.of("obligation"));
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
-        assertThrows(AccessDeniedException.class,
-                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
+        assertThatThrownBy(() -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -419,7 +403,8 @@ class ConstraintHandlerServiceTests {
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
         var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-        assertThrows(AccessDeniedException.class, () -> bundle.executeOnDecisionHandlers(null, null));
+        assertThatThrownBy(() -> bundle.executeOnDecisionHandlers(null, null))
+                .isInstanceOf(AccessDeniedException.class);
 
         verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(Value.class));
         verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
@@ -489,7 +474,7 @@ class ConstraintHandlerServiceTests {
         var decision = new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, advices, Value.UNDEFINED);
 
         var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-        assertDoesNotThrow(() -> bundle.executeOnDecisionHandlers(null, null));
+        assertThatCode(() -> bundle.executeOnDecisionHandlers(null, null)).doesNotThrowAnyException();
 
         verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(Value.class));
         verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
@@ -573,7 +558,7 @@ class ConstraintHandlerServiceTests {
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
         var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-        assertThrows(AccessDeniedException.class, () -> bundle.executeCommandMappingHandlers(null));
+        assertThatThrownBy(() -> bundle.executeCommandMappingHandlers(null)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -585,8 +570,8 @@ class ConstraintHandlerServiceTests {
         var obligations = Value.ofArray(Value.of("obligation"));
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
-        assertThrows(AccessDeniedException.class,
-                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
+        assertThatThrownBy(() -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -694,8 +679,6 @@ class ConstraintHandlerServiceTests {
         verify(secondCommandConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
     }
 
-//================================================================
-
     @Test
     void when_buildPreEnforceCommandConstraintHandlerBundle_with_noGlobalErrorMappingHandlerProviders_then_noErrorMappingConstraintHandlers() {
         var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
@@ -742,7 +725,7 @@ class ConstraintHandlerServiceTests {
 
         var error  = new Exception("Error");
         var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-        assertThrows(AccessDeniedException.class, () -> bundle.executeOnErrorHandlers(error));
+        assertThatThrownBy(() -> bundle.executeOnErrorHandlers(error)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -754,8 +737,8 @@ class ConstraintHandlerServiceTests {
         var obligations = Value.ofArray(Value.of("obligation"));
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
-        assertThrows(AccessDeniedException.class,
-                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
+        assertThatThrownBy(() -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -875,8 +858,6 @@ class ConstraintHandlerServiceTests {
         verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
     }
 
-//================================================================
-
     @Test
     void when_buildPreEnforceCommandConstraintHandlerBundle_with_noGlobalMappingProviders_then_noResultMappingHandlers() {
         var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
@@ -922,7 +903,7 @@ class ConstraintHandlerServiceTests {
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
         var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, Optional.empty(), null);
-        assertThrows(AccessDeniedException.class, () -> bundle.executePostHandlingHandlers(null));
+        assertThatThrownBy(() -> bundle.executePostHandlingHandlers(null)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -936,8 +917,8 @@ class ConstraintHandlerServiceTests {
         var obligations = Value.ofArray(Value.of("obligation"));
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
-        assertThrows(AccessDeniedException.class,
-                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null));
+        assertThatThrownBy(() -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, null, EMPTY, null))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -1131,8 +1112,6 @@ class ConstraintHandlerServiceTests {
         verify(secondMappingConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
     }
 
-//================================================================
-
     @Test
     void when_buildPreEnforceCommandConstraintHandlerBundle_with_obligation_and_handlerObject_and_noHandlers_then_accessDenied() {
         var handlerObject = spy(new EmptyHandlerObject());
@@ -1141,8 +1120,9 @@ class ConstraintHandlerServiceTests {
         var obligations = Value.ofArray(Value.of("constraint"));
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
-        assertThrows(AccessDeniedException.class,
-                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, EMPTY, null));
+        assertThatThrownBy(
+                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, EMPTY, null))
+                .isInstanceOf(AccessDeniedException.class);
 
         verify(handlerObject, times(0)).noHandle();
     }
@@ -1171,8 +1151,9 @@ class ConstraintHandlerServiceTests {
         var obligations = Value.ofArray(Value.of("constraint"));
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
-        assertThrows(AccessDeniedException.class,
-                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, EMPTY, null));
+        assertThatThrownBy(
+                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, EMPTY, null))
+                .isInstanceOf(AccessDeniedException.class);
 
         verify(handlerObject, times(0)).noHandle();
         verify(handlerObject, times(0)).handle1();
@@ -1202,8 +1183,9 @@ class ConstraintHandlerServiceTests {
         var obligations = Value.ofArray(Value.of("constraint"));
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
-        assertThrows(AccessDeniedException.class,
-                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, EMPTY, null));
+        assertThatThrownBy(
+                () -> service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject, EMPTY, null))
+                .isInstanceOf(AccessDeniedException.class);
 
         verify(handlerObject, times(0)).noHandle();
         verify(handlerObject, times(0)).handle1();
@@ -1364,19 +1346,15 @@ class ConstraintHandlerServiceTests {
         var advices  = Value.ofArray(Value.of("constraint"));
         var decision = new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, advices, Value.UNDEFINED);
 
-        assertDoesNotThrow(() -> {
+        assertThatCode(() -> {
             var bundle = service.buildPreEnforceCommandConstraintHandlerBundle(decision, handlerObject,
                     Optional.empty(), null);
             bundle.executeAggregateConstraintHandlerMethods();
 
             verify(handlerObject, times(0)).noHandle();
             verify(handlerObject, times(1)).handle1();
-        });
+        }).doesNotThrowAnyException();
     }
-
-//================================================================
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//================================================================
 
     @Test
     void when_buildQueryPreHandlerBundle_with_noGlobalRunnableProviders_then_noOnDecisionConstraintHandlers() {
@@ -1418,7 +1396,8 @@ class ConstraintHandlerServiceTests {
         var                       decision    = new AuthorizationDecision(Decision.PERMIT, obligations,
                 Value.EMPTY_ARRAY, Value.UNDEFINED);
         Optional<ResponseType<?>> updateType  = Optional.empty();
-        assertThrows(AccessDeniedException.class, () -> service.buildQueryPreHandlerBundle(decision, null, updateType));
+        assertThatThrownBy(() -> service.buildQueryPreHandlerBundle(decision, null, updateType))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -1434,7 +1413,8 @@ class ConstraintHandlerServiceTests {
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
         var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-        assertThrows(AccessDeniedException.class, () -> bundle.executeOnDecisionHandlers(null, null));
+        assertThatThrownBy(() -> bundle.executeOnDecisionHandlers(null, null))
+                .isInstanceOf(AccessDeniedException.class);
 
         verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(Value.class));
         verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
@@ -1504,7 +1484,7 @@ class ConstraintHandlerServiceTests {
         var decision = new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, advices, Value.UNDEFINED);
 
         var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-        assertDoesNotThrow(() -> bundle.executeOnDecisionHandlers(null, null));
+        assertThatCode(() -> bundle.executeOnDecisionHandlers(null, null)).doesNotThrowAnyException();
 
         verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(Value.class));
         verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
@@ -1588,7 +1568,7 @@ class ConstraintHandlerServiceTests {
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
         var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-        assertThrows(AccessDeniedException.class, () -> bundle.executePreHandlingHandlers(null));
+        assertThatThrownBy(() -> bundle.executePreHandlingHandlers(null)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -1602,7 +1582,8 @@ class ConstraintHandlerServiceTests {
                 Value.EMPTY_ARRAY, Value.UNDEFINED);
         Optional<ResponseType<?>> updateType  = Optional.empty();
 
-        assertThrows(AccessDeniedException.class, () -> service.buildQueryPreHandlerBundle(decision, null, updateType));
+        assertThatThrownBy(() -> service.buildQueryPreHandlerBundle(decision, null, updateType))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -1710,8 +1691,6 @@ class ConstraintHandlerServiceTests {
         verify(secondQueryConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
     }
 
-//================================================================
-
     @Test
     void when_buildQueryPreHandlerBundle_with_noGlobalErrorMappingHandlerProviders_then_noErrorMappingConstraintHandlers() {
         var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
@@ -1758,7 +1737,7 @@ class ConstraintHandlerServiceTests {
 
         var error  = new Exception("Error");
         var bundle = service.buildQueryPreHandlerBundle(decision, null, Optional.empty());
-        assertThrows(AccessDeniedException.class, () -> bundle.executeOnErrorHandlers(error));
+        assertThatThrownBy(() -> bundle.executeOnErrorHandlers(error)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -1772,7 +1751,8 @@ class ConstraintHandlerServiceTests {
                 Value.EMPTY_ARRAY, Value.UNDEFINED);
         Optional<ResponseType<?>> updateType  = Optional.empty();
 
-        assertThrows(AccessDeniedException.class, () -> service.buildQueryPreHandlerBundle(decision, null, updateType));
+        assertThatThrownBy(() -> service.buildQueryPreHandlerBundle(decision, null, updateType))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -1892,8 +1872,6 @@ class ConstraintHandlerServiceTests {
         verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
     }
 
-//================================================================
-
     @Test
     void when_buildQueryPreHandlerBundle_with_noInitialMappingProviders_then_noResultConstraintHandlers() {
         var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
@@ -1943,7 +1921,7 @@ class ConstraintHandlerServiceTests {
         var responseType = ResponseTypes.instanceOf(Object.class);
 
         var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.empty());
-        assertThrows(AccessDeniedException.class, () -> bundle.executePostHandlingHandlers(null));
+        assertThatThrownBy(() -> bundle.executePostHandlingHandlers(null)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -1959,8 +1937,8 @@ class ConstraintHandlerServiceTests {
                 Value.EMPTY_ARRAY, Value.UNDEFINED);
         var                       responseType = ResponseTypes.instanceOf(Object.class);
         Optional<ResponseType<?>> empty        = Optional.empty();
-        assertThrows(AccessDeniedException.class,
-                () -> service.buildQueryPreHandlerBundle(decision, responseType, empty));
+        assertThatThrownBy(() -> service.buildQueryPreHandlerBundle(decision, responseType, empty))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -2181,7 +2159,7 @@ class ConstraintHandlerServiceTests {
         var updateType   = ResponseTypes.instanceOf(Object.class);
 
         var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-        assertThrows(AccessDeniedException.class, () -> bundle.executeOnNextHandlers(null));
+        assertThatThrownBy(() -> bundle.executeOnNextHandlers(null)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -2198,8 +2176,8 @@ class ConstraintHandlerServiceTests {
         var                       responseType = ResponseTypes.instanceOf(Object.class);
         Optional<ResponseType<?>> updateType   = Optional.of(ResponseTypes.instanceOf(Object.class));
 
-        assertThrows(AccessDeniedException.class,
-                () -> service.buildQueryPreHandlerBundle(decision, responseType, updateType));
+        assertThatThrownBy(() -> service.buildQueryPreHandlerBundle(decision, responseType, updateType))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -2376,8 +2354,6 @@ class ConstraintHandlerServiceTests {
         verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
     }
 
-//================================================================
-
     @Test
     void when_buildQueryPreHandlerBundle_with_noUpdatePredicateProviders_then_noFilters() {
         var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
@@ -2430,7 +2406,7 @@ class ConstraintHandlerServiceTests {
         var updateType   = ResponseTypes.instanceOf(Object.class);
 
         var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-        assertDoesNotThrow(() -> bundle.executeOnNextHandlers(null));
+        assertThatCode(() -> bundle.executeOnNextHandlers(null)).doesNotThrowAnyException();
 
         verify(firstUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
         verify(secondUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(Value.class));
@@ -2450,8 +2426,8 @@ class ConstraintHandlerServiceTests {
         var                       responseType = ResponseTypes.instanceOf(Object.class);
         Optional<ResponseType<?>> updateType   = Optional.of(ResponseTypes.instanceOf(Object.class));
 
-        assertThrows(AccessDeniedException.class,
-                () -> service.buildQueryPreHandlerBundle(decision, responseType, updateType));
+        assertThatThrownBy(() -> service.buildQueryPreHandlerBundle(decision, responseType, updateType))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -2538,7 +2514,7 @@ class ConstraintHandlerServiceTests {
         var updateType   = ResponseTypes.instanceOf(Object.class);
 
         var bundle = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
-        assertDoesNotThrow(() -> bundle.executeOnNextHandlers(null));
+        assertThatCode(() -> bundle.executeOnNextHandlers(null)).doesNotThrowAnyException();
 
         verify(firstUpdateFilterConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
         verify(secondUpdateFilterConstraintHandlerProvider, times(0)).getHandler(any(Value.class));
@@ -2646,7 +2622,7 @@ class ConstraintHandlerServiceTests {
         var bundle         = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
         var filteredResult = bundle.executeOnNextHandlers(new GenericResultMessage<>(new Object()));
 
-        assertTrue(filteredResult.isEmpty());
+        assertThat(filteredResult).isEmpty();
     }
 
     @Test
@@ -2667,7 +2643,7 @@ class ConstraintHandlerServiceTests {
         var bundle         = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
         var filteredResult = bundle.executeOnNextHandlers(new GenericResultMessage<>(new Object()));
 
-        assertTrue(filteredResult.isEmpty());
+        assertThat(filteredResult).isEmpty();
     }
 
     @Test
@@ -2688,7 +2664,7 @@ class ConstraintHandlerServiceTests {
         var bundle         = service.buildQueryPreHandlerBundle(decision, responseType, Optional.of(updateType));
         var filteredResult = bundle.executeOnNextHandlers(new GenericResultMessage<>(new Object()));
 
-        assertTrue(filteredResult.isPresent());
+        assertThat(filteredResult).isPresent();
     }
 
     @Test
@@ -2730,7 +2706,8 @@ class ConstraintHandlerServiceTests {
         var obligations = Value.ofArray(Value.of("obligation"));
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
-        assertThrows(AccessDeniedException.class, () -> service.buildQueryPostHandlerBundle(decision, null));
+        assertThatThrownBy(() -> service.buildQueryPostHandlerBundle(decision, null))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -2746,7 +2723,8 @@ class ConstraintHandlerServiceTests {
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
         var bundle = service.buildQueryPostHandlerBundle(decision, null);
-        assertThrows(AccessDeniedException.class, () -> bundle.executeOnDecisionHandlers(null, null));
+        assertThatThrownBy(() -> bundle.executeOnDecisionHandlers(null, null))
+                .isInstanceOf(AccessDeniedException.class);
 
         verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(Value.class));
         verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
@@ -2816,7 +2794,7 @@ class ConstraintHandlerServiceTests {
         var decision = new AuthorizationDecision(Decision.PERMIT, Value.EMPTY_ARRAY, advices, Value.UNDEFINED);
 
         var bundle = service.buildQueryPostHandlerBundle(decision, null);
-        assertDoesNotThrow(() -> bundle.executeOnDecisionHandlers(null, null));
+        assertThatCode(() -> bundle.executeOnDecisionHandlers(null, null)).doesNotThrowAnyException();
 
         verify(firstOnDecisionConstraintHandlerProvider, times(0)).getHandler(any(Value.class));
         verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
@@ -2856,8 +2834,6 @@ class ConstraintHandlerServiceTests {
         verify(firstOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
         verify(secondOnDecisionConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
     }
-
-//================================================================
 
     @Test
     void when_buildQueryPostHandlerBundle_with_noGlobalErrorMappingHandlerProviders_then_noErrorMappingConstraintHandlers() {
@@ -2905,7 +2881,7 @@ class ConstraintHandlerServiceTests {
 
         var error  = new Exception("Error");
         var bundle = service.buildQueryPostHandlerBundle(decision, null);
-        assertThrows(AccessDeniedException.class, () -> bundle.executeOnErrorHandlers(error));
+        assertThatThrownBy(() -> bundle.executeOnErrorHandlers(error)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -2917,7 +2893,8 @@ class ConstraintHandlerServiceTests {
         var obligations = Value.ofArray(Value.of("obligation"));
         var decision    = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
 
-        assertThrows(AccessDeniedException.class, () -> service.buildQueryPostHandlerBundle(decision, null));
+        assertThatThrownBy(() -> service.buildQueryPostHandlerBundle(decision, null))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -3037,8 +3014,6 @@ class ConstraintHandlerServiceTests {
         verify(secondErrorMappingConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
     }
 
-//================================================================
-
     @Test
     void when_buildQueryPostHandlerBundle_with_noInitialMappingProviders_then_noResultConstraintHandlers() {
         var service = buildServiceForTest(0, 0, 0, 0, 0, 0, 0);
@@ -3088,7 +3063,7 @@ class ConstraintHandlerServiceTests {
         var responseType = ResponseTypes.instanceOf(Object.class);
 
         var bundle = service.buildQueryPostHandlerBundle(decision, responseType);
-        assertThrows(AccessDeniedException.class, () -> bundle.executePostHandlingHandlers(null));
+        assertThatThrownBy(() -> bundle.executePostHandlingHandlers(null)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -3103,7 +3078,8 @@ class ConstraintHandlerServiceTests {
         var decision     = new AuthorizationDecision(Decision.PERMIT, obligations, Value.EMPTY_ARRAY, Value.UNDEFINED);
         var responseType = ResponseTypes.instanceOf(Object.class);
 
-        assertThrows(AccessDeniedException.class, () -> service.buildQueryPostHandlerBundle(decision, responseType));
+        assertThatThrownBy(() -> service.buildQueryPostHandlerBundle(decision, responseType))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -3271,10 +3247,6 @@ class ConstraintHandlerServiceTests {
         verify(firstResultConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
         verify(secondResultConstraintHandlerProvider, times(1)).getHandler(any(Value.class));
     }
-
-//================================================================
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//================================================================
 
     private ConstraintHandlerService buildServiceForTest(int numOfglobalRunnableProviders,
             int numOfglobalCommandMessageMappingProviders, int numOfglobalQueryMessageMappingProviders,

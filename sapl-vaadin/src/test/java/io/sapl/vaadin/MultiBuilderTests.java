@@ -18,9 +18,8 @@
 package io.sapl.vaadin;
 
 import tools.jackson.databind.node.JsonNodeFactory;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -35,6 +34,7 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
@@ -61,6 +61,7 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@DisplayName("Multi builder")
 class MultiBuilderTests {
     MultiBuilder                                        sut;
     private PolicyDecisionPoint                         pdpMock;
@@ -153,7 +154,7 @@ class MultiBuilderTests {
         }).when(buttonMock).addAttachListener(any());
 
         // WHEN + THEN
-        assertThrows(AccessDeniedException.class, () -> sut.build(buttonMock));
+        assertThatThrownBy(() -> sut.build(buttonMock)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -165,7 +166,7 @@ class MultiBuilderTests {
         sut.with(buttonMock).onDenyDo(x -> {}).action("action").resource("resource").build();
 
         // WHEN+THEN
-        assertThrows(AccessDeniedException.class, () -> sut.build(buttonMock));
+        assertThatThrownBy(() -> sut.build(buttonMock)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -176,7 +177,7 @@ class MultiBuilderTests {
         when(pdpMock.decide(any(MultiAuthorizationSubscription.class))).thenReturn(fluxMock);
         var sutWithMockButton = sut.with(buttonMock);
         // WHEN+THEN
-        assertThrows(AccessDeniedException.class, () -> sutWithMockButton.build());
+        assertThatThrownBy(() -> sutWithMockButton.build()).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -285,11 +286,9 @@ class MultiBuilderTests {
         VaadinMultiButtonPepBuilder pepBuilder = sut.with(buttonMock).onDenyDo(x -> {});
         pepBuilder.and();
 
-        // WHEN
-        AccessDeniedException exception = assertThrows(AccessDeniedException.class, pepBuilder::and);
-
-        // THEN
-        assertEquals("Builder has already been build. The builder can only be used once.", exception.getMessage());
+        // WHEN + THEN
+        assertThatThrownBy(pepBuilder::and).isInstanceOf(AccessDeniedException.class)
+                .hasMessage("Builder has already been build. The builder can only be used once.");
     }
 
     /**
@@ -359,11 +358,11 @@ class MultiBuilderTests {
         ArgumentCaptor<AuthorizationDecision> authorizationDecisionArgument = ArgumentCaptor
                 .forClass(AuthorizationDecision.class);
         ArgumentCaptor<UI>                    uiArgument                    = ArgumentCaptor.forClass(UI.class);
-        assertTrue(buttonMock.getUI().isPresent());
+        assertThat(buttonMock.getUI().isPresent()).isTrue();
         verify(vaadinConstraintEnforcementService).enforceConstraintsOfDecision(authorizationDecisionArgument.capture(),
                 uiArgument.capture(), any(VaadinPep.class));
-        assertEquals(buttonMock.getUI().get(), uiArgument.getValue());
-        assertEquals(Decision.PERMIT, authorizationDecisionArgument.getValue().decision());
+        assertThat(uiArgument.getValue()).isEqualTo(buttonMock.getUI().get());
+        assertThat(authorizationDecisionArgument.getValue().decision()).isEqualTo(Decision.PERMIT);
     }
 
     @Test
@@ -387,7 +386,7 @@ class MultiBuilderTests {
         subscribeConsumer.accept(iad);
 
         // THEN
-        assertTrue(buttonMock.getUI().isPresent());
+        assertThat(buttonMock.getUI().isPresent()).isTrue();
         verify(vaadinConstraintEnforcementService, times(0)).enforceConstraintsOfDecision(any(), any(),
                 any(VaadinPep.class));
     }
@@ -404,7 +403,7 @@ class MultiBuilderTests {
         when(optionalUI.isPresent()).thenReturn(false);
 
         // WHEN + THEN
-        assertThrows(AccessDeniedException.class, () -> sut.build(component));
+        assertThatThrownBy(() -> sut.build(component)).isInstanceOf(AccessDeniedException.class);
     }
 
     Flux<IdentifiableAuthorizationDecision> getFluxMock() {

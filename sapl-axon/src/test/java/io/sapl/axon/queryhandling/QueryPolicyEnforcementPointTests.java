@@ -17,14 +17,9 @@
  */
 package io.sapl.axon.queryhandling;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -54,6 +49,7 @@ import org.axonframework.queryhandling.QueryHandler;
 import org.axonframework.queryhandling.QueryMessage;
 import org.axonframework.queryhandling.SubscriptionQueryMessage;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -80,9 +76,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import reactor.core.publisher.Flux;
 
+@DisplayName("Query policy enforcement point")
 class QueryPolicyEnforcementPointTests {
 
-    private static final String                MAPPER_FILED_NAME = "mapper";
+    private static final String                MAPPER_FIELD_NAME = "mapper";
     private static final AccessDeniedException ACCESS_DENIED     = new AccessDeniedException("Access denied");
     private static final TestQueryPayload      DEFAULT_PAYLOAD   = new TestQueryPayload();
     private static final TestResponseType      DEFAULT_RESPONSE  = new TestResponseType();
@@ -192,7 +189,7 @@ class QueryPolicyEnforcementPointTests {
         queryConstraintHandlerBundle     = mock(QueryConstraintHandlerBundle.class);
         handlingInstance                 = spy(new HandlingObject(DEFAULT_RESPONSE));
 
-        setField(axonConstraintEnforcementService, MAPPER_FILED_NAME, mapper);
+        setField(axonConstraintEnforcementService, MAPPER_FIELD_NAME, mapper);
         when(axonConstraintEnforcementService.deserializeResource(any(Value.class), any(ResponseType.class)))
                 .thenCallRealMethod();
         when(axonConstraintEnforcementService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class),
@@ -220,8 +217,8 @@ class QueryPolicyEnforcementPointTests {
     void when_construct_and_delegateThrows_then_illegalStateException() {
         delegate = mock(MessageHandlingMember.class);
         when(delegate.unwrap(any(Class.class))).thenReturn(Optional.empty());
-        assertThrows(IllegalStateException.class, () -> new QueryPolicyEnforcementPoint<>(delegate, pdp,
-                axonConstraintEnforcementService, emitter, subscriptionBuilder, properties));
+        assertThatThrownBy(() -> new QueryPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService,
+                emitter, subscriptionBuilder, properties)).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
@@ -232,9 +229,10 @@ class QueryPolicyEnforcementPointTests {
         queryPEP = new QueryPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService, emitter,
                 subscriptionBuilder, properties);
 
-        assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
+        assertThatCode(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance)).doesNotThrowAnyException();
 
-        assertDoesNotThrow(() -> verify(delegate, times(1)).handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
+        assertThatCode(() -> verify(delegate, times(1)).handle(DEFAULT_QUERY_MESSAGE, handlingInstance))
+                .doesNotThrowAnyException();
         verify(pdp, times(0)).decide(any(AuthorizationSubscription.class));
     }
 
@@ -246,14 +244,14 @@ class QueryPolicyEnforcementPointTests {
         queryPEP = new QueryPolicyEnforcementPoint<>(delegate, pdp, axonConstraintEnforcementService, emitter,
                 subscriptionBuilder, properties);
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(AccessDeniedException.class, exception.getCause().getClass());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(AccessDeniedException.class));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -262,14 +260,14 @@ class QueryPolicyEnforcementPointTests {
         when(axonConstraintEnforcementService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class),
                 any(ResponseType.class), any(Optional.class))).thenThrow(ACCESS_DENIED);
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(AccessDeniedException.class, exception.getCause().getClass());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(AccessDeniedException.class));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -280,15 +278,15 @@ class QueryPolicyEnforcementPointTests {
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
                 .thenReturn(new RuntimeException("A very special message!"));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(RuntimeException.class, exception.getCause().getClass());
-        assertEquals("A very special message!", exception.getCause().getLocalizedMessage());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(RuntimeException.class)
+                            .satisfies(c -> assertThat(c.getLocalizedMessage()).isEqualTo("A very special message!")));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -296,15 +294,15 @@ class QueryPolicyEnforcementPointTests {
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(Throwable.class)))
                 .thenReturn(new RuntimeException("A very special message!"));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(RuntimeException.class, exception.getCause().getClass());
-        assertEquals("A very special message!", exception.getCause().getLocalizedMessage());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(RuntimeException.class)
+                            .satisfies(c -> assertThat(c.getLocalizedMessage()).isEqualTo("A very special message!")));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -320,12 +318,13 @@ class QueryPolicyEnforcementPointTests {
                 .thenReturn(new RuntimeException("A very special message!"));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future          = (CompletableFuture<?>) response;
-        var completedResult = assertDoesNotThrow(() -> future.get());
-        assertEquals(DEFAULT_RESPONSE, completedResult);
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future          = (CompletableFuture<?>) response;
+            var completedResult = future.get();
+            assertThat(completedResult).isEqualTo(DEFAULT_RESPONSE);
+        }).doesNotThrowAnyException();
         verify(handlingInstance, times(1)).handle1(specialPayload);
     }
 
@@ -337,15 +336,15 @@ class QueryPolicyEnforcementPointTests {
                 .thenReturn(new RuntimeException("A very special message!"));
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(RuntimeException.class, exception.getCause().getClass());
-        assertEquals("A very special message!", exception.getCause().getLocalizedMessage());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(RuntimeException.class)
+                            .satisfies(c -> assertThat(c.getLocalizedMessage()).isEqualTo("A very special message!")));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -353,12 +352,13 @@ class QueryPolicyEnforcementPointTests {
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
         handlingInstance.setResponse(null);
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future          = (CompletableFuture<?>) response;
-        var completedResult = assertDoesNotThrow(() -> future.get());
-        assertNull(completedResult);
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future          = (CompletableFuture<?>) response;
+            var completedResult = future.get();
+            assertThat(completedResult).isNull();
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -369,15 +369,15 @@ class QueryPolicyEnforcementPointTests {
         when(handlingInstance.handle1(any(TestQueryPayload.class)))
                 .thenThrow(new RuntimeException("A very special message!"));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(RuntimeException.class, exception.getCause().getClass());
-        assertEquals("An even more special message!", exception.getCause().getLocalizedMessage());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(RuntimeException.class).satisfies(
+                            c -> assertThat(c.getLocalizedMessage()).isEqualTo("An even more special message!")));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -391,12 +391,13 @@ class QueryPolicyEnforcementPointTests {
 
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future          = (CompletableFuture<?>) response;
-        var completedResult = assertDoesNotThrow(() -> future.get());
-        assertEquals(DEFAULT_RESPONSE, completedResult);
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future          = (CompletableFuture<?>) response;
+            var completedResult = future.get();
+            assertThat(completedResult).isEqualTo(DEFAULT_RESPONSE);
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -407,12 +408,13 @@ class QueryPolicyEnforcementPointTests {
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(decision));
         when(queryConstraintHandlerBundle.executePostHandlingHandlers(resource)).thenReturn(resource);
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future          = (CompletableFuture<?>) response;
-        var completedResult = assertDoesNotThrow(() -> future.get());
-        assertEquals(resource, completedResult);
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future          = (CompletableFuture<?>) response;
+            var completedResult = future.get();
+            assertThat(completedResult).isEqualTo(resource);
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -420,12 +422,13 @@ class QueryPolicyEnforcementPointTests {
         when(queryConstraintHandlerBundle.executePostHandlingHandlers(DEFAULT_RESPONSE)).thenReturn("special response");
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future          = (CompletableFuture<?>) response;
-        var completedResult = assertDoesNotThrow(() -> future.get());
-        assertEquals("special response", completedResult);
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future          = (CompletableFuture<?>) response;
+            var completedResult = future.get();
+            assertThat(completedResult).isEqualTo("special response");
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -438,12 +441,13 @@ class QueryPolicyEnforcementPointTests {
 
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future          = (CompletableFuture<?>) response;
-        var completedResult = assertDoesNotThrow(() -> future.get());
-        assertEquals(DEFAULT_RESPONSE, completedResult);
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future          = (CompletableFuture<?>) response;
+            var completedResult = future.get();
+            assertThat(completedResult).isEqualTo(DEFAULT_RESPONSE);
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -457,12 +461,13 @@ class QueryPolicyEnforcementPointTests {
 
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future          = (CompletableFuture<?>) response;
-        var completedResult = assertDoesNotThrow(() -> future.get());
-        assertEquals(DEFAULT_RESPONSE, completedResult);
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future          = (CompletableFuture<?>) response;
+            var completedResult = future.get();
+            assertThat(completedResult).isEqualTo(DEFAULT_RESPONSE);
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -479,14 +484,14 @@ class QueryPolicyEnforcementPointTests {
         when(axonConstraintEnforcementService.buildQueryPostHandlerBundle(any(AuthorizationDecision.class),
                 any(ResponseType.class))).thenThrow(ACCESS_DENIED);
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(AccessDeniedException.class, exception.getCause().getClass());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(AccessDeniedException.class));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -506,15 +511,15 @@ class QueryPolicyEnforcementPointTests {
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(AccessDeniedException.class)))
                 .thenReturn(new RuntimeException("some special throwable message"));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(RuntimeException.class, exception.getCause().getClass());
-        assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(RuntimeException.class).satisfies(
+                            c -> assertThat(c.getLocalizedMessage()).isEqualTo("some special throwable message")));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -531,15 +536,15 @@ class QueryPolicyEnforcementPointTests {
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(AccessDeniedException.class)))
                 .thenReturn(new RuntimeException("some special throwable message"));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(RuntimeException.class, exception.getCause().getClass());
-        assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(RuntimeException.class).satisfies(
+                            c -> assertThat(c.getLocalizedMessage()).isEqualTo("some special throwable message")));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -556,15 +561,15 @@ class QueryPolicyEnforcementPointTests {
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(RuntimeException.class)))
                 .thenReturn(new RuntimeException("some special throwable message"));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(RuntimeException.class, exception.getCause().getClass());
-        assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(RuntimeException.class).satisfies(
+                            c -> assertThat(c.getLocalizedMessage()).isEqualTo("some special throwable message")));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -580,14 +585,14 @@ class QueryPolicyEnforcementPointTests {
         when(axonConstraintEnforcementService.buildQueryPostHandlerBundle(any(AuthorizationDecision.class),
                 any(ResponseType.class))).thenThrow(ACCESS_DENIED);
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(AccessDeniedException.class, exception.getCause().getClass());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(AccessDeniedException.class));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -606,15 +611,15 @@ class QueryPolicyEnforcementPointTests {
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(RuntimeException.class)))
                 .thenReturn(new RuntimeException("some special throwable message"));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(RuntimeException.class, exception.getCause().getClass());
-        assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(RuntimeException.class).satisfies(
+                            c -> assertThat(c.getLocalizedMessage()).isEqualTo("some special throwable message")));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -629,15 +634,15 @@ class QueryPolicyEnforcementPointTests {
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(RuntimeException.class)))
                 .thenReturn(new RuntimeException("some special throwable message"));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(RuntimeException.class, exception.getCause().getClass());
-        assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(RuntimeException.class).satisfies(
+                            c -> assertThat(c.getLocalizedMessage()).isEqualTo("some special throwable message")));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -654,14 +659,14 @@ class QueryPolicyEnforcementPointTests {
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(decision));
         when(queryConstraintHandlerBundle.executePostHandlingHandlers(resourceResponse)).thenReturn(resourceResponse);
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertFalse(future.isCompletedExceptionally());
-        var resource = assertDoesNotThrow(() -> future.get());
-        assertNotNull(resource);
-        assertEquals(resourceResponse, resource);
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isFalse();
+            var resource = future.get();
+            assertThat(resource).isNotNull().isEqualTo(resourceResponse);
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -683,15 +688,15 @@ class QueryPolicyEnforcementPointTests {
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(RuntimeException.class)))
                 .thenReturn(new RuntimeException("some special throwable message"));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(RuntimeException.class, exception.getCause().getClass());
-        assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(RuntimeException.class).satisfies(
+                            c -> assertThat(c.getLocalizedMessage()).isEqualTo("some special throwable message")));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -706,14 +711,14 @@ class QueryPolicyEnforcementPointTests {
         when(queryConstraintHandlerBundle.executePostHandlingHandlers(any(TestResponseType.class)))
                 .thenReturn("SomeOtherResponse");
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertFalse(future.isCompletedExceptionally());
-        var resource = assertDoesNotThrow(() -> future.get());
-        assertNotNull(resource);
-        assertEquals("SomeOtherResponse", resource);
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isFalse();
+            var resource = future.get();
+            assertThat(resource).isNotNull().isEqualTo("SomeOtherResponse");
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -731,15 +736,15 @@ class QueryPolicyEnforcementPointTests {
         when(queryConstraintHandlerBundle.executeOnErrorHandlers(any(RuntimeException.class)))
                 .thenReturn(new RuntimeException("some special throwable message"));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future = (CompletableFuture<?>) response;
-        assertTrue(future.isCompletedExceptionally());
-        var exception = assertThrows(ExecutionException.class, future::get);
-        assertNotNull(exception.getCause());
-        assertEquals(RuntimeException.class, exception.getCause().getClass());
-        assertEquals("some special throwable message", exception.getCause().getLocalizedMessage());
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future = (CompletableFuture<?>) response;
+            assertThat(future.isCompletedExceptionally()).isTrue();
+            assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class)
+                    .satisfies(e -> assertThat(e.getCause()).isNotNull().isInstanceOf(RuntimeException.class).satisfies(
+                            c -> assertThat(c.getLocalizedMessage()).isEqualTo("some special throwable message")));
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -752,10 +757,11 @@ class QueryPolicyEnforcementPointTests {
 
         when(emitter.activeSubscriptions()).thenReturn(Set.of(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE));
 
-        assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance));
+        assertThatCode(() -> queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance))
+                .doesNotThrowAnyException();
 
-        assertDoesNotThrow(
-                () -> verify(delegate, times(1)).handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance));
+        assertThatCode(() -> verify(delegate, times(1)).handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance))
+                .doesNotThrowAnyException();
         verify(emitter, times(1))
                 .authorizeUpdatesForSubscriptionQueryWithId(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE.getIdentifier());
         verify(pdp, times(0)).decide(any(AuthorizationSubscription.class));
@@ -771,8 +777,8 @@ class QueryPolicyEnforcementPointTests {
 
         when(emitter.activeSubscriptions()).thenReturn(Set.of(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE));
 
-        assertThrows(AccessDeniedException.class,
-                () -> queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance));
+        assertThatThrownBy(() -> queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance))
+                .isInstanceOf(AccessDeniedException.class);
         verify(emitter, times(1)).immediatelyDenySubscriptionWithId(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE.getIdentifier());
     }
 
@@ -786,8 +792,8 @@ class QueryPolicyEnforcementPointTests {
 
         when(emitter.activeSubscriptions()).thenReturn(Set.of(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE));
 
-        assertThrows(IllegalStateException.class,
-                () -> queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance));
+        assertThatThrownBy(() -> queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance))
+                .isInstanceOf(IllegalStateException.class);
         verify(emitter, times(0)).authorizeUpdatesForSubscriptionQueryWithId(any(String.class));
     }
 
@@ -803,12 +809,13 @@ class QueryPolicyEnforcementPointTests {
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
         when(emitter.activeSubscriptions()).thenReturn(Set.of(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future          = (CompletableFuture<?>) response;
-        var completedResult = assertDoesNotThrow(() -> future.get());
-        assertEquals(DEFAULT_RESPONSE, completedResult);
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future          = (CompletableFuture<?>) response;
+            var completedResult = future.get();
+            assertThat(completedResult).isEqualTo(DEFAULT_RESPONSE);
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -823,12 +830,13 @@ class QueryPolicyEnforcementPointTests {
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
         when(emitter.activeSubscriptions()).thenReturn(Set.of(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE));
 
-        var response = assertDoesNotThrow(() -> queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance));
-        assertNotNull(response);
-        assertInstanceOf(CompletableFuture.class, response);
-        var future          = (CompletableFuture<?>) response;
-        var completedResult = assertDoesNotThrow(() -> future.get());
-        assertEquals(DEFAULT_RESPONSE, completedResult);
+        assertThatCode(() -> {
+            var response = queryPEP.handle(DEFAULT_SUBSCRIPTION_QUERY_MESSAGE, handlingInstance);
+            assertThat(response).isNotNull().isInstanceOf(CompletableFuture.class);
+            var future          = (CompletableFuture<?>) response;
+            var completedResult = future.get();
+            assertThat(completedResult).isEqualTo(DEFAULT_RESPONSE);
+        }).doesNotThrowAnyException();
     }
 
     private JsonNode asTree(Object obj) {

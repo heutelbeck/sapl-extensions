@@ -42,7 +42,7 @@ import reactor.core.publisher.Mono;
 @DependsOn("mqttBrokerLifecycleService")
 public class MqttClientService implements DisposableBean {
 
-	Mqtt5AsyncClient mqttClient;
+	private Mqtt5AsyncClient mqttClient;
 
 	public MqttClientService() throws InterruptedException, ExecutionException {
 		mqttClient = Mqtt5Client.builder()

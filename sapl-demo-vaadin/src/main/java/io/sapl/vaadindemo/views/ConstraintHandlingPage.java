@@ -95,7 +95,7 @@ public final class ConstraintHandlingPage extends VerticalLayout {
 
         // minPizza message
         NativeLabel  lblMinPizza = new NativeLabel();
-        IntegerField beer        = new IntegerField("+Beer 🍺");
+        IntegerField beer        = new IntegerField("+Beer");
 
         // beer
         beer.setValueChangeMode(ValueChangeMode.EAGER);

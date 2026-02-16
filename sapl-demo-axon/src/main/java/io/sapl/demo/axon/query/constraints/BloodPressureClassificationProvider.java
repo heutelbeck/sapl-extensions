@@ -19,7 +19,7 @@ public class BloodPressureClassificationProvider implements ResultConstraintHand
     @Override
 	public boolean isResponsible(Value constraint) {
 		return constraint instanceof TextValue(String text)
-				&& "catrgorise blood pressure".equals(text);
+				&& "categorise blood pressure".equals(text);
 	}
 
 	@Override

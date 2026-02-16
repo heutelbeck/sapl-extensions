@@ -17,7 +17,7 @@
  */
 package io.sapl.vaadin;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -42,6 +43,7 @@ import io.sapl.spring.constraints.api.RunnableConstraintHandlerProvider;
 import io.sapl.vaadin.constraint.VaadinFunctionConstraintHandlerProvider;
 import reactor.core.publisher.Mono;
 
+@DisplayName("Vaadin constraint enforcement service")
 class VaadinConstraintEnforcementServiceTests {
 
     List<VaadinFunctionConstraintHandlerProvider> globalVaadinFunctionProvider;
@@ -68,7 +70,7 @@ class VaadinConstraintEnforcementServiceTests {
         sut.addGlobalRunnableProviders(provider);
 
         // THEN
-        assertEquals(1, globalRunnableProviders.size());
+        assertThat(globalRunnableProviders).hasSize(1);
     }
 
     @Test
@@ -80,7 +82,7 @@ class VaadinConstraintEnforcementServiceTests {
         sut.addGlobalVaadinFunctionProvider(provider);
 
         // THEN
-        assertEquals(1, globalVaadinFunctionProvider.size());
+        assertThat(globalVaadinFunctionProvider).hasSize(1);
     }
 
     @Test
@@ -93,7 +95,7 @@ class VaadinConstraintEnforcementServiceTests {
         sut.addGlobalConsumerProviders(provider);
 
         // THEN
-        assertEquals(1, globalConsumerProviders.size());
+        assertThat(globalConsumerProviders).hasSize(1);
     }
 
     @Test
@@ -108,7 +110,7 @@ class VaadinConstraintEnforcementServiceTests {
         Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(decision, returnValue.block());
+        assertThat(returnValue.block()).isEqualTo(decision);
     }
 
     @Test
@@ -122,7 +124,7 @@ class VaadinConstraintEnforcementServiceTests {
         Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(Decision.DENY, returnValue.block().decision());
+        assertThat(returnValue.block().decision()).isEqualTo(Decision.DENY);
     }
 
     @Test
@@ -142,7 +144,7 @@ class VaadinConstraintEnforcementServiceTests {
 
         // THEN
         verify(runnableMock, times(1)).run();
-        assertEquals(decision, returnValue.block());
+        assertThat(returnValue.block()).isEqualTo(decision);
     }
 
     @Test
@@ -160,7 +162,7 @@ class VaadinConstraintEnforcementServiceTests {
         Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(Decision.DENY, returnValue.block().decision());
+        assertThat(returnValue.block().decision()).isEqualTo(Decision.DENY);
     }
 
     @Test
@@ -178,7 +180,7 @@ class VaadinConstraintEnforcementServiceTests {
         Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(decision, returnValue.block());
+        assertThat(returnValue.block()).isEqualTo(decision);
     }
 
     @Test
@@ -196,7 +198,7 @@ class VaadinConstraintEnforcementServiceTests {
         Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(Decision.DENY, returnValue.block().decision());
+        assertThat(returnValue.block().decision()).isEqualTo(Decision.DENY);
     }
 
     @Test
@@ -219,7 +221,7 @@ class VaadinConstraintEnforcementServiceTests {
         Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(decision, returnValue.block());
+        assertThat(returnValue.block()).isEqualTo(decision);
     }
 
     @Test
@@ -237,7 +239,7 @@ class VaadinConstraintEnforcementServiceTests {
         Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(Decision.DENY, returnValue.block().decision());
+        assertThat(returnValue.block().decision()).isEqualTo(Decision.DENY);
     }
 
     @Test
@@ -259,7 +261,7 @@ class VaadinConstraintEnforcementServiceTests {
 
         // THEN
         verify(consumerMock, times(1)).accept(any());
-        assertEquals(decision, returnValue.block());
+        assertThat(returnValue.block()).isEqualTo(decision);
     }
 
     @Test
@@ -279,7 +281,7 @@ class VaadinConstraintEnforcementServiceTests {
         Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(Decision.DENY, returnValue.block().decision());
+        assertThat(returnValue.block().decision()).isEqualTo(Decision.DENY);
     }
 
     @Test
@@ -299,7 +301,7 @@ class VaadinConstraintEnforcementServiceTests {
         Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(decision, returnValue.block());
+        assertThat(returnValue.block()).isEqualTo(decision);
     }
 
     @Test
@@ -322,7 +324,7 @@ class VaadinConstraintEnforcementServiceTests {
         Mono<AuthorizationDecision> returnValue = sut.enforceConstraintsOfDecision(decision, uiMock, vaadinPepMock);
 
         // THEN
-        assertEquals(decision, returnValue.block());
+        assertThat(returnValue.block()).isEqualTo(decision);
     }
 
     private AuthorizationDecision decisionWithObligation() {

@@ -22,10 +22,8 @@ import static io.sapl.mqtt.pep.MqttTestUtil.BROKER_PORT;
 import static io.sapl.mqtt.pep.MqttTestUtil.buildAndStartBroker;
 import static io.sapl.mqtt.pep.MqttTestUtil.stopBroker;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -34,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -49,6 +48,7 @@ import com.hivemq.embedded.EmbeddedHiveMQ;
 
 import io.sapl.mqtt.pep.cache.MqttClientState;
 
+@DisplayName("Connection enforcement integration")
 class ConnectionEnforcementTestIT {
 
     @TempDir
@@ -86,7 +86,7 @@ class ConnectionEnforcementTestIT {
         Mqtt5ConnAck connAckMessage = blockingMqttClient.connect();
 
         // THEN
-        assertFalse(connAckMessage.getReasonCode().isError());
+        assertThat(connAckMessage.getReasonCode().isError()).isFalse();
 
         // FINALLY
         blockingMqttClient.disconnect();
@@ -100,11 +100,11 @@ class ConnectionEnforcementTestIT {
                 .simpleAuth(Mqtt5SimpleAuth.builder().username("illegalUserName").build()).buildBlocking();
 
         // THEN
-        Mqtt5ConnAckException connAckException = assertThrowsExactly(Mqtt5ConnAckException.class,
-                blockingMqttClient::connect);
-        assertEquals(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED, connAckException.getMqttMessage().getReasonCode());
+        assertThatThrownBy(blockingMqttClient::connect).isExactlyInstanceOf(Mqtt5ConnAckException.class)
+                .satisfies(e -> assertThat(((Mqtt5ConnAckException) e).getMqttMessage().getReasonCode())
+                        .isEqualTo(Mqtt5ConnAckReasonCode.NOT_AUTHORIZED));
         await().atMost(2, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertFalse(MQTT_CLIENT_CACHE.containsKey(PUBLISH_CLIENT_ID)));
+                .untilAsserted(() -> assertThat(MQTT_CLIENT_CACHE.containsKey(PUBLISH_CLIENT_ID)).isFalse());
     }
 
     @Test
@@ -116,12 +116,12 @@ class ConnectionEnforcementTestIT {
 
         // WHEN
         Mqtt5ConnAck connAckMessage = blockingMqttClient.connect();
-        assertFalse(connAckMessage.getReasonCode().isError());
+        assertThat(connAckMessage.getReasonCode().isError()).isFalse();
 
         // THEN
         await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
-            assertFalse(blockingMqttClient.getState().isConnected());
-            assertFalse(MQTT_CLIENT_CACHE.containsKey(PUBLISH_CLIENT_ID));
+            assertThat(blockingMqttClient.getState().isConnected()).isFalse();
+            assertThat(MQTT_CLIENT_CACHE.containsKey(PUBLISH_CLIENT_ID)).isFalse();
         });
     }
 
@@ -139,18 +139,18 @@ class ConnectionEnforcementTestIT {
 
         // WHEN
         Mqtt5ConnAck connAckMessage = secondBlockingMqttClient.connect();
-        assertFalse(connAckMessage.getReasonCode().isError());
+        assertThat(connAckMessage.getReasonCode().isError()).isFalse();
 
         connAckMessage = blockingMqttClient.connect();
-        assertFalse(connAckMessage.getReasonCode().isError());
+        assertThat(connAckMessage.getReasonCode().isError()).isFalse();
 
         // THEN
         await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
-            assertFalse(blockingMqttClient.getState().isConnected());
-            assertTrue(secondBlockingMqttClient.getState().isConnected());
+            assertThat(blockingMqttClient.getState().isConnected()).isFalse();
+            assertThat(secondBlockingMqttClient.getState().isConnected()).isTrue();
 
-            assertFalse(MQTT_CLIENT_CACHE.containsKey(PUBLISH_CLIENT_ID));
-            assertTrue(MQTT_CLIENT_CACHE.containsKey(secondClientId));
+            assertThat(MQTT_CLIENT_CACHE.containsKey(PUBLISH_CLIENT_ID)).isFalse();
+            assertThat(MQTT_CLIENT_CACHE.containsKey(secondClientId)).isTrue();
         });
 
         // FINALLY

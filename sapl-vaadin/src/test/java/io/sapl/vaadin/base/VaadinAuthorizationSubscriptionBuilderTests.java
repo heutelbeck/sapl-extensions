@@ -17,14 +17,14 @@
  */
 package io.sapl.vaadin.base;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.EvaluationException;
@@ -37,6 +37,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.JsonNodeFactory;
 
+@DisplayName("Vaadin authorization subscription builder")
 class VaadinAuthorizationSubscriptionBuilderTests {
 
     MethodSecurityExpressionHandler               methodSecurityExpressionHandlerMock;
@@ -64,7 +65,7 @@ class VaadinAuthorizationSubscriptionBuilderTests {
         JsonNode ret = sut.evaluateExpressionStringToJson("{roles: getAuthorities().![getAuthority()]}", null);
 
         // THEN
-        assertEquals(mapper.valueToTree("1"), ret);
+        assertThat(ret).isEqualTo(mapper.valueToTree("1"));
     }
 
     @Test
@@ -77,12 +78,11 @@ class VaadinAuthorizationSubscriptionBuilderTests {
         when(expressionParser.parseExpression(any())).thenReturn(expressionMock);
         when(expressionMock.getExpressionString()).thenReturn("roles: getAuthorities().![getAuthority()]}");
 
-        // WHEN
-        var exception = assertThrows(IllegalArgumentException.class,
-                () -> sut.evaluateExpressionStringToJson("{roles: getAuthorities().![getAuthority()]}", null));
-        // THEN
-        assertEquals("Failed to evaluate expression 'roles: getAuthorities().![getAuthority()]}'",
-                exception.getMessage());
+        // WHEN + THEN
+        assertThatThrownBy(
+                () -> sut.evaluateExpressionStringToJson("{roles: getAuthorities().![getAuthority()]}", null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Failed to evaluate expression 'roles: getAuthorities().![getAuthority()]}'");
     }
 
     @Test
@@ -94,8 +94,8 @@ class VaadinAuthorizationSubscriptionBuilderTests {
         var ret = sut.retrieveSubject(authReq);
 
         // THEN
-        assertEquals(mapper.valueToTree("user"), ret.get("principal"));
-        assertNull(ret.get("credentials"));
+        assertThat(ret.get("principal")).isEqualTo(mapper.valueToTree("user"));
+        assertThat(ret.get("credentials")).isNull();
     }
 
     @Test
@@ -110,11 +110,11 @@ class VaadinAuthorizationSubscriptionBuilderTests {
         var ret = sut.retrieveSubject(authReq);
 
         // THEN
-        assertNull(ret.get("principal").get("password"));
-        assertNull(ret.get("credentials"));
+        assertThat(ret.get("principal").get("password")).isNull();
+        assertThat(ret.get("credentials")).isNull();
         var expected = mapper.createObjectNode();
         expected.set("user", mapper.convertValue("user", JsonNode.class));
-        assertEquals(expected, ret.get("principal"));
+        assertThat(ret.get("principal")).isEqualTo(expected);
     }
 
     @Test
@@ -129,11 +129,11 @@ class VaadinAuthorizationSubscriptionBuilderTests {
         var ret = sut.retrieveSubject(authReq, null);
 
         // THEN
-        assertNull(ret.get("principal").get("password"));
-        assertNull(ret.get("credentials"));
+        assertThat(ret.get("principal").get("password")).isNull();
+        assertThat(ret.get("credentials")).isNull();
         var expected = mapper.createObjectNode();
         expected.set("user", mapper.convertValue("user", JsonNode.class));
-        assertEquals(expected, ret.get("principal"));
+        assertThat(ret.get("principal")).isEqualTo(expected);
     }
 
     @Test
@@ -148,11 +148,11 @@ class VaadinAuthorizationSubscriptionBuilderTests {
         var ret = sut.retrieveSubject(authReq, "");
 
         // THEN
-        assertNull(ret.get("principal").get("password"));
-        assertNull(ret.get("credentials"));
+        assertThat(ret.get("principal").get("password")).isNull();
+        assertThat(ret.get("credentials")).isNull();
         var expected = mapper.createObjectNode();
         expected.set("user", mapper.convertValue("user", JsonNode.class));
-        assertEquals(expected, ret.get("principal"));
+        assertThat(ret.get("principal")).isEqualTo(expected);
     }
 
     @Test
@@ -173,7 +173,7 @@ class VaadinAuthorizationSubscriptionBuilderTests {
         var ret = sut.retrieveSubject(authReq, "{roles: getAuthorities().![getAuthority()]}");
 
         // THEN
-        assertEquals(mapper.valueToTree("1"), ret);
+        assertThat(ret).isEqualTo(mapper.valueToTree("1"));
     }
 
     @Test
@@ -191,7 +191,7 @@ class VaadinAuthorizationSubscriptionBuilderTests {
         subject.set("typeName",
                 JsonNodeFactory.instance.stringNode("io.sapl.vaadin.base.VaadinAuthorizationSubscriptionBuilderTests"));
         subject.set("simpleName", JsonNodeFactory.instance.stringNode("VaadinAuthorizationSubscriptionBuilderTests"));
-        assertEquals(subject, ret);
+        assertThat(ret).isEqualTo(subject);
     }
 
 }

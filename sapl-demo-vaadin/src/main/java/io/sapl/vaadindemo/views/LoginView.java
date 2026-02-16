@@ -63,7 +63,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
     private Map<String, Component> createUserTabs() {
         Map<String, Component> tabComponentMap = new LinkedHashMap<>();
         tabComponentMap.put("admin", new Html("<div>password: admin<br/>Can access all pages and perform all actions.</div>"));
-        tabComponentMap.put("user", new Html("<div>password: user<br/>Can´t navigate to'Admin Page'.</div>"));
+        tabComponentMap.put("user", new Html("<div>password: user<br/>Can't navigate to 'Admin Page'.</div>"));
         return tabComponentMap;
     }
 

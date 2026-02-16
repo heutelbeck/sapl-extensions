@@ -23,6 +23,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -33,6 +34,7 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import io.sapl.mqtt.pep.extension.ConfigInitUtility;
 import io.sapl.mqtt.pep.extension.PdpInitUtility;
 
+@DisplayName("HiveMQ PEP extension main")
 class HivemqPepExtensionMainTests {
 
     @Test

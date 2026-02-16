@@ -29,7 +29,7 @@ public record PatientDocument(
                 patient.ward, timestamp);
     }
 
-    public static UnaryOperator<PatientDocument> withIcdAndDisgnosis(String newIcd11Code, String newDiagnosis,
+    public static UnaryOperator<PatientDocument> withIcdAndDiagnosis(String newIcd11Code, String newDiagnosis,
             Instant timestamp) {
         return patient -> new PatientDocument(patient.id, patient.name, newIcd11Code, newDiagnosis, patient.ward,
                 timestamp);

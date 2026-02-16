@@ -12,7 +12,7 @@ import io.sapl.axon.constrainthandling.api.ResultConstraintHandlerProvider;
 import io.sapl.demo.axon.query.vitals.api.VitalSignMeasurement;
 
 @Service
-public class BodyTemperatureClassificationPovider implements ResultConstraintHandlerProvider {
+public class BodyTemperatureClassificationProvider implements ResultConstraintHandlerProvider {
 
 	private static final String BODY_TEMPERATURE_CATEGORY = "Body Temperature Category";
 

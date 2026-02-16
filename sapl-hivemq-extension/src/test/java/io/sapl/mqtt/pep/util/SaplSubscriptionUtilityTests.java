@@ -18,7 +18,7 @@
 package io.sapl.mqtt.pep.util;
 
 import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_LAST_WILL_LAST_WILL_PAYLOAD;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.hivemq.extension.sdk.api.auth.parameter.SimpleAuthInput;
@@ -48,6 +49,7 @@ import io.sapl.api.model.TextValue;
 import io.sapl.mqtt.pep.cache.MqttClientState;
 import lombok.NonNull;
 
+@DisplayName("SAPL subscription utility")
 class SaplSubscriptionUtilityTests {
 
     @Test
@@ -75,8 +77,8 @@ class SaplSubscriptionUtilityTests {
                     .buildSaplAuthzSubscriptionForMqttConnection(mqttClientStateMock, simpleAuthInputMock);
 
             // THEN
-            assertInstanceOf(NullValue.class,
-                    ((ObjectValue) authzSubscription.action()).get(ENVIRONMENT_LAST_WILL_LAST_WILL_PAYLOAD));
+            assertThat(((ObjectValue) authzSubscription.action()).get(ENVIRONMENT_LAST_WILL_LAST_WILL_PAYLOAD))
+                    .isInstanceOf(NullValue.class);
         }
     }
 
@@ -108,8 +110,8 @@ class SaplSubscriptionUtilityTests {
                     .buildSaplAuthzSubscriptionForMqttConnection(mqttClientStateMock, simpleAuthInputMock);
 
             // THEN
-            assertInstanceOf(TextValue.class,
-                    ((ObjectValue) authzSubscription.action()).get(ENVIRONMENT_LAST_WILL_LAST_WILL_PAYLOAD));
+            assertThat(((ObjectValue) authzSubscription.action()).get(ENVIRONMENT_LAST_WILL_LAST_WILL_PAYLOAD))
+                    .isInstanceOf(TextValue.class);
         }
     }
 

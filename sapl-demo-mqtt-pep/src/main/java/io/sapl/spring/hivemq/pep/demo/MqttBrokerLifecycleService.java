@@ -37,13 +37,13 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class MqttBrokerLifecycleService implements DisposableBean {
 
-	Path           		configDir;
-	Path           		dataDir;
-	Path           		extensionsDir;
-	EmbeddedHiveMQ 		mqttBroker;
+	private Path           		configDir;
+	private Path           		dataDir;
+	private Path           		extensionsDir;
+	private EmbeddedHiveMQ 		mqttBroker;
 
-	static final String EXTENSIONS_PATH = "src/main/resources";
-	static final String POLICIES_PATH 	= "src/main/resources/policies";
+	private static final String EXTENSIONS_PATH = "src/main/resources";
+	private static final String POLICIES_PATH 	= "src/main/resources/policies";
 
 	public MqttBrokerLifecycleService() throws IOException, InterruptedException, ExecutionException {
 		configDir     = newTemporaryDirectory();

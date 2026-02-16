@@ -31,6 +31,7 @@ import java.util.function.Consumer;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
@@ -42,6 +43,7 @@ import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.api.pdp.Decision;
 import io.sapl.vaadin.base.SecurityHelper;
 
+@DisplayName("Vaadin PEP builder base")
 class VaadinPepBuilderBaseTests {
 
     private static MockedStatic<SecurityHelper> securityHelperMock;

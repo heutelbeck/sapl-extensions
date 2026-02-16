@@ -32,7 +32,7 @@ import org.testcontainers.utility.DockerImageName;
 
 @DirtiesContext
 @Testcontainers
-public class CommandIT extends CommandTestsuite {
+class CommandIT extends CommandTestsuite {
     private static final int AXON_SERVER_GRPC_PORT = 8124;
 
     @Container

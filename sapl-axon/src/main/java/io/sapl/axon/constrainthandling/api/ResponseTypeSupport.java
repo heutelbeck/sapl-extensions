@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.axonframework.messaging.responsetypes.InstanceResponseType;
 import org.axonframework.messaging.responsetypes.MultipleInstancesResponseType;
 import org.axonframework.messaging.responsetypes.OptionalResponseType;
 import org.axonframework.messaging.responsetypes.PublisherResponseType;
@@ -81,10 +82,26 @@ public interface ResponseTypeSupport {
     }
 
     private Predicate<? super ResponseType<?>> compatibleResponseType(ResponseType<?> responseType) {
-        return supportedType -> {
-            if (!supportedType.getClass().equals(responseType.getClass()))
-                return false;
-            return supportedType.getExpectedResponseType().isAssignableFrom(responseType.getExpectedResponseType());
-        };
+        if (isUnknownResponseType(responseType))
+            return supportedType -> true;
+        return supportedType -> sameResponseTypeCategory(supportedType, responseType)
+                && supportedType.getExpectedResponseType().isAssignableFrom(responseType.getExpectedResponseType());
+    }
+
+    private boolean isUnknownResponseType(ResponseType<?> type) {
+        return !(type instanceof InstanceResponseType) && !(type instanceof MultipleInstancesResponseType)
+                && !(type instanceof OptionalResponseType) && !(type instanceof PublisherResponseType);
+    }
+
+    private boolean sameResponseTypeCategory(ResponseType<?> a, ResponseType<?> b) {
+        if (a instanceof MultipleInstancesResponseType && b instanceof MultipleInstancesResponseType)
+            return true;
+        if (a instanceof OptionalResponseType && b instanceof OptionalResponseType)
+            return true;
+        if (a instanceof PublisherResponseType && b instanceof PublisherResponseType)
+            return true;
+        return !(a instanceof MultipleInstancesResponseType) && !(a instanceof OptionalResponseType)
+                && !(a instanceof PublisherResponseType) && !(b instanceof MultipleInstancesResponseType)
+                && !(b instanceof OptionalResponseType) && !(b instanceof PublisherResponseType);
     }
 }

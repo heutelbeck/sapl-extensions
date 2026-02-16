@@ -29,7 +29,7 @@ import reactor.core.publisher.Flux;
 @Service
 public class MqttDoorLockPublisher implements DisposableBean {
 
-	Disposable publisher;
+	private Disposable publisher;
 
 	public MqttDoorLockPublisher(MqttClientService mqttClient) {
 		log.debug("Starting to send door lock status events...");

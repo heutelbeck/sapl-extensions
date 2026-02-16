@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -32,6 +33,7 @@ import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinService;
 
+@DisplayName("Lifecycle navigation configuration")
 class LifecycleNavigationConfigurationTests {
 
     LifecycleNavigationConfiguration sut;

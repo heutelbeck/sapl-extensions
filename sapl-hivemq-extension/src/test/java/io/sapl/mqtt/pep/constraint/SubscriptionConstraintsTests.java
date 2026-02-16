@@ -23,20 +23,21 @@ import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_LIMIT_MQTT_ACT
 import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_STATUS;
 import static io.sapl.mqtt.pep.constraint.Constraints.ENVIRONMENT_TIME_LIMIT;
 import static io.sapl.mqtt.pep.constraint.SubscriptionConstraints.ENVIRONMENT_RESUBSCRIBE_MQTT_SUBSCRIPTION;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import io.sapl.api.model.ObjectValue;
 import io.sapl.api.model.Value;
 import io.sapl.api.pdp.IdentifiableAuthorizationDecision;
 
+@DisplayName("Subscription constraints")
 class SubscriptionConstraintsTests {
 
     @Test
@@ -51,7 +52,7 @@ class SubscriptionConstraintsTests {
                 constraint);
 
         // THEN
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -70,7 +71,7 @@ class SubscriptionConstraintsTests {
 
         // THEN
         verify(constraintDetailsSpy, never()).setTimeLimitSec(anyLong());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -89,7 +90,7 @@ class SubscriptionConstraintsTests {
 
         // THEN
         verify(constraintDetailsSpy, never()).setTimeLimitSec(anyLong());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -107,7 +108,7 @@ class SubscriptionConstraintsTests {
 
         // THEN
         verify(constraintDetailsSpy, never()).setTimeLimitSec(anyLong());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -126,7 +127,7 @@ class SubscriptionConstraintsTests {
 
         // THEN
         verify(constraintDetailsSpy, never()).setIsResubscribeMqttSubscriptionEnabled(anyBoolean());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -145,7 +146,7 @@ class SubscriptionConstraintsTests {
 
         // THEN
         verify(constraintDetailsSpy, never()).setIsResubscribeMqttSubscriptionEnabled(anyBoolean());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 
     @Test
@@ -164,7 +165,7 @@ class SubscriptionConstraintsTests {
 
         // THEN
         verify(constraintDetailsSpy).setIsResubscribeMqttSubscriptionEnabled(Boolean.TRUE);
-        assertTrue(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isTrue();
     }
 
     @Test
@@ -183,7 +184,7 @@ class SubscriptionConstraintsTests {
 
         // THEN
         verify(constraintDetailsSpy).setIsResubscribeMqttSubscriptionEnabled(Boolean.FALSE);
-        assertTrue(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isTrue();
     }
 
     @Test
@@ -202,6 +203,6 @@ class SubscriptionConstraintsTests {
 
         // THEN
         verify(constraintDetailsSpy, never()).setIsResubscribeMqttSubscriptionEnabled(anyBoolean());
-        assertFalse(wasSuccessfullyHandled);
+        assertThat(wasSuccessfullyHandled).isFalse();
     }
 }

@@ -19,12 +19,9 @@ package io.sapl.axon.queryhandling;
 
 import static io.sapl.axon.TestUtilities.alwaysTrue;
 import static io.sapl.axon.TestUtilities.matchesIgnoringIdentifier;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -54,6 +51,7 @@ import org.axonframework.queryhandling.SubscriptionQueryUpdateMessage;
 import org.axonframework.queryhandling.UpdateHandlerRegistration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -74,6 +72,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.Many;
 
+@DisplayName("SAPL query update emitter")
 @SuppressWarnings("deprecation") // inherited from Axon
 class SaplQueryUpdateEmitterTests {
 
@@ -83,8 +82,8 @@ class SaplQueryUpdateEmitterTests {
     private static final FlaggedUpdateResponseType DEFAULT_UPDATE_RESPONSE_TYPE     = new FlaggedUpdateResponseType();
     private static final Duration                  DEFAULT_TIMEOUT                  = Duration.ofMillis(500);
     private static final Duration                  DEFAULT_TIMESTEP                 = Duration.ofMillis(20);
-    private static final String                    MAPPER_FILED_NAME                = "mapper";
-    private static final String                    DISPATCH_INTERCEPTORS_FILED_NAME = "dispatchInterceptors";
+    private static final String                    MAPPER_FIELD_NAME                = "mapper";
+    private static final String                    DISPATCH_INTERCEPTORS_FIELD_NAME = "dispatchInterceptors";
 
     private static ConstraintHandlerService constraintHandlerService;
 
@@ -118,7 +117,7 @@ class SaplQueryUpdateEmitterTests {
     static void setup() {
         var mapper = JsonMapper.builder().build();
         constraintHandlerService = mock(ConstraintHandlerService.class);
-        setField(constraintHandlerService, MAPPER_FILED_NAME, mapper);
+        setField(constraintHandlerService, MAPPER_FIELD_NAME, mapper);
         when(constraintHandlerService.buildQueryPreHandlerBundle(any(AuthorizationDecision.class),
                 any(ResponseType.class), any(Optional.class))).thenCallRealMethod();
         when(constraintHandlerService.deserializeResource(any(Value.class), any(ResponseType.class)))
@@ -126,30 +125,30 @@ class SaplQueryUpdateEmitterTests {
     }
 
     private SaplQueryUpdateEmitter                                 emitter;
-    private SubscriptionQueryMessage<String, List<String>, String> defaultSbscriptionQueryMessage;
+    private SubscriptionQueryMessage<String, List<String>, String> defaultSubscriptionQueryMessage;
 
     @BeforeEach
     void setUp() {
-        defaultSbscriptionQueryMessage = new GenericSubscriptionQueryMessage<>("some-payload", "chatMessages",
+        defaultSubscriptionQueryMessage = new GenericSubscriptionQueryMessage<>("some-payload", "chatMessages",
                 ResponseTypes.multipleInstancesOf(String.class), ResponseTypes.instanceOf(String.class));
-        defaultSbscriptionQueryMessage = defaultSbscriptionQueryMessage.andMetaData(Map.of("updateResponseType",
-                defaultSbscriptionQueryMessage.getUpdateResponseType().getExpectedResponseType().getSimpleName()));
-        emitter                        = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
+        defaultSubscriptionQueryMessage = defaultSubscriptionQueryMessage.andMetaData(Map.of("updateResponseType",
+                defaultSubscriptionQueryMessage.getUpdateResponseType().getExpectedResponseType().getSimpleName()));
+        emitter                         = new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
     }
 
     @Test
     void when_construct_without_updateMessageMonitor_then_return() {
-        assertDoesNotThrow(() -> {
+        assertThatCode(() -> {
             new SaplQueryUpdateEmitter(Optional.empty(), constraintHandlerService);
-        });
+        }).doesNotThrowAnyException();
     }
 
     @Test
     void when_construct_with_updateMessageMonitor_then_return() {
         var updateMessageMonitor = NoOpMessageMonitor.INSTANCE;
-        assertDoesNotThrow(() -> {
+        assertThatCode(() -> {
             new SaplQueryUpdateEmitter(Optional.of(updateMessageMonitor), constraintHandlerService);
-        });
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -166,7 +165,7 @@ class SaplQueryUpdateEmitterTests {
 
         var updateHandlerRegistration = anEmitter.registerUpdateHandler(query, backpressure,
                 DEFAULT_UPDATE_BUFFER_SIZE);
-        assertEquals(FlaggedUpdateHandlerRegistration.class, updateHandlerRegistration.getClass());
+        assertThat(updateHandlerRegistration.getClass()).isEqualTo(FlaggedUpdateHandlerRegistration.class);
     }
 
     @Test
@@ -175,7 +174,7 @@ class SaplQueryUpdateEmitterTests {
                 ResponseTypes.multipleInstancesOf(Object.class));
 
         var queryUpdateHandlerRegistered = emitter.queryUpdateHandlerRegistered(query);
-        assertFalse(queryUpdateHandlerRegistered);
+        assertThat(queryUpdateHandlerRegistered).isFalse();
     }
 
     @Test
@@ -185,7 +184,7 @@ class SaplQueryUpdateEmitterTests {
         emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
 
         var queryUpdateHandlerRegistered = emitter.queryUpdateHandlerRegistered(query);
-        assertTrue(queryUpdateHandlerRegistered);
+        assertThat(queryUpdateHandlerRegistered).isTrue();
     }
 
     @Test
@@ -243,8 +242,9 @@ class SaplQueryUpdateEmitterTests {
         var decisions = Flux.just(AuthorizationDecision.DENY);
         var clazz     = Annotation.class;
 
-        assertThrows(IllegalArgumentException.class,
-                () -> emitter.authorizeUpdatesForSubscriptionQueryWithId(DEFAULT_MESSAGE_IDENTIFIER, decisions, clazz));
+        assertThatThrownBy(
+                () -> emitter.authorizeUpdatesForSubscriptionQueryWithId(DEFAULT_MESSAGE_IDENTIFIER, decisions, clazz))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -335,7 +335,7 @@ class SaplQueryUpdateEmitterTests {
                 ResponseTypes.multipleInstancesOf(Object.class));
 
         var updateHandlerRegistration = emitter.registerUpdateHandler(query, DEFAULT_UPDATE_BUFFER_SIZE);
-        assertTrue(UpdateHandlerRegistration.class.isAssignableFrom(updateHandlerRegistration.getClass()));
+        assertThat(UpdateHandlerRegistration.class.isAssignableFrom(updateHandlerRegistration.getClass())).isTrue();
     }
 
     @Test
@@ -1048,7 +1048,7 @@ class SaplQueryUpdateEmitterTests {
 
         create(registration.getUpdates().timeout(DEFAULT_TIMEOUT))
                 .then(() -> emitter.completeExceptionally(filter, cause))
-                .verifyErrorSatisfies(error -> assertEquals(cause, error));
+                .verifyErrorSatisfies(error -> assertThat(error).isEqualTo(cause));
     }
 
     @Test
@@ -1112,8 +1112,8 @@ class SaplQueryUpdateEmitterTests {
         create(registrationA.getUpdates().timeout(DEFAULT_TIMEOUT)).then(() -> {
             create(registrationB.getUpdates().timeout(DEFAULT_TIMEOUT))
                     .then(() -> emitter.completeExceptionally(filter, cause))
-                    .verifyErrorSatisfies(error -> assertEquals(cause, error));
-        }).verifyErrorSatisfies(error -> assertEquals(cause, error));
+                    .verifyErrorSatisfies(error -> assertThat(error).isEqualTo(cause));
+        }).verifyErrorSatisfies(error -> assertThat(error).isEqualTo(cause));
     }
 
     @Test
@@ -1139,7 +1139,7 @@ class SaplQueryUpdateEmitterTests {
         create(registrationA.getUpdates()).then(() -> {
             create(registrationB.getUpdates().timeout(DEFAULT_TIMEOUT))
                     .then(() -> emitter.completeExceptionally(filter, cause))
-                    .verifyErrorSatisfies(error -> assertEquals(cause, error));
+                    .verifyErrorSatisfies(error -> assertThat(error).isEqualTo(cause));
         }).verifyTimeout(DEFAULT_TIMEOUT);
     }
 
@@ -1148,14 +1148,17 @@ class SaplQueryUpdateEmitterTests {
     void when_dispatchInterceptorRegistered_then_contains() {
         MessageDispatchInterceptor<? super SubscriptionQueryUpdateMessage<?>> interceptor = list -> (integer,
                 updateMessage) -> GenericSubscriptionQueryUpdateMessage.asUpdateMessage(5);
-        assertFalse(
-                ((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FILED_NAME)).contains(interceptor));
+        assertThat(
+                ((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FIELD_NAME)).contains(interceptor))
+                .isFalse();
         var registration = emitter.registerDispatchInterceptor(interceptor);
-        assertTrue(
-                ((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FILED_NAME)).contains(interceptor));
+        assertThat(
+                ((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FIELD_NAME)).contains(interceptor))
+                .isTrue();
         registration.cancel();
-        assertFalse(
-                ((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FILED_NAME)).contains(interceptor));
+        assertThat(
+                ((List) ReflectionTestUtils.getField(emitter, DISPATCH_INTERCEPTORS_FIELD_NAME)).contains(interceptor))
+                .isFalse();
     }
 
     @Test
@@ -1167,20 +1170,20 @@ class SaplQueryUpdateEmitterTests {
                 .startAndGet(subscriptionQueryMessage);
 
         var unitOfWorkTasks = uow.resources();
-        assertEquals(0, unitOfWorkTasks.size());
+        assertThat(unitOfWorkTasks.size()).isEqualTo(0);
         emitter.complete(q -> true);
-        assertEquals(1, unitOfWorkTasks.size());
+        assertThat(unitOfWorkTasks.size()).isEqualTo(1);
         uow.commit();// Cleanup to not interfere with other tests
 
     }
 
     @Test
     void when_updateHandlerRegistered_then_contains() {
-        assertFalse(emitter.activeSubscriptions().contains(defaultSbscriptionQueryMessage));
-        var registration = emitter.registerUpdateHandler(defaultSbscriptionQueryMessage, 1024);
-        assertTrue(emitter.activeSubscriptions().contains(defaultSbscriptionQueryMessage));
+        assertThat(emitter.activeSubscriptions().contains(defaultSubscriptionQueryMessage)).isFalse();
+        var registration = emitter.registerUpdateHandler(defaultSubscriptionQueryMessage, 1024);
+        assertThat(emitter.activeSubscriptions().contains(defaultSubscriptionQueryMessage)).isTrue();
         registration.getRegistration().cancel();
-        assertFalse(emitter.activeSubscriptions().contains(defaultSbscriptionQueryMessage));
+        assertThat(emitter.activeSubscriptions().contains(defaultSubscriptionQueryMessage)).isFalse();
     }
 
     @Test
@@ -1229,8 +1232,9 @@ class SaplQueryUpdateEmitterTests {
         result.complete();
 
         create(result.getUpdates().map(Message::getPayload).timeout(DEFAULT_TIMEOUT))
-                .expectNextMatches(actual -> equalTo(new String[] { "array-item-1", "array-item-2" }).matches(actual))
-                .expectNextMatches(actual -> equalTo(Arrays.asList("list-item-1", "list-item-2")).matches(actual))
+                .expectNextMatches(
+                        actual -> Arrays.equals((String[]) actual, new String[] { "array-item-1", "array-item-2" }))
+                .expectNextMatches(actual -> actual.equals(Arrays.asList("list-item-1", "list-item-2")))
                 .verifyComplete();
     }
 

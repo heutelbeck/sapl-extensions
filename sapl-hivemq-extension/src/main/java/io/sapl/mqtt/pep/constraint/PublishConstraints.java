@@ -63,10 +63,10 @@ public class PublishConstraints {
     private static final int    DEFAULT_NUMBER_OF_CHARACTERS_TO_SHOW_LEFT  = 0;
     private static final int    DEFAULT_NUMBER_OF_CHARACTERS_TO_SHOW_RIGHT = 0;
 
-    private static final String MIME_TYPE_PLAIN_TEXT             = "text/plain";
-    private static final String ILLEGAL_PARAMETER_DISCLOSE_LEFT  = "Illegal parameter for left disclosure. Expecting a positive integer.";
-    private static final String ILLEGAL_PARAMETER_DISCLOSE_RIGHT = "Illegal parameter for right disclosure. Expecting a positive integer.";
-    private static final String ILLEGAL_PARAMETER_REPLACEMENT    = "Illegal parameter for replacement. Expecting a string.";
+    private static final String MIME_TYPE_PLAIN_TEXT                   = "text/plain";
+    private static final String ERROR_ILLEGAL_PARAMETER_DISCLOSE_LEFT  = "Illegal parameter for left disclosure. Expecting a positive integer.";
+    private static final String ERROR_ILLEGAL_PARAMETER_DISCLOSE_RIGHT = "Illegal parameter for right disclosure. Expecting a positive integer.";
+    private static final String ERROR_ILLEGAL_PARAMETER_REPLACEMENT    = "Illegal parameter for replacement. Expecting a string.";
 
     @FunctionalInterface
     private interface PublishConstraintHandlingFunction<S, M, V> {
@@ -276,14 +276,14 @@ public class PublishConstraints {
             ObjectValue constraint) {
         return extractNumberOfCharactersToDiscloseOneSiteFromParametersOrUseDefault(
                 DEFAULT_NUMBER_OF_CHARACTERS_TO_SHOW_LEFT, constraint, ENVIRONMENT_DISCLOSE_LEFT,
-                ILLEGAL_PARAMETER_DISCLOSE_LEFT);
+                ERROR_ILLEGAL_PARAMETER_DISCLOSE_LEFT);
     }
 
     private static int extractNumberOfCharactersToDiscloseOnTheRightSideFromParametersOrUseDefault(
             ObjectValue constraint) {
         return extractNumberOfCharactersToDiscloseOneSiteFromParametersOrUseDefault(
                 DEFAULT_NUMBER_OF_CHARACTERS_TO_SHOW_RIGHT, constraint, ENVIRONMENT_DISCLOSE_RIGHT,
-                ILLEGAL_PARAMETER_DISCLOSE_RIGHT);
+                ERROR_ILLEGAL_PARAMETER_DISCLOSE_RIGHT);
     }
 
     private static int extractNumberOfCharactersToDiscloseOneSiteFromParametersOrUseDefault(
@@ -309,7 +309,7 @@ public class PublishConstraints {
         if (replacementStringValue instanceof TextValue(var text)) {
             replacementString = text;
         } else if (replacementStringValue != null) {
-            throw new IllegalArgumentException(ILLEGAL_PARAMETER_REPLACEMENT);
+            throw new IllegalArgumentException(ERROR_ILLEGAL_PARAMETER_REPLACEMENT);
         }
         return replacementString;
     }

@@ -18,8 +18,8 @@
 package io.sapl.vaadin;
 
 import tools.jackson.databind.node.JsonNodeFactory;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doAnswer;
@@ -35,6 +35,7 @@ import java.util.function.Consumer;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.springframework.security.access.AccessDeniedException;
@@ -55,6 +56,7 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@DisplayName("Vaadin PEP single PEP builder")
 class VaadinPepSinglePepBuilderTests {
 
     private static MockedStatic<SecurityHelper> securityHelperMock;
@@ -91,7 +93,8 @@ class VaadinPepSinglePepBuilderTests {
         vaadinSinglePepBuilder.subject("subject");
 
         // THEN
-        assertEquals(Value.of("subject"), vaadinSinglePepBuilder.vaadinPep.getAuthorizationSubscription().subject());
+        assertThat(vaadinSinglePepBuilder.vaadinPep.getAuthorizationSubscription().subject())
+                .isEqualTo(Value.of("subject"));
     }
 
     @Test
@@ -112,8 +115,8 @@ class VaadinPepSinglePepBuilderTests {
         vaadinSinglePepBuilder.environment("environment");
 
         // THEN
-        assertEquals(Value.of("environment"),
-                vaadinSinglePepBuilder.vaadinPep.getAuthorizationSubscription().environment());
+        assertThat(vaadinSinglePepBuilder.vaadinPep.getAuthorizationSubscription().environment())
+                .isEqualTo(Value.of("environment"));
     }
 
     @Test
@@ -209,7 +212,7 @@ class VaadinPepSinglePepBuilderTests {
         }).when(component).addAttachListener(any());
 
         // WHEN + THEN
-        assertThrows(AccessDeniedException.class, vaadinSinglePepBuilder::build);
+        assertThatThrownBy(vaadinSinglePepBuilder::build).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -275,7 +278,7 @@ class VaadinPepSinglePepBuilderTests {
         vaadinSinglePepBuilder.onDecisionDo(decision -> {});
 
         // WHEN + THEN
-        assertThrows(AccessDeniedException.class, vaadinSinglePepBuilder::build);
+        assertThatThrownBy(vaadinSinglePepBuilder::build).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -359,7 +362,7 @@ class VaadinPepSinglePepBuilderTests {
         vaadinSinglePepBuilder.build();
 
         // THEN
-        assertThrows(AccessDeniedException.class, vaadinSinglePepBuilder::build);
+        assertThatThrownBy(vaadinSinglePepBuilder::build).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -381,7 +384,7 @@ class VaadinPepSinglePepBuilderTests {
                         .useConstructor(pdp, mock(VaadinConstraintEnforcementService.class), component)
                         .defaultAnswer(CALLS_REAL_METHODS));
         // WHEN + THEN
-        assertThrows(AccessDeniedException.class, vaadinSinglePepBuilder::build);
+        assertThatThrownBy(vaadinSinglePepBuilder::build).isInstanceOf(AccessDeniedException.class);
     }
 
     Component getComponentMockWithUI(boolean isAttached) {

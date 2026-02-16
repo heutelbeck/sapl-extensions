@@ -29,7 +29,7 @@ import org.testcontainers.utility.DockerImageName;
 
 @DirtiesContext
 @Testcontainers
-public class QueryIT extends QueryTestsuite {
+class QueryIT extends QueryTestsuite {
     private static final int AXON_SERVER_GRPC_PORT = 8124;
 
     @Container

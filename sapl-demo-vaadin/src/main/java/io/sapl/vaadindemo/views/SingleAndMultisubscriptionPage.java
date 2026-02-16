@@ -40,7 +40,7 @@ public class SingleAndMultisubscriptionPage extends VerticalLayout {
         add(Utilities.getDefaultHeader("Single- and Multisubscription Page"));
 
         HorizontalLayout horizontalLayout = new HorizontalLayout(createSingleSubscriptionLayout(pepBuilderService),
-                crateMultisubscriptionLayout(pepBuilderService));
+                createMultisubscriptionLayout(pepBuilderService));
         horizontalLayout.setSizeFull();
         add(horizontalLayout);
     }
@@ -75,7 +75,7 @@ public class SingleAndMultisubscriptionPage extends VerticalLayout {
                 .resource(resource).onDecisionEnableOrDisable().build();
     }
 
-    private VerticalLayout crateMultisubscriptionLayout(PepBuilderService pepBuilderService) {
+    private VerticalLayout createMultisubscriptionLayout(PepBuilderService pepBuilderService) {
         H3  multiSubscriptionH3 = new H3("Multisubscription");
         var buttonResource      = JsonNodeFactory.instance.objectNode().put(OBJECT, "button").put("page",
                 SINGLE_AND_MULTISUBSCRIPTION);

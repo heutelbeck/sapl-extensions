@@ -22,13 +22,12 @@ import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_AUTHZ_AC
 import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_CLIENT_ID;
 import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_TOPIC;
 import static io.sapl.mqtt.pep.util.SaplSubscriptionUtility.ENVIRONMENT_USER_NAME;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -39,6 +38,7 @@ import io.sapl.api.pdp.Decision;
 import io.sapl.mqtt.pep.config.SaplMqttExtensionConfig;
 import io.sapl.pdp.PolicyDecisionPointBuilder;
 
+@DisplayName("PDP init utility")
 class PdpInitUtilityTests {
 
     private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
@@ -53,7 +53,7 @@ class PdpInitUtilityTests {
         var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, null, null);
 
         // THEN
-        assertNull(pdp);
+        assertThat(pdp).isNull();
     }
 
     @Test
@@ -73,10 +73,10 @@ class PdpInitUtilityTests {
         var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, null, null);
 
         // THEN
-        assertNotNull(pdp);
+        assertThat(pdp).isNotNull();
         var authzDecision = pdp.decide(AuthorizationSubscription.of(subject, action, resource)).blockFirst();
-        assertNotNull(authzDecision);
-        assertEquals(Decision.PERMIT, authzDecision.decision());
+        assertThat(authzDecision).isNotNull();
+        assertThat(authzDecision.decision()).isEqualTo(Decision.PERMIT);
     }
 
     @Test
@@ -95,10 +95,10 @@ class PdpInitUtilityTests {
         var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, new File("src/test"), null);
 
         // THEN
-        assertNotNull(pdp);
+        assertThat(pdp).isNotNull();
         var authzDecision = pdp.decide(AuthorizationSubscription.of(subject, action, resource)).blockFirst();
-        assertNotNull(authzDecision);
-        assertEquals(Decision.PERMIT, authzDecision.decision());
+        assertThat(authzDecision).isNotNull();
+        assertThat(authzDecision.decision()).isEqualTo(Decision.PERMIT);
     }
 
     @Test
@@ -114,7 +114,7 @@ class PdpInitUtilityTests {
             var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, null, "/policies");
 
             // THEN
-            assertNull(pdp);
+            assertThat(pdp).isNull();
         }
     }
 
@@ -132,6 +132,6 @@ class PdpInitUtilityTests {
         var pdp = PdpInitUtility.buildPdp(saplMqttExtensionConfigMock, null, null);
 
         // THEN
-        assertNotNull(pdp);
+        assertThat(pdp).isNotNull();
     }
 }

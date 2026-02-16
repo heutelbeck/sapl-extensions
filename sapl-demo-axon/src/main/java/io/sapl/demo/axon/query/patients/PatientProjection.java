@@ -57,7 +57,7 @@ public class PatientProjection {
     void on(PatientDiagnosed event, @Timestamp Instant timestamp) {
         log.trace(PROJECT, event);
         updatePatient(event.id(),
-                PatientDocument.withIcdAndDisgnosis(event.icd11Code(), event.diagnosisText(), timestamp));
+                PatientDocument.withIcdAndDiagnosis(event.icd11Code(), event.diagnosisText(), timestamp));
     }
 
     @QueryHandler

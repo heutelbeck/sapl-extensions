@@ -65,7 +65,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public final class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandlingMember<T> {
 
-    private static final String ACCESS_DENIED = "Access Denied";
+    private static final String ERROR_ACCESS_DENIED = "Access Denied";
 
     private static final Set<Class<?>> SAPL_AXON_ANNOTATIONS = Set.of(PreHandleEnforce.class, PostHandleEnforce.class,
             EnforceDropUpdatesWhileDenied.class, EnforceRecoverableUpdatesIfDenied.class);
@@ -219,7 +219,7 @@ public final class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandling
                 return Mono.error(constraintHandler.executeOnErrorHandlers(error));
             }
             if (decision.decision() != Decision.PERMIT) {
-                var error = new AccessDeniedException(ACCESS_DENIED);
+                var error = new AccessDeniedException(ERROR_ACCESS_DENIED);
                 return Mono.error(constraintHandler.executeOnErrorHandlers(error));
             }
             try {
@@ -264,7 +264,7 @@ public final class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandling
             }
 
             if (decision.decision() != Decision.PERMIT) {
-                var e = new AccessDeniedException(ACCESS_DENIED);
+                var e = new AccessDeniedException(ERROR_ACCESS_DENIED);
                 return Mono.error(constraintHandler.executeOnErrorHandlers(e));
             }
 
@@ -293,7 +293,7 @@ public final class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandling
             }
 
             if (decision.decision() != Decision.PERMIT) {
-                var error = new AccessDeniedException(ACCESS_DENIED);
+                var error = new AccessDeniedException(ERROR_ACCESS_DENIED);
                 return Mono.error(constraintHandler.executeOnErrorHandlers(error));
             }
 
@@ -350,7 +350,7 @@ public final class QueryPolicyEnforcementPoint<T> extends WrappedMessageHandling
                     + "query handlers for normal queries and subscription queries, if your normal query requires "
                     + "@PostHandleEnforce.");
             emitter.immediatelyDenySubscriptionWithId(message.getIdentifier());
-            throw new AccessDeniedException(ACCESS_DENIED);
+            throw new AccessDeniedException(ERROR_ACCESS_DENIED);
         }
 
         var streamingAnnotation = uniqueStreamingEnforcementAnnotation();

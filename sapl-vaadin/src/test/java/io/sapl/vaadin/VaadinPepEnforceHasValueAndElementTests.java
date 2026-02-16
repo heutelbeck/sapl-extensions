@@ -30,6 +30,7 @@ import java.util.function.BiConsumer;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
@@ -40,6 +41,7 @@ import com.vaadin.flow.server.Command;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.vaadin.base.SecurityHelper;
 
+@DisplayName("Vaadin PEP enforce has value and element")
 class VaadinPepEnforceHasValueAndElementTests {
 
     private static MockedStatic<SecurityHelper> securityHelperMock;

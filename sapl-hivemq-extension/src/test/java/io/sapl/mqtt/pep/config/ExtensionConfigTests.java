@@ -18,8 +18,8 @@
 package io.sapl.mqtt.pep.config;
 
 import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_EMBEDDED_PDP_POLICIES_PATH;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 
@@ -27,10 +27,11 @@ import jakarta.xml.bind.DataBindingException;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+@DisplayName("Extension config")
 class ExtensionConfigTests {
 
     @Test
@@ -43,7 +44,7 @@ class ExtensionConfigTests {
         var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertEquals(DEFAULT_EMBEDDED_PDP_POLICIES_PATH, saplMqttExtensionConfig.getEmbeddedPdpPoliciesPath());
+        assertThat(saplMqttExtensionConfig.getEmbeddedPdpPoliciesPath()).isEqualTo(DEFAULT_EMBEDDED_PDP_POLICIES_PATH);
     }
 
     @Test
@@ -56,7 +57,7 @@ class ExtensionConfigTests {
         var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertTrue(saplMqttExtensionConfig.isEmbeddedPdpPoliciesPathRelativeToExtensionHome());
+        assertThat(saplMqttExtensionConfig.isEmbeddedPdpPoliciesPathRelativeToExtensionHome()).isTrue();
     }
 
     @Test
@@ -69,7 +70,7 @@ class ExtensionConfigTests {
                     .thenThrow(JAXBException.class);
 
             // THEN
-            Assertions.assertThrows(DataBindingException.class, ConfigurationXmlParser::new);
+            assertThatThrownBy(ConfigurationXmlParser::new).isInstanceOf(DataBindingException.class);
         }
     }
 }

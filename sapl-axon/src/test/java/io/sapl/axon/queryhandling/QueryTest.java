@@ -23,10 +23,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.junit.jupiter.api.DisplayName;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
-public class QueryTest extends QueryTestsuite {
+@DisplayName("Query handling policy enforcement")
+class QueryTest extends QueryTestsuite {
     @DynamicPropertySource
     static void registerAxonProperties(DynamicPropertyRegistry registry) {
         registry.add("axon.axonserver.enabled", () -> "false");

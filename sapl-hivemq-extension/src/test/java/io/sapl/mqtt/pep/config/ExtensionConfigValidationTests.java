@@ -26,14 +26,16 @@ import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP
 import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP_FIRST_BACK_OFF_MILLIS;
 import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_REMOTE_PDP_MAX_BACK_OFF_MILLIS;
 import static io.sapl.mqtt.pep.config.SaplMqttExtensionConfig.DEFAULT_SUBSCRIPTION_ENFORCEMENT_TIMEOUT_MILLIS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+@DisplayName("Extension config validation")
 class ExtensionConfigValidationTests {
 
     @Test
@@ -46,7 +48,7 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertEquals(DEFAULT_REMOTE_PDP_BASE_URL, saplMqttExtensionConfig.getRemotePdpBaseUrl());
+        assertThat(saplMqttExtensionConfig.getRemotePdpBaseUrl()).isEqualTo(DEFAULT_REMOTE_PDP_BASE_URL);
     }
 
     @Test
@@ -59,7 +61,7 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertEquals(DEFAULT_PDP_IMPLEMENTATION, saplMqttExtensionConfig.getPdpImplementation());
+        assertThat(saplMqttExtensionConfig.getPdpImplementation()).isEqualTo(DEFAULT_PDP_IMPLEMENTATION);
     }
 
     @Test
@@ -72,8 +74,8 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertEquals(DEFAULT_CONNECTION_ENFORCEMENT_TIMEOUT_MILLIS,
-                saplMqttExtensionConfig.getConnectionEnforcementTimeoutMillis());
+        assertThat(saplMqttExtensionConfig.getConnectionEnforcementTimeoutMillis())
+                .isEqualTo(DEFAULT_CONNECTION_ENFORCEMENT_TIMEOUT_MILLIS);
     }
 
     @Test
@@ -86,8 +88,8 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertEquals(DEFAULT_SUBSCRIPTION_ENFORCEMENT_TIMEOUT_MILLIS,
-                saplMqttExtensionConfig.getSubscriptionEnforcementTimeoutMillis());
+        assertThat(saplMqttExtensionConfig.getSubscriptionEnforcementTimeoutMillis())
+                .isEqualTo(DEFAULT_SUBSCRIPTION_ENFORCEMENT_TIMEOUT_MILLIS);
     }
 
     @Test
@@ -100,8 +102,8 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertEquals(DEFAULT_PUBLISH_ENFORCEMENT_TIMEOUT_MILLIS,
-                saplMqttExtensionConfig.getPublishEnforcementTimeoutMillis());
+        assertThat(saplMqttExtensionConfig.getPublishEnforcementTimeoutMillis())
+                .isEqualTo(DEFAULT_PUBLISH_ENFORCEMENT_TIMEOUT_MILLIS);
     }
 
     @Test
@@ -114,7 +116,7 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertEquals(DEFAULT_REMOTE_PDP_BACK_OFF_FACTOR, saplMqttExtensionConfig.getRemotePdpBackOffFactor());
+        assertThat(saplMqttExtensionConfig.getRemotePdpBackOffFactor()).isEqualTo(DEFAULT_REMOTE_PDP_BACK_OFF_FACTOR);
     }
 
     @Test
@@ -127,8 +129,8 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertEquals(DEFAULT_REMOTE_PDP_FIRST_BACK_OFF_MILLIS,
-                saplMqttExtensionConfig.getRemotePdpFirstBackOffMillis());
+        assertThat(saplMqttExtensionConfig.getRemotePdpFirstBackOffMillis())
+                .isEqualTo(DEFAULT_REMOTE_PDP_FIRST_BACK_OFF_MILLIS);
     }
 
     @Test
@@ -141,7 +143,8 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertEquals(DEFAULT_REMOTE_PDP_MAX_BACK_OFF_MILLIS, saplMqttExtensionConfig.getRemotePdpMaxBackOffMillis());
+        assertThat(saplMqttExtensionConfig.getRemotePdpMaxBackOffMillis())
+                .isEqualTo(DEFAULT_REMOTE_PDP_MAX_BACK_OFF_MILLIS);
     }
 
     @Test
@@ -154,9 +157,10 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertEquals(DEFAULT_REMOTE_PDP_MAX_BACK_OFF_MILLIS, saplMqttExtensionConfig.getRemotePdpMaxBackOffMillis());
-        assertEquals(DEFAULT_REMOTE_PDP_FIRST_BACK_OFF_MILLIS,
-                saplMqttExtensionConfig.getRemotePdpFirstBackOffMillis());
+        assertThat(saplMqttExtensionConfig.getRemotePdpMaxBackOffMillis())
+                .isEqualTo(DEFAULT_REMOTE_PDP_MAX_BACK_OFF_MILLIS);
+        assertThat(saplMqttExtensionConfig.getRemotePdpFirstBackOffMillis())
+                .isEqualTo(DEFAULT_REMOTE_PDP_FIRST_BACK_OFF_MILLIS);
     }
 
     @Test
@@ -169,7 +173,7 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertEquals(1000, saplMqttExtensionConfig.getAuthzSubscriptionTimeoutMillis());
+        assertThat(saplMqttExtensionConfig.getAuthzSubscriptionTimeoutMillis()).isEqualTo(1000);
     }
 
     @Test
@@ -182,7 +186,7 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig        = saplMqttExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertEquals(1000, saplMqttExtensionConfig.getAuthzSubscriptionTimeoutMillis());
+        assertThat(saplMqttExtensionConfig.getAuthzSubscriptionTimeoutMillis()).isEqualTo(1000);
     }
 
     @Test
@@ -194,8 +198,8 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig = saplExtensionConfiguration.getSaplMqttExtensionConfig();
 
         // THEN
-        assertEquals(DEFAULT_PUBLISH_ENFORCEMENT_TIMEOUT_MILLIS,
-                saplMqttExtensionConfig.getPublishEnforcementTimeoutMillis());
+        assertThat(saplMqttExtensionConfig.getPublishEnforcementTimeoutMillis())
+                .isEqualTo(DEFAULT_PUBLISH_ENFORCEMENT_TIMEOUT_MILLIS);
     }
 
     @Test
@@ -210,7 +214,7 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig = saplExtensionConfiguration.readConfigFile(fileMock);
 
         // THEN
-        assertEquals(DEFAULT_REMOTE_PDP_CLIENT_SECRET, saplMqttExtensionConfig.getRemotePdpClientSecret());
+        assertThat(saplMqttExtensionConfig.getRemotePdpClientSecret()).isEqualTo(DEFAULT_REMOTE_PDP_CLIENT_SECRET);
     }
 
     @Test
@@ -226,6 +230,6 @@ class ExtensionConfigValidationTests {
         var saplMqttExtensionConfig = saplExtensionConfiguration.readConfigFile(fileMock);
 
         // THEN
-        assertEquals(DEFAULT_REMOTE_PDP_CLIENT_SECRET, saplMqttExtensionConfig.getRemotePdpClientSecret());
+        assertThat(saplMqttExtensionConfig.getRemotePdpClientSecret()).isEqualTo(DEFAULT_REMOTE_PDP_CLIENT_SECRET);
     }
 }

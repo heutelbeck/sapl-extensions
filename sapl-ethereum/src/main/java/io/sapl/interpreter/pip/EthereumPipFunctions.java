@@ -160,11 +160,11 @@ public class EthereumPipFunctions {
 
     private static final String ADDRESS = "address";
 
-    private static final String NO_DBP_INFO = "The DefaultBlockParameter was not correctly provided. By default the latest Block is used.";
-
     private static final Bool DEFAULT_RETURN_TYPE = new Bool(false);
 
-    private static final String DEFAULT_RETURN_WARNING = "By default a bool with value false is being returned.";
+    private static final String WARN_DEFAULT_RETURN = "By default a bool with value false is being returned.";
+
+    private static final String WARN_NO_DBP_INFO = "The DefaultBlockParameter was not correctly provided. By default the latest Block is used.";
 
     private EthereumPipFunctions() {
 
@@ -265,12 +265,12 @@ public class EthereumPipFunctions {
                 }
                 case "double"          -> {
                     log.warn("You tried to use a double type but this is not supported as function input. "
-                            + DEFAULT_RETURN_WARNING);
+                            + WARN_DEFAULT_RETURN);
                     return DEFAULT_RETURN_TYPE;
                 }
                 case "float"           -> {
                     log.warn("You tried to use a float type but this is not supported as function input. "
-                            + DEFAULT_RETURN_WARNING);
+                            + WARN_DEFAULT_RETURN);
                     return DEFAULT_RETURN_TYPE;
                 }
                 case "uint"            -> {
@@ -574,21 +574,21 @@ public class EthereumPipFunctions {
                     return new Bytes32(binaryValue);
                 }
                 default                -> {
-                    log.warn("The type with the name {} couldn't be found. " + DEFAULT_RETURN_WARNING, solidityType);
+                    log.warn("The type with the name {} couldn't be found. " + WARN_DEFAULT_RETURN, solidityType);
                     return DEFAULT_RETURN_TYPE;
                 }
                 }
             } catch (StringIndexOutOfBoundsException e) {
                 log.warn(
                         "The type {} with value {} couldn't be generated. Please make sure that you used correct spelling and the "
-                                + "value is correctly provided for this type. " + DEFAULT_RETURN_WARNING,
+                                + "value is correctly provided for this type. " + WARN_DEFAULT_RETURN,
                         solidityType, value);
                 return DEFAULT_RETURN_TYPE;
             }
 
         }
         log.warn("There has been a request to convertToType, but the input didn't have both fields type "
-                + "and value or was null. " + DEFAULT_RETURN_WARNING);
+                + "and value or was null. " + WARN_DEFAULT_RETURN);
         return DEFAULT_RETURN_TYPE;
     }
 
@@ -607,7 +607,7 @@ public class EthereumPipFunctions {
             if (dbp.isNumber())
                 return DefaultBlockParameter.valueOf(dbp.decimalValue().toBigInteger());
         }
-        log.info(NO_DBP_INFO);
+        log.info(WARN_NO_DBP_INFO);
         return DefaultBlockParameter.valueOf(LATEST);
     }
 

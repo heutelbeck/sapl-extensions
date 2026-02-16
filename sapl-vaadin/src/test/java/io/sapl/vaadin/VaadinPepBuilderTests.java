@@ -18,7 +18,7 @@
 package io.sapl.vaadin;
 
 import tools.jackson.databind.node.JsonNodeFactory;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
@@ -36,6 +36,7 @@ import java.util.function.Predicate;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
@@ -52,6 +53,7 @@ import io.sapl.spring.constraints.api.RunnableConstraintHandlerProvider;
 import io.sapl.vaadin.base.SecurityHelper;
 import io.sapl.vaadin.constraint.VaadinFunctionConstraintHandlerProvider;
 
+@DisplayName("Vaadin PEP builder")
 class VaadinPepBuilderTests {
 
     private static MockedStatic<SecurityHelper> securityHelperMock;
@@ -88,10 +90,10 @@ class VaadinPepBuilderTests {
         vaadinPepBuilder.addVaadinFunctionConstraintHandlerProvider(vaadinFunctionConstraintHandlerProvider);
 
         // THEN
-        assertEquals(1, vaadinPepBuilder.vaadinPep.getLocalVaadinFunctionProvider().size());
+        assertThat(vaadinPepBuilder.vaadinPep.getLocalVaadinFunctionProvider()).hasSize(1);
         if (vaadinPepBuilder.vaadinPep.getLocalVaadinFunctionProvider().size() > 0)
-            assertEquals(vaadinFunctionConstraintHandlerProvider,
-                    vaadinPepBuilder.vaadinPep.getLocalVaadinFunctionProvider().get(0));
+            assertThat(vaadinPepBuilder.vaadinPep.getLocalVaadinFunctionProvider().get(0))
+                    .isEqualTo(vaadinFunctionConstraintHandlerProvider);
     }
 
     @Test
@@ -114,10 +116,10 @@ class VaadinPepBuilderTests {
         vaadinPepBuilder.addConsumerConstraintHandlerProvider(consumerConstraintHandlerProvider);
 
         // THEN
-        assertEquals(1, vaadinPepBuilder.vaadinPep.getLocalConsumerProviders().size());
+        assertThat(vaadinPepBuilder.vaadinPep.getLocalConsumerProviders()).hasSize(1);
         if (vaadinPepBuilder.vaadinPep.getLocalConsumerProviders().size() > 0)
-            assertEquals(consumerConstraintHandlerProvider,
-                    vaadinPepBuilder.vaadinPep.getLocalConsumerProviders().get(0));
+            assertThat(vaadinPepBuilder.vaadinPep.getLocalConsumerProviders().get(0))
+                    .isEqualTo(consumerConstraintHandlerProvider);
     }
 
     @Test
@@ -137,10 +139,10 @@ class VaadinPepBuilderTests {
         vaadinPepBuilder.addRunnableConstraintHandlerProvider(runnableConstraintHandlerProvider);
 
         // THEN
-        assertEquals(1, vaadinPepBuilder.vaadinPep.getLocalRunnableProviders().size());
+        assertThat(vaadinPepBuilder.vaadinPep.getLocalRunnableProviders()).hasSize(1);
         if (vaadinPepBuilder.vaadinPep.getLocalRunnableProviders().size() > 0)
-            assertEquals(runnableConstraintHandlerProvider,
-                    vaadinPepBuilder.vaadinPep.getLocalRunnableProviders().get(0));
+            assertThat(vaadinPepBuilder.vaadinPep.getLocalRunnableProviders().get(0))
+                    .isEqualTo(runnableConstraintHandlerProvider);
     }
 
     @Test
@@ -169,10 +171,10 @@ class VaadinPepBuilderTests {
         // THEN1
         List<ConsumerConstraintHandlerProvider<UI>> localConsumerProviders = vaadinPepBuilder.vaadinPep
                 .getLocalConsumerProviders();
-        assertEquals(1, localConsumerProviders.size());
+        assertThat(localConsumerProviders).hasSize(1);
         if (localConsumerProviders.size() > 0) {
             // WHEN2
-            assertEquals(UI.class, localConsumerProviders.get(0).getSupportedType());
+            assertThat(localConsumerProviders.get(0).getSupportedType()).isEqualTo(UI.class);
             localConsumerProviders.get(0).isResponsible(constraint);
             localConsumerProviders.get(0).getHandler(constraint);
 

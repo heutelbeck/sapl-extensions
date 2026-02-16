@@ -24,6 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.hivemq.extension.sdk.api.interceptor.publish.parameter.PublishInboundOutput;
@@ -32,6 +33,7 @@ import com.hivemq.extension.sdk.api.packets.publish.AckReasonCode;
 import io.sapl.api.pdp.AuthorizationDecision;
 import io.sapl.mqtt.pep.details.MqttSaplId;
 
+@DisplayName("HiveMQ enforcement")
 class HiveMqEnforcementTests {
 
     @Test

@@ -17,10 +17,7 @@
  */
 package io.sapl.vaadin.constraint.providers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -29,6 +26,7 @@ import static org.mockito.Mockito.mockStatic;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
@@ -40,6 +38,7 @@ import io.sapl.api.model.Value;
 import io.sapl.vaadin.UIMock;
 import reactor.core.publisher.Mono;
 
+@DisplayName("Vaadin notification constraint handler provider")
 class VaadinNotificationConstraintHandlerProviderTests {
 
     private VaadinNotificationConstraintHandlerProvider vaadinNotificationConstraintHandlerProvider;
@@ -59,7 +58,7 @@ class VaadinNotificationConstraintHandlerProviderTests {
         boolean isResponsibleResult = this.vaadinNotificationConstraintHandlerProvider.isResponsible(node);
 
         // THEN
-        assertTrue(isResponsibleResult);
+        assertThat(isResponsibleResult).isTrue();
     }
 
     @Test
@@ -71,7 +70,7 @@ class VaadinNotificationConstraintHandlerProviderTests {
         boolean isResponsibleResult = this.vaadinNotificationConstraintHandlerProvider.isResponsible(node);
 
         // THEN
-        assertFalse(isResponsibleResult);
+        assertThat(isResponsibleResult).isFalse();
     }
 
     @Test
@@ -83,7 +82,7 @@ class VaadinNotificationConstraintHandlerProviderTests {
         boolean isResponsibleResult = this.vaadinNotificationConstraintHandlerProvider.isResponsible(node);
 
         // THEN
-        assertFalse(isResponsibleResult);
+        assertThat(isResponsibleResult).isFalse();
     }
 
     @Test
@@ -96,7 +95,7 @@ class VaadinNotificationConstraintHandlerProviderTests {
         boolean isResponsibleResult = this.vaadinNotificationConstraintHandlerProvider.isResponsible(node);
 
         // THEN
-        assertFalse(isResponsibleResult);
+        assertThat(isResponsibleResult).isFalse();
     }
 
     @Test
@@ -108,7 +107,7 @@ class VaadinNotificationConstraintHandlerProviderTests {
         boolean isResponsibleResult = this.vaadinNotificationConstraintHandlerProvider.isResponsible(node);
 
         // THEN
-        assertFalse(isResponsibleResult);
+        assertThat(isResponsibleResult).isFalse();
     }
 
     @Test
@@ -118,7 +117,7 @@ class VaadinNotificationConstraintHandlerProviderTests {
         boolean isResponsibleResult = this.vaadinNotificationConstraintHandlerProvider.isResponsible(null);
 
         // THEN
-        assertFalse(isResponsibleResult);
+        assertThat(isResponsibleResult).isFalse();
     }
 
     @Test
@@ -128,7 +127,7 @@ class VaadinNotificationConstraintHandlerProviderTests {
         Function<UI, Mono<Boolean>> handler = this.vaadinNotificationConstraintHandlerProvider.getHandler(null);
 
         // THEN
-        assertNull(handler);
+        assertThat(handler).isNull();
     }
 
     @Test
@@ -143,9 +142,9 @@ class VaadinNotificationConstraintHandlerProviderTests {
         MockedStatic<Notification> notificationMock = mockStatic(Notification.class);
         notificationMock.when(() -> Notification.show(anyString(), anyInt(), any(Notification.Position.class)))
                 .then(invocationOnMock -> {
-                    assertEquals("text message", invocationOnMock.getArgument(0));
-                    assertEquals(6000, (Integer) invocationOnMock.getArgument(1));
-                    assertEquals(Notification.Position.TOP_START, invocationOnMock.getArgument(2));
+                    assertThat((Object) invocationOnMock.getArgument(0)).isEqualTo("text message");
+                    assertThat((Integer) invocationOnMock.getArgument(1)).isEqualTo(6000);
+                    assertThat((Object) invocationOnMock.getArgument(2)).isEqualTo(Notification.Position.TOP_START);
                     return null;
                 });
 
@@ -153,7 +152,7 @@ class VaadinNotificationConstraintHandlerProviderTests {
         var getHandler = this.vaadinNotificationConstraintHandlerProvider.getHandler(node);
 
         // THEN
-        assertEquals(Boolean.TRUE, getHandler.apply(mockedUI).block());
+        assertThat(getHandler.apply(mockedUI).block()).isEqualTo(Boolean.TRUE);
         notificationMock.close();
     }
 
@@ -169,9 +168,9 @@ class VaadinNotificationConstraintHandlerProviderTests {
         MockedStatic<Notification> notificationMock = mockStatic(Notification.class);
         notificationMock.when(() -> Notification.show(anyString(), anyInt(), any(Notification.Position.class)))
                 .then(invocationOnMock -> {
-                    assertEquals("text message", invocationOnMock.getArgument(0));
-                    assertEquals(5000, (Integer) invocationOnMock.getArgument(1));
-                    assertEquals(Notification.Position.TOP_STRETCH, invocationOnMock.getArgument(2));
+                    assertThat((Object) invocationOnMock.getArgument(0)).isEqualTo("text message");
+                    assertThat((Integer) invocationOnMock.getArgument(1)).isEqualTo(5000);
+                    assertThat((Object) invocationOnMock.getArgument(2)).isEqualTo(Notification.Position.TOP_STRETCH);
                     return null;
                 });
 
@@ -179,7 +178,7 @@ class VaadinNotificationConstraintHandlerProviderTests {
         var getHandler = this.vaadinNotificationConstraintHandlerProvider.getHandler(node);
 
         // THEN
-        assertEquals(Boolean.TRUE, getHandler.apply(mockedUI).block());
+        assertThat(getHandler.apply(mockedUI).block()).isEqualTo(Boolean.TRUE);
         notificationMock.close();
     }
 
@@ -194,8 +193,8 @@ class VaadinNotificationConstraintHandlerProviderTests {
         MockedStatic<Notification> notificationMock = mockStatic(Notification.class);
         notificationMock.when(() -> Notification.show(anyString(), anyInt(), any(Notification.Position.class)))
                 .then(invocationOnMock -> {
-                    assertEquals(5000, (Integer) invocationOnMock.getArgument(1));
-                    assertEquals(Notification.Position.TOP_STRETCH, invocationOnMock.getArgument(2));
+                    assertThat((Integer) invocationOnMock.getArgument(1)).isEqualTo(5000);
+                    assertThat((Object) invocationOnMock.getArgument(2)).isEqualTo(Notification.Position.TOP_STRETCH);
                     return null;
                 });
 
@@ -203,7 +202,7 @@ class VaadinNotificationConstraintHandlerProviderTests {
         var getHandler = this.vaadinNotificationConstraintHandlerProvider.getHandler(node);
 
         // THEN
-        assertEquals(Boolean.TRUE, getHandler.apply(mockedUI).block());
+        assertThat(getHandler.apply(mockedUI).block()).isEqualTo(Boolean.TRUE);
         notificationMock.close();
     }
 }

@@ -1,5 +1,5 @@
-/**
- * Copyright © 2020-2024 Dominic Heutelbeck (dominic@heutelbeck.com)
+/*
+ * Copyright © 2019-2021 Dominic Heutelbeck (dominic@heutelbeck.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,3 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package io.sapl.vaadindemo;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+
+@SpringBootTest
+@DisplayName("Vaadin demo application")
+class VaadinDemoApplicationTests {
+
+	@Test
+	void contextLoads(ApplicationContext context) {
+	    assertThat(context).isNotNull();
+	}
+
+}

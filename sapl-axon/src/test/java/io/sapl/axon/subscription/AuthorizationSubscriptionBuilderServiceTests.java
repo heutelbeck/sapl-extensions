@@ -17,8 +17,8 @@
  */
 package io.sapl.axon.subscription;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +33,7 @@ import org.axonframework.queryhandling.GenericSubscriptionQueryMessage;
 import org.axonframework.queryhandling.QueryHandler;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.expression.spel.SpelEvaluationException;
 
@@ -46,6 +47,7 @@ import io.sapl.axon.annotation.PostHandleEnforce;
 import io.sapl.axon.annotation.PreHandleEnforce;
 import lombok.AllArgsConstructor;
 
+@DisplayName("Authorization subscription builder service")
 class AuthorizationSubscriptionBuilderServiceTests {
     private static final String ACTION_TYPE          = "actionType";
     private static final String AGGREGATE_IDENTIFIER = "aggregateIdentifier";
@@ -332,22 +334,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        assertThat(subscription1.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
+        assertThat(subscription2.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action1 = (ObjectValue) subscription1.action();
         var action2 = (ObjectValue) subscription2.action();
-        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
-        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
-        assertEquals(asValue(payload), action1.get(PAYLOAD));
-        assertEquals(asValue(payload), action2.get(PAYLOAD));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
-        assertEquals(aggregateInfo(), subscription1.resource());
-        assertEquals(handlerInfo(), subscription2.resource());
-        assertEquals(Value.UNDEFINED, subscription1.environment());
-        assertEquals(Value.UNDEFINED, subscription2.environment());
+        assertThat(action1.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action2.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action1.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action1.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action2.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action1.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(subscription1.resource()).isEqualTo(aggregateInfo());
+        assertThat(subscription2.resource()).isEqualTo(handlerInfo());
+        assertThat(subscription1.environment()).isEqualTo(Value.UNDEFINED);
+        assertThat(subscription2.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -363,10 +365,12 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle2", TestCommand.class)
                 .getAnnotation(PreHandleEnforce.class);
 
-        assertThrows(SpelEvaluationException.class,
-                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1));
-        assertThrows(SpelEvaluationException.class,
-                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2));
+        assertThatThrownBy(
+                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1))
+                .isInstanceOf(SpelEvaluationException.class);
+        assertThatThrownBy(
+                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2))
+                .isInstanceOf(SpelEvaluationException.class);
     }
 
     @Test
@@ -385,22 +389,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(Value.of(TEST_SUBJECT), subscription1.subject());
-        assertEquals(Value.of(TEST_SUBJECT), subscription2.subject());
+        assertThat(subscription1.subject()).isEqualTo(Value.of(TEST_SUBJECT));
+        assertThat(subscription2.subject()).isEqualTo(Value.of(TEST_SUBJECT));
         var action1 = (ObjectValue) subscription1.action();
         var action2 = (ObjectValue) subscription2.action();
-        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
-        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
-        assertEquals(asValue(payload), action1.get(PAYLOAD));
-        assertEquals(asValue(payload), action2.get(PAYLOAD));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
-        assertEquals(aggregateInfo(), subscription1.resource());
-        assertEquals(handlerInfo(), subscription2.resource());
-        assertEquals(Value.UNDEFINED, subscription1.environment());
-        assertEquals(Value.UNDEFINED, subscription2.environment());
+        assertThat(action1.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action2.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action1.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action1.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action2.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action1.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(subscription1.resource()).isEqualTo(aggregateInfo());
+        assertThat(subscription2.resource()).isEqualTo(handlerInfo());
+        assertThat(subscription1.environment()).isEqualTo(Value.UNDEFINED);
+        assertThat(subscription2.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -416,10 +420,12 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle4", TestCommand.class)
                 .getAnnotation(PreHandleEnforce.class);
 
-        assertThrows(SpelEvaluationException.class,
-                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1));
-        assertThrows(SpelEvaluationException.class,
-                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2));
+        assertThatThrownBy(
+                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1))
+                .isInstanceOf(SpelEvaluationException.class);
+        assertThatThrownBy(
+                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2))
+                .isInstanceOf(SpelEvaluationException.class);
     }
 
     @Test
@@ -438,14 +444,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
-        assertEquals(Value.of(TEST_ACTION), subscription1.action());
-        assertEquals(Value.of(TEST_ACTION), subscription2.action());
-        assertEquals(aggregateInfo(), subscription1.resource());
-        assertEquals(handlerInfo(), subscription2.resource());
-        assertEquals(Value.UNDEFINED, subscription1.environment());
-        assertEquals(Value.UNDEFINED, subscription2.environment());
+        assertThat(subscription1.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
+        assertThat(subscription2.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
+        assertThat(subscription1.action()).isEqualTo(Value.of(TEST_ACTION));
+        assertThat(subscription2.action()).isEqualTo(Value.of(TEST_ACTION));
+        assertThat(subscription1.resource()).isEqualTo(aggregateInfo());
+        assertThat(subscription2.resource()).isEqualTo(handlerInfo());
+        assertThat(subscription1.environment()).isEqualTo(Value.UNDEFINED);
+        assertThat(subscription2.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -461,10 +467,12 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle6", TestCommand.class)
                 .getAnnotation(PreHandleEnforce.class);
 
-        assertThrows(SpelEvaluationException.class,
-                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1));
-        assertThrows(SpelEvaluationException.class,
-                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2));
+        assertThatThrownBy(
+                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1))
+                .isInstanceOf(SpelEvaluationException.class);
+        assertThatThrownBy(
+                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2))
+                .isInstanceOf(SpelEvaluationException.class);
     }
 
     @Test
@@ -483,22 +491,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        assertThat(subscription1.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
+        assertThat(subscription2.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action1 = (ObjectValue) subscription1.action();
         var action2 = (ObjectValue) subscription2.action();
-        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
-        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
-        assertEquals(asValue(payload), action1.get(PAYLOAD));
-        assertEquals(asValue(payload), action2.get(PAYLOAD));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
-        assertEquals(Value.of(TEST_RESOURCE), subscription1.resource());
-        assertEquals(Value.of(TEST_RESOURCE), subscription2.resource());
-        assertEquals(Value.UNDEFINED, subscription1.environment());
-        assertEquals(Value.UNDEFINED, subscription2.environment());
+        assertThat(action1.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action2.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action1.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action1.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action2.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action1.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(subscription1.resource()).isEqualTo(Value.of(TEST_RESOURCE));
+        assertThat(subscription2.resource()).isEqualTo(Value.of(TEST_RESOURCE));
+        assertThat(subscription1.environment()).isEqualTo(Value.UNDEFINED);
+        assertThat(subscription2.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -515,22 +523,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, null, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, null, annotation2);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        assertThat(subscription1.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
+        assertThat(subscription2.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action1 = (ObjectValue) subscription1.action();
         var action2 = (ObjectValue) subscription2.action();
-        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
-        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
-        assertEquals(asValue(payload), action1.get(PAYLOAD));
-        assertEquals(asValue(payload), action2.get(PAYLOAD));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
-        assertEquals(handlerInfo(), subscription1.resource());
-        assertEquals(handlerInfo(), subscription2.resource());
-        assertEquals(Value.UNDEFINED, subscription1.environment());
-        assertEquals(Value.UNDEFINED, subscription2.environment());
+        assertThat(action1.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action2.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action1.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action1.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action2.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action1.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(subscription1.resource()).isEqualTo(handlerInfo());
+        assertThat(subscription2.resource()).isEqualTo(handlerInfo());
+        assertThat(subscription1.environment()).isEqualTo(Value.UNDEFINED);
+        assertThat(subscription2.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -549,22 +557,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        assertThat(subscription1.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
+        assertThat(subscription2.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action1 = (ObjectValue) subscription1.action();
         var action2 = (ObjectValue) subscription2.action();
-        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
-        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
-        assertEquals(asValue(payload), action1.get(PAYLOAD));
-        assertEquals(asValue(payload), action2.get(PAYLOAD));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
-        assertEquals(info(TEST_AGGREGATE_TYPE), subscription1.resource());
-        assertEquals(info(TEST_AGGREGATE_TYPE), subscription2.resource());
-        assertEquals(Value.UNDEFINED, subscription1.environment());
-        assertEquals(Value.UNDEFINED, subscription2.environment());
+        assertThat(action1.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action2.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action1.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action1.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action2.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action1.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(subscription1.resource()).isEqualTo(info(TEST_AGGREGATE_TYPE));
+        assertThat(subscription2.resource()).isEqualTo(info(TEST_AGGREGATE_TYPE));
+        assertThat(subscription1.environment()).isEqualTo(Value.UNDEFINED);
+        assertThat(subscription2.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -583,22 +591,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        assertThat(subscription1.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
+        assertThat(subscription2.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action1 = (ObjectValue) subscription1.action();
         var action2 = (ObjectValue) subscription2.action();
-        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
-        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
-        assertEquals(Value.of(NonAnnotatedTestCommand.class.getName()), action1.get(COMMAND_NAME));
-        assertEquals(Value.of(NonAnnotatedTestCommand.class.getName()), action2.get(COMMAND_NAME));
-        assertEquals(asValue(payload), action1.get(PAYLOAD));
-        assertEquals(asValue(payload), action2.get(PAYLOAD));
-        assertEquals(Value.of(NonAnnotatedTestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
-        assertEquals(Value.of(NonAnnotatedTestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
-        assertEquals(aggregateInfoWithoutIdentifier(), subscription1.resource());
-        assertEquals(handlerInfoWithoutIdentifier(), subscription2.resource());
-        assertEquals(Value.UNDEFINED, subscription1.environment());
-        assertEquals(Value.UNDEFINED, subscription2.environment());
+        assertThat(action1.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action2.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action1.get(COMMAND_NAME)).isEqualTo(Value.of(NonAnnotatedTestCommand.class.getName()));
+        assertThat(action2.get(COMMAND_NAME)).isEqualTo(Value.of(NonAnnotatedTestCommand.class.getName()));
+        assertThat(action1.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action2.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action1.get(PAYLOAD_TYPE)).isEqualTo(Value.of(NonAnnotatedTestCommand.class.getName()));
+        assertThat(action2.get(PAYLOAD_TYPE)).isEqualTo(Value.of(NonAnnotatedTestCommand.class.getName()));
+        assertThat(subscription1.resource()).isEqualTo(aggregateInfoWithoutIdentifier());
+        assertThat(subscription2.resource()).isEqualTo(handlerInfoWithoutIdentifier());
+        assertThat(subscription1.environment()).isEqualTo(Value.UNDEFINED);
+        assertThat(subscription2.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -614,10 +622,12 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var annotation2    = TestCommandHandlingObject.class.getDeclaredMethod("handle8", TestCommand.class)
                 .getAnnotation(PreHandleEnforce.class);
 
-        assertThrows(SpelEvaluationException.class,
-                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1));
-        assertThrows(SpelEvaluationException.class,
-                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2));
+        assertThatThrownBy(
+                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1))
+                .isInstanceOf(SpelEvaluationException.class);
+        assertThatThrownBy(
+                () -> service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2))
+                .isInstanceOf(SpelEvaluationException.class);
     }
 
     @Test
@@ -636,22 +646,22 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        assertThat(subscription1.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
+        assertThat(subscription2.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action1 = (ObjectValue) subscription1.action();
         var action2 = (ObjectValue) subscription2.action();
-        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
-        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
-        assertEquals(asValue(payload), action1.get(PAYLOAD));
-        assertEquals(asValue(payload), action2.get(PAYLOAD));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
-        assertEquals(aggregateInfo(), subscription1.resource());
-        assertEquals(handlerInfo(), subscription2.resource());
-        assertEquals(Value.of(TEST_ENVIRONMENT), subscription1.environment());
-        assertEquals(Value.of(TEST_ENVIRONMENT), subscription2.environment());
+        assertThat(action1.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action2.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action1.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action1.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action2.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action1.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(subscription1.resource()).isEqualTo(aggregateInfo());
+        assertThat(subscription2.resource()).isEqualTo(handlerInfo());
+        assertThat(subscription1.environment()).isEqualTo(Value.of(TEST_ENVIRONMENT));
+        assertThat(subscription2.environment()).isEqualTo(Value.of(TEST_ENVIRONMENT));
     }
 
     @Test
@@ -671,24 +681,24 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription1 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject1, annotation1);
         var subscription2 = service.constructAuthorizationSubscriptionForCommand(command, handlerObject2, annotation2);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription1.subject());
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription2.subject());
+        assertThat(subscription1.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
+        assertThat(subscription2.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action1 = (ObjectValue) subscription1.action();
         var action2 = (ObjectValue) subscription2.action();
-        assertEquals(Value.of(COMMAND), action1.get(ACTION_TYPE));
-        assertEquals(Value.of(COMMAND), action2.get(ACTION_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(COMMAND_NAME));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(COMMAND_NAME));
-        assertEquals(asValue(payload), action1.get(PAYLOAD));
-        assertEquals(asValue(payload), action2.get(PAYLOAD));
-        assertEquals(Value.of(TestCommand.class.getName()), action1.get(PAYLOAD_TYPE));
-        assertEquals(Value.of(TestCommand.class.getName()), action2.get(PAYLOAD_TYPE));
-        assertEquals(asValue(metaData), action1.get(METADATA));
-        assertEquals(asValue(metaData), action2.get(METADATA));
-        assertEquals(aggregateInfo(), subscription1.resource());
-        assertEquals(handlerInfo(), subscription2.resource());
-        assertEquals(Value.UNDEFINED, subscription1.environment());
-        assertEquals(Value.UNDEFINED, subscription2.environment());
+        assertThat(action1.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action2.get(ACTION_TYPE)).isEqualTo(Value.of(COMMAND));
+        assertThat(action1.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(COMMAND_NAME)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action1.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action2.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action1.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action2.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestCommand.class.getName()));
+        assertThat(action1.get(METADATA)).isEqualTo(asValue(metaData));
+        assertThat(action2.get(METADATA)).isEqualTo(asValue(metaData));
+        assertThat(subscription1.resource()).isEqualTo(aggregateInfo());
+        assertThat(subscription2.resource()).isEqualTo(handlerInfo());
+        assertThat(subscription1.environment()).isEqualTo(Value.UNDEFINED);
+        assertThat(subscription2.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -704,14 +714,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        assertThat(subscription.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action = (ObjectValue) subscription.action();
-        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
-        assertEquals(asValue(payload), action.get(PAYLOAD));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
-        assertEquals(projectionInfo("handle1"), subscription.resource());
-        assertEquals(Value.UNDEFINED, subscription.environment());
+        assertThat(action.get(ACTION_TYPE)).isEqualTo(Value.of(QUERY));
+        assertThat(action.get(QUERY_NAME)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(action.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(subscription.resource()).isEqualTo(projectionInfo("handle1"));
+        assertThat(subscription.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -724,8 +734,9 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
         var queryResult   = Optional.empty();
 
-        assertThrows(SpelEvaluationException.class, () -> service.constructAuthorizationSubscriptionForQuery(query,
-                annotation, handlerMethod, queryResult));
+        assertThatThrownBy(
+                () -> service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod, queryResult))
+                .isInstanceOf(SpelEvaluationException.class);
     }
 
     @Test
@@ -741,14 +752,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(Value.of(TEST_SUBJECT), subscription.subject());
+        assertThat(subscription.subject()).isEqualTo(Value.of(TEST_SUBJECT));
         var action = (ObjectValue) subscription.action();
-        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
-        assertEquals(asValue(payload), action.get(PAYLOAD));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
-        assertEquals(projectionInfo("handle3"), subscription.resource());
-        assertEquals(Value.UNDEFINED, subscription.environment());
+        assertThat(action.get(ACTION_TYPE)).isEqualTo(Value.of(QUERY));
+        assertThat(action.get(QUERY_NAME)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(action.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(subscription.resource()).isEqualTo(projectionInfo("handle3"));
+        assertThat(subscription.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -761,8 +772,9 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
         var queryResult   = Optional.empty();
 
-        assertThrows(SpelEvaluationException.class, () -> service.constructAuthorizationSubscriptionForQuery(query,
-                annotation, handlerMethod, queryResult));
+        assertThatThrownBy(
+                () -> service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod, queryResult))
+                .isInstanceOf(SpelEvaluationException.class);
     }
 
     @Test
@@ -778,10 +790,10 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
-        assertEquals(Value.of(TEST_ACTION), subscription.action());
-        assertEquals(projectionInfo("handle5"), subscription.resource());
-        assertEquals(Value.UNDEFINED, subscription.environment());
+        assertThat(subscription.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
+        assertThat(subscription.action()).isEqualTo(Value.of(TEST_ACTION));
+        assertThat(subscription.resource()).isEqualTo(projectionInfo("handle5"));
+        assertThat(subscription.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -794,8 +806,9 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
         var queryResult   = Optional.empty();
 
-        assertThrows(SpelEvaluationException.class, () -> service.constructAuthorizationSubscriptionForQuery(query,
-                annotation, handlerMethod, queryResult));
+        assertThatThrownBy(
+                () -> service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod, queryResult))
+                .isInstanceOf(SpelEvaluationException.class);
     }
 
     @Test
@@ -811,14 +824,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        assertThat(subscription.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action = (ObjectValue) subscription.action();
-        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
-        assertEquals(asValue(payload), action.get(PAYLOAD));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
-        assertEquals(Value.of(TEST_RESOURCE), subscription.resource());
-        assertEquals(Value.UNDEFINED, subscription.environment());
+        assertThat(action.get(ACTION_TYPE)).isEqualTo(Value.of(QUERY));
+        assertThat(action.get(QUERY_NAME)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(action.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(subscription.resource()).isEqualTo(Value.of(TEST_RESOURCE));
+        assertThat(subscription.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -834,14 +847,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        assertThat(subscription.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action = (ObjectValue) subscription.action();
-        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
-        assertEquals(asValue(payload), action.get(PAYLOAD));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
-        assertEquals(postEnforceResourceNode(), subscription.resource());
-        assertEquals(Value.UNDEFINED, subscription.environment());
+        assertThat(action.get(ACTION_TYPE)).isEqualTo(Value.of(QUERY));
+        assertThat(action.get(QUERY_NAME)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(action.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(subscription.resource()).isEqualTo(postEnforceResourceNode());
+        assertThat(subscription.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -857,14 +870,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        assertThat(subscription.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action = (ObjectValue) subscription.action();
-        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
-        assertEquals(asValue(payload), action.get(PAYLOAD));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
-        assertEquals(projectionInfo("handle9", queryResult.get()), subscription.resource());
-        assertEquals(Value.UNDEFINED, subscription.environment());
+        assertThat(action.get(ACTION_TYPE)).isEqualTo(Value.of(QUERY));
+        assertThat(action.get(QUERY_NAME)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(action.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(subscription.resource()).isEqualTo(projectionInfo("handle9", queryResult.get()));
+        assertThat(subscription.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -882,14 +895,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        assertThat(subscription.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action = (ObjectValue) subscription.action();
-        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
-        assertEquals(asValue(payload), action.get(PAYLOAD));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
-        assertEquals(projectionInfoWithUpdateType("handle1"), subscription.resource());
-        assertEquals(Value.UNDEFINED, subscription.environment());
+        assertThat(action.get(ACTION_TYPE)).isEqualTo(Value.of(QUERY));
+        assertThat(action.get(QUERY_NAME)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(action.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(subscription.resource()).isEqualTo(projectionInfoWithUpdateType("handle1"));
+        assertThat(subscription.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -905,14 +918,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        assertThat(subscription.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action = (ObjectValue) subscription.action();
-        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
-        assertEquals(Value.of(NonEnclosedTestQuery.class.getName()), action.get(QUERY_NAME));
-        assertEquals(asValue(payload), action.get(PAYLOAD));
-        assertEquals(Value.of(NonEnclosedTestQuery.class.getName()), action.get(PAYLOAD_TYPE));
-        assertEquals(projectionInfoOnNonEnclosedPayload("handle10"), subscription.resource());
-        assertEquals(Value.UNDEFINED, subscription.environment());
+        assertThat(action.get(ACTION_TYPE)).isEqualTo(Value.of(QUERY));
+        assertThat(action.get(QUERY_NAME)).isEqualTo(Value.of(NonEnclosedTestQuery.class.getName()));
+        assertThat(action.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action.get(PAYLOAD_TYPE)).isEqualTo(Value.of(NonEnclosedTestQuery.class.getName()));
+        assertThat(subscription.resource()).isEqualTo(projectionInfoOnNonEnclosedPayload("handle10"));
+        assertThat(subscription.environment()).isEqualTo(Value.UNDEFINED);
     }
 
     @Test
@@ -925,8 +938,9 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var annotation    = handlerMethod.getAnnotation(PreHandleEnforce.class);
         var queryResult   = Optional.empty();
 
-        assertThrows(SpelEvaluationException.class, () -> service.constructAuthorizationSubscriptionForQuery(query,
-                annotation, handlerMethod, queryResult));
+        assertThatThrownBy(
+                () -> service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod, queryResult))
+                .isInstanceOf(SpelEvaluationException.class);
     }
 
     @Test
@@ -942,14 +956,14 @@ class AuthorizationSubscriptionBuilderServiceTests {
         var subscription = service.constructAuthorizationSubscriptionForQuery(query, annotation, handlerMethod,
                 queryResult);
 
-        assertEquals(Value.of(TEST_ANONYMOUS), subscription.subject());
+        assertThat(subscription.subject()).isEqualTo(Value.of(TEST_ANONYMOUS));
         var action = (ObjectValue) subscription.action();
-        assertEquals(Value.of(QUERY), action.get(ACTION_TYPE));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(QUERY_NAME));
-        assertEquals(asValue(payload), action.get(PAYLOAD));
-        assertEquals(Value.of(TestQuery.class.getName()), action.get(PAYLOAD_TYPE));
-        assertEquals(projectionInfo("handle12"), subscription.resource());
-        assertEquals(Value.of(TEST_ENVIRONMENT), subscription.environment());
+        assertThat(action.get(ACTION_TYPE)).isEqualTo(Value.of(QUERY));
+        assertThat(action.get(QUERY_NAME)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(action.get(PAYLOAD)).isEqualTo(asValue(payload));
+        assertThat(action.get(PAYLOAD_TYPE)).isEqualTo(Value.of(TestQuery.class.getName()));
+        assertThat(subscription.resource()).isEqualTo(projectionInfo("handle12"));
+        assertThat(subscription.environment()).isEqualTo(Value.of(TEST_ENVIRONMENT));
     }
 
     private static Value aggregateInfo() {
