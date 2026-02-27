@@ -44,7 +44,6 @@ import org.axonframework.messaging.responsetypes.ResponseType;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryHandler;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -320,12 +319,11 @@ abstract class QueryTestsuite {
     }
 
     @Test
-    @Disabled("Flaky test on CI")
     void when_preHandlerSecuredSubscriptionQueryAndPermit_then_initialReturnAndUpdatesAreEmitted() {
-        var emitIntervallMs = 50L;
+        var emitIntervallMs = 100L;
         var queryPayload    = "case1";
         var numberOfUpdates = 5L;
-        var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 50L));
+        var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 10L));
 
         when(pdp.decide(any(AuthorizationSubscription.class))).thenReturn(Flux.just(AuthorizationDecision.PERMIT));
 
@@ -342,7 +340,7 @@ abstract class QueryTestsuite {
 
     @Test
     void when_preHandlerSecuredSubscriptionQueryAndDeny_then_bothStreamsAccessDenied() {
-        var emitIntervallMs = 20L;
+        var emitIntervallMs = 50L;
         var queryPayload    = "case2";
         var numberOfUpdates = 5L;
         var timeout         = Duration.ofMillis(emitIntervallMs * (numberOfUpdates + 2L));

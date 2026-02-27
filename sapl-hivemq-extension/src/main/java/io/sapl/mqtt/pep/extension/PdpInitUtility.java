@@ -113,7 +113,6 @@ public class PdpInitUtility {
             RemoteHttpPolicyDecisionPoint remotePdp) {
         remotePdp.setFirstBackoffMillis(saplMqttExtensionConfig.getRemotePdpFirstBackOffMillis());
         remotePdp.setMaxBackOffMillis(saplMqttExtensionConfig.getRemotePdpMaxBackOffMillis());
-        remotePdp.setBackoffFactor(saplMqttExtensionConfig.getRemotePdpBackOffFactor());
     }
 
     private static void warnWhenUsingDefaultConfigValuesForRemotePdp(String clientKey, String clientSecret) {
