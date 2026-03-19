@@ -46,7 +46,7 @@
 
 		<jacoco.version>0.8.11</jacoco.version>
 		<vaadin.version>25.0.5</vaadin.version>
-		<version.lombok>1.18.42</version.lombok>
+		<version.lombok>1.18.44</version.lombok>
 		<failsafe.version>3.2.5</failsafe.version>
 		<selenium.version>4.8.3</selenium.version>
 		<sapl.version>4.0.0-SNAPSHOT</sapl.version>
