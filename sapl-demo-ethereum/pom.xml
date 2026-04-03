@@ -24,7 +24,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.2</version>
+		<version>4.0.5</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
@@ -45,7 +45,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<jacoco.version>0.8.11</jacoco.version>
-		<vaadin.version>25.0.5</vaadin.version>
+		<vaadin.version>25.1.1</vaadin.version>
 		<version.lombok>1.18.44</version.lombok>
 		<failsafe.version>3.2.5</failsafe.version>
 		<selenium.version>4.8.3</selenium.version>

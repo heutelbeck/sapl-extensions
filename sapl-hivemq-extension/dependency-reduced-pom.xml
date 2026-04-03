@@ -352,7 +352,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
-      <version>6.0.2</version>
+      <version>6.0.3</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -368,7 +368,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>6.0.2</version>
+      <version>6.0.3</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -400,7 +400,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers-hivemq</artifactId>
-      <version>2.0.3</version>
+      <version>2.0.4</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -412,7 +412,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.5.25</version>
+      <version>1.5.32</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -430,14 +430,6 @@
         <exclusion>
           <artifactId>jul-to-slf4j</artifactId>
           <groupId>org.slf4j</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>bcprov-jdk18on</artifactId>
-          <groupId>org.bouncycastle</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>bcpkix-jdk18on</artifactId>
-          <groupId>org.bouncycastle</groupId>
         </exclusion>
         <exclusion>
           <artifactId>rocksdbjni</artifactId>
@@ -506,7 +498,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers-junit-jupiter</artifactId>
-      <version>2.0.3</version>
+      <version>2.0.4</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -596,13 +588,13 @@
     <dependency>
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
-      <version>3.8.2</version>
+      <version>3.8.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>6.0.2</version>
+      <version>6.0.3</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -634,17 +626,17 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
+    <output.dir>${basedir}</output.dir>
     <asciidoctor.version>1.5.7.1</asciidoctor.version>
+    <java.version>21</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
     <extension.name>sapl-hivemq-extension</extension.name>
+    <source.document.name>README.adoc</source.document.name>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
     <sapl.version>4.0.0-SNAPSHOT</sapl.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <skipTests>true</skipTests>
     <extension.author>Nils Mahnken</extension.author>
-    <output.dir>${basedir}</output.dir>
-    <java.version>21</java.version>
-    <maven.compiler.source>${java.version}</maven.compiler.source>
-    <source.document.name>README.adoc</source.document.name>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 </project>
