@@ -12,7 +12,7 @@
 
 	<groupId>io.sapl</groupId>
 	<artifactId>sapl-demo-axon</artifactId>
-	<version>4.0.0-SNAPSHOT</version>
+	<version>4.0.0</version>
 
 	<name>SAPL Demo Axon</name>
 	<description>Demo for SAPL Axon Framework Integration</description>
@@ -22,7 +22,7 @@
 		<axon.version>4.13.0</axon.version>
 		<axonstarter.version>4.12.0</axonstarter.version>
 		<axon.mongo.version>4.12.0</axon.mongo.version>
-		<sapl.version>4.0.0-SNAPSHOT</sapl.version>
+		<sapl.version>4.0.0</sapl.version>
 		<spotbugs.version>4.9.8.1</spotbugs.version>
 		<sbcontrib.version>7.6.15</sbcontrib.version>
 		<jacoco.version>0.8.11</jacoco.version>

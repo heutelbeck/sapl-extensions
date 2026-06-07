@@ -3,7 +3,7 @@
   <parent>
     <artifactId>sapl-policy-engine</artifactId>
     <groupId>io.sapl</groupId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0</version>
     <relativePath>pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -346,7 +346,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.44</version>
+      <version>1.18.46</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -633,7 +633,7 @@
     <extension.name>sapl-hivemq-extension</extension.name>
     <source.document.name>README.adoc</source.document.name>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <sapl.version>4.0.0-SNAPSHOT</sapl.version>
+    <sapl.version>4.0.0</sapl.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <skipTests>true</skipTests>
     <extension.author>Nils Mahnken</extension.author>
