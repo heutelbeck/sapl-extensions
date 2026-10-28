@@ -42,7 +42,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<vaadin.version>25.0.5</vaadin.version>
+		<vaadin.version>25.3.4</vaadin.version>
 		<selenium.version>4.8.3</selenium.version>
 		<sapl.version>4.0.0</sapl.version>
 		<spotbugs.version>4.9.8.1</spotbugs.version>
